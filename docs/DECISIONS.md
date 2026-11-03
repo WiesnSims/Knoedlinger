@@ -46,3 +46,12 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Preview deployed** to https://m0-stress.knoedlinger.pages.dev. Measured from the preview (headless, RTX 3080):
   Edge 497 fps / p95 2.1 ms, Firefox 515 fps / p95 2.1 ms, 22 draw calls; 60 s browser check passed with no console errors.
 - **Open:** mobile budget (Pixel 9 Pro, `?enemies=200`, 30 fps) is checked by the owner by hand.
+
+## 2026-11-03 – M0 approved, direction for M1
+
+- **Owner: M0 approved**; merged into `main`, branch `m0-stress` deleted.
+- **Owner: full 3D traversal like Megabonk, not a top-down game.** The flat plane and high camera were M0 test
+  scaffolding only. From M1: jump (double jump via upgrade), slopes, ramps, stairs, ledges, and a third-person
+  chase cam whose pitch and distance live in `balance.tres`, tuned in M1 toward a lower, Megabonk-like view.
+- **Claude: enemies stay 2D data on 3D terrain.** They move in x/z and take their height from a baked heightmap
+  of the map (no physics per enemy); snapshots stay 2×int16, clients sample the same heightmap.
