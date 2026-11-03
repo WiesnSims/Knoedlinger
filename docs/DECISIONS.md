@@ -254,3 +254,9 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Preview redeployed** to https://m2-core.knoedlinger.pages.dev (build a715e9b). From the preview (headless, RTX
   3080, 500 enemies, bot): Edge 186 fps / p95 6.7 ms, Firefox 216 fps / p95 6 ms, draw calls at most 110 / 116;
   no console errors. `.pck` 0.40 MiB.
+
+## 2026-11-03 – M2 approved
+
+- **Owner: M2 approved** after playtest round 1 (icons, hover-only card details); merged into `main`, branch
+  `m2-core` deleted. Next: M3 (first full map: Kirtag, boss gate with Stempel quest, Oberkrampus and Hofrat,
+  chests, gold, death and victory screens, sound and music). Movement speed is revisited with the real map size.
