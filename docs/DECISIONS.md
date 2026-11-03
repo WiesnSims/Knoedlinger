@@ -118,6 +118,9 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   `?knodl_mass=500`, `?god=1`, `?enemies=500`, `?character=ferdl`. Version 0.1.0.
 - **Measured (local, RTX 3080, run scene, 500 enemies held, bot playing):** Edge 191 fps / p95 6.8 ms, Firefox
   216 fps / p95 6 ms, 51 draw calls. M0 stress scene unchanged (~460 fps). Map bake 0.3 s in the browser.
+- **Preview deployed** to https://m1-knoedl.knoedlinger.pages.dev. Measured from the preview (headless, RTX 3080, run,
+  500 enemies, bot): Edge 191 fps / p95 6.6 ms, Firefox 211 fps / p95 6 ms, 51 draw calls; 60 s browser check passed
+  with no console errors in both.
 - **Open for the playtest:** whether the Knödl is fun (string feel, throw distance, growth speed, drag). The first
   level-up comes after about 20-25 s with the bot (pillar: 10 s), because kills only pay out once the Knödl eats the
   Brösel; XP pacing gets tuned together with the Speisekarte in M2.
