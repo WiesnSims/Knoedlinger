@@ -1,0 +1,11 @@
+.godot/
+build/
+build_id.txt
+*.tmp
+.env
+.dev.vars*
+.wrangler/
+node_modules/
+tools/browser/node_modules/
+.playwright-mcp/
+__pycache__/
