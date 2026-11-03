@@ -19,21 +19,20 @@ func _ready() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 	_panel = PanelContainer.new()
-	_panel.add_theme_stylebox_override("panel", Speisekarte.panel_box(Color(0.3, 0.2, 0.12, 0.95), 14, 24))
+	_panel.add_theme_stylebox_override("panel", UiStyle.box(UiStyle.PANEL, 18, 28, UiStyle.GOLD.darkened(0.3), 2, 12))
 	Speisekarte.centred(root).add_child(_panel)
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 16)
 	_panel.add_child(column)
 	_text = Label.new()
 	_text.add_theme_font_size_override("font_size", 22)
-	_text.add_theme_color_override("font_color", Speisekarte.PAPER)
+	_text.add_theme_color_override("font_color", UiStyle.TEXT)
 	_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(_text)
-	_again = Button.new()
-	_again.add_theme_font_size_override("font_size", 22)
+	_again = UiStyle.pill(column)
+	_again.add_theme_font_size_override("font_size", 20)
 	_again.text = tr("END_AGAIN")
 	_again.pressed.connect(func() -> void: again_pressed.emit())
-	column.add_child(_again)
 	visible = false
 
 

@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
 [ext_resource type="Resource" path="res://data/passives/kraeuterlimo.tres" id="2_evolves_with"]
 [ext_resource type="Resource" path="res://data/weapons/kugel_karussell.tres" id="2_evolution"]
+[ext_resource type="Texture2D" path="res://assets/icons/mozartkugel_orbit.svg" id="9_icon"]
 
 [resource]
 script = ExtResource("1_script")
@@ -24,3 +25,4 @@ amount_levels = PackedInt32Array(3, 5, 7)
 color = Color(0.9, 0.75, 0.4, 1)
 evolves_with = ExtResource("2_evolves_with")
 evolution = ExtResource("2_evolution")
+icon = ExtResource("9_icon")

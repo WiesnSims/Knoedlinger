@@ -68,5 +68,7 @@ enum Look { BALL, PIN, SPEAR }
 @export var is_evolution: bool = false
 
 @export_group("Look")
+## Card and HUD icon (assets/icons).
+@export var icon: Texture2D
 ## Effect colour (never Krampus red: that is reserved for enemy attacks).
 @export var color: Color = Color(0.85, 0.95, 1.0)

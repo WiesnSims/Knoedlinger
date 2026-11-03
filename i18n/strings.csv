@@ -85,13 +85,13 @@ CARD_GOLD,Trinkgeld
 CARD_GOLD_DESC,+%d Gold. Da Ober bedankt si.
 CARD_HEAL,Gulasch
 CARD_HEAL_DESC,+%d HP. A Gulasch geht immer.
-MENU_TITLE,Herr Poldi: „Was darf's sein?“
-MENU_TITLE_MORE,Herr Poldi: „Was darf's sein?“ (no %d offen)
-MENU_REROLL,Nochmal bitte (R) · %d
-MENU_BANISH,Des mog i ned (B) · %d
+MENU_TITLE,Was darf's sein?
+MENU_SUBTITLE,"Herr Poldi, Ober im Gasthaus Zum Goldenen Knödl"
+MENU_TITLE_MORE,Was darf's sein? · no %d offen
+MENU_REROLL,R · Nochmal bitte (%d)
+MENU_BANISH,B · Des mog i ned (%d)
 MENU_BANISH_HINT,Welche Speis soll von da Kartn?
-MENU_SKIP,"Danke, passt eh (N) · +%d Gold"
-MENU_SECONDS,Bin glei wieder da … %d s
+MENU_SKIP,"N · Danke, passt eh (+%d Gold)"
 CHEST_TITLE,Mahlzeit! Knödl Größe %s
 CHEST_GOLD,+%d Gold
 TIER_0,S

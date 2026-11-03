@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="PassiveData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/passive_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/spagat_hanf.svg" id="9_icon"]
 
 [resource]
 script = ExtResource("1_script")
@@ -11,3 +12,4 @@ kind = 0
 max_level = 5
 stats = Dictionary[StringName, float]({&"string_length": 0.15})
 color = Color(0.8, 0.72, 0.5, 1)
+icon = ExtResource("9_icon")

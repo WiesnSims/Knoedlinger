@@ -1,5 +1,6 @@
 // Screenshots of the game at chosen moments, for checking how menus and effects look (headless Edge).
 //   node screenshots.mjs --url=http://127.0.0.1:8061/?bot=1 --out=../../build/shots/m2 --at=4,12,30 [--echo=[SLOW]]
+//        [--move=10:10,640:360,10:10]   (mouse position before each shot)
 // Saves <out>-<seconds>s.png per moment and exits 1 on any console error. --echo prints every console
 // line that starts with the given text.
 import { chromium } from 'playwright';
@@ -33,6 +34,13 @@ for (const at of args.at.split(',').map(Number)) {
 	const wait = started + at * 1000 - Date.now();
 	if (wait > 0) {
 		await page.waitForTimeout(wait);
+	}
+	if (args.move) {
+		// One mouse position per moment (x:y, joined by commas), e.g. to hover a card.
+		const point = args.move.split(',')[Math.min(args.at.split(',').indexOf(String(at)), args.move.split(',').length - 1)];
+		const [x, y] = point.split(':').map(Number);
+		await page.mouse.move(x, y);
+		await page.waitForTimeout(300);
 	}
 	await page.screenshot({ path: `${args.out}-${at}s.png` });
 	console.log(`shot ${args.out}-${at}s.png`);

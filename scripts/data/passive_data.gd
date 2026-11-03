@@ -15,5 +15,7 @@ enum Kind { PASSIVE, KNODL }
 @export var max_level: int = 5
 ## What one level adds, e.g. {&"armor": 1.0}. Fractions are percentages (0.1 = +10 %).
 @export var stats: Dictionary[StringName, float] = {}
+## Card and HUD icon (assets/icons).
+@export var icon: Texture2D
 ## Card and HUD colour (never Krampus red: that is reserved for enemy attacks).
 @export var color: Color = Color(0.55, 0.75, 0.45)

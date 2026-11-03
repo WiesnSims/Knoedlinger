@@ -131,6 +131,7 @@ func _ready() -> void:
 	map = load(MAP_PATH)
 	wave = load(WAVE_PATH)
 	catalog = load(CATALOG_PATH)
+	UiStyle.build_icon_atlas(catalog)
 	character = _load_character(LaunchArgs.get_string("character", "ferdl"))
 	types = wave.enemies
 	run_time = maxf(LaunchArgs.get_float("start_time", 0.0), 0.0)

@@ -231,3 +231,23 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Preview deployed** to https://m2-core.knoedlinger.pages.dev. Measured from the preview (headless, RTX 3080, run,
   500 enemies, bot, 60 s): Edge 195 fps / p95 6.5 ms, Firefox 203 fps / p95 7 ms, 76 draw calls at most; browser
   check passed with no console errors in both.
+
+## 2026-11-03 – M2 playtest round 1
+
+- **Owner (playtest):** looks good; the upgrade system should look better: a fitting icon for every upgrade and
+  weapon, the description only on hover, clean and modern like other titles. Movement speed could be higher,
+  but that can only be judged once the world has its final size.
+- **Claude: icons** are a hand-drawn flat SVG set (`assets/icons/`, 20 icons: every weapon, evolution, passive,
+  Omas Rezept, Trinkgeld and Gulasch), thick dark outline, warm palette, no Krampus red; referenced as `icon` in
+  each `WeaponData` / `PassiveData` (data, not code). About 0.1 MiB in the `.pck`.
+- **Claude: Speisekarte redesign.** Dimmed game behind, title "Was darf's sein?" with Herr Poldi as the
+  subtitle, dark rounded cards (`UpgradeCard`) with a rarity-coloured border, rarity name, a NEU / STUFE n /
+  EVOLUTION badge, a big icon, the name, level pips (owned levels light, the new one in the rarity colour) and the
+  key. The one-liner and the stat bonus only appear on hover or keyboard focus (arrow keys, Enter), replacing the
+  dimmed icon; the hovered card grows 5 %. Reroll, banish and skip are pill buttons with their key; co-op shows a
+  thin time bar. The chest reveal and the end screen use the same style; the chest shows icon tiles.
+- **Claude: the HUD build** is now two rows of icon slots (6 weapons, 6 passives, Knödl upgrades after them) with
+  the level in the corner, a gold frame when maxed and faint frames for free slots. All icons are packed into one
+  atlas texture at run start and the bar is drawn in one pass, so it costs few draw calls; still, the HUD and
+  menus raise the count from about 70 to about 90 in play (up to 111 with the menu open; budget 150).
+- **Open:** movement speed stays 7 m/s until the real maps (M3/M4) set the world size.

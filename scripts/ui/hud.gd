@@ -19,7 +19,7 @@ var _toast: Label
 var _hint: Label
 var _mouse_hint: Label
 var _gold_label: Label
-var _build_label: Label
+var _build_bar: BuildBar
 var _wirt_marker: Label
 var _toast_timer: float = 0.0
 var _last_level: int = 1
@@ -40,12 +40,10 @@ func _ready() -> void:
 	_gold_label = _label(17)
 	_gold_label.position = Vector2(16.0, 38.0)
 	root.add_child(_gold_label)
-	_build_label = _label(15)
-	_build_label.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	_build_label.position = Vector2(16.0, -112.0)
-	_build_label.size = Vector2(560.0, 66.0)
-	_build_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-	root.add_child(_build_label)
+	_build_bar = BuildBar.new()
+	_build_bar.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	_build_bar.position = Vector2(16.0, -150.0)
+	root.add_child(_build_bar)
 	_wirt_marker = _label(17)
 	_wirt_marker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_wirt_marker.size = Vector2(220.0, 26.0)
@@ -117,7 +115,7 @@ func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: Bala
 	_last_level = state.level
 	if state.build != null:
 		_gold_label.text = tr("HUD_GOLD") % state.build.gold
-		_build_label.text = build_text(state.build)
+		_build_bar.show_build(state.build, balance)
 	if knodl != null:
 		var tier: int = Formulas.wirtshaus_tier(knodl.knodl_mass, balance)
 		var size: String = tr("TIER_%d" % tier) if tier >= 0 else tr("TIER_NONE")

@@ -109,3 +109,11 @@ func test_nothing_friendly_uses_krampus_red() -> void:
 	for weapon: WeaponData in catalog.weapons:
 		var c: Color = weapon.color
 		assert_false(c.r > 0.7 and c.g < 0.35 and c.b < 0.35, String(weapon.id))
+
+
+func test_every_upgrade_has_an_icon() -> void:
+	var catalog: UpgradeCatalog = load("res://data/catalog/catalog.tres")
+	for weapon: WeaponData in catalog.weapons:
+		assert_not_null(weapon.icon, String(weapon.id))
+	for passive: PassiveData in catalog.passives:
+		assert_not_null(passive.icon, String(passive.id))
