@@ -1,0 +1,9 @@
+{
+  "name": "knoedlinger-browser-tools",
+  "private": true,
+  "type": "module",
+  "description": "Playwright scripts for the browser check and the M0 stress test",
+  "dependencies": {
+    "playwright": "1.64.1"
+  }
+}

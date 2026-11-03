@@ -55,16 +55,18 @@ Scripts in `tools/` are created during M0 (PowerShell, logs in `build/logs/`, ex
 - Run tests: `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests -gexit`
 - Export web build: `godot --headless --export-release "Web" build/web/index.html`
 - Local multiplayer test: start one instance with `-- --net=ws --host` and others with `-- --net=ws --join=127.0.0.1`
-- Planned scripts:
+- Scripts (built in M0 unless marked; all take `-Url <preview url>` where a browser is involved):
   - `tools/run_tests.ps1` – GUT tests
-  - `tools/build_web.ps1` – import, web export to `build/web/`, apply the 25 MiB workaround, fail if any file > 25 MiB
-  - `tools/browser_check.ps1` – serve `build/web/` locally, load it in headless Chrome (Playwright), play 60 s with a bot input script, fail on any console error or fps below budget, save a screenshot to `build/shots/`
-  - `tools/stress_test.ps1` – M0 scenario: N enemies + projectiles in the browser, reports fps and frame times
-  - `tools/mp_test.ps1 -Clients 3` (add `-HostLeavesFirst` for the host-quits case) – headless WebSocket host + clients playing a short run; checks sync, bandwidth and that no client errors
-  - `tools/mp_test.ps1 -Coop` – headless co-op scenario: revive, Knödl-Pass, Riesenknödl merge, shared XP
-  - `tools/browser_mp_check.ps1 -Tabs 4` – (M6) 4 headless browser tabs join one room via the real signaling server and play 60 s
-  - `tools/deploy_preview.ps1 -Branch <milestone>` – `npx wrangler pages deploy build/web --project-name=knoedlinger --branch=<milestone>`
-  - `godot --headless -- --autoplay --runs=20` – bot plays runs and writes stats (time, level, death cause, Knödl cash-ins) to `build/balance/` for tuning
+  - `tools/build_web.ps1` – import, web export to `build/web/`, gzip + split the wasm (Berghittn's `pack_wasm.mjs`), fail if any file > 25 MiB
+  - `tools/browser_check.ps1 [-Browser msedge|firefox] [-Url <url>]` – serve `build/web/` locally (or use `-Url`), load it in headless Edge via Playwright, bot plays 60 s, fail on any console error or fps below budget, screenshot to `build/shots/`
+  - `tools/stress_test.ps1 [-Enemies 500] [-Projectiles 300] [-Browser msedge,firefox] [-Url <url>] [-Native]` – M0 scenario in Edge + Firefox, reports fps, frame times, draw calls and ms per system to `build/perf/`
+  - `tools/mp_test.ps1 -Clients 3` (add `-HostLeavesFirst` for the host-quits case) – headless WebSocket host + clients; checks sync, bandwidth, version refusal and that no client errors
+  - `tools/deploy_preview.ps1 -Branch <milestone>` – 25 MiB check, then `npx wrangler pages deploy build/web --project-name=knoedlinger --branch=<milestone>`; URL saved to `build/logs/last_preview_url.txt`. Refuses `main`.
+  - Planned: `tools/mp_test.ps1 -Coop` – headless co-op scenario: revive, Knödl-Pass, Riesenknödl merge, shared XP
+  - Planned (M6): `tools/browser_mp_check.ps1 -Tabs 4` – 4 headless browser tabs join one room via the real relay and play 60 s
+  - Planned: `godot --headless -- --autoplay --runs=20` – bot plays runs and writes stats (time, level, death cause, Knödl cash-ins) to `build/balance/` for tuning
+- Browser URL options mirror the command line: `index.html?enemies=200&projectiles=100&bot=1`.
+- One-time setup: `npm install` in `tools/browser/`, then `npx playwright install firefox` (Edge is used as installed). Set `GODOT` if `godot` is not on PATH.
 - Run scripts with `powershell -NoProfile -ExecutionPolicy Bypass -File tools/<script>.ps1`
 - Test runs must never disturb the user at the PC: prefer `--headless` and headless browsers. When a visible window is unavoidable, keep it small, unfocused, without mouse capture and muted.
 - Before saying a task is done: run the tests, the web export, the browser check and a headless multiplayer test (`mp_test.ps1 -Clients 1` at minimum), and fix any errors or warnings in the output.
