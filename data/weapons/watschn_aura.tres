@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/watschn_aura.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"watschn_aura"
+name_key = "WEAPON_WATSCHN"
+desc_key = "DESC_WEAPON_WATSCHN"
+pattern = 3
+cooldown = 0.6
+damage = 1.2
+reach = 2.6
+knockback = 2.5
+damage_per_level = 0.2
+cooldown_per_level = 0.02
+area_per_level = 0.07
+color = Color(1.0, 0.8, 0.6, 1)
+icon = ExtResource("9_icon")

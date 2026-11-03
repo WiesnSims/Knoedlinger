@@ -106,6 +106,8 @@ extends Resource
 @export var knodl_stuck_seconds: float = 3.0
 ## A thrown Knödl further away than this is reeled in.
 @export var knodl_max_throw_distance: float = 45.0
+## Share of the mass Bröselfresser bite off that falls to the ground as loose Brösel (the rest is eaten).
+@export var knodl_bite_spill: float = 0.5
 ## Player speed lost per metre of Knödl radius above the start radius, and the floor of that loss.
 @export var knodl_drag_per_radius: float = 0.12
 @export var knodl_min_speed_factor: float = 0.6
@@ -122,6 +124,12 @@ extends Resource
 @export var brosel_shed_pickup_delay: float = 1.2
 ## Drops land up to this far from where the enemy died.
 @export var brosel_scatter: float = 0.6
+
+## Crumbs from the family's Knödl stand lie around the spawn at the start: the first level-up comes
+## from rolling over them (GAME-DESIGN.md pillar 2: within 10 s), and it shows what the Knödl does.
+@export var start_brosel_count: int = 14
+@export var start_brosel_ring_min: float = 2.5
+@export var start_brosel_ring_max: float = 6.0
 
 @export_group("XP")
 ## XP from level n to n + 1 = base + linear * n + quadratic * n^2 (GAME-DESIGN.md).
@@ -159,6 +167,65 @@ extends Resource
 @export var spawn_count_per_minute: float = 40.0
 @export var spawn_max_count: int = 300
 @export var spawn_respawn_delay: float = 0.4
+
+## Enemy HP grows over the run: max HP * (1 + this * minutes).
+@export var spawn_hp_per_minute: float = 0.35
+## Co-op scaling per extra player (GAME-DESIGN.md: +60 % count, +40 % HP, +1 Wirtshaus).
+@export var coop_count_per_player: float = 0.6
+@export var coop_hp_per_player: float = 0.4
+@export var coop_wirtshaus_per_player: int = 1
+
+@export_group("Run")
+## The Kirtag lasts until Sperrstund' (15:00); then the Riesen-Wirt sweeps everyone out.
+@export var run_seconds: float = 900.0
+## How long the Riesen-Wirt sweeps before the run ends as a win.
+@export var sperrstund_seconds: float = 6.0
+@export var riesen_wirt_speed: float = 5.0
+
+@export_group("Build")
+## Six weapon and six passive slots (GAME-DESIGN.md pillar 4); Knödl upgrades take no slot.
+@export var weapon_slots: int = 6
+@export var passive_slots: int = 6
+## Cards on the Speisekarte, and the per-run reroll ("Nochmal bitte") and banish ("Des mog i ned").
+@export var card_count: int = 3
+@export var rerolls_per_run: int = 3
+@export var banishes_per_run: int = 3
+## Gold for "Danke, passt eh" (skip).
+@export var skip_gold: int = 10
+## Fallback cards when nothing is left to offer: HP healed, gold given.
+@export var fallback_heal: float = 30.0
+@export var fallback_gold: int = 25
+## Weights in the card pool: new weapon, weapon level, new passive, passive level, Knödl upgrade.
+@export var card_weight_new_weapon: float = 1.0
+@export var card_weight_weapon_level: float = 1.6
+@export var card_weight_new_passive: float = 0.9
+@export var card_weight_passive_level: float = 1.2
+@export var card_weight_knodl: float = 0.5
+## Rarity: Gewöhnlich, Fein, Edel, Hofratswürdig. A card's level counts this many times (passives),
+## and adds (bonus - 1) * weapon_rarity_damage to a weapon's damage.
+@export var rarity_bonus: PackedFloat32Array = PackedFloat32Array([1.0, 1.25, 1.5, 2.0])
+@export var rarity_weights: PackedFloat32Array = PackedFloat32Array([70.0, 20.0, 8.0, 2.0])
+@export var weapon_rarity_damage: float = 0.3
+## Co-op: the game runs on while someone chooses; after this a random card is picked for them.
+@export var card_seconds_coop: float = 8.0
+## A hit always does at least this much, whatever the armor.
+@export var min_hit_damage: float = 1.0
+
+@export_group("Wirtshaus")
+## Open Wirtshäuser per run (each serves once) out of the map's spots; +1 per extra player.
+@export var wirtshaus_count: int = 3
+## The Knödl is eaten when it touches this circle in front of the door.
+@export var wirtshaus_door_radius: float = 2.5
+## Knödl mass needed for the tiers S, M, L, XL (below S the Wirt sends it back).
+@export var wirtshaus_tier_mass: PackedFloat32Array = PackedFloat32Array([30.0, 120.0, 350.0, 900.0])
+## S: gold per mass. M: chest with 1 item. L: chest with 3 items + reroll tokens. XL: evolution chest.
+@export var wirtshaus_gold_per_mass: float = 0.5
+@export var wirtshaus_chest_items: PackedInt32Array = PackedInt32Array([0, 1, 3, 5])
+@export var wirtshaus_l_rerolls: int = 2
+
+@export_group("Bot")
+## The bot walks its Knödl to a Wirtshaus once it is this heavy.
+@export var bot_cash_in_mass: float = 350.0
 
 @export_group("Projectiles (stress weapon)")
 @export var projectile_speed: float = 22.0

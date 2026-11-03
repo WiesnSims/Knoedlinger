@@ -160,5 +160,6 @@ ridge_shapes = PackedVector2Array(9, 4, 6, 2.5)
 rim_start = 84.0
 rim_height = 24.0
 spawn_point = Vector3(0, 0, 4)
+wirtshaus_spots = PackedVector2Array(24, -18, -26, -22, 30, 36, -10, 50, 62, 0, -62, 32)
 bot_waypoints = PackedVector2Array(0, 4, 20, 22, 45, 33, 45, 20, 44, 12, 48, 15, 48, 8, 44, 14, 28, 10, 0, -25, 0, -55, -20, -40, -50, 8, -30, 48, -30, 37, -30, 30, -10, 10)
 props = Array[ExtResource("2_prop")]([SubResource("prop_0"), SubResource("prop_1"), SubResource("prop_2"), SubResource("prop_3"), SubResource("prop_4"), SubResource("prop_5"), SubResource("prop_6"), SubResource("prop_7"), SubResource("prop_8"), SubResource("prop_9"), SubResource("prop_10"), SubResource("prop_11"), SubResource("prop_12"), SubResource("prop_13"), SubResource("prop_14"), SubResource("prop_15"), SubResource("prop_16")])

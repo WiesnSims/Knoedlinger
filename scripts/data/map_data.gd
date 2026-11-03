@@ -37,6 +37,8 @@ extends Resource
 ## Points the bot wanders between (x, z).
 @export var bot_waypoints: PackedVector2Array = PackedVector2Array()
 @export var props: Array[MapProp] = []
+## Where Wirtshäuser stand (x, z); each faces the map centre. A run opens some of them at random.
+@export var wirtshaus_spots: PackedVector2Array = PackedVector2Array()
 
 @export_group("Look")
 @export var grass_color: Color = Color(0.4, 0.62, 0.3)
@@ -46,6 +48,23 @@ extends Resource
 @export var sky_color: Color = Color(0.55, 0.75, 0.95)
 
 var _noise: FastNoiseLite
+var _all_props: Array[MapProp] = []
+
+
+## The hand-placed props plus the buildings at every Wirtshaus spot (the same on every machine).
+func all_props() -> Array[MapProp]:
+	if _all_props.is_empty():
+		_all_props = props.duplicate()
+		for k: int in wirtshaus_spots.size():
+			_all_props.append_array(Wirtshaus.building_props(self, k))
+	return _all_props
+
+
+## A Wirtshaus spot as a transform: on the terrain, its door (+z) facing the map centre.
+func wirtshaus_transform(spot: int) -> Transform3D:
+	var at: Vector2 = wirtshaus_spots[spot]
+	var yaw: float = atan2(-at.x, -at.y)
+	return Transform3D(Basis(Vector3.UP, yaw), Vector3(at.x, terrain_height(at.x, at.y), at.y))
 
 
 ## The terrain height at a world position, without props. Exact; Heightfield bakes it into a grid.

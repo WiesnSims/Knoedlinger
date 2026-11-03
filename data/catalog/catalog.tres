@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="UpgradeCatalog" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/upgrade_catalog.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="2_weapon"]
+[ext_resource type="Script" path="res://scripts/data/passive_data.gd" id="3_passive"]
+[ext_resource type="Resource" path="res://data/weapons/schneeschaufel.tres" id="w_schneeschaufel"]
+[ext_resource type="Resource" path="res://data/weapons/kochloeffel.tres" id="w_kochloeffel"]
+[ext_resource type="Resource" path="res://data/weapons/skistoecke.tres" id="w_skistoecke"]
+[ext_resource type="Resource" path="res://data/weapons/kuhglocke.tres" id="w_kuhglocke"]
+[ext_resource type="Resource" path="res://data/weapons/watschn_aura.tres" id="w_watschn_aura"]
+[ext_resource type="Resource" path="res://data/weapons/mozartkugel_orbit.tres" id="w_mozartkugel_orbit"]
+[ext_resource type="Resource" path="res://data/weapons/omas_nudelwalker.tres" id="w_omas_nudelwalker"]
+[ext_resource type="Resource" path="res://data/weapons/kugel_karussell.tres" id="w_kugel_karussell"]
+[ext_resource type="Resource" path="res://data/passives/lederhosn.tres" id="p_lederhosn"]
+[ext_resource type="Resource" path="res://data/passives/brettljause.tres" id="p_brettljause"]
+[ext_resource type="Resource" path="res://data/passives/kraeuterlimo.tres" id="p_kraeuterlimo"]
+[ext_resource type="Resource" path="res://data/passives/strickpullover.tres" id="p_strickpullover"]
+[ext_resource type="Resource" path="res://data/passives/pensionistenausweis.tres" id="p_pensionistenausweis"]
+[ext_resource type="Resource" path="res://data/passives/gamsbart_hut.tres" id="p_gamsbart_hut"]
+[ext_resource type="Resource" path="res://data/passives/haferlschuhe.tres" id="p_haferlschuhe"]
+[ext_resource type="Resource" path="res://data/passives/spagat_hanf.tres" id="p_spagat_hanf"]
+[ext_resource type="Resource" path="res://data/passives/wanderkarte.tres" id="p_wanderkarte"]
+[ext_resource type="Resource" path="res://data/passives/omas_rezept.tres" id="p_omas_rezept"]
+
+[resource]
+script = ExtResource("1_script")
+weapons = Array[ExtResource("2_weapon")]([ExtResource("w_schneeschaufel"), ExtResource("w_kochloeffel"), ExtResource("w_skistoecke"), ExtResource("w_kuhglocke"), ExtResource("w_watschn_aura"), ExtResource("w_mozartkugel_orbit"), ExtResource("w_omas_nudelwalker"), ExtResource("w_kugel_karussell")])
+passives = Array[ExtResource("3_passive")]([ExtResource("p_lederhosn"), ExtResource("p_brettljause"), ExtResource("p_kraeuterlimo"), ExtResource("p_strickpullover"), ExtResource("p_pensionistenausweis"), ExtResource("p_gamsbart_hut"), ExtResource("p_haferlschuhe"), ExtResource("p_spagat_hanf"), ExtResource("p_wanderkarte"), ExtResource("p_omas_rezept")])

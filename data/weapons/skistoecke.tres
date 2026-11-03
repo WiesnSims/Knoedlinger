@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/skistoecke.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"skistoecke"
+name_key = "WEAPON_SKISTOECKE"
+desc_key = "DESC_WEAPON_SKISTOECKE"
+pattern = 1
+look = 2
+cooldown = 1.0
+damage = 2.5
+knockback = 4.0
+projectile_speed = 20.0
+projectile_lifetime = 0.8
+pierce = 2
+projectile_radius = 0.35
+spread_degrees = 8.0
+damage_per_level = 0.2
+cooldown_per_level = 0.03
+area_per_level = 0.05
+amount_levels = PackedInt32Array(3, 5, 7)
+color = Color(0.95, 0.92, 0.6, 1)
+icon = ExtResource("9_icon")

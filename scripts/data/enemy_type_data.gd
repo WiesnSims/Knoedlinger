@@ -19,5 +19,9 @@ extends Resource
 @export var body_color: Color = Color(0.4, 0.6, 0.3)
 @export var head_color: Color = Color(0.9, 0.75, 0.6)
 @export var flying: bool = false
-## Share of the spawn mix (relative weight).
+## Share of the spawn mix when the wave has no timeline (relative weight).
 @export var spawn_weight: float = 1.0
+## Bröselfresser (GAME-DESIGN.md): goes for the nearest Knödl instead of a player and eats this
+## much of its mass per second while touching it.
+@export var eats_knodl: bool = false
+@export var bite_per_second: float = 0.0

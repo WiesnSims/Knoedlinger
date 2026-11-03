@@ -8,8 +8,8 @@ var _label: Label
 func _ready() -> void:
 	layer = 100
 	_label = Label.new()
-	# Below the HUD's HP bar.
-	_label.position = Vector2(12.0, 44.0)
+	# Below the HUD's HP bar and gold.
+	_label.position = Vector2(12.0, 64.0)
 	_label.add_theme_font_size_override("font_size", 15)
 	_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	_label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0))

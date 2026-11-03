@@ -33,6 +33,8 @@ var simulated: bool = true
 var knodl_mass: float = 0.0
 var radius: float = 0.5
 var state: State = State.ATTACHED
+## The Spagat's length factor (Spagat aus Hanf); also reels in faster by the same factor.
+var string_mult: float = 1.0
 ## Seconds until Schupfn works again.
 var cooldown: float = 0.0
 ## Stats for tests and the balance log.
@@ -133,6 +135,25 @@ func add_knodl_mass(amount: float) -> void:
 		return
 	set_knodl_mass(knodl_mass + amount)
 	_wobble = minf(_wobble + 0.25, 0.7)
+
+
+func rest_length() -> float:
+	return balance.knodl_rest_length * string_mult
+
+
+func max_length() -> float:
+	return balance.knodl_max_length * string_mult
+
+
+## Host: Bröselfresser ate `amount` mass. `spill` of it falls off as loose Brösel (take_shed()),
+## the rest is gone.
+func bite(amount: float, spill: float) -> void:
+	if amount <= 0.0:
+		return
+	amount = minf(amount, knodl_mass)
+	set_knodl_mass(knodl_mass - amount * (1.0 - spill))
+	_shed_pending += amount * spill
+	_wobble = minf(_wobble + 0.15, 0.7)
 
 
 ## Host: the Schupfn button. Throws when attached and ready, reels in when thrown.
@@ -290,20 +311,20 @@ func _physics_process(delta: float) -> void:
 				_start_reel()
 		State.REELING:
 			_reel_timer -= delta
-			if distance <= balance.knodl_rest_length:
+			if distance <= rest_length():
 				state = State.ATTACHED
 			elif _reel_timer < -1.0:
 				# Stuck behind something on the way back: it simply turns up next to the player.
-				place_at(anchor - holder.facing_direction() * balance.knodl_rest_length)
+				place_at(anchor - holder.facing_direction() * rest_length())
 		State.ATTACHED:
 			# Hung up behind a wall far beyond the string's length: free it after a while.
-			_stuck_timer = _stuck_timer + delta if distance > balance.knodl_max_length + 1.5 else 0.0
+			_stuck_timer = _stuck_timer + delta if distance > max_length() + 1.5 else 0.0
 			if _stuck_timer >= balance.knodl_stuck_seconds:
 				auto_returns += 1
-				place_at(anchor - holder.facing_direction() * balance.knodl_rest_length)
+				place_at(anchor - holder.facing_direction() * rest_length())
 	var ground_y: float = holder.ground_height_at(global_position)
 	if global_position.y < ground_y - FALL_LIMIT:
-		place_at(anchor - holder.facing_direction() * balance.knodl_rest_length)
+		place_at(anchor - holder.facing_direction() * rest_length())
 
 
 func _integrate_forces(body: PhysicsDirectBodyState3D) -> void:
@@ -317,17 +338,17 @@ func _integrate_forces(body: PhysicsDirectBodyState3D) -> void:
 	var distance: float = to_holder.length()
 	match state:
 		State.ATTACHED:
-			if distance > balance.knodl_rest_length and distance > 0.001:
+			if distance > rest_length() and distance > 0.001:
 				var dir: Vector3 = to_holder / distance
 				var relative: Vector3 = v - holder.motion_velocity
 				# A damped spring along the string; a string can pull, never push.
-				var pull: float = balance.knodl_spring * (distance - balance.knodl_rest_length) \
+				var pull: float = balance.knodl_spring * (distance - rest_length()) \
 						- balance.knodl_spring_damping * relative.dot(dir)
 				if pull > 0.0:
 					v += dir * pull * dt
-				if distance > balance.knodl_max_length:
+				if distance > max_length():
 					# Never longer than the string: back onto it, and no more moving away.
-					p = anchor - dir * balance.knodl_max_length
+					p = anchor - dir * max_length()
 					body.transform = Transform3D(body.transform.basis, p)
 					var outward: float = (v - holder.motion_velocity).dot(dir)
 					if outward < 0.0:
@@ -344,5 +365,5 @@ func _integrate_forces(body: PhysicsDirectBodyState3D) -> void:
 
 func _start_reel() -> void:
 	state = State.REELING
-	_reel_timer = balance.knodl_reel_time
+	_reel_timer = balance.knodl_reel_time / maxf(string_mult, 0.5)
 	_stuck_timer = 0.0

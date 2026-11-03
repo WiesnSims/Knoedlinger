@@ -40,7 +40,7 @@ func _process(_delta: float) -> void:
 		return
 	# Ends on the dough's surface, not in its centre.
 	var b: Vector3 = a + to_knodl * maxf(length - knodl.radius * 0.9, 0.0) / length
-	var rest: float = knodl.balance.knodl_rest_length
+	var rest: float = knodl.rest_length()
 	var sag: float = 0.0
 	if knodl.state == Knodl.State.ATTACHED and length < rest:
 		sag = sqrt(rest * rest - length * length) * 0.5

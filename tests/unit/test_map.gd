@@ -92,3 +92,14 @@ func test_the_test_field_loads_and_bakes() -> void:
 	var terrain: Heightfield = Heightfield.bake_terrain(map)
 	assert_almost_eq(terrain.height_at(map.spawn_point.x, map.spawn_point.z), 0.0, 0.05)
 	assert_ne(TranslationServer.translate(map.name_key), StringName(map.name_key))
+
+
+func test_wirtshaus_spots_become_buildings_facing_the_centre() -> void:
+	var map: MapData = load("res://data/maps/testfeld.tres")
+	assert_gte(map.wirtshaus_spots.size(), 4)
+	assert_eq(map.all_props().size(), map.props.size() + map.wirtshaus_spots.size() * 3)
+	for k: int in map.wirtshaus_spots.size():
+		var place: Transform3D = map.wirtshaus_transform(k)
+		var door: Vector3 = place.basis * Vector3(0.0, 0.0, 1.0)
+		var to_centre := Vector3(-place.origin.x, 0.0, -place.origin.z).normalized()
+		assert_gt(door.dot(to_centre), 0.99, "spot %d faces the centre" % k)

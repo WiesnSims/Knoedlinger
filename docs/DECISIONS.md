@@ -154,3 +154,109 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 
 - **Owner: M1 approved** after the second playtest (Megabonk-style camera, round Knödl, no enemy teleports); merged
   into `main`, branch `m1-knoedl` deleted. Next: M2 (core loop).
+
+## 2026-11-03 – M2 build (branch m2-core)
+
+- **Claude: the build is host state, mirrored in the world state.** `PlayerBuild` (weapons and passives with level
+  and rarity bonus, gold, rerolls, banishes) lives in each player's `PlayerState`; the world state (v2) carries it
+  as small rows (5 bytes per weapon, 4 per passive), so a client computes the same stats for its own movement and
+  shows everyone's weapons from it. Item ids on the wire are indices into `data/catalog/catalog.tres`.
+- **Claude: the Speisekarte is a host-driven message flow, also in solo.** The host deals an offer
+  (`OfferCodec`, reliable) to whoever has level-ups waiting; the player answers with a choice (pick, reroll,
+  banish, skip); the host checks and applies it and deals the next one. Solo (host without clients) pauses the
+  game while the menu is open; co-op runs on, the choosing player stands still under a "Bin glei wieder da" sign,
+  is invulnerable and ignored by enemies, and after 8 s the host picks a random card. A client joining a paused
+  solo game unpauses it.
+- **Claude: card pool** = new weapons (while weapon slots are free), weapon levels, new passives (while passive
+  slots are free), passive levels and Knödl upgrades, drawn by weight (`card_weight_*`), no item twice, minus
+  banished items. A ready evolution is always the first card. When nothing is left: Trinkgeld (gold) and Gulasch
+  (heal). Banish removes the item for the run and deals a new menu; reroll deals a new menu; both keep the level-up.
+- **Claude: rarity** (Gewöhnlich 70 / Fein 20 / Edel 8 / Hofratswürdig 2, luck multiplies rank k by (1 + luck)^k)
+  scales what a level gives: a passive level counts 1.0 / 1.25 / 1.5 / 2.0 times; a weapon level adds
+  (bonus - 1) * 30 % damage. Counted stats (extra jumps, Omas Rezept) ignore rarity.
+- **Claude: M2 weapons** (8 levels each; damage, fire rate and area grow per level, more pieces at set levels):
+  Schneeschaufel (arc, second arc behind from level 5), Kochlöffel (fast narrow arc, 20 % crits x2.5), Skistöcke
+  (piercing spears in running direction, more from levels 3/5/7), Kuhglocke (shockwave ring), Watschn-Aura (damage
+  aura) and Mozartkugel-Orbit (2 to 5 balls circling). Evolutions: **Omas Nudelwalker** = Kochlöffel 8 + Brettljause
+  (4 big rolling pins whose circle breathes in and out) and **Kugel-Karussell** = Mozartkugel-Orbit 8 + Kräuterlimo
+  (8 balls, spinning faster with the move-speed bonus). An evolution replaces its weapon in the same slot.
+- **Claude: M2 passives** (5 levels unless noted): Lederhosn (+1 armor), Brettljause (+0.25 HP/s), Kräuterlimo
+  (+8 % speed), Strickpullover (+10 % area), Pensionistenausweis (+7 % faster attacks), Gamsbart-Hut (+6 % crit),
+  Spagat aus Hanf (+15 % string length, reels in faster), Wanderkarte (+30 % pickup range) and **Haferlschuhe**
+  (2 levels: +1 jump in the air and +10 % jump height each; the owner's "jumping evolves" answer from M1). Knödl
+  upgrade: **Omas Rezept** (Bröselfresser ignore your Knödl). Armor takes its value off every hit, never below 1.
+- **Claude: weapon effects need no extra network traffic.** Each weapon has a fire counter in the world state;
+  every machine plays the swing, ring, aura pulse or (clients) cosmetic shots when it changes. Orbit pieces are
+  placed from the synced run time, so they appear where the host hits with them.
+- **Claude: M2 enemies** on the Kirtag timeline (`data/waves/kirtag.tres`): Touristen-Zombie (all run), Gelse (all
+  run), Kampf-Dackel (from 1:30), **Taube** (Bröselfresser, flies, 3 mass/s, from 4:00), **Wildschwein**
+  (Bröselfresser, 14 HP, 8 mass/s, drops a 5er Brösel, from 5:00) and a tourist surge from 8:00 to 9:00 (a first
+  nod to the Touristenbus; the real event comes with M3). The Gelse's head is grey now (it was red, and red is
+  reserved for enemy attacks). Crowd: 20 + 35 per minute, max 400. Enemy HP grows 35 % per minute
+  (x6.25 at 15:00).
+- **Claude: Bröselfresser** steer to the nearest Knödl that is not protected and eat while touching it: half the
+  bitten mass is gone, half falls off as loose Brösel (mass only, no XP) that can be collected again.
+- **Claude: Wirtshäuser.** The test field has 6 spots (each a house facing the centre, part of the map's collision
+  and ground); a run opens 3 at random (+1 per extra player). A Knödl touching the glowing 2.5 m door mat of an
+  open Wirtshaus is eaten ("Mahlzeit!"): S (30+ mass) 0.5 gold per mass, M (120+) a chest with 1 item, L (350+)
+  a chest with 3 items + 2 rerolls, XL (900+) an evolution chest (a ready evolution first, then up to 5 items).
+  Below S the Wirt sends it back. The Knödl restarts at its start size; each Wirt serves once. A HUD marker points
+  to the nearest open Wirtshaus.
+- **Claude: Sperrstund'.** At 15:00 no more enemies come, the Riesen-Wirt (a 3.5x Wirt with a broom) appears 22 m
+  behind the player and sweeps enemies away (no drops), players take no damage, and after 6 s the run ends as a
+  win with an end screen (level, kills, gold, biggest Knödl, cash-ins, knock-downs; "Nochmal!" in solo). No boss
+  yet (M3), so surviving to 15:00 is the win. Being knocked down still means back at the spawn after 3 s.
+- **Claude: first level-up.** 14 crumbs from the family's Knödl stand lie 2.5-6 m around the spawn; rolling over
+  them is the first level-up (pillar 2: within 10 s) and shows what the Knödl does.
+- **Claude: balance log built in M2** (`tools/autoplay.ps1`): the bot plays whole runs headless at fixed 60 Hz
+  steps (about 2 minutes per 15-minute run). The bot picks evolutions first, then its weapons, at random within
+  that, and walks its Knödl to a Wirtshaus at L size.
+- **Claude: co-op scaling numbers already apply** (+60 % enemy count, +40 % enemy HP, +1 Wirtshaus per extra
+  player); shared XP, revives and the Knödl moves stay M6.
+- **Claude: a weapon is not offered again once evolved** (found in the balance log: Mozartkugel-Orbit came back
+  as a new weapon next to its Kugel-Karussell).
+- **Claude: shader warm-up.** WebGL compiles a shader the first time it draws with it; the first ski pole of a
+  run stalled the browser for 100 ms. A tiny copy of every effect material is drawn in front of the camera
+  during the first 8 frames (`ShaderWarmup`). `?log_slow=1` prints every measured frame over 40 ms.
+- **Measured (balance log, 3 bot runs, Onkel Ferdl):** first level-up at 3.2 / 3.4 / 4.2 s, level 10 at about
+  1:30-1:45, level 20 at about 4:00, final level 46-54; 29,000-32,000 kills; 3 cash-ins per run (L, once M);
+  both evolutions reached in one run; Bröselfresser ate up to 5,155 mass in a run without Omas Rezept. The bot
+  (it never dodges) was knocked down 12-26 times per run, the first time around 0:30.
+- **Measured (local, RTX 3080, run, 500 enemies held, bot, 60 s):** Edge 186 fps / p95 6.7 ms / max 22.8 ms,
+  Firefox 209 fps / p95 6 ms / max 31 ms, 74 draw calls at most. `.pck` 0.30 MiB. Headless co-op: host + 3
+  clients pass at 41.4 KiB/s per client, every client levels up through the host's offers.
+- **Open for the playtest:** whether the early game is too harsh (the bot goes down every ~30 s in the first
+  minutes; tourists hit for 5), whether level-ups come too often (about every 10-15 s early; the design asks
+  15-30 s), and whether late enemies are tough enough (HP x6.25 at 15:00; maxed builds still mow everything).
+- **Preview deployed** to https://m2-core.knoedlinger.pages.dev. Measured from the preview (headless, RTX 3080, run,
+  500 enemies, bot, 60 s): Edge 195 fps / p95 6.5 ms, Firefox 203 fps / p95 7 ms, 76 draw calls at most; browser
+  check passed with no console errors in both.
+
+## 2026-11-03 – M2 playtest round 1
+
+- **Owner (playtest):** looks good; the upgrade system should look better: a fitting icon for every upgrade and
+  weapon, the description only on hover, clean and modern like other titles. Movement speed could be higher,
+  but that can only be judged once the world has its final size.
+- **Claude: icons** are a hand-drawn flat SVG set (`assets/icons/`, 20 icons: every weapon, evolution, passive,
+  Omas Rezept, Trinkgeld and Gulasch), thick dark outline, warm palette, no Krampus red; referenced as `icon` in
+  each `WeaponData` / `PassiveData` (data, not code). About 0.1 MiB in the `.pck`.
+- **Claude: Speisekarte redesign.** Dimmed game behind, title "Was darf's sein?" with Herr Poldi as the
+  subtitle, dark rounded cards (`UpgradeCard`) with a rarity-coloured border, rarity name, a NEU / STUFE n /
+  EVOLUTION badge, a big icon, the name, level pips (owned levels light, the new one in the rarity colour) and the
+  key. The one-liner and the stat bonus only appear on hover or keyboard focus (arrow keys, Enter), replacing the
+  dimmed icon; the hovered card grows 5 %. Reroll, banish and skip are pill buttons with their key; co-op shows a
+  thin time bar. The chest reveal and the end screen use the same style; the chest shows icon tiles.
+- **Claude: the HUD build** is now two rows of icon slots (6 weapons, 6 passives, Knödl upgrades after them) with
+  the level in the corner, a gold frame when maxed and faint frames for free slots. All icons are packed into one
+  atlas texture at run start and the bar is drawn in one pass, so it costs few draw calls; still, the HUD and
+  menus raise the count from about 70 to about 90 in play (up to 111 with the menu open; budget 150).
+- **Open:** movement speed stays 7 m/s until the real maps (M3/M4) set the world size.
+- **Preview redeployed** to https://m2-core.knoedlinger.pages.dev (build a715e9b). From the preview (headless, RTX
+  3080, 500 enemies, bot): Edge 186 fps / p95 6.7 ms, Firefox 216 fps / p95 6 ms, draw calls at most 110 / 116;
+  no console errors. `.pck` 0.40 MiB.
+
+## 2026-11-03 – M2 approved
+
+- **Owner: M2 approved** after playtest round 1 (icons, hover-only card details); merged into `main`, branch
+  `m2-core` deleted. Next: M3 (first full map: Kirtag, boss gate with Stempel quest, Oberkrampus and Hofrat,
+  chests, gold, death and victory screens, sound and music). Movement speed is revisited with the real map size.

@@ -1,7 +1,9 @@
 class_name Hud
 extends CanvasLayer
-## The M1 HUD: HP, level and XP, run time, the Knödl's size and whether Schupfn is ready, and short
-## toasts. Plain shapes for now; the Lebkuchenherzen, Krügerl and wall clock come with the art pass.
+## The HUD: HP, gold, level and XP, the run clock up to Sperrstund', the build, the Knödl's size
+## and Wirtshaus tier, whether Schupfn is ready, a marker toward the nearest open Wirtshaus, and
+## short toasts. Plain shapes for now; the Lebkuchenherzen, Krügerl and wall clock come with the
+## art pass.
 ## Every player-facing word goes through tr() (i18n/strings.csv).
 
 const TOAST_SECONDS: float = 1.6
@@ -16,6 +18,9 @@ var _schupfn_label: Label
 var _toast: Label
 var _hint: Label
 var _mouse_hint: Label
+var _gold_label: Label
+var _build_bar: BuildBar
+var _wirt_marker: Label
 var _toast_timer: float = 0.0
 var _last_level: int = 1
 
@@ -32,6 +37,19 @@ func _ready() -> void:
 	_hp_label = _label(15)
 	_hp_label.position = Vector2(244.0, 13.0)
 	root.add_child(_hp_label)
+	_gold_label = _label(17)
+	_gold_label.position = Vector2(16.0, 38.0)
+	root.add_child(_gold_label)
+	_build_bar = BuildBar.new()
+	_build_bar.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	_build_bar.position = Vector2(16.0, -150.0)
+	root.add_child(_build_bar)
+	_wirt_marker = _label(17)
+	_wirt_marker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_wirt_marker.size = Vector2(220.0, 26.0)
+	_wirt_marker.add_theme_color_override("font_color", Color(1.0, 0.86, 0.45))
+	_wirt_marker.visible = false
+	root.add_child(_wirt_marker)
 	_time_label = _label(28)
 	_time_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -88,12 +106,20 @@ func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: Bala
 	_hp_label.text = "%d / %d" % [ceili(state.hp), roundi(state.max_hp)]
 	_xp_bar.value = Formulas.level_progress(state.xp, balance) * 100.0
 	_level_label.text = tr("HUD_LEVEL") % state.level
-	_time_label.text = "%d:%02d" % [floori(run_time / 60.0), int(run_time) % 60]
+	var clock: float = minf(run_time, balance.run_seconds)
+	_time_label.text = "%d:%02d" % [floori(clock / 60.0), int(clock) % 60]
+	if run_time >= balance.run_seconds:
+		_time_label.text = tr("HUD_SPERRSTUND")
 	if state.level > _last_level:
 		toast(tr("TOAST_LEVEL_UP") % state.level)
 	_last_level = state.level
+	if state.build != null:
+		_gold_label.text = tr("HUD_GOLD") % state.build.gold
+		_build_bar.show_build(state.build, balance)
 	if knodl != null:
-		_knodl_label.text = tr("HUD_KNODL") % [roundi(knodl.knodl_mass), knodl.radius * 2.0]
+		var tier: int = Formulas.wirtshaus_tier(knodl.knodl_mass, balance)
+		var size: String = tr("TIER_%d" % tier) if tier >= 0 else tr("TIER_NONE")
+		_knodl_label.text = tr("HUD_KNODL") % [roundi(knodl.knodl_mass), knodl.radius * 2.0, size]
 		match knodl.state:
 			Knodl.State.THROWN:
 				_schupfn_label.text = tr("HUD_SCHUPFN_REEL")
@@ -105,6 +131,40 @@ func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: Bala
 	if state.downed:
 		_toast.text = tr("TOAST_DOWNED")
 		_toast_timer = 0.2
+
+
+## Weapons and passives with their levels, one line each.
+static func build_text(build: PlayerBuild) -> String:
+	var weapons: PackedStringArray = []
+	for owned: PlayerBuild.OwnedWeapon in build.weapons:
+		weapons.append("%s %d" % [TranslationServer.translate(owned.data.name_key), owned.level])
+	var passives: PackedStringArray = []
+	for owned: PlayerBuild.OwnedPassive in build.passives:
+		passives.append("%s %d" % [TranslationServer.translate(owned.data.name_key), owned.level])
+	return " · ".join(weapons) + "
+" + " · ".join(passives)
+
+
+## Points at the nearest open Wirtshaus: over it when it is on screen, else at the screen edge.
+func show_wirt_marker(camera: Camera3D, target: Vector3, distance: float) -> void:
+	if camera == null or not is_finite(distance):
+		_wirt_marker.visible = false
+		return
+	var view: Vector2 = _wirt_marker.get_viewport_rect().size
+	var point: Vector3 = target + Vector3(0.0, 6.5, 0.0)
+	var screen: Vector2 = camera.unproject_position(point)
+	if camera.is_position_behind(point):
+		# Behind the camera: mirror it to the bottom edge.
+		screen = Vector2(view.x - screen.x, view.y)
+	var margin := Vector2(120.0, 60.0)
+	screen = screen.clamp(margin, view - margin)
+	_wirt_marker.text = tr("HUD_WIRT_MARKER") % roundi(distance)
+	_wirt_marker.position = screen - _wirt_marker.size * 0.5
+	_wirt_marker.visible = true
+
+
+func hide_wirt_marker() -> void:
+	_wirt_marker.visible = false
 
 
 ## "Click into the game to look around with the mouse", while the pointer is free.

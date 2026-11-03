@@ -4,8 +4,9 @@
 #
 # Pass per client: handshake accepted, < 60 KiB/s down, no decode errors, the interpolation buffer
 # never dry for longer than 2 snapshot intervals, no pops, the shown enemy count matches the host's,
-# and no ERROR/WARNING line in any log. In the run scene also: world states arrive, the Brösel mirror
-# matches the host, every player's Knödl is shown, and the host rejected no pose.
+# and no ERROR/WARNING line in any log. In the run scene also: world states arrive, the Brosel mirror
+# matches the host, every player's Knoedl is shown, the host rejected no pose, and every client got
+# Speisekarte offers from the host and levelled up by answering them.
 # -HostLeavesFirst: the host quits mid-run and every client must notice it ("host_left") and end cleanly.
 # -Scene stress runs the M0 stress arena instead.
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/mp_test.ps1 [-Clients 3] [-Seconds 20] [-HostLeavesFirst]
@@ -122,6 +123,11 @@ foreach ($run in $runs) {
             $failures += "${n}: shows $($rep.brosel_shown) Brosel, host has $($rep.brosel_host)"
         }
         if (-not $HostLeavesFirst -and $rep.knodls_shown -lt $Clients + 1) { $failures += "${n}: shows $($rep.knodls_shown) Knoedl for $($Clients + 1) players" }
+        Write-Host ("{0}: level {1}, {2} Speisekarte messages, weapons {3}" -f $n, $r.run.level, $rep.offers_received, ($r.run.weapons -join ', '))
+        if (-not $HostLeavesFirst) {
+            if ($rep.offers_received -lt 1) { $failures += "${n}: no Speisekarte offer reached the client" }
+            if ($r.run.level -lt 2) { $failures += "${n}: still level $($r.run.level)" }
+        }
     }
     if ($HostLeavesFirst) {
         if ($r.ended_reason -ne 'host_left') { $failures += "${n}: did not notice the host leaving" }

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/passive_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/haferlschuhe.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"haferlschuhe"
+name_key = "PASSIVE_HAFERLSCHUHE"
+desc_key = "DESC_PASSIVE_HAFERLSCHUHE"
+kind = 0
+max_level = 2
+stats = Dictionary[StringName, float]({&"extra_jumps": 1.0, &"jump_height": 0.1})
+color = Color(0.5, 0.35, 0.22, 1)
+icon = ExtResource("9_icon")

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PassiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/passive_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/gamsbart_hut.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"gamsbart_hut"
+name_key = "PASSIVE_GAMSBART"
+desc_key = "DESC_PASSIVE_GAMSBART"
+kind = 0
+max_level = 5
+stats = Dictionary[StringName, float]({&"crit": 0.06})
+color = Color(0.35, 0.45, 0.3, 1)
+icon = ExtResource("9_icon")
