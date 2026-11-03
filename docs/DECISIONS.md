@@ -251,3 +251,6 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   atlas texture at run start and the bar is drawn in one pass, so it costs few draw calls; still, the HUD and
   menus raise the count from about 70 to about 90 in play (up to 111 with the menu open; budget 150).
 - **Open:** movement speed stays 7 m/s until the real maps (M3/M4) set the world size.
+- **Preview redeployed** to https://m2-core.knoedlinger.pages.dev (build a715e9b). From the preview (headless, RTX
+  3080, 500 enemies, bot): Edge 186 fps / p95 6.7 ms, Firefox 216 fps / p95 6 ms, draw calls at most 110 / 116;
+  no console errors. `.pck` 0.40 MiB.
