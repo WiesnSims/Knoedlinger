@@ -57,6 +57,10 @@ func setup(p_balance: BalanceData, p_ground: Heightfield, half_size: float) -> v
 	balance = p_balance
 	ground = p_ground
 	capacity = balance.brosel_cap
+	# Redrawn from the packed arrays every rendered frame. With physics interpolation on, Godot would
+	# also blend each MultiMesh instance with the previous tick by index; instances are repacked when
+	# Brösel come and go, so that blended two different Brösel.
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_rng.seed = 4711
 	alive.resize(capacity)
 	alive.fill(0)

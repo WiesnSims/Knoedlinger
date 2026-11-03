@@ -15,6 +15,7 @@ var _knodl_label: Label
 var _schupfn_label: Label
 var _toast: Label
 var _hint: Label
+var _mouse_hint: Label
 var _toast_timer: float = 0.0
 var _last_level: int = 1
 
@@ -71,6 +72,14 @@ func _ready() -> void:
 	_hint.size = Vector2(520.0, 60.0)
 	_hint.text = tr("HUD_CONTROLS")
 	root.add_child(_hint)
+	_mouse_hint = _label(22)
+	_mouse_hint.set_anchors_preset(Control.PRESET_CENTER)
+	_mouse_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_mouse_hint.position = Vector2(-300.0, 90.0)
+	_mouse_hint.size = Vector2(600.0, 36.0)
+	_mouse_hint.text = tr("HUD_MOUSE_HINT")
+	_mouse_hint.visible = false
+	root.add_child(_mouse_hint)
 
 
 func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: BalanceData) -> void:
@@ -96,6 +105,11 @@ func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: Bala
 	if state.downed:
 		_toast.text = tr("TOAST_DOWNED")
 		_toast_timer = 0.2
+
+
+## "Click into the game to look around with the mouse", while the pointer is free.
+func show_mouse_hint(on: bool) -> void:
+	_mouse_hint.visible = on
 
 
 func toast(text: String) -> void:

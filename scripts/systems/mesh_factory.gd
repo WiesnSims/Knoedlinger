@@ -112,13 +112,14 @@ static func brosel() -> ArrayMesh:
 	])
 
 
-## The Knödl: a unit sphere (radius 1), scaled to the Knödl's radius by its node.
+## The Knödl: a unit sphere (radius 1), scaled to the Knödl's radius by its node. Fine enough
+## (about 4,000 triangles, inside the hero budget) that a 4 m Knödl still has a round outline.
 static func knodl() -> SphereMesh:
 	var sphere := SphereMesh.new()
 	sphere.radius = 1.0
 	sphere.height = 2.0
-	sphere.radial_segments = 28
-	sphere.rings = 14
+	sphere.radial_segments = 64
+	sphere.rings = 32
 	return sphere
 
 

@@ -10,23 +10,32 @@ extends Resource
 @export var grid_cell_size: float = 2.0
 
 @export_group("Camera")
-## Degrees below the horizon. GAME-DESIGN.md started at 50; M1 tunes it lower, toward Megabonk.
-@export var camera_pitch_degrees: float = 30.0
-@export var camera_min_pitch_degrees: float = 8.0
+## Megabonk-style view (docs/DECISIONS.md): close, low, wide, the mouse looks around.
+## Degrees above the horizon the camera starts at (the mouse moves it between min and max).
+@export var camera_pitch_degrees: float = 20.0
+@export var camera_min_pitch_degrees: float = 2.0
 @export var camera_max_pitch_degrees: float = 70.0
-@export var camera_distance: float = 11.0
+## Start distance; the mouse wheel zooms between min and max in steps.
+@export var camera_distance: float = 8.0
+@export var camera_min_distance: float = 4.5
+@export var camera_max_distance: float = 16.0
+@export var camera_zoom_step: float = 1.0
+@export var camera_fov: float = 80.0
 ## Extra distance per metre of Knödl radius above its start radius, so a huge Knödl stays in view.
 @export var camera_distance_per_knodl_radius: float = 1.6
-## The camera looks at this point above the player's feet.
-@export var camera_focus_height: float = 1.6
-## How fast the camera catches up with the player (1/s, exponential).
-@export var camera_follow_speed: float = 8.0
-## Radians per second the camera swings toward the running direction (0 = fixed yaw).
-@export var camera_auto_turn_speed: float = 1.4
+## The camera looks at this point above the player's feet (a bit above the head: the player sits
+## below the middle of the screen and you see further ahead).
+@export var camera_focus_height: float = 2.0
+## How fast the camera catches up with the player (1/s, exponential; high = tight).
+@export var camera_follow_speed: float = 20.0
+## Seconds of look smoothing for mouse and keys (0 = raw).
+@export var camera_look_smoothing: float = 0.05
+## Radians per second the camera swings toward the running direction without the mouse (0 = off).
+@export var camera_auto_turn_speed: float = 0.0
 ## Radians per second for the camera keys (Q/E).
 @export var camera_key_turn_speed: float = 2.4
-## Radians per pixel when the mouse pointer is captured.
-@export var camera_mouse_sensitivity: float = 0.004
+## Radians per pixel of mouse movement.
+@export var camera_mouse_sensitivity: float = 0.0035
 ## The camera stays this far in front of terrain it would otherwise clip into.
 @export var camera_collision_margin: float = 0.4
 

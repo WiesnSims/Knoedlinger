@@ -16,6 +16,12 @@ const REMOTE_FOLLOW_SPEED: float = 14.0
 const LAYER_KNODL: int = 4
 ## Crumb pattern density in the shader, per metre of radius.
 const CRUMBS_PER_METRE: float = 7.0
+## View fade: fully solid from FADE_NEAR + FADE_RANGE metres between camera and dough, never below
+## FADE_MIN, and FADE_HIDING while it hides its player.
+const FADE_NEAR: float = 0.3
+const FADE_RANGE: float = 2.0
+const FADE_MIN: float = 0.25
+const FADE_HIDING: float = 0.45
 
 var owner_peer: int = 1
 var balance: BalanceData
@@ -126,7 +132,7 @@ func add_knodl_mass(amount: float) -> void:
 	if amount <= 0.0:
 		return
 	set_knodl_mass(knodl_mass + amount)
-	_wobble = minf(_wobble + 0.4, 1.0)
+	_wobble = minf(_wobble + 0.25, 0.7)
 
 
 ## Host: the Schupfn button. Throws when attached and ready, reels in when thrown.
@@ -204,7 +210,7 @@ func crush(enemies: EnemyManager) -> int:
 			hits += 1
 			if enemies.damage(j, damage, kick.x, kick.y):
 				kills += 1
-			_wobble = minf(_wobble + 0.15, 1.0)
+			_wobble = minf(_wobble + 0.1, 1.0)
 	crushed += kills
 	return kills
 
@@ -213,7 +219,7 @@ func crush(enemies: EnemyManager) -> int:
 func apply_remote(where: Vector3, rotation_q: Quaternion, new_mass: float, new_state: State, new_cooldown: float) -> void:
 	if knodl_mass != new_mass:
 		if new_mass > knodl_mass:
-			_wobble = minf(_wobble + 0.3, 1.0)
+			_wobble = minf(_wobble + 0.25, 0.7)
 		set_knodl_mass(new_mass)
 	_remote_position = where
 	_remote_rotation = rotation_q
@@ -244,6 +250,24 @@ func _process(delta: float) -> void:
 	if _wobble > 0.0:
 		_wobble = maxf(_wobble - delta * 2.5, 0.0)
 	_material.set_shader_parameter(&"wobble", _wobble)
+	_material.set_shader_parameter(&"fade", _view_fade())
+
+
+## Dithers the Knödl away while it fills the camera or sits between the camera and its player, so
+## a big Knödl trailing toward the low camera never hides the game.
+func _view_fade() -> float:
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	if camera == null or holder == null:
+		return 1.0
+	var eye: Vector3 = camera.global_position
+	var centre: Vector3 = visual_position()
+	var fade: float = clampf((eye.distance_to(centre) - radius - FADE_NEAR) / FADE_RANGE, FADE_MIN, 1.0)
+	var player: Vector3 = holder.get_global_transform_interpolated().origin + Vector3(0.0, 1.0, 0.0)
+	var sight: Vector3 = player - eye
+	var t: float = clampf((centre - eye).dot(sight) / maxf(sight.length_squared(), 0.0001), 0.0, 1.0)
+	if t < 1.0 and centre.distance_to(eye + sight * t) < radius:
+		fade = minf(fade, FADE_HIDING)
+	return fade
 
 
 func _physics_process(delta: float) -> void:

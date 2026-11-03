@@ -11,7 +11,7 @@ HUD_SCHUPFN_COOLDOWN,Schupfn in %.1f s
 HUD_SCHUPFN_REEL,Nochmal drücken: Knödl zruckholn
 HUD_SCHUPFN_REELING,Knödl kummt zruck …
 HUD_CONTROLS,"WASD: gehn · Leertaste: hupfn · Shift/Rechtsklick: Schupfn
-Q/E oder Klick + Maus: Kamera · F3: Statistik"
+Maus: schaun · Mausradl: zoomen · Q/E: drehn · F3: Statistik"
 HUD_BOT_HINT,"Bot spielt, WASD übernimmt"
 TOAST_LEVEL_UP,Level %d!
 TOAST_DOWNED,Umgfoin! Glei geht's weiter …
@@ -19,3 +19,4 @@ CHARACTER_FERDL,Onkel Ferdl
 WEAPON_SCHNEESCHAUFEL,Schneeschaufel
 KNODL_SEMMEL,Semmelknödl
 MAP_TESTFELD,Testfeld
+HUD_MOUSE_HINT,Klick ins Spiel zum Umschaun mit der Maus (Esc lasst aus)

@@ -24,6 +24,10 @@ func setup(types: Array[EnemyTypeData], capacity: int, ground: Heightfield = nul
 	_types = types
 	_capacity = capacity
 	_ground = ground
+	# Redrawn from the packed arrays every rendered frame. With physics interpolation on, Godot would
+	# also blend each MultiMesh instance with the previous tick by index; instances are repacked when
+	# enemies die or spawn, so that blended two different enemies (one-frame "teleports").
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	var waddle: Shader = load("res://shaders/enemy_waddle.gdshader")
 	for type: EnemyTypeData in types:
 		var multimesh := MultiMesh.new()

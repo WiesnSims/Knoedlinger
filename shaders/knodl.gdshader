@@ -1,5 +1,6 @@
 // The Knödl, the hero object: soft dough with breadcrumb patches and parsley flecks that roll
-// with the ball (object space), and a jelly wobble on impact. No textures.
+// with the ball (object space), a gentle jiggle when it eats or hits, and a dithered fade while it
+// is right in front of the camera or hides the player. No textures, no transparency sorting.
 shader_type spatial;
 render_mode cull_back, diffuse_lambert;
 
@@ -8,6 +9,8 @@ uniform vec3 crumb_color : source_color = vec3(0.7, 0.5, 0.28);
 uniform vec3 fleck_color : source_color = vec3(0.3, 0.52, 0.2);
 // 0..1, set from the script on hits and when it eats; dies away there.
 uniform float wobble = 0.0;
+// 1 = solid; lower dithers pixels away (set from the script).
+uniform float fade = 1.0;
 // Crumbs per unit of the unit sphere; the script raises it as the Knödl grows so crumbs keep their size.
 uniform float crumb_scale = 3.5;
 
@@ -31,11 +34,19 @@ float noise(vec3 x) {
 
 void vertex() {
 	object_pos = VERTEX;
-	float w = wobble * 0.12 * sin(TIME * 22.0 + VERTEX.y * 6.0) * sin(VERTEX.x * 5.0 + TIME * 17.0);
-	VERTEX += NORMAL * w;
+	// One soft band running over the ball: it stays round, it only jiggles.
+	float w = wobble * 0.045 * sin(TIME * 21.0 + VERTEX.y * 2.2);
+	VERTEX *= 1.0 + w;
 }
 
 void fragment() {
+	if (fade < 0.999) {
+		// Interleaved gradient noise: a stable per-pixel threshold.
+		float threshold = fract(52.9829189 * fract(dot(FRAGCOORD.xy, vec2(0.06711056, 0.00583715))));
+		if (threshold > fade) {
+			discard;
+		}
+	}
 	vec3 p = object_pos * crumb_scale;
 	float coarse = noise(p);
 	float fine = noise(p * 2.7 + 11.0);

@@ -11,7 +11,8 @@
 | Move (relative to the camera) | WASD |
 | Jump | Space |
 | Schupfn / reel the Knödl back in | Shift or right click |
-| Turn the camera | Q / E, or click into the game and move the mouse (Esc lets go) |
+| Look around | Mouse (click into the game once; Esc lets go), or Q / E |
+| Zoom | Mouse wheel |
 | Debug overlay | F3 |
 
 URL flags for testing: `?bot=1` (a bot plays), `?god=1`, `?knodl_mass=500`, `?enemies=500`, `?debug=1`,

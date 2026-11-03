@@ -72,11 +72,11 @@ func _ready() -> void:
 	add_child(camera)
 	camera.setup(balance, local)
 	# The M0 view: high and fixed, as measured in M0.
-	camera.pitch = deg_to_rad(50.0)
 	camera.distance_override = 14.0
+	camera.fov = 75.0
 	camera.mouse_capture_allowed = false
 	camera.auto_turn = false
-	camera.snap_to_target()
+	camera.set_view(0.0, deg_to_rad(50.0))
 	camera.make_current()
 	if host:
 		enemies = EnemyManager.new(balance, types, slots, LaunchArgs.get_int("seed", 1))

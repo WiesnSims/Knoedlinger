@@ -114,12 +114,9 @@ func _ready() -> void:
 	camera = ChaseCamera.new()
 	camera.name = "ChaseCamera"
 	camera.far = 400.0
-	camera.fov = 70.0
 	add_child(camera)
 	camera.mouse_capture_allowed = not _bot or LaunchArgs.get_flag("mouse", false)
 	camera.setup(balance, local)
-	camera.yaw = 0.0
-	camera.snap_to_target()
 	camera.make_current()
 	hud = Hud.new()
 	hud.name = "Hud"
@@ -375,6 +372,7 @@ func _local_frame() -> void:
 			players[peer].downed = states[peer].downed
 	if state != null:
 		hud.show_state(state, knodl, run_time, balance)
+	hud.show_mouse_hint(camera.mouse_capture_allowed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED)
 
 
 func _send_pose(delta: float) -> void:

@@ -124,3 +124,28 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Open for the playtest:** whether the Knödl is fun (string feel, throw distance, growth speed, drag). The first
   level-up comes after about 20-25 s with the bot (pillar: 10 s), because kills only pay out once the Knödl eats the
   Brösel; XP pacing gets tuned together with the Speisekarte in M2.
+
+## 2026-11-03 – M1 playtest round 1
+
+- **Owner (playtest):** runs fine on the Pixel 9 Pro (no touch controls yet, and none needed now: the phone was only a
+  performance check). The Knödl feels good, but it is not really round, worst when big. The camera does not feel
+  like Megabonk. Jumping is fine. Climbing looks fine. Enemies sometimes sit somewhere else for a split second.
+- **Claude: the enemy "teleports" were an M1 bug.** M1 turned on physics interpolation, and in Godot 4.7 that also
+  interpolates every MultiMesh instance between physics ticks by its index. Enemies, Brösel and projectiles are
+  repacked into their MultiMesh every frame (dead ones drop out, so the indices shift), so an instance was blended
+  between two different enemies for a frame. The pooled renderers now opt out of interpolation (they are redrawn
+  every rendered frame anyway); a unit test guards it.
+- **Claude: the Knödl was not round** because the sphere had 28 x 14 segments (a 4 m Knödl showed 0.9 m facets)
+  and the impact wobble made high-frequency lumps that never settled while it kept eating. Now 64 x 32 segments
+  (about 4,000 triangles, inside the hero-object budget) and a gentle jiggle (4.5 %, capped while eating).
+- **Claude: camera rebuilt in the Megabonk style.** Sources are thin (no official documentation); what we have:
+  Megabonk is third person with the mouse turning the camera, a camera-distance setting, an FOV setting (a settings
+  guide recommends 90), "look smoothing", optional camera rotation on arrow keys, and character movement relative to
+  the camera. Applied: the mouse always looks (one click captures the pointer, Esc lets go, a hint says so), no
+  auto-turn (`camera_auto_turn_speed` 0, still available), pitch 20 deg (mouse 2-70 deg), distance 8 m with mouse-wheel
+  zoom 4.5-16 m, FOV 80 (wider shows more but bends a big Knödl at the screen edge), focus 2 m above the feet so the
+  player sits a bit below the middle, tight follow (20/s), 0.05 s look smoothing, Q/E still turn it.
+- **Claude: with the low camera the Knödl trails toward the lens**, so it dithers away (no transparency sorting)
+  when it is within about 2 m of the camera or hides its player (down to 45 %).
+- **Answer to "will jumping evolve":** yes, as upgrades in the level-up pool from M2 on: the design's double jump,
+  plus a jump-height stat on the same footing as speed, area and the rest (data, not code).
