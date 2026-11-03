@@ -228,3 +228,6 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Open for the playtest:** whether the early game is too harsh (the bot goes down every ~30 s in the first
   minutes; tourists hit for 5), whether level-ups come too often (about every 10-15 s early; the design asks
   15-30 s), and whether late enemies are tough enough (HP x6.25 at 15:00; maxed builds still mow everything).
+- **Preview deployed** to https://m2-core.knoedlinger.pages.dev. Measured from the preview (headless, RTX 3080, run,
+  500 enemies, bot, 60 s): Edge 195 fps / p95 6.5 ms, Firefox 203 fps / p95 7 ms, 76 draw calls at most; browser
+  check passed with no console errors in both.
