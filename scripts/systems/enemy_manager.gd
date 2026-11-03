@@ -4,15 +4,24 @@ extends RefCounted
 ## them through snapshots (net/snapshot_codec.gd) and EnemyReplica. Every array is indexed by slot.
 ##
 ## Each frame: steer every alive enemy toward the nearest player, push it apart from its neighbours
-## (from last frame's grid) and from the players, then rebuild the grid for projectiles and the next
-## frame. Enemies far from every player only update every `enemy_far_update_interval` frames.
+## (from last frame's grid) and from the players, then rebuild the grid for weapons, the Knödl and
+## the next frame. Enemies far from every player only update every `enemy_far_update_interval`
+## frames. Enemies move in x/z; their height is the map's baked ground (docs/DECISIONS.md).
 
 var balance: BalanceData
 var types: Array[EnemyTypeData] = []
 var capacity: int = 0
-## How many slots should be alive; dead slots below this respawn after enemy_respawn_delay.
+## How many slots should be alive; dead slots below this respawn after respawn_delay.
 var target_count: int = 0
+var respawn_delay: float = 0.0
+## New enemies appear on a ring this far from a random player.
+var ring_min: float = 0.0
+var ring_max: float = 0.0
 var grid: SpatialHash
+## The ground enemies walk on; null = flat at y = 0 (stress test).
+var ground: Heightfield
+## Enemies stay inside +-bounds on x and z.
+var bounds: float = 0.0
 
 var alive: PackedByteArray = PackedByteArray()
 var type: PackedByteArray = PackedByteArray()
@@ -26,31 +35,49 @@ var radius: PackedFloat32Array = PackedFloat32Array()
 var flash: PackedFloat32Array = PackedFloat32Array()
 var phase: PackedFloat32Array = PackedFloat32Array()
 var respawn_timer: PackedFloat32Array = PackedFloat32Array()
+## Knockback velocity, dying away over time.
+var kb_x: PackedFloat32Array = PackedFloat32Array()
+var kb_z: PackedFloat32Array = PackedFloat32Array()
+## Seconds until a Knödl may hurt this enemy again.
+var knodl_timer: PackedFloat32Array = PackedFloat32Array()
 
 ## Slots that spawned / died since the last take_events(), for the network's reliable events.
 var spawned: PackedInt32Array = PackedInt32Array()
 var died: PackedInt32Array = PackedInt32Array()
+## Where enemies died since the last clear_kills() and how much XP they drop (for Brösel).
+var kill_x: PackedFloat32Array = PackedFloat32Array()
+var kill_z: PackedFloat32Array = PackedFloat32Array()
+var kill_xp: PackedInt32Array = PackedInt32Array()
 var alive_count: int = 0
 var kills: int = 0
-## Enemy-player touches this frame (contact damage comes with real HP in M1).
+## Enemy-player touches this frame.
 var contacts: int = 0
+## Per target of the last update(): the highest contact damage of any enemy touching it this frame.
+var touch_damage: PackedFloat32Array = PackedFloat32Array()
 
 var _rng := RandomNumberGenerator.new()
 var _frame: int = 0
 var _weights_total: float = 0.0
 
 
-func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: int, seed_value: int = 1) -> void:
+func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: int, seed_value: int = 1,
+		p_ground: Heightfield = null, p_bounds: float = -1.0) -> void:
 	balance = p_balance
 	types = p_types
 	capacity = p_capacity
+	ground = p_ground
+	bounds = p_bounds if p_bounds > 0.0 else balance.arena_half_size
+	respawn_delay = balance.enemy_respawn_delay
+	ring_min = balance.enemy_spawn_ring_min
+	ring_max = balance.enemy_spawn_ring_max
 	_rng.seed = seed_value
-	grid = SpatialHash.new(balance.arena_half_size, balance.grid_cell_size, capacity)
+	grid = SpatialHash.new(bounds, balance.grid_cell_size, capacity)
 	alive.resize(capacity)
 	type.resize(capacity)
 	alive.fill(0)
 	type.fill(0)
-	for name: String in ["pos_x", "pos_z", "yaw", "hp", "max_hp", "speed", "radius", "flash", "phase", "respawn_timer"]:
+	for name: String in ["pos_x", "pos_z", "yaw", "hp", "max_hp", "speed", "radius", "flash", "phase",
+			"respawn_timer", "kb_x", "kb_z", "knodl_timer"]:
 		var array := PackedFloat32Array()
 		array.resize(capacity)
 		array.fill(0.0)
@@ -67,23 +94,35 @@ func populate(count: int, targets: PackedVector3Array) -> void:
 	_rebuild_grid()
 
 
+## The ground height at any x/z.
+func ground_at(x: float, z: float) -> float:
+	return ground.height_at(x, z) if ground != null else 0.0
+
+
 func update(delta: float, targets: PackedVector3Array) -> void:
 	_frame += 1
 	contacts = 0
+	var target_total: int = targets.size()
+	touch_damage.resize(target_total)
+	touch_damage.fill(0.0)
 	if targets.is_empty():
 		return
 	var far_sq: float = balance.enemy_far_distance * balance.enemy_far_distance
 	var interval: int = maxi(balance.enemy_far_update_interval, 1)
-	var half: float = balance.arena_half_size - 0.5
+	var half: float = bounds - 0.5
 	var strength: float = balance.enemy_separation_strength
 	var max_neighbors: int = balance.enemy_separation_max_neighbors
 	var player_radius: float = balance.player_radius
+	var contact_height: float = balance.enemy_contact_height
+	var climb_slope: float = balance.enemy_climb_slope
+	var climb_min: float = balance.enemy_climb_min_factor
+	var kb_keep: float = exp(-balance.enemy_knockback_decay * delta)
 	var head: PackedInt32Array = grid.head
 	var next: PackedInt32Array = grid.next
 	var columns: int = grid.columns
 	var rows: int = grid.rows
 	var inverse_cell: float = 1.0 / grid.cell_size
-	var target_count_local: int = targets.size()
+	var has_ground: bool = ground != null
 	for i: int in capacity:
 		if alive[i] == 0:
 			if i < target_count:
@@ -93,20 +132,23 @@ func update(delta: float, targets: PackedVector3Array) -> void:
 			continue
 		if flash[i] > 0.0:
 			flash[i] = maxf(flash[i] - delta * 6.0, 0.0)
+		if knodl_timer[i] > 0.0:
+			knodl_timer[i] -= delta
 		var x: float = pos_x[i]
 		var z: float = pos_z[i]
 		var best_sq: float = INF
-		var tx: float = 0.0
-		var tz: float = 0.0
-		for t: int in target_count_local:
+		var best: int = 0
+		for t: int in target_total:
 			var target: Vector3 = targets[t]
 			var d_sq: float = (target.x - x) * (target.x - x) + (target.z - z) * (target.z - z)
 			if d_sq < best_sq:
 				best_sq = d_sq
-				tx = target.x
-				tz = target.z
+				best = t
+		var tx: float = targets[best].x
+		var tz: float = targets[best].z
 		var step: float = delta
-		if best_sq > far_sq:
+		var knocked: bool = kb_x[i] != 0.0 or kb_z[i] != 0.0
+		if best_sq > far_sq and not knocked:
 			if (i + _frame) % interval != 0:
 				continue
 			step = delta * interval
@@ -117,16 +159,22 @@ func update(delta: float, targets: PackedVector3Array) -> void:
 		if distance > 0.001:
 			vx = (tx - x) / distance * speed[i]
 			vz = (tz - z) / distance * speed[i]
-		# Keep out of the player's body instead of walking into it.
+		# Keep out of the player's body instead of walking into it, and hurt them on touch. A player
+		# standing well above or below (a ledge, a jump) is out of reach.
 		var touch: float = r + player_radius
 		if distance < touch:
-			contacts += 1
-			vx = 0.0
-			vz = 0.0
-			if distance > 0.001:
-				var push: float = (touch - distance) / step
-				vx = (x - tx) / distance * push
-				vz = (z - tz) / distance * push
+			var gy: float = ground.height_at(x, z) if has_ground else 0.0
+			if absf(targets[best].y - gy) < contact_height:
+				contacts += 1
+				var hurt: float = types[type[i]].contact_damage
+				if hurt > touch_damage[best]:
+					touch_damage[best] = hurt
+				vx = 0.0
+				vz = 0.0
+				if distance > 0.001:
+					var push: float = (touch - distance) / step
+					vx = (x - tx) / distance * push
+					vz = (z - tz) / distance * push
 		# Separation from the neighbours in the 3 x 3 cells around.
 		var px: float = 0.0
 		var pz: float = 0.0
@@ -153,10 +201,27 @@ func update(delta: float, targets: PackedVector3Array) -> void:
 					j = next[j]
 		vx += px * strength
 		vz += pz * strength
-		x = clampf(x + vx * step, -half, half)
-		z = clampf(z + vz * step, -half, half)
-		pos_x[i] = x
-		pos_z[i] = z
+		if knocked:
+			vx += kb_x[i]
+			vz += kb_z[i]
+			kb_x[i] *= kb_keep
+			kb_z[i] *= kb_keep
+			if kb_x[i] * kb_x[i] + kb_z[i] * kb_z[i] < 0.01:
+				kb_x[i] = 0.0
+				kb_z[i] = 0.0
+		var nx: float = clampf(x + vx * step, -half, half)
+		var nz: float = clampf(z + vz * step, -half, half)
+		# Walkers slow down on steep ground and scramble up walls; fliers do not care.
+		if has_ground and not types[type[i]].flying:
+			var moved: float = sqrt((nx - x) * (nx - x) + (nz - z) * (nz - z))
+			if moved > 0.0001:
+				var rise: float = (ground.height_at(nx, nz) - ground.height_at(x, z)) / moved
+				if rise > climb_slope:
+					var factor: float = maxf(climb_slope / rise, climb_min)
+					nx = x + (nx - x) * factor
+					nz = z + (nz - z) * factor
+		pos_x[i] = nx
+		pos_z[i] = nz
 		if vx * vx + vz * vz > 0.01:
 			yaw[i] = atan2(vx, vz)
 	# Drop the local views first, or rebuilding the grid would copy its arrays.
@@ -165,20 +230,36 @@ func update(delta: float, targets: PackedVector3Array) -> void:
 	_rebuild_grid()
 
 
-## Returns true when this hit killed the enemy.
-func damage(slot: int, amount: float) -> bool:
+## Returns true when this hit killed the enemy. (kx, kz) is a knockback velocity to add.
+func damage(slot: int, amount: float, kx: float = 0.0, kz: float = 0.0) -> bool:
 	if alive[slot] == 0:
 		return false
 	hp[slot] -= amount
 	flash[slot] = 1.0
+	if kx != 0.0 or kz != 0.0:
+		var factor: float = types[type[slot]].knockback_factor
+		kb_x[slot] += kx * factor
+		kb_z[slot] += kz * factor
 	if hp[slot] > 0.0:
 		return false
 	alive[slot] = 0
 	alive_count -= 1
 	kills += 1
-	respawn_timer[slot] = balance.enemy_respawn_delay
+	respawn_timer[slot] = respawn_delay
+	kb_x[slot] = 0.0
+	kb_z[slot] = 0.0
 	died.append(slot)
+	kill_x.append(pos_x[slot])
+	kill_z.append(pos_z[slot])
+	kill_xp.append(types[type[slot]].brosel_xp)
 	return true
+
+
+## Moves an enemy (pushed out of a Knödl, for example), staying inside the bounds.
+func shove(slot: int, x: float, z: float) -> void:
+	var half: float = bounds - 0.5
+	pos_x[slot] = clampf(x, -half, half)
+	pos_z[slot] = clampf(z, -half, half)
 
 
 ## HP as 0..15 for the snapshot (4 bits).
@@ -193,13 +274,20 @@ func take_events() -> Array[PackedInt32Array]:
 	return events
 
 
+## Empties the kill list once the caller has read kill_x / kill_z / kill_xp.
+func clear_kills() -> void:
+	kill_x.clear()
+	kill_z.clear()
+	kill_xp.clear()
+
+
 func _spawn(slot: int, targets: PackedVector3Array) -> void:
 	var t: int = _pick_type()
 	var data: EnemyTypeData = types[t]
 	var center: Vector3 = targets[_rng.randi_range(0, targets.size() - 1)] if not targets.is_empty() else Vector3.ZERO
 	var angle: float = _rng.randf() * TAU
-	var distance: float = _rng.randf_range(balance.enemy_spawn_ring_min, balance.enemy_spawn_ring_max)
-	var half: float = balance.arena_half_size - 0.5
+	var distance: float = _rng.randf_range(ring_min, ring_max)
+	var half: float = bounds - 0.5
 	pos_x[slot] = clampf(center.x + cos(angle) * distance, -half, half)
 	pos_z[slot] = clampf(center.z + sin(angle) * distance, -half, half)
 	yaw[slot] = angle + PI
@@ -210,6 +298,9 @@ func _spawn(slot: int, targets: PackedVector3Array) -> void:
 	radius[slot] = data.radius
 	flash[slot] = 0.0
 	phase[slot] = _rng.randf() * TAU
+	kb_x[slot] = 0.0
+	kb_z[slot] = 0.0
+	knodl_timer[slot] = 0.0
 	if alive[slot] == 0:
 		alive_count += 1
 	alive[slot] = 1

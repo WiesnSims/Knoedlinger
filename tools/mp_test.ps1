@@ -1,14 +1,18 @@
 # Headless multiplayer test over the WebSocket backend (no browsers, no signaling server): one host
-# and -Clients clients run the stress arena; each client checks the enemy snapshots it gets.
+# and -Clients clients play a run (bots, -Enemies held constant); each client checks what it gets.
 # Also starts one client with a wrong version, which the host must refuse.
 #
 # Pass per client: handshake accepted, < 60 KiB/s down, no decode errors, the interpolation buffer
 # never dry for longer than 2 snapshot intervals, no pops, the shown enemy count matches the host's,
-# and no ERROR/WARNING line in any log. -HostLeavesFirst: the host quits mid-run and every client
-# must notice it ("host_left") and end cleanly.
+# and no ERROR/WARNING line in any log. In the run scene also: world states arrive, the Brösel mirror
+# matches the host, every player's Knödl is shown, and the host rejected no pose.
+# -HostLeavesFirst: the host quits mid-run and every client must notice it ("host_left") and end cleanly.
+# -Scene stress runs the M0 stress arena instead.
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/mp_test.ps1 [-Clients 3] [-Seconds 20] [-HostLeavesFirst]
+#        [-Scene run|stress]
 param(
     [int]$Clients = 1,
+    [ValidateSet('run', 'stress')][string]$Scene = 'run',
     [int]$Seconds = 20,
     [int]$Enemies = 500,
     [int]$Projectiles = 300,
@@ -27,9 +31,9 @@ if ($Coop) {
 $failures = @()
 $runDir = Join-Path $LogDir ('mp_test-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 New-Item -ItemType Directory -Force $runDir | Out-Null
-$scene = 'res://scenes/stress/stress_arena.tscn'
+$scenePath = if ($Scene -eq 'run') { 'res://scenes/run/run_world.tscn' } else { 'res://scenes/stress/stress_arena.tscn' }
 # Headless runs at 60 fps like a player's browser would, so the timing is real.
-$common = @('--headless', '--path', $Root, '--max-fps', '60', $scene, '--')
+$common = @('--headless', '--path', $Root, '--max-fps', '60', $scenePath, '--')
 
 function Start-Godot([string]$Name, [string[]]$GameArgs) {
     $out = Join-Path $runDir "$Name.log"
@@ -46,7 +50,7 @@ function Get-Result([string]$Path) {
 }
 
 $hostSeconds = if ($HostLeavesFirst) { [math]::Max([int]($Seconds / 2), 5) } else { $Seconds + 10 }
-$hostRun = Start-Godot 'host' @('--net=ws', '--host', "--port=$Port", "--enemies=$Enemies", "--projectiles=$Projectiles", "--seconds=$hostSeconds")
+$hostRun = Start-Godot 'host' @('--net=ws', '--host', "--port=$Port", "--enemies=$Enemies", "--projectiles=$Projectiles", "--seconds=$hostSeconds", '--bot=1')
 $deadline = (Get-Date).AddSeconds(30)
 while ((Get-Date) -lt $deadline -and -not (Select-String -Path $hostRun.Log -Pattern 'LISTENING' -Quiet -ErrorAction SilentlyContinue)) {
     Start-Sleep -Milliseconds 200
@@ -58,7 +62,7 @@ if (-not (Select-String -Path $hostRun.Log -Pattern 'LISTENING' -Quiet -ErrorAct
 
 $runs = @()
 for ($i = 1; $i -le $Clients; $i++) {
-    $runs += Start-Godot "client$i" @('--net=ws', '--join=127.0.0.1', "--port=$Port", "--seconds=$Seconds")
+    $runs += Start-Godot "client$i" @('--net=ws', '--join=127.0.0.1', "--port=$Port", "--seconds=$Seconds", '--bot=1')
 }
 $rejectRun = $null
 if (-not $NoRejectTest) {
@@ -108,6 +112,17 @@ foreach ($run in $runs) {
     if ($rep.underrun_ms_max_streak -gt 2 * $intervalMs) { $failures += "${n}: buffer dry for $($rep.underrun_ms_max_streak) ms in a row" }
     if ($rep.pops -gt 0) { $failures += "${n}: $($rep.pops) pops" }
     if ([math]::Abs($rep.alive_shown - $rep.alive_host) -gt 10) { $failures += "${n}: shows $($rep.alive_shown) enemies, host has $($rep.alive_host)" }
+    if ($Scene -eq 'run') {
+        Write-Host ("{0}: {1} world states, Brosel shown {2} / host {3}, {4} Knoedl shown" -f `
+            $n, $rep.world_states, $rep.brosel_shown, $rep.brosel_host, $rep.knodls_shown)
+        if ($rep.world_states -lt 10) { $failures += "${n}: only $($rep.world_states) world states" }
+        if ($rep.brosel_errors -gt 0) { $failures += "${n}: $($rep.brosel_errors) bad Brosel messages" }
+        # The host count comes with the latest world state; Brosel changes may be a tick apart.
+        if ([math]::Abs($rep.brosel_shown - $rep.brosel_host) -gt [math]::Max(20, $rep.brosel_host * 0.05)) {
+            $failures += "${n}: shows $($rep.brosel_shown) Brosel, host has $($rep.brosel_host)"
+        }
+        if (-not $HostLeavesFirst -and $rep.knodls_shown -lt $Clients + 1) { $failures += "${n}: shows $($rep.knodls_shown) Knoedl for $($Clients + 1) players" }
+    }
     if ($HostLeavesFirst) {
         if ($r.ended_reason -ne 'host_left') { $failures += "${n}: did not notice the host leaving" }
     } elseif ($r.ended_reason) {
@@ -119,6 +134,7 @@ if ($rejectRun) {
     if (-not $r -or $r.rejected -ne 'version') { $failures += 'the client with a wrong version was not refused' }
     else { Write-Host 'client_old_version: refused as expected (version)' }
 }
+if ($hostResult -and $hostResult.rejected_poses -gt 0) { $failures += "host: rejected $($hostResult.rejected_poses) poses" }
 if ($hostResult -and $hostResult.net) {
     # Averaged over the host's whole run, including the time before and after the clients were there.
     Write-Host ("host: {0:N1} KiB/s up in total over its run, snapshot {1} B, frame ms p95 {2}" -f `

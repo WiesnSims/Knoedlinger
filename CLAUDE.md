@@ -58,14 +58,14 @@ Scripts in `tools/` are created during M0 (PowerShell, logs in `build/logs/`, ex
 - Scripts (built in M0 unless marked; all take `-Url <preview url>` where a browser is involved):
   - `tools/run_tests.ps1` – GUT tests
   - `tools/build_web.ps1` – import, web export to `build/web/`, gzip + split the wasm (Berghittn's `pack_wasm.mjs`), fail if any file > 25 MiB
-  - `tools/browser_check.ps1 [-Browser msedge|firefox] [-Url <url>]` – serve `build/web/` locally (or use `-Url`), load it in headless Edge via Playwright, bot plays 60 s, fail on any console error or fps below budget, screenshot to `build/shots/`
+  - `tools/browser_check.ps1 [-Browser msedge|firefox] [-Url <url>] [-Scene run|stress]` – serve `build/web/` locally (or use `-Url`), load it in headless Edge via Playwright, the bot plays a run with 500 enemies for 60 s, fail on any console error or fps below budget, screenshot to `build/shots/`
   - `tools/stress_test.ps1 [-Enemies 500] [-Projectiles 300] [-Browser msedge,firefox] [-Url <url>] [-Native]` – M0 scenario in Edge + Firefox, reports fps, frame times, draw calls and ms per system to `build/perf/`
-  - `tools/mp_test.ps1 -Clients 3` (add `-HostLeavesFirst` for the host-quits case) – headless WebSocket host + clients; checks sync, bandwidth, version refusal and that no client errors
+  - `tools/mp_test.ps1 -Clients 3` (add `-HostLeavesFirst` for the host-quits case, `-Scene stress` for the M0 arena) – headless WebSocket host + clients play a run with bots; checks enemy sync, bandwidth, world states, the Brösel mirror, every Knödl shown, no rejected poses, version refusal and that no client errors
   - `tools/deploy_preview.ps1 -Branch <milestone>` – 25 MiB check, then `npx wrangler pages deploy build/web --project-name=knoedlinger --branch=<milestone>`; URL saved to `build/logs/last_preview_url.txt`. Refuses `main`.
   - Planned: `tools/mp_test.ps1 -Coop` – headless co-op scenario: revive, Knödl-Pass, Riesenknödl merge, shared XP
   - Planned (M6): `tools/browser_mp_check.ps1 -Tabs 4` – 4 headless browser tabs join one room via the real relay and play 60 s
   - Planned: `godot --headless -- --autoplay --runs=20` – bot plays runs and writes stats (time, level, death cause, Knödl cash-ins) to `build/balance/` for tuning
-- Browser URL options mirror the command line: `index.html?enemies=200&projectiles=100&bot=1`.
+- Browser URL options mirror the command line: `index.html?enemies=200&bot=1`. The run is the default scene (`scene=stress` for M0's arena). Run flags: `bot=1` (the bot plays), `debug=1` (F3 overlay on), `god=1`, `knodl_mass=500`, `enemies=500` (hold a fixed crowd), `character=ferdl`, `seconds=60` (print a [RESULT]).
 - One-time setup: `npm install` in `tools/browser/`, then `npx playwright install firefox` (Edge is used as installed). Set `GODOT` if `godot` is not on PATH.
 - Run scripts with `powershell -NoProfile -ExecutionPolicy Bypass -File tools/<script>.ps1`
 - Test runs must never disturb the user at the PC: prefer `--headless` and headless browsers. When a visible window is unavoidable, keep it small, unfocused, without mouse capture and muted.

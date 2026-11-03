@@ -70,7 +70,12 @@ func _ready() -> void:
 	camera.name = "ChaseCamera"
 	camera.far = 400.0
 	add_child(camera)
-	camera.target = local
+	camera.setup(balance, local)
+	# The M0 view: high and fixed, as measured in M0.
+	camera.pitch = deg_to_rad(50.0)
+	camera.distance_override = 14.0
+	camera.mouse_capture_allowed = false
+	camera.auto_turn = false
 	camera.snap_to_target()
 	camera.make_current()
 	if host:
@@ -121,6 +126,7 @@ func _host_frame(delta: float) -> void:
 	var targets: PackedVector3Array = _player_positions()
 	var t0: int = Time.get_ticks_usec()
 	enemies.update(delta, targets)
+	enemies.clear_kills()
 	var t1: int = Time.get_ticks_usec()
 	stats.add_system("enemies", t1 - t0)
 	if projectiles != null:
@@ -328,7 +334,8 @@ func _on_session_ended(reason: String) -> void:
 func _spawn_player(peer_id: int, local: bool) -> Player:
 	var player := Player.new()
 	var bot: BotInput = BotInput.new(fposmod(peer_id * 0.37, 1.0)) if (local and _bot) else null
-	player.setup(peer_id, local, balance, bot)
+	player.setup(peer_id, local, balance, null, bot)
+	player.bounds = balance.arena_half_size
 	add_child(player)
 	player.global_position = Vector3(0.0, 0.05, 0.0)
 	players[peer_id] = player

@@ -1,7 +1,7 @@
 class_name MeshFactory
 extends RefCounted
 ## Builds the chunky low-poly, vertex-coloured placeholder meshes in code (no textures, tiny .pck).
-## Real models replace these from M1 on; the triangle counts stay in the 200-800 fodder budget.
+## Real models replace these later; the triangle counts stay in the 200-800 fodder budget.
 
 
 ## Merges primitive meshes into one ArrayMesh with one colour per part. Each part is
@@ -95,6 +95,59 @@ static func projectile() -> ArrayMesh:
 	ball.radial_segments = 6
 	ball.rings = 3
 	return merge([_part(ball, Transform3D(), Color(1.0, 0.92, 0.55))])
+
+
+## A Brösel: a lumpy low-poly crumb about 1 m across before the instance scale.
+static func brosel() -> ArrayMesh:
+	var crumb := SphereMesh.new()
+	crumb.radius = 0.5
+	crumb.height = 0.75
+	crumb.radial_segments = 6
+	crumb.rings = 3
+	var chip := BoxMesh.new()
+	chip.size = Vector3(0.45, 0.35, 0.45)
+	return merge([
+		_part(crumb, Transform3D(), Color.WHITE),
+		_part(chip, Transform3D(Basis.from_euler(Vector3(0.5, 0.7, 0.3)), Vector3(0.25, 0.15, 0.1)), Color(0.85, 0.85, 0.85)),
+	])
+
+
+## The Knödl: a unit sphere (radius 1), scaled to the Knödl's radius by its node.
+static func knodl() -> SphereMesh:
+	var sphere := SphereMesh.new()
+	sphere.radius = 1.0
+	sphere.height = 2.0
+	sphere.radial_segments = 28
+	sphere.rings = 14
+	return sphere
+
+
+## A flat fan on the ground for melee swings, centred on the player and facing +Z: `segments`
+## slices over `arc` radians from radius 0.4 to 1 (scaled to the reach by the node).
+## UV.x runs across the arc, UV.y outward.
+static func swing_fan(arc: float, segments: int) -> ArrayMesh:
+	var vertices := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	for s: int in segments + 1:
+		var t: float = float(s) / segments
+		var angle: float = -arc * 0.5 + arc * t
+		var direction := Vector3(sin(angle), 0.0, cos(angle))
+		vertices.append(direction * 0.4)
+		uvs.append(Vector2(t, 0.0))
+		vertices.append(direction)
+		uvs.append(Vector2(t, 1.0))
+	for s: int in segments:
+		var i: int = s * 2
+		indices.append_array(PackedInt32Array([i, i + 1, i + 2, i + 1, i + 3, i + 2]))
+	var surface: Array = []
+	surface.resize(Mesh.ARRAY_MAX)
+	surface[Mesh.ARRAY_VERTEX] = vertices
+	surface[Mesh.ARRAY_TEX_UV] = uvs
+	surface[Mesh.ARRAY_INDEX] = indices
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface)
+	return mesh
 
 
 ## A flat 1 x 1 m quad facing up, for blob shadows under enemies.

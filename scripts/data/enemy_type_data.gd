@@ -9,7 +9,13 @@ extends Resource
 @export var speed: float = 3.0
 @export var radius: float = 0.4
 @export var model_scale: float = 1.0
-## Procedural low-poly look for the stress test: body colour, head colour, and whether it flies.
+## Damage per touch on a player (the player is invulnerable for player_hurt_cooldown afterwards).
+@export var contact_damage: float = 5.0
+## XP of the Brösel it drops on death (one of balance.brosel_values, or a sum of them).
+@export var brosel_xp: int = 1
+## How much knockback moves it: 1 = normal, 0 = immovable.
+@export var knockback_factor: float = 1.0
+## Procedural low-poly look for now: body colour, head colour, and whether it flies.
 @export var body_color: Color = Color(0.4, 0.6, 0.3)
 @export var head_color: Color = Color(0.9, 0.75, 0.6)
 @export var flying: bool = false

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="WaveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/wave_data.gd" id="1_wave"]
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="2_enemy"]
+[ext_resource type="Resource" path="res://data/enemies/tourist.tres" id="3_tourist"]
+
+[resource]
+script = ExtResource("1_wave")
+id = &"m1_prototype"
+enemies = Array[ExtResource("2_enemy")]([ExtResource("3_tourist")])

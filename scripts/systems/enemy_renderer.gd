@@ -16,11 +16,14 @@ var _buffers: Array[PackedFloat32Array] = []
 var _shadow_mesh: MultiMesh
 var _shadow_buffer: PackedFloat32Array = PackedFloat32Array()
 var _capacity: int = 0
+## Enemies stand on this ground; null = flat at y = 0.
+var _ground: Heightfield
 
 
-func setup(types: Array[EnemyTypeData], capacity: int) -> void:
+func setup(types: Array[EnemyTypeData], capacity: int, ground: Heightfield = null) -> void:
 	_types = types
 	_capacity = capacity
+	_ground = ground
 	var waddle: Shader = load("res://shaders/enemy_waddle.gdshader")
 	for type: EnemyTypeData in types:
 		var multimesh := MultiMesh.new()
@@ -69,6 +72,8 @@ func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFl
 		yaw: PackedFloat32Array, type: PackedByteArray, radius: PackedFloat32Array,
 		flash: PackedFloat32Array, phase: PackedFloat32Array) -> void:
 	var used: int = mini(slots, _capacity)
+	var ground: Heightfield = _ground
+	var has_ground: bool = ground != null
 	for t: int in _meshes.size():
 		var buffer: PackedFloat32Array = _buffers[t]
 		_buffers[t] = PackedFloat32Array()
@@ -78,6 +83,7 @@ func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFl
 		for i: int in used:
 			if alive[i] == 0 or type[i] != t:
 				continue
+			var gy: float = ground.height_at(x[i], z[i]) if has_ground else 0.0
 			var c: float = cos(yaw[i]) * scale
 			var s: float = sin(yaw[i]) * scale
 			# Row-major 3x4 transform: rotation around Y times scale, then the origin.
@@ -88,7 +94,7 @@ func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFl
 			buffer[o + 4] = 0.0
 			buffer[o + 5] = scale
 			buffer[o + 6] = 0.0
-			buffer[o + 7] = flyer * 0.6
+			buffer[o + 7] = gy + flyer * 0.6
 			buffer[o + 8] = -s
 			buffer[o + 9] = 0.0
 			buffer[o + 10] = c
@@ -110,6 +116,7 @@ func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFl
 		if alive[i] == 0:
 			continue
 		var size: float = radius[i] * 2.4
+		var sy: float = ground.height_at(x[i], z[i]) if has_ground else 0.0
 		var so: int = shadow_count * SHADOW_STRIDE
 		_shadow_buffer[so] = size
 		_shadow_buffer[so + 1] = 0.0
@@ -118,7 +125,7 @@ func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFl
 		_shadow_buffer[so + 4] = 0.0
 		_shadow_buffer[so + 5] = 1.0
 		_shadow_buffer[so + 6] = 0.0
-		_shadow_buffer[so + 7] = 0.02
+		_shadow_buffer[so + 7] = sy + 0.04
 		_shadow_buffer[so + 8] = 0.0
 		_shadow_buffer[so + 9] = 0.0
 		_shadow_buffer[so + 10] = size
