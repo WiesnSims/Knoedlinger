@@ -43,5 +43,6 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Measured (local, RTX 3080, frame-rate cap lifted, 500 enemies + 300 projectiles):** Edge 507 fps / p95 2.1 ms,
   Firefox 539 fps / p95 2.1 ms, 22 draw calls. 2000 enemies + 1000 projectiles in Edge: 121 fps / p95 9.5 ms.
   Headless sync: 1 and 3 clients pass (no buffer underruns, no pops, version mismatch refused).
-- **Open for the next session:** preview deploy (`tools/deploy_preview.ps1 -Branch m0-stress`), browser check against
-  the preview URL in Edge + Firefox, CLAUDE.md command list + README toolchain, M0 report.
+- **Preview deployed** to https://m0-stress.knoedlinger.pages.dev. Measured from the preview (headless, RTX 3080):
+  Edge 497 fps / p95 2.1 ms, Firefox 515 fps / p95 2.1 ms, 22 draw calls; 60 s browser check passed with no console errors.
+- **Open:** mobile budget (Pixel 9 Pro, `?enemies=200`, 30 fps) is checked by the owner by hand.
