@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wildschwein"
+name_key = "ENEMY_WILDSCHWEIN"
+max_hp = 14.0
+speed = 3.6
+radius = 0.55
+contact_damage = 8.0
+brosel_xp = 5
+model_scale = 1.1
+knockback_factor = 0.5
+body_color = Color(0.32, 0.24, 0.17, 1)
+head_color = Color(0.25, 0.18, 0.12, 1)
+flying = false
+spawn_weight = 0.3
+eats_knodl = true
+bite_per_second = 8.0

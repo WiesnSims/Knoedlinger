@@ -3,7 +3,8 @@ extends RefCounted
 ## All enemies as data, not nodes (CLAUDE.md performance rules). Runs on the host only; clients see
 ## them through snapshots (net/snapshot_codec.gd) and EnemyReplica. Every array is indexed by slot.
 ##
-## Each frame: steer every alive enemy toward the nearest player, push it apart from its neighbours
+## Each frame: steer every alive enemy toward the nearest player (Bröselfresser: the nearest Knödl,
+## which they nibble at), push it apart from its neighbours
 ## (from last frame's grid) and from the players, then rebuild the grid for weapons, the Knödl and
 ## the next frame. Enemies far from every player only update every `enemy_far_update_interval`
 ## frames. Enemies move in x/z; their height is the map's baked ground (docs/DECISIONS.md).
@@ -14,6 +15,10 @@ var capacity: int = 0
 ## How many slots should be alive; dead slots below this respawn after respawn_delay.
 var target_count: int = 0
 var respawn_delay: float = 0.0
+## Spawn mix per type (WaveData.weights_at); empty = EnemyTypeData.spawn_weight.
+var type_weights: PackedFloat32Array = PackedFloat32Array()
+## New enemies get their type's max HP times this (time and co-op scaling).
+var hp_mult: float = 1.0
 ## New enemies appear on a ring this far from a random player.
 var ring_min: float = 0.0
 var ring_max: float = 0.0
@@ -54,10 +59,13 @@ var kills: int = 0
 var contacts: int = 0
 ## Per target of the last update(): the highest contact damage of any enemy touching it this frame.
 var touch_damage: PackedFloat32Array = PackedFloat32Array()
+## Per Knödl of the last update(): the mass Bröselfresser bit off it this frame.
+var knodl_bites: PackedFloat32Array = PackedFloat32Array()
 
 var _rng := RandomNumberGenerator.new()
 var _frame: int = 0
-var _weights_total: float = 0.0
+var _eats: PackedByteArray = PackedByteArray()
+var _bites: PackedFloat32Array = PackedFloat32Array()
 
 
 func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: int, seed_value: int = 1,
@@ -83,7 +91,8 @@ func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: in
 		array.fill(0.0)
 		set(name, array)
 	for t: EnemyTypeData in types:
-		_weights_total += t.spawn_weight
+		_eats.append(1 if t.eats_knodl else 0)
+		_bites.append(t.bite_per_second)
 
 
 ## Fills `count` slots right away around the given players (start of the stress test).
@@ -99,12 +108,17 @@ func ground_at(x: float, z: float) -> float:
 	return ground.height_at(x, z) if ground != null else 0.0
 
 
-func update(delta: float, targets: PackedVector3Array) -> void:
+## `targets` are the players to chase; `knodls` (x, y, z, radius) the Knödl Bröselfresser go for
+## (the caller leaves out Knödl they must ignore).
+func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Array = PackedVector4Array()) -> void:
 	_frame += 1
 	contacts = 0
 	var target_total: int = targets.size()
 	touch_damage.resize(target_total)
 	touch_damage.fill(0.0)
+	var knodl_total: int = knodls.size()
+	knodl_bites.resize(knodl_total)
+	knodl_bites.fill(0.0)
 	if targets.is_empty():
 		return
 	var far_sq: float = balance.enemy_far_distance * balance.enemy_far_distance
@@ -138,14 +152,27 @@ func update(delta: float, targets: PackedVector3Array) -> void:
 		var z: float = pos_z[i]
 		var best_sq: float = INF
 		var best: int = 0
-		for t: int in target_total:
-			var target: Vector3 = targets[t]
-			var d_sq: float = (target.x - x) * (target.x - x) + (target.z - z) * (target.z - z)
-			if d_sq < best_sq:
-				best_sq = d_sq
-				best = t
-		var tx: float = targets[best].x
-		var tz: float = targets[best].z
+		var eater: bool = knodl_total > 0 and _eats[type[i]] != 0
+		var tx: float = 0.0
+		var tz: float = 0.0
+		if eater:
+			for k: int in knodl_total:
+				var knodl: Vector4 = knodls[k]
+				var d_sq: float = (knodl.x - x) * (knodl.x - x) + (knodl.z - z) * (knodl.z - z)
+				if d_sq < best_sq:
+					best_sq = d_sq
+					best = k
+			tx = knodls[best].x
+			tz = knodls[best].z
+		else:
+			for t: int in target_total:
+				var target: Vector3 = targets[t]
+				var d_sq: float = (target.x - x) * (target.x - x) + (target.z - z) * (target.z - z)
+				if d_sq < best_sq:
+					best_sq = d_sq
+					best = t
+			tx = targets[best].x
+			tz = targets[best].z
 		var step: float = delta
 		var knocked: bool = kb_x[i] != 0.0 or kb_z[i] != 0.0
 		if best_sq > far_sq and not knocked:
@@ -160,9 +187,21 @@ func update(delta: float, targets: PackedVector3Array) -> void:
 			vx = (tx - x) / distance * speed[i]
 			vz = (tz - z) / distance * speed[i]
 		# Keep out of the player's body instead of walking into it, and hurt them on touch. A player
-		# standing well above or below (a ledge, a jump) is out of reach.
-		var touch: float = r + player_radius
-		if distance < touch:
+		# standing well above or below (a ledge, a jump) is out of reach. Bröselfresser stop at the
+		# Knödl and eat.
+		var touch: float = r + (knodls[best].w + 0.1 if eater else player_radius)
+		if eater:
+			if distance < touch + 0.15:
+				var gy: float = ground.height_at(x, z) if has_ground else 0.0
+				if absf(knodls[best].y - gy) < knodls[best].w + contact_height:
+					knodl_bites[best] += _bites[type[i]] * step
+				vx = 0.0
+				vz = 0.0
+				if distance > 0.001 and distance < touch:
+					var push: float = (touch - distance) / step
+					vx = (x - tx) / distance * push
+					vz = (z - tz) / distance * push
+		elif distance < touch:
 			var gy: float = ground.height_at(x, z) if has_ground else 0.0
 			if absf(targets[best].y - gy) < contact_height:
 				contacts += 1
@@ -255,6 +294,18 @@ func damage(slot: int, amount: float, kx: float = 0.0, kz: float = 0.0) -> bool:
 	return true
 
 
+## Removes an enemy without a kill (no Brösel, no kill count): the Riesen-Wirt sweeps it out.
+func despawn(slot: int) -> void:
+	if alive[slot] == 0:
+		return
+	alive[slot] = 0
+	alive_count -= 1
+	respawn_timer[slot] = respawn_delay
+	kb_x[slot] = 0.0
+	kb_z[slot] = 0.0
+	died.append(slot)
+
+
 ## Moves an enemy (pushed out of a Knödl, for example), staying inside the bounds.
 func shove(slot: int, x: float, z: float) -> void:
 	var half: float = bounds - 0.5
@@ -292,8 +343,8 @@ func _spawn(slot: int, targets: PackedVector3Array) -> void:
 	pos_z[slot] = clampf(center.z + sin(angle) * distance, -half, half)
 	yaw[slot] = angle + PI
 	type[slot] = t
-	hp[slot] = data.max_hp
-	max_hp[slot] = data.max_hp
+	hp[slot] = data.max_hp * hp_mult
+	max_hp[slot] = data.max_hp * hp_mult
 	speed[slot] = data.speed * _rng.randf_range(0.85, 1.15)
 	radius[slot] = data.radius
 	flash[slot] = 0.0
@@ -308,12 +359,21 @@ func _spawn(slot: int, targets: PackedVector3Array) -> void:
 
 
 func _pick_type() -> int:
-	var roll: float = _rng.randf() * _weights_total
+	var total: float = 0.0
 	for t: int in types.size():
-		roll -= types[t].spawn_weight
-		if roll <= 0.0:
+		total += _weight(t)
+	if total <= 0.0:
+		return 0
+	var roll: float = _rng.randf() * total
+	for t: int in types.size():
+		roll -= _weight(t)
+		if roll <= 0.0 and _weight(t) > 0.0:
 			return t
 	return types.size() - 1
+
+
+func _weight(t: int) -> float:
+	return type_weights[t] if t < type_weights.size() else types[t].spawn_weight
 
 
 func _rebuild_grid() -> void:

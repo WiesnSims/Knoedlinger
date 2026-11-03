@@ -136,7 +136,7 @@ static func _build_environment(map: MapData, parent: Node3D) -> void:
 
 
 static func _build_props(map: MapData, parent: Node3D) -> void:
-	if map.props.is_empty():
+	if map.all_props().is_empty():
 		return
 	var body := StaticBody3D.new()
 	body.name = "Props"
@@ -144,7 +144,7 @@ static func _build_props(map: MapData, parent: Node3D) -> void:
 	body.collision_mask = 0
 	parent.add_child(body)
 	var builder := FlatMeshBuilder.new()
-	for prop: MapProp in map.props:
+	for prop: MapProp in map.all_props():
 		var shape := CollisionShape3D.new()
 		shape.transform = prop.transform()
 		var sx: float = prop.size.x * 0.5

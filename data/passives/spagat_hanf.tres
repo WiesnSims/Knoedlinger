@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PassiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/passive_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"spagat_hanf"
+name_key = "PASSIVE_SPAGAT"
+desc_key = "DESC_PASSIVE_SPAGAT"
+kind = 0
+max_level = 5
+stats = Dictionary[StringName, float]({&"string_length": 0.15})
+color = Color(0.8, 0.72, 0.5, 1)

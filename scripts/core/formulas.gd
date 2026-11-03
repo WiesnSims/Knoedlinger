@@ -51,6 +51,59 @@ static func level_progress(total_xp: float, balance: BalanceData) -> float:
 	return total_xp / needed
 
 
+## Damage of one weapon hit before crits: base, + damage_per_level per level, the damage stat, and
+## the extra its rarer cards added ((bonus - level) * weapon_rarity_damage).
+static func weapon_damage(weapon: WeaponData, level: int, bonus: float, damage_stat: float, balance: BalanceData) -> float:
+	var levelled: float = 1.0 + weapon.damage_per_level * (level - 1)
+	var rarity: float = 1.0 + maxf(bonus - level, 0.0) * balance.weapon_rarity_damage
+	return weapon.damage * levelled * (1.0 + damage_stat) * rarity
+
+
+## Seconds between attacks: faster per level and with the cooldown stat, never below 40 % each.
+static func weapon_cooldown(weapon: WeaponData, level: int, cooldown_stat: float) -> float:
+	var levelled: float = maxf(1.0 - weapon.cooldown_per_level * (level - 1), 0.4)
+	return weapon.cooldown * levelled * maxf(1.0 - cooldown_stat, 0.4)
+
+
+## Size factor for reach, radius and orbit: bigger per level and with the area stat.
+static func weapon_area(weapon: WeaponData, level: int, area_stat: float) -> float:
+	return (1.0 + weapon.area_per_level * (level - 1)) * (1.0 + area_stat)
+
+
+## Shots or pieces per attack: the base amount plus one per reached entry of amount_levels.
+static func weapon_amount(weapon: WeaponData, level: int) -> int:
+	var amount: int = weapon.amount
+	for at: int in weapon.amount_levels:
+		if level >= at:
+			amount += 1
+	return amount
+
+
+## Where piece `k` of `count` of an orbiting weapon is, relative to the player (x, z). Host and
+## clients use the same run time, so everyone sees the pieces where the host hits with them.
+static func orbit_offset(weapon: WeaponData, k: int, count: int, run_time: float, area: float, move_speed_stat: float) -> Vector2:
+	var speed: float = weapon.orbit_speed * (1.0 + weapon.orbit_speed_from_move_speed * maxf(move_speed_stat, 0.0))
+	var angle: float = run_time * speed + TAU * k / maxi(count, 1)
+	var radius: float = weapon.orbit_radius * area * (1.0 + weapon.orbit_wobble * sin(run_time * 1.7))
+	return Vector2(cos(angle), sin(angle)) * radius
+
+
+## Damage a player takes from a hit after armor (never below balance.min_hit_damage).
+static func hit_damage(amount: float, armor: float, balance: BalanceData) -> float:
+	if amount <= 0.0:
+		return 0.0
+	return maxf(amount - maxf(armor, 0.0), minf(balance.min_hit_damage, amount))
+
+
+## Wirtshaus tier for a Knödl mass: -1 below S, then 0 = S, 1 = M, 2 = L, 3 = XL.
+static func wirtshaus_tier(mass: float, balance: BalanceData) -> int:
+	var tier: int = -1
+	for k: int in balance.wirtshaus_tier_mass.size():
+		if mass >= balance.wirtshaus_tier_mass[k]:
+			tier = k
+	return tier
+
+
 ## Splits an XP amount into Brösel sizes, largest first (balance.brosel_values is ascending).
 static func split_into_brosel(xp: int, balance: BalanceData) -> PackedInt32Array:
 	var pieces := PackedInt32Array()

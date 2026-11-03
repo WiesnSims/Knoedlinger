@@ -49,3 +49,48 @@ func test_handshake_rejects_mismatches() -> void:
 	assert_eq(Handshake.check("berghittn", "0.0.1", "b", "0.0.1", "b"), Handshake.REASON_GAME)
 	assert_eq(Handshake.check("knoedlinger", "0.0.2", "b", "0.0.1", "b"), Handshake.REASON_VERSION)
 	assert_eq(Handshake.check("knoedlinger", "0.0.1", "c", "0.0.1", "b"), Handshake.REASON_BUILD)
+
+
+func test_offer_round_trip() -> void:
+	var offer := OfferCodec.Offer.new()
+	offer.type = OfferCodec.Type.CHEST
+	offer.seq = 4097
+	offer.rerolls = 2
+	offer.banishes = 3
+	offer.pending = 4
+	offer.seconds = 8
+	offer.tier = 3
+	offer.value = 512
+	offer.cards = [Card.new(Card.Kind.WEAPON, 3, Card.Rarity.NOBLE, 5), Card.new(Card.Kind.HEAL, 0, 0, 1)]
+	var back: OfferCodec.Offer = OfferCodec.decode_offer(OfferCodec.encode_offer(offer))
+	assert_not_null(back)
+	assert_eq(back.type, OfferCodec.Type.CHEST)
+	assert_eq(back.seq, 4097)
+	assert_eq(back.rerolls, 2)
+	assert_eq(back.banishes, 3)
+	assert_eq(back.pending, 4)
+	assert_eq(back.seconds, 8)
+	assert_eq(back.tier, 3)
+	assert_eq(back.value, 512)
+	assert_eq(back.cards.size(), 2)
+	assert_eq(back.cards[0].kind, Card.Kind.WEAPON)
+	assert_eq(back.cards[0].index, 3)
+	assert_eq(back.cards[0].rarity, Card.Rarity.NOBLE)
+	assert_eq(back.cards[0].level, 5)
+	assert_eq(back.cards[1].kind, Card.Kind.HEAL)
+
+
+func test_choice_round_trip_and_garbage() -> void:
+	var choice := OfferCodec.Choice.new()
+	choice.seq = 65535
+	choice.action = OfferCodec.Action.BANISH
+	choice.card = 2
+	var back: OfferCodec.Choice = OfferCodec.decode_choice(OfferCodec.encode_choice(choice))
+	assert_eq(back.seq, 65535)
+	assert_eq(back.action, OfferCodec.Action.BANISH)
+	assert_eq(back.card, 2)
+	assert_null(OfferCodec.decode_choice(PackedByteArray([1, 0, 0, 9, 0])), "unknown action")
+	assert_null(OfferCodec.decode_offer(PackedByteArray([1, 0, 0])))
+	var bad := OfferCodec.encode_offer(OfferCodec.Offer.new())
+	bad[1] = 7
+	assert_null(OfferCodec.decode_offer(bad), "unknown type")

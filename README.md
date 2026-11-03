@@ -4,7 +4,7 @@
 
 - Design: [GAME-DESIGN.md](GAME-DESIGN.md) · decisions and numbers: [docs/DECISIONS.md](docs/DECISIONS.md) · working rules and commands: [CLAUDE.md](CLAUDE.md)
 
-## Play (M1: the Knödl prototype)
+## Play (M2: the core loop)
 
 | Action | Keys |
 | --- | --- |
@@ -13,10 +13,12 @@
 | Schupfn / reel the Knödl back in | Shift or right click |
 | Look around | Mouse (click into the game once; Esc lets go), or Q / E |
 | Zoom | Mouse wheel |
+| Speisekarte (level-up) | 1 / 2 / 3 or click · R: Nochmal bitte · B: Des mog i ned · N: Danke, passt eh |
+| Cash in the Knödl | Roll it onto the glowing mat in front of an open Wirtshaus door |
 | Debug overlay | F3 |
 
 URL flags for testing: `?bot=1` (a bot plays), `?god=1`, `?knodl_mass=500`, `?enemies=500`, `?debug=1`,
-`?scene=stress` (the M0 stress arena).
+`?start_time=880` (start the clock late, e.g. to see Sperrstund'), `?scene=stress` (the M0 stress arena).
 
 ## Toolchain
 
@@ -36,6 +38,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_tests.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/build_web.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/browser_check.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/mp_test.ps1 -Clients 1
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/autoplay.ps1 -Runs 3
 ```
 
 Logs go to `build/logs/`; every script exits 1 on any error or warning.

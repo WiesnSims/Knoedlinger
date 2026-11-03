@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="WaveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/wave_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="2_enemy"]
+[ext_resource type="Script" path="res://scripts/data/wave_entry.gd" id="3_entry"]
+[ext_resource type="Resource" path="res://data/enemies/tourist.tres" id="e_tourist"]
+[ext_resource type="Resource" path="res://data/enemies/gelse.tres" id="e_gelse"]
+[ext_resource type="Resource" path="res://data/enemies/dackel.tres" id="e_dackel"]
+[ext_resource type="Resource" path="res://data/enemies/taube.tres" id="e_taube"]
+[ext_resource type="Resource" path="res://data/enemies/wildschwein.tres" id="e_wildschwein"]
+
+[sub_resource type="Resource" id="entry_0"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_tourist")
+from_minute = 0.0
+to_minute = 15.0
+weight = 3.0
+
+[sub_resource type="Resource" id="entry_1"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_gelse")
+from_minute = 0.0
+to_minute = 15.0
+weight = 1.5
+
+[sub_resource type="Resource" id="entry_2"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_dackel")
+from_minute = 1.5
+to_minute = 15.0
+weight = 1.5
+
+[sub_resource type="Resource" id="entry_3"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_taube")
+from_minute = 4.0
+to_minute = 15.0
+weight = 0.8
+
+[sub_resource type="Resource" id="entry_4"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_wildschwein")
+from_minute = 5.0
+to_minute = 15.0
+weight = 0.5
+
+[sub_resource type="Resource" id="entry_5"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_tourist")
+from_minute = 8.0
+to_minute = 9.0
+weight = 4.0
+
+[resource]
+script = ExtResource("1_script")
+id = &"kirtag"
+enemies = Array[ExtResource("2_enemy")]([ExtResource("e_tourist"), ExtResource("e_gelse"), ExtResource("e_dackel"), ExtResource("e_taube"), ExtResource("e_wildschwein")])
+entries = Array[ExtResource("3_entry")]([SubResource("entry_0"), SubResource("entry_1"), SubResource("entry_2"), SubResource("entry_3"), SubResource("entry_4"), SubResource("entry_5")])

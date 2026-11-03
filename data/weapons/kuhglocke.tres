@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"kuhglocke"
+name_key = "WEAPON_KUHGLOCKE"
+desc_key = "DESC_WEAPON_KUHGLOCKE"
+pattern = 2
+cooldown = 2.4
+damage = 3.5
+reach = 4.5
+knockback = 11.0
+damage_per_level = 0.25
+cooldown_per_level = 0.04
+area_per_level = 0.08
+color = Color(0.95, 0.88, 0.45, 1)

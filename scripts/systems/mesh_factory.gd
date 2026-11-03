@@ -88,13 +88,62 @@ static func enemy(type: EnemyTypeData) -> ArrayMesh:
 	return merge(parts)
 
 
+## A shot: a ski pole pointing along +z (the pool turns it into its flight direction).
 static func projectile() -> ArrayMesh:
+	var pole := CylinderMesh.new()
+	pole.top_radius = 0.05
+	pole.bottom_radius = 0.05
+	pole.height = 1.3
+	pole.radial_segments = 5
+	pole.rings = 1
+	var basket := CylinderMesh.new()
+	basket.top_radius = 0.16
+	basket.bottom_radius = 0.16
+	basket.height = 0.04
+	basket.radial_segments = 8
+	basket.rings = 1
+	var along_z := Basis.from_euler(Vector3(PI / 2.0, 0.0, 0.0))
+	return merge([
+		_part(pole, Transform3D(along_z, Vector3.ZERO), Color(0.95, 0.9, 0.55)),
+		_part(basket, Transform3D(along_z, Vector3(0.0, 0.0, 0.45)), Color(0.3, 0.3, 0.35)),
+	])
+
+
+## An orbiting piece about 1 m across before its scale: a Mozartkugel (BALL) or a rolling pin
+## lying along the circle (PIN).
+static func orbit_piece(look: WeaponData.Look) -> ArrayMesh:
+	if look == WeaponData.Look.PIN:
+		var roll := CylinderMesh.new()
+		roll.top_radius = 0.2
+		roll.bottom_radius = 0.2
+		roll.height = 1.1
+		roll.radial_segments = 8
+		roll.rings = 1
+		var handle := CylinderMesh.new()
+		handle.top_radius = 0.07
+		handle.bottom_radius = 0.07
+		handle.height = 1.7
+		handle.radial_segments = 6
+		handle.rings = 1
+		var along_x := Basis.from_euler(Vector3(0.0, 0.0, PI / 2.0))
+		return merge([
+			_part(roll, Transform3D(along_x, Vector3.ZERO), Color(0.86, 0.68, 0.45)),
+			_part(handle, Transform3D(along_x, Vector3.ZERO), Color(0.62, 0.45, 0.28)),
+		])
 	var ball := SphereMesh.new()
-	ball.radius = 0.18
-	ball.height = 0.36
-	ball.radial_segments = 6
-	ball.rings = 3
-	return merge([_part(ball, Transform3D(), Color(1.0, 0.92, 0.55))])
+	ball.radius = 0.5
+	ball.height = 1.0
+	ball.radial_segments = 10
+	ball.rings = 5
+	var foil := SphereMesh.new()
+	foil.radius = 0.2
+	foil.height = 0.3
+	foil.radial_segments = 8
+	foil.rings = 3
+	return merge([
+		_part(ball, Transform3D(), Color(0.42, 0.25, 0.14)),
+		_part(foil, Transform3D(Basis(), Vector3(0.0, 0.42, 0.0)), Color(0.95, 0.8, 0.35)),
+	])
 
 
 ## A Brösel: a lumpy low-poly crumb about 1 m across before the instance scale.

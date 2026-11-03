@@ -30,6 +30,12 @@ var camera_yaw: float = 0.0
 var speed_factor: float = 1.0
 ## Knocked down: cannot move (host state, see PlayerState).
 var downed: bool = false
+## Choosing from the Speisekarte in co-op: stands still under a sign (host state).
+var choosing: bool = false
+## From the build (PlayerBuild stats): move speed factor, jump height bonus, extra jumps.
+var stat_speed: float = 1.0
+var stat_jump_height: float = 0.0
+var stat_extra_jumps: int = 0
 ## Velocity on host and clients alike; remote players estimate it from their poses.
 var motion_velocity: Vector3 = Vector3.ZERO
 var jumps_used: int = 0
@@ -43,6 +49,7 @@ var _jump_buffer: float = 0.0
 var _schupfn_presses: int = 0
 var _last_position: Vector3 = Vector3.ZERO
 var _look: Node3D
+var _sign: Label3D
 
 
 func setup(p_peer_id: int, local: bool, p_balance: BalanceData, p_character: CharacterData, p_bot: BotInput) -> void:
@@ -61,6 +68,17 @@ func setup(p_peer_id: int, local: bool, p_balance: BalanceData, p_character: Cha
 	add_child(shape)
 	_look = _build_look(local)
 	add_child(_look)
+	_sign = Label3D.new()
+	_sign.name = "BinGleiWiederDa"
+	_sign.text = tr("SIGN_BACK_SOON")
+	_sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_sign.position = Vector3(0.0, 2.9, 0.0)
+	_sign.font_size = 56
+	_sign.pixel_size = 0.01
+	_sign.outline_size = 12
+	_sign.outline_modulate = Color(0.2, 0.12, 0.06)
+	_sign.visible = false
+	add_child(_sign)
 	collision_layer = LAYER_PLAYER if local else 0
 	collision_mask = MapBuilder.LAYER_WORLD
 	floor_max_angle = deg_to_rad(balance.player_max_slope_degrees)
@@ -88,7 +106,12 @@ func ground_height_at(where: Vector3) -> float:
 
 
 func max_jumps() -> int:
-	return balance.player_jumps + (character.extra_jumps if character != null else 0)
+	return balance.player_jumps + (character.extra_jumps if character != null else 0) + stat_extra_jumps
+
+
+## Run speed on flat ground with the build and the Knödl's drag (also the host's pose check).
+func run_speed() -> float:
+	return balance.player_speed * speed_factor * stat_speed
 
 
 ## Puts the player back at a point (start of a run, respawn).
@@ -106,6 +129,8 @@ func _process(_delta: float) -> void:
 	# Knocked down: lie on the ground (only the look turns, the body stays upright for Jolt).
 	var lying: float = PI * 0.5 if downed else 0.0
 	_look.rotation.x = lerpf(_look.rotation.x, lying, 0.2)
+	# Solo pauses for the Speisekarte; the sign is for teammates (co-op runs on).
+	_sign.visible = choosing and NetworkManager.is_online()
 
 
 func _physics_process(delta: float) -> void:
@@ -115,20 +140,21 @@ func _physics_process(delta: float) -> void:
 		rotation.y = lerp_angle(rotation.y, _remote_yaw, blend)
 		_update_motion(delta)
 		return
-	var move: Vector2 = Vector2.ZERO if downed else _sample_move(delta)
+	var stuck: bool = downed or choosing
+	var move: Vector2 = Vector2.ZERO if stuck else _sample_move(delta)
 	var on_floor: bool = is_on_floor()
 	if on_floor:
 		_coyote = balance.player_coyote_time
 		jumps_used = 0
 	else:
 		_coyote = maxf(_coyote - delta, 0.0)
-	var target := Vector2(move.x, move.y) * balance.player_speed * speed_factor
+	var target := Vector2(move.x, move.y) * run_speed()
 	var accel: float = balance.player_acceleration * (1.0 if on_floor else balance.player_air_control)
 	var horizontal := Vector2(velocity.x, velocity.z).move_toward(target, accel * delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.y
 	var jump_pressed: bool = Input.is_action_just_pressed(&"jump") or (bot != null and _manual_timer <= 0.0 and bot.take_jump())
-	if jump_pressed and not downed:
+	if jump_pressed and not stuck:
 		_jump_buffer = balance.player_jump_buffer
 	else:
 		_jump_buffer = maxf(_jump_buffer - delta, 0.0)
@@ -153,7 +179,7 @@ func _physics_process(delta: float) -> void:
 	if move.length_squared() > 0.01:
 		rotation.y = lerp_angle(rotation.y, atan2(move.x, move.y), 1.0 - exp(-TURN_SPEED * delta))
 	var schupfn: bool = Input.is_action_just_pressed(&"schupfn") or (bot != null and _manual_timer <= 0.0 and bot.take_schupfn())
-	if schupfn and not downed:
+	if schupfn and not stuck:
 		_schupfn_presses = (_schupfn_presses + 1) & 0xFF
 	_update_motion(delta)
 	_tick += 1
@@ -173,7 +199,8 @@ func apply_remote(message: InputMessage) -> void:
 
 
 func _jump() -> void:
-	velocity.y = balance.player_jump_velocity
+	# Jump height grows with the bonus: v = v0 * sqrt(1 + bonus).
+	velocity.y = balance.player_jump_velocity * sqrt(1.0 + maxf(stat_jump_height, 0.0))
 	jumps_used += 1
 	_jump_buffer = 0.0
 	_coyote = 0.0

@@ -20,6 +20,10 @@ signal events_received(data: PackedByteArray)
 signal player_input_received(peer_id: int, data: PackedByteArray)
 signal world_state_received(data: PackedByteArray)
 signal brosel_received(data: PackedByteArray)
+## A Speisekarte message for the local player (OfferCodec: offer, chest or notice).
+signal offer_received(data: PackedByteArray)
+## Host: a player answered an offer (OfferCodec.Choice).
+signal choice_received(peer_id: int, data: PackedByteArray)
 
 enum Mode { SOLO, HOST, CLIENT }
 
@@ -44,6 +48,8 @@ var _joined: bool = false
 
 
 func _ready() -> void:
+	# Keeps talking while a solo Speisekarte pauses the game.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	version = str(ProjectSettings.get_setting("application/config/version", "0"))
 	if FileAccess.file_exists(BUILD_ID_PATH):
 		build_id = FileAccess.get_file_as_string(BUILD_ID_PATH).strip_edges()
@@ -153,6 +159,29 @@ func send_brosel_to(peer: int, data: PackedByteArray) -> void:
 		return
 	_rx_brosel.rpc_id(peer, data)
 	bytes_sent += data.size() + MESSAGE_OVERHEAD
+
+
+## Host: a Speisekarte message for one player, reliable. The host's own player (and solo) gets it
+## locally, a frame later, like any network message.
+func send_offer(peer_id: int, data: PackedByteArray) -> void:
+	if not is_host():
+		return
+	if peer_id == local_id():
+		offer_received.emit.call_deferred(data)
+		return
+	if not _accepted.has(peer_id) or not _can_send(peer_id):
+		return
+	_rx_offer.rpc_id(peer_id, data)
+	bytes_sent += data.size() + MESSAGE_OVERHEAD
+
+
+## The local player's answer to an offer: to the host, or straight to the host's own handler.
+func send_choice(data: PackedByteArray) -> void:
+	if is_host():
+		choice_received.emit.call_deferred(local_id(), data)
+	elif _joined:
+		_rx_choice.rpc_id(HOST_ID, data)
+		bytes_sent += data.size() + MESSAGE_OVERHEAD
 
 
 ## The local player's InputMessage: a client sends it to the host, the host to every client.
@@ -276,6 +305,21 @@ func _rx_world_state(data: PackedByteArray) -> void:
 func _rx_brosel(data: PackedByteArray) -> void:
 	bytes_received += data.size() + MESSAGE_OVERHEAD
 	brosel_received.emit(data)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _rx_offer(data: PackedByteArray) -> void:
+	bytes_received += data.size() + MESSAGE_OVERHEAD
+	offer_received.emit(data)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _rx_choice(data: PackedByteArray) -> void:
+	var sender: int = multiplayer.get_remote_sender_id()
+	if mode != Mode.HOST or not _accepted.has(sender):
+		return
+	bytes_received += data.size() + MESSAGE_OVERHEAD
+	choice_received.emit(sender, data)
 
 
 @rpc("any_peer", "call_remote", "unreliable_ordered")

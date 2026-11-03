@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PassiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/passive_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"omas_rezept"
+name_key = "KNODL_OMAS_REZEPT"
+desc_key = "DESC_KNODL_OMAS_REZEPT"
+kind = 1
+max_level = 1
+stats = Dictionary[StringName, float]({&"knodl_guard": 1.0})
+color = Color(0.95, 0.85, 0.6, 1)

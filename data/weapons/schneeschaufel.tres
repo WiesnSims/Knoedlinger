@@ -1,15 +1,20 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
-[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_weapon"]
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
 
 [resource]
-script = ExtResource("1_weapon")
+script = ExtResource("1_script")
 id = &"schneeschaufel"
 name_key = "WEAPON_SCHNEESCHAUFEL"
+desc_key = "DESC_WEAPON_SCHNEESCHAUFEL"
+pattern = 0
 cooldown = 1.1
 damage = 3.0
 reach = 3.2
 arc_degrees = 140.0
 knockback = 9.0
-height_reach = 2.0
-color = Color(0.85, 0.95, 1, 1)
+damage_per_level = 0.25
+cooldown_per_level = 0.04
+area_per_level = 0.06
+amount_levels = PackedInt32Array(5)
+color = Color(0.85, 0.95, 1.0, 1)

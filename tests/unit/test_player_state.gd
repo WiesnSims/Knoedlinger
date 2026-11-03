@@ -43,6 +43,8 @@ func test_world_state_round_trip() -> void:
 	frame.host_ms = 123456
 	frame.run_time = 61.5
 	frame.brosel_alive = 321
+	frame.phase = 1
+	frame.wirtshaeuser = [Vector3i(0, 1, 0), Vector3i(4, 3, 2)]
 	var e := WorldStateCodec.Entry.new()
 	e.peer_id = 1234567
 	e.hp = 42.5
@@ -51,7 +53,13 @@ func test_world_state_round_trip() -> void:
 	e.level = 7
 	e.downed = true
 	e.life = 3
-	e.swing_count = 200
+	e.choosing = true
+	e.pending_levels = 2
+	e.gold = 1234
+	e.rerolls = 3
+	e.banishes = 1
+	e.weapons = PackedInt32Array([0, 8, 1025, 200, 5, 1, 100, 7])
+	e.passives = PackedInt32Array([9, 1, 150])
 	e.knodl_state = Knodl.State.REELING
 	e.knodl_cooldown = 2.35
 	e.knodl_mass = 812.25
@@ -59,25 +67,37 @@ func test_world_state_round_trip() -> void:
 	e.knodl_rotation = Quaternion(Vector3.UP, 1.0)
 	frame.entries.append(e)
 	var data: PackedByteArray = WorldStateCodec.encode(frame)
-	assert_eq(data.size(), WorldStateCodec.HEADER_SIZE + WorldStateCodec.PLAYER_SIZE)
+	assert_eq(data.size(), WorldStateCodec.HEADER_SIZE + 2 * WorldStateCodec.WIRT_SIZE + 1 + WorldStateCodec.PLAYER_SIZE
+			+ 2 * WorldStateCodec.WEAPON_SIZE + WorldStateCodec.PASSIVE_SIZE)
 	var back: WorldStateCodec.Frame = WorldStateCodec.decode(data)
 	assert_not_null(back)
 	assert_eq(back.seq, 513)
 	assert_eq(back.brosel_alive, 321)
 	assert_almost_eq(back.run_time, 61.5, 0.001)
+	assert_eq(back.phase, 1)
+	assert_eq(back.wirtshaeuser, frame.wirtshaeuser)
 	var b: WorldStateCodec.Entry = back.entries[0]
 	assert_eq(b.peer_id, 1234567)
 	assert_almost_eq(b.hp, 42.5, 0.001)
 	assert_eq(b.level, 7)
 	assert_true(b.downed)
 	assert_eq(b.life, 3)
-	assert_eq(b.swing_count, 200)
+	assert_true(b.choosing)
+	assert_eq(b.pending_levels, 2)
+	assert_eq(b.gold, 1234)
+	assert_eq(b.rerolls, 3)
+	assert_eq(b.banishes, 1)
+	assert_eq(b.weapons, e.weapons)
+	assert_eq(b.passives, e.passives)
 	assert_eq(b.knodl_state, Knodl.State.REELING)
 	assert_almost_eq(b.knodl_cooldown, 2.35, 0.05)
 	assert_almost_eq(b.knodl_mass, 812.25, 0.001)
 	assert_almost_eq(b.knodl_position.x, -12.5, 0.001)
 	assert_almost_eq(b.knodl_rotation.angle_to(e.knodl_rotation), 0.0, 0.001)
 	assert_null(WorldStateCodec.decode(data.slice(0, data.size() - 1)))
+	var longer: PackedByteArray = data.duplicate()
+	longer.append(0)
+	assert_null(WorldStateCodec.decode(longer))
 
 
 func test_input_message_counts_schupfn_presses() -> void:

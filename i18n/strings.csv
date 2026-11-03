@@ -5,13 +5,14 @@ ENEMY_TOURIST,Touristen-Zombie
 ENEMY_DACKEL,Kampf-Dackel
 NET_VERSION_MISMATCH,Eicha Version is ned de gleiche.
 HUD_LEVEL,Level %d
-HUD_KNODL,"Knödl: %d Brösel, Ø %.1f m"
+HUD_KNODL,"Knödl: %d Brösel, Ø %.1f m · Größe %s"
 HUD_SCHUPFN_READY,Schupfn bereit (Shift / Rechtsklick)
 HUD_SCHUPFN_COOLDOWN,Schupfn in %.1f s
 HUD_SCHUPFN_REEL,Nochmal drücken: Knödl zruckholn
 HUD_SCHUPFN_REELING,Knödl kummt zruck …
 HUD_CONTROLS,"WASD: gehn · Leertaste: hupfn · Shift/Rechtsklick: Schupfn
-Maus: schaun · Mausradl: zoomen · Q/E: drehn · F3: Statistik"
+Maus: schaun · Mausradl: zoomen · Q/E: drehn · F3: Statistik
+Knödl in a Wirtshaustür rolln: einkehrn!"
 HUD_BOT_HINT,"Bot spielt, WASD übernimmt"
 TOAST_LEVEL_UP,Level %d!
 TOAST_DOWNED,Umgfoin! Glei geht's weiter …
@@ -20,3 +21,106 @@ WEAPON_SCHNEESCHAUFEL,Schneeschaufel
 KNODL_SEMMEL,Semmelknödl
 MAP_TESTFELD,Testfeld
 HUD_MOUSE_HINT,Klick ins Spiel zum Umschaun mit der Maus (Esc lasst aus)
+ENEMY_TAUBE,Taube
+ENEMY_WILDSCHWEIN,Wildschwein
+DESC_WEAPON_SCHNEESCHAUFEL,Räumt den Gehsteig. Und alles drauf.
+WEAPON_KOCHLOEFFEL,Kochlöffel
+DESC_WEAPON_KOCHLOEFFEL,"Omas Erziehungsmethode. Trifft öfter, als ma glaubt."
+WEAPON_SKISTOECKE,Skistöcke
+DESC_WEAPON_SKISTOECKE,Fliagn in Laufrichtung und durch a paar Leit durch.
+WEAPON_KUHGLOCKE,Kuhglocke
+DESC_WEAPON_KUHGLOCKE,"Bimmelt so laut, dass rundum alles umfallt."
+WEAPON_WATSCHN,Watschn-Aura
+DESC_WEAPON_WATSCHN,"Wer z'nah kummt, fangt si ane."
+WEAPON_MOZARTKUGEL,Mozartkugel-Orbit
+DESC_WEAPON_MOZARTKUGEL,Kreisen um di wie Touristen um a Souvenirstandl.
+WEAPON_NUDELWALKER,Omas Nudelwalker
+DESC_WEAPON_NUDELWALKER,Heut wird ned da Teig ausgrollt. Sondern alle andern.
+WEAPON_KUGELKARUSSELL,Kugel-Karussell
+DESC_WEAPON_KUGELKARUSSELL,"Je schneller du rennst, desto schneller drahn's si."
+PASSIVE_LEDERHOSN,Lederhosn
+DESC_PASSIVE_LEDERHOSN,Hält alles aus. Riecht auch so.
+PASSIVE_BRETTLJAUSE,Brettljause
+DESC_PASSIVE_BRETTLJAUSE,"Speck, Kas, Kren. Heilt langsam, aber sicher."
+PASSIVE_KRAEUTERLIMO,Kräuterlimo
+DESC_PASSIVE_KRAEUTERLIMO,Schmeckt nach Wiesn. Macht flinke Haxn.
+PASSIVE_STRICKPULLOVER,Strickpullover
+DESC_PASSIVE_STRICKPULLOVER,"Von da Tant gstrickt. Deckt mehr ab, als ma will."
+PASSIVE_PENSIONISTENAUSWEIS,Pensionistenausweis
+DESC_PASSIVE_PENSIONISTENAUSWEIS,Überall Vorrang. Auch beim Zuahaun.
+PASSIVE_GAMSBART,Gamsbart-Hut
+DESC_PASSIVE_GAMSBART,"Wer so an Huat trogt, trifft a gscheit."
+PASSIVE_HAFERLSCHUHE,Haferlschuhe
+DESC_PASSIVE_HAFERLSCHUHE,Guat besohlt. Damit hupfst no amoi in da Luft.
+PASSIVE_SPAGAT,Spagat aus Hanf
+DESC_PASSIVE_SPAGAT,"Längere Schnur, schneller zruck."
+PASSIVE_WANDERKARTE,Wanderkarte
+DESC_PASSIVE_WANDERKARTE,Du findst jedes Bröserl. Nur ned an Weg zruck.
+KNODL_OMAS_REZEPT,Omas Rezept
+DESC_KNODL_OMAS_REZEPT,"Tauben und Wildsau mögn dein Knödl nimmer. Warum, bleibt Familiengeheimnis."
+STAT_DAMAGE,Schaden
+STAT_AREA,Fläche
+STAT_COOLDOWN,schnellere Angriffe
+STAT_MOVE_SPEED,Tempo
+STAT_MAX_HP,max. HP
+STAT_REGEN,HP pro Sekunde
+STAT_ARMOR,Rüstung
+STAT_CRIT,Volltreffer-Chance
+STAT_PICKUP,Sammelradius
+STAT_JUMP_HEIGHT,Sprunghöhe
+STAT_EXTRA_JUMPS,Sprung in da Luft
+STAT_STRING_LENGTH,Spagatlänge
+STAT_LUCK,Glück
+STAT_GOLD,Gold
+STAT_KNODL_GUARD,Bröselfresser lassn dein Knödl in Ruah
+RARITY_0,Gewöhnlich
+RARITY_1,Fein
+RARITY_2,Edel
+RARITY_3,Hofratswürdig
+CARD_NEW,Neu!
+CARD_LEVEL,Stufe %d
+CARD_EVOLUTION,Evolution!
+CARD_WEAPON_LEVEL,"Mehr Schaden, mehr Fläche, schneller."
+CARD_GOLD,Trinkgeld
+CARD_GOLD_DESC,+%d Gold. Da Ober bedankt si.
+CARD_HEAL,Gulasch
+CARD_HEAL_DESC,+%d HP. A Gulasch geht immer.
+MENU_TITLE,Herr Poldi: „Was darf's sein?“
+MENU_TITLE_MORE,Herr Poldi: „Was darf's sein?“ (no %d offen)
+MENU_REROLL,Nochmal bitte (R) · %d
+MENU_BANISH,Des mog i ned (B) · %d
+MENU_BANISH_HINT,Welche Speis soll von da Kartn?
+MENU_SKIP,"Danke, passt eh (N) · +%d Gold"
+MENU_SECONDS,Bin glei wieder da … %d s
+CHEST_TITLE,Mahlzeit! Knödl Größe %s
+CHEST_GOLD,+%d Gold
+TIER_0,S
+TIER_1,M
+TIER_2,L
+TIER_3,XL
+TIER_NONE,–
+WIRT_NAME_0,Gasthof Zum Grantigen Hirschen
+WIRT_NAME_1,Wirtshaus Beim Ochsenwirt
+WIRT_NAME_2,Gasthaus Zur Alten Linde
+WIRT_NAME_3,Dorfwirt Unterhinterkogl
+WIRT_NAME_4,Gasthof Zum Amtsschimmel
+WIRT_NAME_5,Jausenstation Sperrstund'
+WIRT_SIGN_OPEN,Offen · Knödl bitte do eina!
+WIRT_SIGN_SERVED,Mahlzeit! (%s)
+WIRT_SIGN_CLOSED,Ruhetag
+TOAST_MAHLZEIT,Mahlzeit!
+TOAST_SPERRSTUND,Sperrstund'! Ab nach Haus!
+NOTICE_0,Des is ja nur a Bröserl! (Knödl z'klein)
+NOTICE_1,Do hamma heut scho gessn.
+HUD_GOLD,Gold: %d
+HUD_SPERRSTUND,Sperrstund'!
+HUD_WIRT_MARKER,Wirtshaus · %d m
+SIGN_BACK_SOON,Bin glei wieder da
+END_TITLE,Sperrstund'! Es habt's überlebt.
+END_AGAIN,Nochmal!
+END_LEVEL,Level %d
+END_KILLS,%d Gegner erledigt
+END_GOLD,%d Gold
+END_KNODL,Größter Knödl: %d Brösel
+END_CASH_INS,%d× eingekehrt
+END_DOWNED,%d× umgfoin
