@@ -141,6 +141,7 @@ function Invoke-BrowserRun {
         [int]$Seconds,
         [int]$Enemies,
         [int]$Projectiles,
+        [string]$Scene = 'run',
         [double]$MinFps,
         [double]$MaxP95,
         [int]$MaxDrawCalls,
@@ -150,7 +151,7 @@ function Invoke-BrowserRun {
         [switch]$Headed
     )
     $runner = Join-Path $Root 'tools\browser\run_game.mjs'
-    $arguments = @($runner, "--url=$Url", "--browser=$Browser", "--seconds=$Seconds", "--enemies=$Enemies",
+    $arguments = @($runner, "--url=$Url", "--browser=$Browser", "--seconds=$Seconds", "--scene=$Scene", "--enemies=$Enemies",
         "--projectiles=$Projectiles", "--min-fps=$MinFps", "--max-p95=$MaxP95", "--max-draw-calls=$MaxDrawCalls",
         "--out=$Out", "--shot=$Shot")
     if ($Headed) { $arguments += '--headed' }

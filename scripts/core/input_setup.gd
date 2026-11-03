@@ -12,6 +12,11 @@ const KEYS: Dictionary[StringName, Array] = {
 	&"schupfn": [KEY_SHIFT],
 	&"pause": [KEY_ESCAPE],
 	&"debug_overlay": [KEY_F3],
+	&"camera_left": [KEY_Q],
+	&"camera_right": [KEY_E],
+}
+const MOUSE: Dictionary[StringName, Array] = {
+	&"schupfn": [MOUSE_BUTTON_RIGHT],
 }
 
 
@@ -24,3 +29,7 @@ static func ensure_actions() -> void:
 			var event := InputEventKey.new()
 			event.physical_keycode = key
 			InputMap.action_add_event(action, event)
+		for button: MouseButton in MOUSE.get(action, []):
+			var click := InputEventMouseButton.new()
+			click.button_index = button
+			InputMap.action_add_event(action, click)

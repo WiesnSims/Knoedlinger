@@ -42,7 +42,7 @@ try {
         Write-Host "== ${name}: $Enemies enemies, $Projectiles projectiles, $Seconds s =="
         $out = Join-Path $BuildDir "perf\stress-$name-$stamp.json"
         $shot = Join-Path $BuildDir "shots\stress-$name.png"
-        $code = Invoke-BrowserRun -Url $Url -Browser $name -Seconds $Seconds -Enemies $Enemies -Projectiles $Projectiles `
+        $code = Invoke-BrowserRun -Url $Url -Browser $name -Seconds $Seconds -Scene 'stress' -Enemies $Enemies -Projectiles $Projectiles `
             -MinFps $MinFps -MaxP95 $MaxP95 -MaxDrawCalls $MaxDrawCalls -Out $out -Shot $shot -Log $log -Headed:$Headed
         if ($code -ne 0) { $failures += "$name run failed (see $out)" }
     }

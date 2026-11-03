@@ -18,6 +18,8 @@ signal session_ended(reason: String)
 signal snapshot_received(data: PackedByteArray)
 signal events_received(data: PackedByteArray)
 signal player_input_received(peer_id: int, data: PackedByteArray)
+signal world_state_received(data: PackedByteArray)
+signal brosel_received(data: PackedByteArray)
 
 enum Mode { SOLO, HOST, CLIENT }
 
@@ -125,6 +127,32 @@ func send_events(data: PackedByteArray) -> void:
 			continue
 		_rx_events.rpc_id(peer, data)
 		bytes_sent += data.size() + MESSAGE_OVERHEAD
+
+
+## Host: the per-player world state (WorldStateCodec) to every accepted client, newest wins.
+func send_world_state(data: PackedByteArray) -> void:
+	for peer: int in _accepted:
+		if not _can_send(peer):
+			continue
+		_rx_world_state.rpc_id(peer, data)
+		bytes_sent += data.size() + MESSAGE_OVERHEAD
+
+
+## Host: Brösel changes (BroselCodec) to every accepted client, reliable and in order.
+func send_brosel(data: PackedByteArray) -> void:
+	for peer: int in _accepted:
+		if not _can_send(peer):
+			continue
+		_rx_brosel.rpc_id(peer, data)
+		bytes_sent += data.size() + MESSAGE_OVERHEAD
+
+
+## Host: Brösel changes to one client (the full set when it joins).
+func send_brosel_to(peer: int, data: PackedByteArray) -> void:
+	if mode != Mode.HOST or not _accepted.has(peer) or not _can_send(peer):
+		return
+	_rx_brosel.rpc_id(peer, data)
+	bytes_sent += data.size() + MESSAGE_OVERHEAD
 
 
 ## The local player's InputMessage: a client sends it to the host, the host to every client.
@@ -236,6 +264,18 @@ func _rx_snapshot(data: PackedByteArray) -> void:
 func _rx_events(data: PackedByteArray) -> void:
 	bytes_received += data.size() + MESSAGE_OVERHEAD
 	events_received.emit(data)
+
+
+@rpc("authority", "call_remote", "unreliable_ordered")
+func _rx_world_state(data: PackedByteArray) -> void:
+	bytes_received += data.size() + MESSAGE_OVERHEAD
+	world_state_received.emit(data)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _rx_brosel(data: PackedByteArray) -> void:
+	bytes_received += data.size() + MESSAGE_OVERHEAD
+	brosel_received.emit(data)
 
 
 @rpc("any_peer", "call_remote", "unreliable_ordered")

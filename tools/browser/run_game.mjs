@@ -2,11 +2,11 @@
 // Used by tools/stress_test.ps1 and tools/browser_check.ps1.
 //
 //   node run_game.mjs --url=http://127.0.0.1:8060/ --browser=msedge|firefox|chromium --seconds=60
-//        --enemies=500 --projectiles=300 --min-fps=60 --max-p95=16.7 --max-draw-calls=150
-//        --out=report.json --shot=shot.png [--headed]
+//        --scene=run|stress --enemies=500 --projectiles=300 --min-fps=60 --max-p95=16.7
+//        --max-draw-calls=150 --out=report.json --shot=shot.png [--headed]
 //
 // The game measures itself after a 3 s warm-up and prints [STATS] each second and one [RESULT]
-// (scripts/stress/stress_arena.gd). Frame-rate caps are lifted where the browser allows it, so the
+// (scripts/run/run_world.gd, scripts/stress/stress_arena.gd). Frame-rate caps are lifted where the browser allows it, so the
 // numbers show headroom instead of the monitor's refresh rate. A software WebGL renderer (no GPU)
 // fails the run: its frame rate says nothing about real players.
 // Exit code 0 = within budget and no console errors.
@@ -25,6 +25,7 @@ const LOAD_TIMEOUT_MS = 90_000;
 const SOFTWARE = /swiftshader|llvmpipe|softpipe|software|basic render|warp/i;
 
 const query = new URLSearchParams({
+	scene: args.scene || 'run',
 	enemies: args.enemies || '500',
 	projectiles: args.projectiles || '300',
 	seconds: String(seconds),

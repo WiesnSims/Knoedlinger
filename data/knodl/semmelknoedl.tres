@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="KnodlSortData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/knodl_sort_data.gd" id="1_sort"]
+
+[resource]
+script = ExtResource("1_sort")
+id = &"semmelknoedl"
+name_key = "KNODL_SEMMEL"
+color = Color(0.8, 0.66, 0.44, 1)
+crumb_color = Color(0.7, 0.5, 0.28, 1)

@@ -4,6 +4,20 @@
 
 - Design: [GAME-DESIGN.md](GAME-DESIGN.md) · decisions and numbers: [docs/DECISIONS.md](docs/DECISIONS.md) · working rules and commands: [CLAUDE.md](CLAUDE.md)
 
+## Play (M1: the Knödl prototype)
+
+| Action | Keys |
+| --- | --- |
+| Move (relative to the camera) | WASD |
+| Jump | Space |
+| Schupfn / reel the Knödl back in | Shift or right click |
+| Look around | Mouse (click into the game once; Esc lets go), or Q / E |
+| Zoom | Mouse wheel |
+| Debug overlay | F3 |
+
+URL flags for testing: `?bot=1` (a bot plays), `?god=1`, `?knodl_mass=500`, `?enemies=500`, `?debug=1`,
+`?scene=stress` (the M0 stress arena).
+
 ## Toolchain
 
 | Tool | Version |

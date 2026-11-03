@@ -13,6 +13,10 @@ uniform int debug_view = 0;
 varying float flash;
 varying vec3 debug_custom;
 
+vec3 srgb_to_linear(vec3 c) {
+	return mix(pow((c + 0.055) / 1.055, vec3(2.4)), c / 12.92, lessThan(c, vec3(0.04045)));
+}
+
 void vertex() {
 	float phase = INSTANCE_CUSTOM.x;
 	float t = TIME * waddle_speed + phase;
@@ -34,7 +38,8 @@ void vertex() {
 }
 
 void fragment() {
-	ALBEDO = mix(COLOR.rgb, flash_color, flash);
+	// Vertex colours are authored in sRGB; lighting works in linear.
+	ALBEDO = mix(srgb_to_linear(COLOR.rgb), flash_color, flash);
 	ROUGHNESS = 1.0;
 	if (debug_view == 1) { ALBEDO = vec3(0.0); EMISSION = COLOR.rgb; }
 	if (debug_view == 2) { ALBEDO = vec3(0.0); EMISSION = NORMAL * 0.5 + 0.5; }

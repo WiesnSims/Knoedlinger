@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/character_data.gd" id="1_character"]
+[ext_resource type="Resource" path="res://data/weapons/schneeschaufel.tres" id="2_weapon"]
+[ext_resource type="Resource" path="res://data/knodl/semmelknoedl.tres" id="3_sort"]
+
+[resource]
+script = ExtResource("1_character")
+id = &"ferdl"
+name_key = "CHARACTER_FERDL"
+start_weapon = ExtResource("2_weapon")
+knodl_sort = ExtResource("3_sort")
+coat_color = Color(0.2, 0.32, 0.55, 1)
+trouser_color = Color(0.3, 0.24, 0.18, 1)
+hat_color = Color(0.22, 0.35, 0.2, 1)

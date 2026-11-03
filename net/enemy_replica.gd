@@ -41,6 +41,8 @@ var rendered_frames: int = 0
 var intervals_ms: PackedFloat32Array = PackedFloat32Array()
 var events_spawned: int = 0
 var events_died: int = 0
+## The host's alive count in the snapshot being shown (the newest one can be ~100 ms ahead).
+var shown_host_alive: int = 0
 
 var _frames: Array[SnapshotCodec.Frame] = []
 var _clock_offset: float = 0.0
@@ -142,6 +144,7 @@ func update(now_ms: int, delta: float) -> void:
 				t = clampf((render_ms - a.host_ms) / maxf(b.host_ms - a.host_ms, 1.0), 0.0, 1.0)
 				break
 	rendered_frames += 1
+	shown_host_alive = b.alive_count
 	var snap_sq: float = balance.interpolation_snap_distance * balance.interpolation_snap_distance
 	# Seconds between the two snapshots, to turn their distance into the speed shown.
 	var span: float = maxf((b.host_ms - a.host_ms) / 1000.0, 0.001)
@@ -217,7 +220,7 @@ func stats() -> Dictionary:
 		"events_spawned": events_spawned,
 		"events_died": events_died,
 		"alive_shown": alive_count,
-		"alive_host": host_alive_count(),
+		"alive_host": shown_host_alive,
 	}
 
 

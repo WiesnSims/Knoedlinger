@@ -28,6 +28,10 @@ var _buffer: PackedFloat32Array = PackedFloat32Array()
 func setup(p_balance: BalanceData, p_capacity: int) -> void:
 	balance = p_balance
 	capacity = p_capacity
+	# Redrawn from the packed arrays every rendered frame. With physics interpolation on, Godot would
+	# also blend each MultiMesh instance with the previous tick by index; instances are repacked when
+	# shots come and go, so that blended two different shots.
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_alive.resize(capacity)
 	_alive.fill(0)
 	_x.resize(capacity)
