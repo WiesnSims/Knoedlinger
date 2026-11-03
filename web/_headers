@@ -1,0 +1,5 @@
+# Cloudflare Pages headers (docs/DECISIONS.md, M0): every file is revalidated by ETag on each visit,
+# so a new deploy is picked up at once. Hashed file names with long caching come in M5.
+/*
+  Cache-Control: no-cache
+  X-Content-Type-Options: nosniff

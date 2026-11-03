@@ -1,0 +1,6 @@
+keys,de
+STRESS_HINT,"WASD übernimmt, sonst rennt der Bot. F3: Statistik."
+ENEMY_GELSE,Gelse
+ENEMY_TOURIST,Touristen-Zombie
+ENEMY_DACKEL,Kampf-Dackel
+NET_VERSION_MISMATCH,Eicha Version is ned de gleiche.

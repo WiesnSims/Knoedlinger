@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"dackel"
+name_key = "ENEMY_DACKEL"
+max_hp = 2.0
+speed = 4.0
+radius = 0.35
+model_scale = 0.7
+body_color = Color(0.45, 0.28, 0.15, 1)
+head_color = Color(0.3, 0.18, 0.1, 1)
+flying = false
+spawn_weight = 1.0
