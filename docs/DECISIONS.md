@@ -149,3 +149,8 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   when it is within about 2 m of the camera or hides its player (down to 45 %).
 - **Answer to "will jumping evolve":** yes, as upgrades in the level-up pool from M2 on: the design's double jump,
   plus a jump-height stat on the same footing as speed, area and the rest (data, not code).
+
+## 2026-11-03 – M1 approved
+
+- **Owner: M1 approved** after the second playtest (Megabonk-style camera, round Knödl, no enemy teleports); merged
+  into `main`, branch `m1-knoedl` deleted. Next: M2 (core loop).
