@@ -411,3 +411,70 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   hovered row, Tab screen, end screen) at 1920x1080 and 1280x720; `?debug=0` hides the F3 overlay with the bot on.
   Iterated four rounds on the shots (pills overflowing, stats panel overlapping the HUD corners, panels not
   top-aligned, menu wider than the screen) until clean.
+
+## 2026-11-04 – Plan for M4: focused builds and a chest-only item category (not started)
+
+- **Owner: a separate item category that only chests give** (like Megabonk's items, which come from chests, shops
+  and shrines while its level-ups only offer weapons and tomes). Working name *Kirtagsware*, data in
+  `data/items/`. No slot limit, items stack, each has a rarity; chests show their rarity by colour, luck raises it.
+  Sources: map chests (gold, rising price as now), boss chests (free), Wirtshaus cash-ins (M 1 item, L 3 items +
+  rerolls, XL ready evolutions first, then items).
+- **Owner: the Speisekarte offers only weapons and stat upgrades** (the current passives), with luck-scaled rarity.
+- **Owner: 2 weapon slots**, a 3rd and 4th unlocked permanently between runs (Gemeindeamt quest or Stammtisch
+  upgrade; exact path chosen when the meta is built in M4). Every character still starts with 1 weapon. Replaces
+  the 6 weapon slots of pillar 4.
+- **Owner: 4 stat-upgrade slots** (like Megabonk's tomes), replacing the 6 passive slots.
+- **Owner: open-ended levels with rolled bonuses** for weapons and stats (Megabonk-style): each card shows what it
+  gives (e.g. "+18 % Schaden", "+1 Projektil"), rarity scales the roll. Needed because a run reaches level 46-54
+  (M2 balance log): with 2 weapons capped at 8 levels the Speisekarte would run dry around level 35. An evolution
+  happens when a weapon reaches its evolution level (a balance number, starting at 8) with the matching stat held.
+- **Owner: the Knödl upgrades become items** (Bröselbutter, Powidl-Füllung, Doppelportion, Bergab-Gesetz, Omas
+  Rezept). Riesenknödl der Apokalypse = Bröselbutter item + Lederhosn stat at its evolution level.
+- **Claude: about 30 items for v1**; some must have visible effects so the screen still gets busy with 2 weapons.
+  First ideas: Zweitschlüssel vom Gemeindeamt (chance a chest is free, like Megabonk's Key), Sparbuch (damage per
+  chest opened), Glücksschwein (luck), Marterl-Kerze (one revive per run).
+- **Claude: build this first in M4**, before the new content, so all 16 weapons, the stats and the items are made
+  for the new system. GAME-DESIGN.md (pillar 4, level-up pool, weapons, passives, evolutions, items, Stammtisch,
+  M4) is updated to match.
+- **Open (not decided):** a stall-owner merchant and Marterl shrines as further item sources (Megabonk's Shady
+  Guy, challenge and greed shrines).
+
+## 2026-11-04 – Plan for M4: main menu and settings first (not started)
+
+- **Owner: M4 starts with a proper main menu and a settings page**, before the build rework. Today `boot.tscn`
+  goes straight into a run and only the end screen exists.
+- **Claude: main menu** = title screen of the Gasthaus Zum Goldenen Knödl ("Knödlinger – Bis zur Sperrstund'!").
+  Entries: *Spielen* (character and map choice, then the run), *Stammtisch* (meta upgrades), *Aufträge* (the
+  Gemeindeamt quests, done and open), *Rekorde* (highscores), *Almanach* (unlocked and locked characters, weapons,
+  stat upgrades, items, enemies, each with its deadpan line), *Einstellungen*, and a greyed-out *Stammtisch
+  aufmachen* (co-op) until M6. The screens are built first with what exists and fill up as M4 adds the meta.
+  All text through `tr()`.
+- **Claude: highscores are local** (in the save, so in the export code too), per character and map: longest
+  survival, won runs, highest level, most kills, biggest Knödl, most Schilling from one run. An online leaderboard
+  is not planned (it would need a backend; ask first).
+- **Claude: settings page** (also reachable from the pause menu during a run), saved in `user://`: volume for
+  master, music, effects and voice barks plus mute; fullscreen; camera distance, FOV, mouse sensitivity, invert
+  and look smoothing; reduce flashing; show the dialect glossary tooltips; language (German only for now). M5 keeps
+  the rest of its "options" item: gamepad, auto-quality and touch settings.
+- **Claude: automated checks keep skipping the menu**: any run URL flag or command-line option (`bot=1`,
+  `scene=stress`, `autoplay=1`, `--net=...`) still starts the run directly; a plain URL opens the main menu.
+
+## 2026-11-04 – Plan for M4: global highscores and player name (not started)
+
+- **Owner: the Rekorde page shows everyone's highscores online plus your own.** This replaces "highscores are
+  local only" from the entry above (the own records stay, local and in the export code).
+- **Owner: the player name is asked once on the first start**, saved in `user://`, changeable in Einstellungen;
+  the same name is used on the board and later in the co-op lobby.
+- **Claude: reuse Berghittn's Gipfelbuch** (`X:\Code\Projects\GeilesGame`, `board/board.js`,
+  `functions/api/board/[action].js`, `board/migrations`) as the *Ehrentafel vom Goldenen Knödl*: a Cloudflare D1
+  database bound as `BOARD` in the `knoedlinger` Pages project, free tier, no paid service. Preview deployments get
+  their own database (`knoedlinger-board-preview`), so play-tests never land on the real board; headless and
+  desktop test runs never send results. Its run tickets (asked at run start, used at the end, rate-limited) make
+  faked results harder; a browser game cannot stop cheating completely. Names: at most 16 characters, swear words
+  folded and filtered (Berghittn's list), fallback name "Knödlinger".
+- **Claude: boards** per map and per mode (solo, co-op with all names), all-time and this week, top 50 plus your
+  own place. Order: result first (gewonnen > Sperrstund' erlebt > umgfoin), then Grant level, then time, then
+  kills. Each entry shows name, character(s), level, kills, biggest Knödl and date. Columns and order can still
+  be adjusted in M4.
+- **Needs from the owner in M4:** nothing new expected (the Cloudflare login used for deploys can create the D1
+  databases); if wrangler lacks the D1 permission, Claude asks.
