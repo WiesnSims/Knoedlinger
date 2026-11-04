@@ -228,9 +228,9 @@ Lederhosn (armor), Gamsbart-Hut (crit), Bergkas (max HP), Brettljause (regen), K
 
 ### Maps (each about 300 × 300 m, hand-built with random chest/Wirt placement)
 
-1. **Kirtag in Unterhinterkogl** — flat village square, beer tents, Maibaum in the middle, the family's Knödl stand. Tutorial map.
-2. **Gamskogl-Piste** — ski slope with lifts; slopes make the Knödl deadly; Lawine mini-boss.
-3. **Gemeindebau-Hof** — Viennese council block courtyard with stairs, balconies and laundry lines; vertical routes.
+1. **Kirtag in Unterhinterkogl** — mostly flat village square with a few raised spots worth climbing to, beer tents, Maibaum in the middle, the family's Knödl stand. Tutorial map.
+2. **Gamskogl-Piste** — ski slope with lifts, steep climbs and drops; slopes make the Knödl deadly; Lawine mini-boss.
+3. **Gemeindebau-Hof** — Viennese council block courtyard with stairs, balconies and laundry lines; vertical routes over several levels.
 4. *(post-launch)* **Heuriger in den Weinbergen** — terraced vineyards; Knödl rolls down terraces.
 
 ## Co-op: Familienausflug (1–4 players)
@@ -341,7 +341,7 @@ Also: hashed filenames + `_headers` with long cache for `.wasm`/`.pck`, and a lo
 2. **M1 – Knödl prototype.** Player movement + jump, chase cam, the Knödl on its Spagat, Brösel absorption, size growth, contact damage, Schupfn and reel-in. One weapon, one enemy type. *This milestone decides whether the twist is fun* — tune until it is.
 3. **M2 – Core loop.** XP formula, Speisekarte level-up UI, 6 weapons, 6 passives, 2 evolutions, 5 enemy types, Wirtshaus cash-in, Bröselfresser, 15-minute timer with Sperrstund'.
 4. **M3 – First full map.** Kirtag map, boss gate with Stempel quest, Oberkrampus and Hofrat bosses, chests, gold, death/victory screens, sound and music pass.
-5. **M4 – Meta and content.** Stammtisch hub, Schilling, save/load with export code, all 8 Knödlinger, all weapons/passives/evolutions, quests, Grant levels, maps 2 and 3.
+5. **M4 – Meta and content.** Stammtisch hub, Schilling, save/load with export code, all 8 Knödlinger, all weapons/passives/evolutions, quests, Grant levels, maps 2 and 3 (built with Megabonk-style verticality: steep climbs, drops, several levels; no fall damage), and a light verticality pass on the Kirtag map.
 6. **M5 – Polish.** Auto-quality scaler, gamepad, options (volume, flashing, glossary), loading screen, balance pass from playtest data, mobile touch controls if fps allows.
 7. **M6 – Co-op (Familienausflug).** Signaling server + room codes, WebRTC transport, lobby in the Stammtisch, enemy snapshot sync, revives, shared XP, scaling, Knödl-Pass, Riesenknödl merge, co-op quests and the Familienstreit event. Test with 4 browser tabs and headless clients.
 

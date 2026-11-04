@@ -347,3 +347,18 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   7 m/s, real voice barks instead of the TTS placeholders) stay as they are and are revisited in the M5 balance
   pass or when the owner raises them. Next: M4 (Stammtisch hub, Schilling, save/load with export code, all 8
   Knödlinger, all weapons/passives/evolutions, quests, Grant levels, maps 2 and 3).
+
+## 2026-11-04 – Plan for M4: more vertical maps (not started)
+
+- **Owner (after M3):** the game feels too flat; Megabonk-style verticality (steep climbs, drops) should matter
+  more. Planned into M4; M4 itself is not started yet.
+- **Owner: no fall damage and no landing shockwave.** Falling from any height is free.
+- **Owner: no Knödl-off-a-cliff feature** (e.g. a Schupfn over an edge landing as a bomb): it would only happen by
+  accident, not as a choice. The Knödl keeps its current behaviour (it is pulled back to the player when it falls
+  too far below the ground or gets stuck).
+- **Owner: the Kirtag map gets a little more vertical**, with a light touch: it stays the tutorial map. Plan: a few
+  raised spots worth climbing to (e.g. an Alm hill behind the Gemeindeamt with a chest or Stempel on top, a
+  terraced edge or riverbank drop), changed in `tools/maps/make_kirtag.gd` and re-baked into `kirtag.tres`.
+- **Owner: the focus is on the M4 maps.** Gamskogl-Piste and Gemeindebau-Hof are built tall from the start: steep
+  climbs that enemies scramble up slowly (`enemy_climb_slope`), real drops, high ground as a safe-ish route with
+  rewards, and several levels of height instead of a single plateau.
