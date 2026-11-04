@@ -14,6 +14,10 @@ const NEUTRAL: Array[String] = ["mute", "debug", "log_slow"]
 
 
 func _ready() -> void:
+	# Headless co-op room (--lobby): the Lobby autoload starts the run when the host does.
+	if LaunchArgs.has("lobby"):
+		print("[BOOT] waiting in the co-op room")
+		return
 	var wanted: String = LaunchArgs.get_string("scene", start_scene(LaunchArgs.keys()))
 	if not SCENES.has(wanted):
 		push_warning("Unknown scene '%s', starting the run." % wanted)

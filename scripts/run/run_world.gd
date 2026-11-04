@@ -56,7 +56,9 @@ var balance: BalanceData
 var map: MapData
 var wave: WaveData
 var catalog: UpgradeCatalog
+## The local player's Knödlinger; everyone's is in _characters (each player picks their own).
 var character: CharacterData
+var _characters: Dictionary[int, CharacterData] = {}
 var content: GameContent
 ## The Grant level of this run (difficulty) and its index.
 var grant: GrantData
@@ -231,11 +233,11 @@ func _ready() -> void:
 	UiStyle.build_icon_atlas(catalog)
 	character = _load_character(RunSetup.character_id())
 	content = GameContent.load_default()
-	grant_index = clampi(LaunchArgs.get_int("grant", RunSetup.grant), 0, content.grants.size() - 1)
+	grant_index = clampi(RunSetup.grant_index(), 0, content.grants.size() - 1)
 	grant = content.grants[grant_index]
 	types = wave.enemies
 	run_time = maxf(LaunchArgs.get_float("start_time", 0.0), 0.0)
-	var seed_value: int = LaunchArgs.get_int("seed", 1) + _autoplay_run * 7919
+	var seed_value: int = LaunchArgs.get_int("seed", RunSetup.seed if RunSetup.seed > 0 else 1) + _autoplay_run * 7919
 	_weapon_rng.seed = seed_value
 	_loot_rng.seed = seed_value * 13 + 5
 	for entry: WaveBoss in wave.bosses:
@@ -358,7 +360,7 @@ func _ready() -> void:
 	NetworkManager.run_events_received.connect(_on_run_events)
 	NetworkManager.offer_received.connect(_on_offer)
 	NetworkManager.choice_received.connect(_on_choice)
-	NetworkManager.peer_joined.connect(_on_peer_joined)
+	NetworkManager.peer_run_ready.connect(_on_peer_joined)
 	NetworkManager.peer_left.connect(_on_peer_left)
 	NetworkManager.joined_host.connect(_on_joined_host)
 	NetworkManager.join_failed.connect(_on_join_failed)
@@ -376,7 +378,7 @@ func _ready() -> void:
 		# No Tab screen or pause menu under the loading screen (RunWorld allows them again per frame).
 		pause.allowed = false
 		inventory.allowed = false
-		if host and NetworkManager.client_ids().is_empty():
+		if host and not NetworkManager.is_coop():
 			get_tree().paused = true
 	GameAudio.music(&"kirtag")
 	GameAudio.bark(&"servas")
@@ -388,13 +390,16 @@ func _ready() -> void:
 		_role(), map.id, character.id, _forced_enemies if _forced_enemies > 0 else "wave", _seconds, _bot,
 		_bake_ms, RenderingServer.get_video_adapter_name()])
 	WebPage.loaded()
+	# A client from the co-op room: our scene is up, the host may send the world now.
+	if not host:
+		NetworkManager.send_run_ready()
 
 
 func _on_warmed() -> void:
 	_loading.finish()
 	_loading = null
 	quality.hold = false
-	if NetworkManager.is_host() and NetworkManager.client_ids().is_empty() and not speisekarte.is_open() \
+	if NetworkManager.is_host() and not NetworkManager.is_coop() and not speisekarte.is_open() \
 			and not _panel_paused:
 		get_tree().paused = false
 	_resumed = true
@@ -541,7 +546,7 @@ func _host_frame(delta: float) -> void:
 	_feed_knodls(delta)
 	_check_wirtshaeuser(delta)
 	_collect_loot(delta)
-	level_flow.update(states, delta, not NetworkManager.client_ids().is_empty())
+	level_flow.update(states, delta, NetworkManager.is_coop())
 	_update_timeline(delta)
 	_update_phase(delta)
 	_flush_events()
@@ -688,7 +693,7 @@ func _on_pause_toggled(open: bool) -> void:
 func _hold_pause(open: bool) -> void:
 	if open:
 		speisekarte.hide_chest()
-		if NetworkManager.is_host() and NetworkManager.client_ids().is_empty() and not get_tree().paused:
+		if NetworkManager.is_host() and not NetworkManager.is_coop() and not get_tree().paused:
 			get_tree().paused = true
 			_panel_paused = true
 	elif _panel_paused and not inventory.is_open() and not pause.is_open():
@@ -1454,7 +1459,7 @@ func _on_offer(data: PackedByteArray) -> void:
 			speisekarte.show_player(state, knodls.get(NetworkManager.local_id()))
 			inventory.set_open(false)
 			# Solo is the only time the game stops (GAME-DESIGN.md); co-op runs on.
-			if NetworkManager.is_host() and NetworkManager.client_ids().is_empty():
+			if NetworkManager.is_host() and not NetworkManager.is_coop():
 				get_tree().paused = true
 		OfferCodec.Type.CHEST:
 			speisekarte.show_chest(offer)
@@ -1466,7 +1471,7 @@ func _on_offer(data: PackedByteArray) -> void:
 func _on_choice(peer_id: int, data: PackedByteArray) -> void:
 	if level_flow == null:
 		return
-	level_flow.on_choice(peer_id, data, states.get(peer_id), not NetworkManager.client_ids().is_empty())
+	level_flow.on_choice(peer_id, data, states.get(peer_id), NetworkManager.is_coop())
 	if peer_id == NetworkManager.local_id() and not level_flow.is_open(peer_id) and get_tree().paused:
 		get_tree().paused = false
 		_resumed = true
@@ -1525,6 +1530,7 @@ func _on_peer_left(peer_id: int) -> void:
 			nodes.erase(peer_id)
 			node.queue_free()
 	states.erase(peer_id)
+	_characters.erase(peer_id)
 	_last_pose_ms.erase(peer_id)
 	_respawn_grace.erase(peer_id)
 	if level_flow != null:
@@ -1536,7 +1542,7 @@ func _on_joined_host() -> void:
 	var id: int = NetworkManager.local_id()
 	if id == _local_key:
 		return
-	for nodes: Dictionary in [players, states, knodls, weapon_vfx]:
+	for nodes: Dictionary in [players, states, knodls, weapon_vfx, _characters]:
 		if nodes.has(_local_key):
 			nodes[id] = nodes[_local_key]
 			nodes.erase(_local_key)
@@ -1570,7 +1576,8 @@ func _spawn_player(peer_id: int, local: bool) -> Player:
 		bot.set_waypoints(map.bot_waypoints, peer_id % maxi(map.bot_waypoints.size(), 1))
 		bot.jump_every = 3.5
 		bot.schupfn_every = 6.0
-	player.setup(peer_id, local, balance, character, bot)
+	var who: CharacterData = _character_of(peer_id)
+	player.setup(peer_id, local, balance, who, bot)
 	player.ground = ground
 	player.bounds = map.half_size
 	player.spawn_point = _spawn_position(peer_id)
@@ -1579,19 +1586,19 @@ func _spawn_player(peer_id: int, local: bool) -> Player:
 	players[peer_id] = player
 	if NetworkManager.is_host():
 		var build := PlayerBuild.new(catalog, balance)
-		_meta[peer_id] = _loadout(Profile.meta_bonus() if local and not _autoplay else {})
+		_meta[peer_id] = _loadout(_meta_of(peer_id, local), who)
 		build.apply_meta(_meta[peer_id])
-		build.extra_cards = character.extra_cards
+		build.extra_cards = who.extra_cards
 		_lock_content(build)
 		# The character's own weapon levels (and evolves) even before its quest unlocks it for the
 		# others: Kevin's Watschn-Aura stayed at level 1 on a fresh profile (balance log, M5).
-		var own: int = catalog.weapons.find(character.start_weapon)
+		var own: int = catalog.weapons.find(who.start_weapon)
 		if own >= 0:
 			build.locked.erase(Card.Kind.WEAPON * 256 + own)
-			var evolved: int = catalog.weapons.find(character.start_weapon.evolution)
+			var evolved: int = catalog.weapons.find(who.start_weapon.evolution)
 			if evolved >= 0:
 				build.locked.erase(Card.Kind.WEAPON * 256 + evolved)
-		build.add_start_weapon(character.start_weapon)
+		build.add_start_weapon(who.start_weapon)
 		# Testing: --weapons=hagelkanone,sachertorte adds these too (locks and slots aside).
 		for id: String in LaunchArgs.get_string("weapons", "").split(",", false):
 			for weapon: WeaponData in catalog.weapons:
@@ -1606,7 +1613,7 @@ func _spawn_player(peer_id: int, local: bool) -> Player:
 	elif local:
 		# The host's world state fills it in; the Stammtisch bonus moves this player like the host does.
 		var mirror := PlayerBuild.new(catalog)
-		mirror.apply_meta(_loadout(Profile.meta_bonus()))
+		mirror.apply_meta(_loadout(_meta_of(peer_id, true), who))
 		states[peer_id] = PlayerState.new(peer_id, balance.player_max_hp, mirror)
 	var vfx := WeaponVfx.new()
 	vfx.setup(player)
@@ -1617,7 +1624,7 @@ func _spawn_player(peer_id: int, local: bool) -> Player:
 
 func _spawn_knodl(peer_id: int, holder: Player, simulated: bool) -> Knodl:
 	var knodl := Knodl.new()
-	knodl.setup(peer_id, balance, character.knodl_sort, holder, simulated)
+	knodl.setup(peer_id, balance, _character_of(peer_id).knodl_sort, holder, simulated)
 	add_child(knodl)
 	if simulated:
 		knodl.set_knodl_mass(_knodl_start_mass(knodl))
@@ -1626,21 +1633,48 @@ func _spawn_knodl(peer_id: int, holder: Player, simulated: bool) -> Knodl:
 
 
 ## The Stammtisch bonus plus the character's trait stats and start Knödl, as one stat bonus.
-func _loadout(meta: Dictionary) -> Dictionary:
+func _loadout(meta: Dictionary, who: CharacterData) -> Dictionary:
 	var total: Dictionary = meta.duplicate()
-	for key: StringName in character.trait_stats:
-		total[key] = float(total.get(key, 0.0)) + character.trait_stats[key]
-	if character.knodl_start > 0.0:
-		total[&"knodl_start"] = float(total.get(&"knodl_start", 0.0)) + character.knodl_start
+	for key: StringName in who.trait_stats:
+		total[key] = float(total.get(key, 0.0)) + who.trait_stats[key]
+	if who.knodl_start > 0.0:
+		total[&"knodl_start"] = float(total.get(&"knodl_start", 0.0)) + who.knodl_start
 	return total
+
+
+## A player's Stammtisch bonus: the local one from the Profile, a co-op player's from their room
+## profile (each player's own meta progress counts for them). Automated runs use none.
+func _meta_of(peer_id: int, local: bool) -> Dictionary:
+	if _autoplay:
+		return {}
+	if local:
+		return Profile.meta_bonus()
+	var meta: Dictionary = {}
+	var raw: Dictionary = NetworkManager.profiles.get(peer_id, {}).get("meta", {})
+	for key: Variant in raw:
+		meta[StringName(str(key))] = float(raw[key])
+	return meta
+
+
+## Each player's Knödlinger: the local one from RunSetup (flags win), the others from the room.
+func _character_of(peer_id: int) -> CharacterData:
+	if _characters.has(peer_id):
+		return _characters[peer_id]
+	var who: CharacterData = character
+	if peer_id != NetworkManager.local_id():
+		var id: String = str(NetworkManager.profiles.get(peer_id, {}).get("character", ""))
+		if id != "":
+			who = _load_character(id)
+	_characters[peer_id] = who
+	return who
 
 
 ## Host: the character traits that are rules, not stats (CharacterData.trait_effects).
 func _update_traits(delta: float) -> void:
-	var effects: Dictionary[StringName, float] = character.trait_effects
-	if effects.is_empty():
-		return
 	for peer: int in players:
+		var effects: Dictionary[StringName, float] = _character_of(peer).trait_effects
+		if effects.is_empty():
+			continue
 		var state: PlayerState = states[peer]
 		var player: Player = players[peer]
 		if not _trait_timers.has(peer):
@@ -1675,7 +1709,7 @@ func _update_traits(delta: float) -> void:
 
 ## Host: Onkel Ferdl's Grant, one hit at a time.
 func _on_hurt(peer: int) -> void:
-	var per_hit: float = character.trait_effects.get(&"grant", 0.0)
+	var per_hit: float = _character_of(peer).trait_effects.get(&"grant", 0.0)
 	if per_hit > 0.0:
 		var build: PlayerBuild = states[peer].build
 		build.grant_damage = minf(build.grant_damage + per_hit, balance.grant_cap)
@@ -1846,10 +1880,34 @@ func _record_profile(outcome: String) -> void:
 	Profile.remember_choice(character.id, map.id, grant_index)
 	if outcome != "QUIT" and NetworkManager.is_host():
 		Board.submit({
-			"names": [Settings.player_name()], "characters": [String(character.id)], "result": outcome,
+			"names": _board_names(), "characters": _board_characters(), "result": outcome,
 			"grant": grant_index, "time": int(summary.get("time", 0.0)), "level": int(summary.get("level", 0)),
 			"kills": int(summary.get("kills", 0)), "knodl": int(summary.get("best_knodl_mass", 0.0)),
 		})
+
+
+## Die Ehrentafel: everyone in the run (co-op lists the whole family), host first.
+func _board_names() -> Array:
+	var names: Array = []
+	for peer: int in _board_order():
+		var name: String = Settings.player_name() if peer == NetworkManager.local_id() else NetworkManager.player_name(peer)
+		names.append(name if name != "" else Settings.NAME_FALLBACK)
+	return names
+
+
+func _board_characters() -> Array:
+	var ids: Array = []
+	for peer: int in _board_order():
+		ids.append(String(_character_of(peer).id))
+	return ids
+
+
+func _board_order() -> Array[int]:
+	var order: Array[int] = []
+	for peer: int in players:
+		order.append(peer)
+	order.sort()
+	return order
 
 
 func _knodl_start_mass(knodl: Knodl) -> float:

@@ -11,6 +11,8 @@
 # -StartTime 595: instead of holding -Enemies, the host plays the real timeline from that second (M3:
 # bosses, attack marks, the Formular, loot); every client must then get run events, marks and loot.
 # -Scene stress runs the M0 stress arena instead.
+# -Lobby: everyone meets in the co-op room first (`--lobby`, the real game's path: roster, unique
+# characters, the host starts the run for all) instead of the clients dropping into a running host.
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/mp_test.ps1 [-Clients 3] [-Seconds 20] [-HostLeavesFirst]
 #        [-Scene run|stress] [-StartTime 595]
 param(
@@ -23,6 +25,7 @@ param(
     [double]$MaxKibPerSecond = 60,
     [switch]$HostLeavesFirst,
     [switch]$Coop,
+    [switch]$Lobby,
     [switch]$NoRejectTest,
     [int]$StartTime = -1
 )
@@ -38,6 +41,14 @@ New-Item -ItemType Directory -Force $runDir | Out-Null
 $scenePath = if ($Scene -eq 'run') { 'res://scenes/run/run_world.tscn' } else { 'res://scenes/stress/stress_arena.tscn' }
 # Headless runs at 60 fps like a player's browser would, so the timing is real.
 $common = @('--headless', '--path', $Root, '--max-fps', '60', $scenePath, '--')
+if ($Lobby) {
+    # The boot scene waits in the room; the Lobby autoload starts the run.
+    $common = @('--headless', '--path', $Root, '--max-fps', '60', '--')
+}
+$room = if ($Lobby) { @("--lobby=$Clients") } else { @() }
+$guest = if ($Lobby) { @('--lobby') } else { @() }
+# Each client asks for a Knoedlinger (two ask for the same one: the host hands out a free one).
+$wanted = @('ferdl', 'ferdl', 'toni', 'resi')
 
 function Start-Godot([string]$Name, [string[]]$GameArgs) {
     $out = Join-Path $runDir "$Name.log"
@@ -55,7 +66,7 @@ function Get-Result([string]$Path) {
 
 $hostSeconds = if ($HostLeavesFirst) { [math]::Max([int]($Seconds / 2), 5) } else { $Seconds + 10 }
 $crowd = if ($StartTime -ge 0) { "--start_time=$StartTime" } else { "--enemies=$Enemies" }
-$hostRun = Start-Godot 'host' @('--net=ws', '--host', "--port=$Port", $crowd, "--projectiles=$Projectiles", "--seconds=$hostSeconds", '--bot=1', '--respawn=1')
+$hostRun = Start-Godot 'host' (@('--net=ws', '--host', "--port=$Port", $crowd, "--projectiles=$Projectiles", "--seconds=$hostSeconds", '--bot=1', '--respawn=1', '--character=ferdl', '--name=Host') + $room)
 $deadline = (Get-Date).AddSeconds(30)
 while ((Get-Date) -lt $deadline -and -not (Select-String -Path $hostRun.Log -Pattern 'LISTENING' -Quiet -ErrorAction SilentlyContinue)) {
     Start-Sleep -Milliseconds 200
@@ -67,11 +78,12 @@ if (-not (Select-String -Path $hostRun.Log -Pattern 'LISTENING' -Quiet -ErrorAct
 
 $runs = @()
 for ($i = 1; $i -le $Clients; $i++) {
-    $runs += Start-Godot "client$i" @('--net=ws', '--join=127.0.0.1', "--port=$Port", "--seconds=$Seconds", '--bot=1')
+    $runs += Start-Godot "client$i" (@('--net=ws', '--join=127.0.0.1', "--port=$Port", "--seconds=$Seconds", '--bot=1',
+        "--character=$($wanted[$i % $wanted.Count])", "--name=Gast$i") + $guest)
 }
 $rejectRun = $null
 if (-not $NoRejectTest) {
-    $rejectRun = Start-Godot 'client_old_version' @('--net=ws', '--join=127.0.0.1', "--port=$Port", '--seconds=5', '--fake-ver=0.0.0')
+    $rejectRun = Start-Godot 'client_old_version' (@('--net=ws', '--join=127.0.0.1', "--port=$Port", '--seconds=5', '--fake-ver=0.0.0') + $guest)
 }
 
 $all = @($hostRun) + $runs
@@ -153,6 +165,12 @@ if ($rejectRun) {
     if (-not $r -or $r.rejected -ne 'version') { $failures += 'the client with a wrong version was not refused' }
     else { Write-Host 'client_old_version: refused as expected (version)' }
 }
+if ($Lobby -and $hostResult) {
+    # The room hands every player a different Knoedlinger.
+    $chars = @($hostResult.run.character) + @($runs | ForEach-Object { $r = Get-Result $_.Log; if ($r -and $r.run) { $r.run.character } })
+    Write-Host ("room: characters {0}" -f ($chars -join ', '))
+    if (($chars | Select-Object -Unique).Count -ne $chars.Count) { $failures += "two players played the same Knoedlinger ($($chars -join ', '))" }
+}
 if ($hostResult -and $hostResult.rejected_poses -gt 0) { $failures += "host: rejected $($hostResult.rejected_poses) poses" }
 if ($hostResult -and $hostResult.net) {
     # Averaged over the host's whole run, including the time before and after the clients were there.
@@ -160,4 +178,4 @@ if ($hostResult -and $hostResult.net) {
         $hostResult.net.kib_per_s_out, $hostResult.snapshot_bytes_avg, $hostResult.frame.frame_ms_p95)
 }
 Write-Host "process logs: $runDir"
-Complete-Script -Name "mp_test -Clients $Clients$(if ($HostLeavesFirst) { ' -HostLeavesFirst' })$(if ($StartTime -ge 0) { " -StartTime $StartTime" })" -Log $log -Failures $failures
+Complete-Script -Name "mp_test -Clients $Clients$(if ($Lobby) { ' -Lobby' })$(if ($HostLeavesFirst) { ' -HostLeavesFirst' })$(if ($StartTime -ge 0) { " -StartTime $StartTime" })" -Log $log -Failures $failures
