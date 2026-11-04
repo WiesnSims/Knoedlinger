@@ -742,3 +742,5 @@ ITEM_RIESENKNODL,Riesenknödl der Apokalypse
 DESC_ITEM_RIESENKNODL,Doppelt so groß. Und hergeben tut er nix mehr.
 TOAST_RIESENKNODL,Riesenknödl der Apokalypse!
 SET_ANTIALIASING,Kantenglättung
+MENU_HINT_PAD,Steuerkreuz für Details · A nehmen
+MENU_HINT_TOUCH,Antippen zum Nehmen

@@ -441,7 +441,8 @@ func _on_card_hovered(on: bool, k: int) -> void:
 ## The footer and the stats preview for row k (-1: the plain hint).
 func _show_details(k: int) -> void:
 	if _offer == null or k < 0 or k >= _offer.cards.size():
-		_details.text = tr("MENU_HINT")
+		# How to pick, for the device in use.
+		_details.text = tr("MENU_HINT_PAD" if InputDevice.is_pad() else ("MENU_HINT_TOUCH" if InputDevice.is_touch() else "MENU_HINT"))
 		_details_meta.text = ""
 		_stats.preview({}, balance)
 		return

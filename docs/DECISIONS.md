@@ -833,4 +833,19 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   at 14:58), Gemeindebau 1 WON 1 CLOSED (level 57-71, 27-30k kills) – a step below the Kirtag, as the
   harder maps should be. The bot is also poor at climbing to the Stempel; real players will open the gate more
   often than the logs suggest, so these maps are not tuned up to the Kirtag's win rate.
-- **Not touched here:** the first minutes (a parallel session adds early-game easing to `balance.tres`).
+- **Merged main into m5-polish** (Stammtisch icons, the pause-menu fix, the in-game shader loading screen,
+  anti-aliasing, early-game easing). The "Kantenglättung" row sits in Ton & Bild next to Qualität; the
+  QualityScaler owns MSAA (the setting's value, but off on Niedrig) and does not measure during the
+  shader warm-up (slow on purpose). Enemy HP takes the map factor and the early ease together. The
+  Speisekarte's footer hint now matches the device ("1–3 nehmen", "A nehmen", "Antippen").
+- **Measured: the early-game easing lowers the bot's end level.** Ferdl/Kirtag, same seeds, easing off vs
+  on: seed 1 (2 runs) 66/60 WON vs 49/46 CLOSED; seed 2 (3 runs) 50/52/43 vs 37/44/46, all CLOSED.
+  Damage-only easing (HP not eased) gave 53/42/34, so it is not the HP half. Average about 51 → 44 levels
+  over five runs, but single runs swing ±10 levels, so the cause is not clear from bot data. The values
+  stay as approved on main; **open for the owner's playtest** whether the late game now feels too hard
+  (the first level 10 comes sooner and there are fewer early knock-downs, as intended).
+- **Measured after the merge** (local, RTX 3080, 500 enemies, bot, 60 s, MSAA on): Edge 152.5 fps / p95
+  8.4 ms / at most 126 draw calls, Firefox 126 fps / p95 10 ms / at most 119; `mp_test -Clients 1` 37.5 KiB/s
+  per client, everything in sync; the full `ui_shots` set (80 shots) under 150 draw calls, no console errors.
+- **Note for parallel sessions:** test servers on the same port serve the other worktree's build (seen
+  on 8061/8071 today); pass a free `-Port` when two sessions test at once.
