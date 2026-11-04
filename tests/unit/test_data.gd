@@ -184,3 +184,24 @@ func test_every_upgrade_has_an_icon() -> void:
 		assert_not_null(weapon.icon, String(weapon.id))
 	for passive: PassiveData in catalog.passives:
 		assert_not_null(passive.icon, String(passive.id))
+
+
+func test_every_map_has_its_places_and_a_wave() -> void:
+	var content: GameContent = GameContent.load_default()
+	for info: MapInfo in content.maps:
+		var map: MapData = load("res://data/maps/%s.tres" % info.id)
+		assert_not_null(map, String(info.id))
+		var wave: WaveData = map.wave if map.wave != null else load("res://data/waves/kirtag.tres")
+		assert_lte(wave.enemies.size(), 16, String(info.id))
+		assert_not_null(wave.final_boss, String(info.id))
+		for boss: WaveBoss in wave.bosses:
+			assert_true(wave.enemies.has(boss.boss.enemy), "%s: boss body %s in the wave" % [info.id, boss.boss.id])
+		assert_true(wave.enemies.has(wave.final_boss.enemy), String(info.id))
+		assert_gte(map.wirtshaus_spots.size(), 4, String(info.id))
+		assert_gte(map.stempel_spots.size(), 3, String(info.id))
+		assert_gte(map.chest_spots.size(), 6, String(info.id))
+		assert_gte(map.bot_waypoints.size(), 4, String(info.id))
+		var half: float = map.half_size
+		for list: PackedVector2Array in [map.wirtshaus_spots, map.stempel_spots, map.chest_spots]:
+			for spot: Vector2 in list:
+				assert_true(absf(spot.x) < half and absf(spot.y) < half, "%s: spot %s inside the map" % [info.id, spot])

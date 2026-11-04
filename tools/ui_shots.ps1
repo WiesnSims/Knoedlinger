@@ -33,6 +33,9 @@ $scenes = @(
     @{ Id = 'end'; Query = "$common&start_time=891"; At = '32' },
     # The new weapon effects (impacts, chain bolts, mines, the boomerang tray) in a held crowd.
     @{ Id = 'weapons'; Query = "$common&weapons=hagelkanone,krampusrute,sachertorte,tablett&enemies=250&god=1"; At = '22,23' },
+    # The maps of M4 (the bot plays on them).
+    @{ Id = 'gamskogl'; Query = "$common&map=gamskogl&knodl_mass=160"; At = '24,34' },
+    @{ Id = 'gemeindebau'; Query = "$common&map=gemeindebau&knodl_mass=160"; At = '24,34' },
     # A minute into a run with quick picks: weapon level cards with their rolled gain, then the build.
     @{ Id = 'late'; Query = "$common&pick_delay=1.5&god=1"; At = '70,71,72,73,74,110'; Press = ',,,,,Tab' },
     @{ Id = 'pause'; Query = "$common&knodl_mass=160"; At = '24,27'; Press = 'Escape,ArrowDown+Enter' },

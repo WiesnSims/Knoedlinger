@@ -618,112 +618,94 @@ accent = Color(1, 1, 1, 1)
 [sub_resource type="Resource" id="Resource_l41fu"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-121.02198, -57.739426)
-yaw_degrees = 64.861946
-size = Vector3(1, 10.477238, 1)
-color = Color(0.22810997, 0.41637582, 0.26576313, 1)
+position = Vector2(56.4962, -126.0391)
+yaw_degrees = 13.451249
+size = Vector3(1, 11.437555, 1)
+color = Color(0.19787228, 0.39351317, 0.23700047, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_8fgsc"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-126.0391, 48.002853)
-yaw_degrees = 57.79229
-size = Vector3(1, 10.111631, 1)
-color = Color(0.1598345, 0.3647529, 0.20081817, 1)
+position = Vector2(-122.66821, 57.852844)
+yaw_degrees = 80.31458
+size = Vector3(1, 11.549483, 1)
+color = Color(0.26962087, 0.4477621, 0.3052491, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_t7jwn"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-24.325027, -122.66821)
-yaw_degrees = 84.33197
-size = Vector3(1, 11.629938, 1)
-color = Color(0.2379596, 0.4238231, 0.2751323, 1)
+position = Vector2(-117.10405, -11.607422)
+yaw_degrees = 68.607605
+size = Vector3(1, 9.928023, 1)
+color = Color(0.20756486, 0.4008417, 0.24622023, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_t54yr"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-67.995056, -117.10405)
-yaw_degrees = 44.267124
-size = Vector3(1, 10.273293, 1)
-color = Color(0.19275329, 0.38964272, 0.23213117, 1)
+position = Vector2(58.229553, -99.76128)
+yaw_degrees = 37.571896
+size = Vector3(1, 11.645486, 1)
+color = Color(0.17739926, 0.37803358, 0.21752612, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_5oes2"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-99.76128, 58.64888)
-yaw_degrees = 76.83215
-size = Vector3(1, 9.377305, 1)
-color = Color(0.1971947, 0.39300087, 0.23635593, 1)
+position = Vector2(-81.376724, -106.64009)
+yaw_degrees = 1.4539042
+size = Vector3(1, 12.616127, 1)
+color = Color(0.17894666, 0.37920356, 0.21899804, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_q356n"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-106.64009, 108.34569)
-yaw_degrees = 89.76126
-size = Vector3(1, 9.432807, 1)
-color = Color(0.14125194, 0.35070267, 0.18314208, 1)
+position = Vector2(127.32092, 57.849884)
+yaw_degrees = 5.4605045
+size = Vector3(1, 11.616961, 1)
+color = Color(0.22400787, 0.41327423, 0.26186115, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_hekiq"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(28.112015, -112.467896)
-yaw_degrees = 5.2280445
-size = Vector3(1, 9.553444, 1)
-color = Color(0.23001459, 0.4178159, 0.26757485, 1)
+position = Vector2(-107.82594, 111.98917)
+yaw_degrees = 67.82544
+size = Vector3(1, 12.911419, 1)
+color = Color(0.2662154, 0.44518724, 0.30200976, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_fvtef"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(17.003632, -107.82594)
-yaw_degrees = 82.13332
-size = Vector3(1, 12.687288, 1)
-color = Color(0.27593035, 0.4525327, 0.3112508, 1)
+position = Vector2(-111.69819, 89.17157)
+yaw_degrees = 89.86463
+size = Vector3(1, 12.786055, 1)
+color = Color(0.21288954, 0.40486768, 0.25128517, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_nqkne"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-16.728912, -111.69819)
-yaw_degrees = 47.704865
-size = Vector3(1, 12.241632, 1)
-color = Color(0.27243525, 0.44989005, 0.30792618, 1)
+position = Vector2(61.071564, -95.49992)
+yaw_degrees = 80.31778
+size = Vector3(1, 10.904257, 1)
+color = Color(0.17438762, 0.3757565, 0.21466139, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_l33lc"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(127.614944, -55.71579)
-yaw_degrees = 11.425807
-size = Vector3(1, 11.612595, 1)
-color = Color(0.24195538, 0.4268443, 0.27893317, 1)
+position = Vector2(-108.666245, -123.90503)
+yaw_degrees = 22.653057
+size = Vector3(1, 12.204912, 1)
+color = Color(0.20387687, 0.39805323, 0.24271214, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_m6fdm"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(100.45947, -108.666245)
-yaw_degrees = 41.886066
-size = Vector3(1, 8.07998, 1)
-color = Color(0.25623298, 0.43763953, 0.29251426, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_o6q04"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(91.03024, 97.6255)
-yaw_degrees = 59.775635
-size = Vector3(1, 9.898679, 1)
-color = Color(0.25256002, 0.43486243, 0.28902048, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_chhjl"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(95.61662, 32.95778)
@@ -732,7 +714,7 @@ size = Vector3(1, 9.793634, 1)
 color = Color(0.1827602, 0.38208696, 0.22262554, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_kwr2i"]
+[sub_resource type="Resource" id="Resource_o6q04"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(59.747192, -105.18973)
@@ -741,7 +723,7 @@ size = Vector3(1, 8.224843, 1)
 color = Color(0.14194009, 0.351223, 0.18379666, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_s2ay0"]
+[sub_resource type="Resource" id="Resource_chhjl"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-18.192009, 127.9424)
@@ -750,7 +732,7 @@ size = Vector3(1, 8.040108, 1)
 color = Color(0.2478615, 0.4313099, 0.28455117, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_aad3j"]
+[sub_resource type="Resource" id="Resource_kwr2i"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(90.624664, -106.028076)
@@ -759,43 +741,25 @@ size = Vector3(1, 8.803628, 1)
 color = Color(0.26738495, 0.44607154, 0.30312228, 1)
 accent = Color(1, 1, 1, 1)
 
+[sub_resource type="Resource" id="Resource_s2ay0"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(114.83678, -44.843277)
+yaw_degrees = 26.965828
+size = Vector3(1, 9.018526, 1)
+color = Color(0.16525845, 0.36885396, 0.20597754, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_aad3j"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(120.26576, 71.81499)
+yaw_degrees = 58.63945
+size = Vector3(1, 8.168165, 1)
+color = Color(0.14818673, 0.35594606, 0.18973859, 1)
+accent = Color(1, 1, 1, 1)
+
 [sub_resource type="Resource" id="Resource_yjfpb"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(-111.753174, -124.03555)
-yaw_degrees = 35.065624
-size = Vector3(1, 11.174433, 1)
-color = Color(0.25162756, 0.43415743, 0.28813353, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_efv5p"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(55.63037, 114.83678)
-yaw_degrees = 16.95309
-size = Vector3(1, 9.624155, 1)
-color = Color(0.16739652, 0.37047052, 0.20801131, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_1pxc0"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(-68.31508, 120.26576)
-yaw_degrees = 5.931171
-size = Vector3(1, 11.902637, 1)
-color = Color(0.14368846, 0.35254493, 0.18545975, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_funou"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(-68.86676, 106.73381)
-yaw_degrees = 37.86219
-size = Vector3(1, 10.301912, 1)
-color = Color(0.1691221, 0.37177524, 0.20965272, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_85oty"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(60.40512, 121.33838)
@@ -804,7 +768,7 @@ size = Vector3(1, 11.677061, 1)
 color = Color(0.2596737, 0.44024107, 0.29578716, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_py5h5"]
+[sub_resource type="Resource" id="Resource_efv5p"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(50.74109, 104.57495)
@@ -813,70 +777,70 @@ size = Vector3(1, 11.495403, 1)
 color = Color(0.24943742, 0.43250144, 0.2860502, 1)
 accent = Color(1, 1, 1, 1)
 
+[sub_resource type="Resource" id="Resource_1pxc0"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(-51.58448, 127.87816)
+yaw_degrees = 46.837887
+size = Vector3(1, 8.914648, 1)
+color = Color(0.24149443, 0.4264958, 0.27849472, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_funou"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(-126.764946, -89.29841)
+yaw_degrees = 25.067122
+size = Vector3(1, 10.32819, 1)
+color = Color(0.27745444, 0.45368505, 0.31270057, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_85oty"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(79.07724, 119.52991)
+yaw_degrees = 38.06604
+size = Vector3(1, 11.335142, 1)
+color = Color(0.27667838, 0.4530983, 0.31196237, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_py5h5"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(127.770386, -123.181145)
+yaw_degrees = 16.708162
+size = Vector3(1, 12.546506, 1)
+color = Color(0.2558773, 0.43737063, 0.29217595, 1)
+accent = Color(1, 1, 1, 1)
+
 [sub_resource type="Resource" id="Resource_vtwl8"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-1.5271225, -123.078835)
-yaw_degrees = 1.3972021
-size = Vector3(1, 10.621317, 1)
-color = Color(0.22372746, 0.4130622, 0.2615944, 1)
+position = Vector2(-119.20094, -44.10025)
+yaw_degrees = 63.806164
+size = Vector3(1, 9.410134, 1)
+color = Color(0.19533567, 0.39159524, 0.23458758, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_cgy8l"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(127.87816, -81.17001)
-yaw_degrees = 47.37945
-size = Vector3(1, 11.676271, 1)
-color = Color(0.21154669, 0.40385237, 0.2500078, 1)
+position = Vector2(116.72073, 122.42064)
+yaw_degrees = 87.30981
+size = Vector3(1, 12.094898, 1)
+color = Color(0.24240403, 0.4271835, 0.2793599, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_0akf5"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-35.569794, -126.764946)
-yaw_degrees = 89.38952
-size = Vector3(1, 8.755891, 1)
-color = Color(0.20390993, 0.39807823, 0.24274358, 1)
+position = Vector2(-46.851395, 104.80351)
+yaw_degrees = 81.21318
+size = Vector3(1, 8.519813, 1)
+color = Color(0.17209128, 0.37402022, 0.21247706, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_uunjr"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(119.52991, 42.759293)
-yaw_degrees = 89.91927
-size = Vector3(1, 12.93825, 1)
-color = Color(0.19796008, 0.39357954, 0.23708397, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_nuoon"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(-123.181145, 104.78111)
-yaw_degrees = 4.4907303
-size = Vector3(1, 12.192155, 1)
-color = Color(0.1648791, 0.3685671, 0.2056167, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_2n1sq"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(21.308594, -119.20094)
-yaw_degrees = 36.371666
-size = Vector3(1, 9.638667, 1)
-color = Color(0.17831454, 0.37872562, 0.21839675, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_t46qn"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(122.42064, 81.65881)
-yaw_degrees = 28.528807
-size = Vector3(1, 11.708897, 1)
-color = Color(0.2742332, 0.45124948, 0.30963644, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_3goys"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(89.925, 121.809784)
@@ -885,7 +849,7 @@ size = Vector3(1, 11.280519, 1)
 color = Color(0.2726742, 0.4500707, 0.30815348, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_hsvvm"]
+[sub_resource type="Resource" id="Resource_nuoon"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(76.505646, -115.91859)
@@ -894,7 +858,7 @@ size = Vector3(1, 12.722845, 1)
 color = Color(0.2456373, 0.4296282, 0.28243548, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_lcydd"]
+[sub_resource type="Resource" id="Resource_2n1sq"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(109.93948, -31.146011)
@@ -903,7 +867,7 @@ size = Vector3(1, 8.787285, 1)
 color = Color(0.17218754, 0.374093, 0.21256863, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_mr0ad"]
+[sub_resource type="Resource" id="Resource_t46qn"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-50.059547, -125.96248)
@@ -912,52 +876,52 @@ size = Vector3(1, 8.637562, 1)
 color = Color(0.20185806, 0.3965268, 0.2407918, 1)
 accent = Color(1, 1, 1, 1)
 
+[sub_resource type="Resource" id="Resource_3goys"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(124.166565, 81.37224)
+yaw_degrees = 69.5523
+size = Vector3(1, 11.262233, 1)
+color = Color(0.18191005, 0.3814442, 0.22181687, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_hsvvm"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(116.216125, 49.18596)
+yaw_degrees = 23.973112
+size = Vector3(1, 11.077245, 1)
+color = Color(0.26414147, 0.44361916, 0.300037, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_lcydd"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(-99.7505, 101.12442)
+yaw_degrees = 21.03651
+size = Vector3(1, 11.881969, 1)
+color = Color(0.15010098, 0.3573934, 0.19155945, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_mr0ad"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(75.75609, 110.887436)
+yaw_degrees = 72.6281
+size = Vector3(1, 11.208591, 1)
+color = Color(0.17429194, 0.37568414, 0.21457037, 1)
+accent = Color(1, 1, 1, 1)
+
 [sub_resource type="Resource" id="Resource_0dccc"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-31.515709, 116.216125)
-yaw_degrees = 80.79434
-size = Vector3(1, 11.460663, 1)
-color = Color(0.22479358, 0.4138683, 0.26260853, 1)
+position = Vector2(18.584427, -107.07431)
+yaw_degrees = 80.83643
+size = Vector3(1, 10.462658, 1)
+color = Color(0.20316927, 0.39751822, 0.24203905, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_60sdw"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(-59.809814, 106.24477)
-yaw_degrees = 40.41414
-size = Vector3(1, 12.128241, 1)
-color = Color(0.17131574, 0.37343383, 0.21173935, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_4q2q8"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(-83.31633, -110.57982)
-yaw_degrees = 9.931465
-size = Vector3(1, 10.839323, 1)
-color = Color(0.23392579, 0.42077315, 0.27129525, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_nufe2"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(101.12442, 70.75685)
-yaw_degrees = 66.62913
-size = Vector3(1, 8.3981695, 1)
-color = Color(0.17158322, 0.3736361, 0.21199378, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_rfl4x"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(-105.35936, 75.75609)
-yaw_degrees = 22.785326
-size = Vector3(1, 12.66577, 1)
-color = Color(0.22845554, 0.41663712, 0.26609185, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_4mtar"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-31.153206, -123.40478)
@@ -966,7 +930,7 @@ size = Vector3(1, 9.770991, 1)
 color = Color(0.18676826, 0.38511744, 0.22643809, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_k7mgv"]
+[sub_resource type="Resource" id="Resource_4q2q8"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-115.39963, -106.78321)
@@ -975,7 +939,7 @@ size = Vector3(1, 11.412412, 1)
 color = Color(0.16058666, 0.3653216, 0.20153365, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_o2r5a"]
+[sub_resource type="Resource" id="Resource_nufe2"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(72.82428, -108.82853)
@@ -984,7 +948,7 @@ size = Vector3(1, 10.513272, 1)
 color = Color(0.19547711, 0.3917022, 0.23472212, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_0jo6o"]
+[sub_resource type="Resource" id="Resource_rfl4x"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-102.658806, -55.960495)
@@ -993,7 +957,7 @@ size = Vector3(1, 12.894697, 1)
 color = Color(0.26731166, 0.44601613, 0.30305254, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_haihr"]
+[sub_resource type="Resource" id="Resource_4mtar"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(101.45842, 118.37662)
@@ -1002,7 +966,7 @@ size = Vector3(1, 8.569574, 1)
 color = Color(0.18199582, 0.38150904, 0.22189845, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_sp365"]
+[sub_resource type="Resource" id="Resource_k7mgv"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-32.364258, -112.37758)
@@ -1011,34 +975,52 @@ size = Vector3(1, 9.314772, 1)
 color = Color(0.16226779, 0.3665927, 0.20313278, 1)
 accent = Color(1, 1, 1, 1)
 
+[sub_resource type="Resource" id="Resource_o2r5a"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(-107.43317, 79.90709)
+yaw_degrees = 68.51187
+size = Vector3(1, 9.627644, 1)
+color = Color(0.23400372, 0.42083207, 0.2713694, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_0jo6o"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(94.03424, 57.991043)
+yaw_degrees = 20.62821
+size = Vector3(1, 11.318569, 1)
+color = Color(0.23753394, 0.42350125, 0.2747274, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_haihr"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(-66.36824, -117.119255)
+yaw_degrees = 40.3798
+size = Vector3(1, 9.927698, 1)
+color = Color(0.14700443, 0.3550521, 0.18861395, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_sp365"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(-103.844894, -91.27125)
+yaw_degrees = 51.46598
+size = Vector3(1, 11.744043, 1)
+color = Color(0.18754148, 0.3857021, 0.2271736, 1)
+accent = Color(1, 1, 1, 1)
+
 [sub_resource type="Resource" id="Resource_cmq50"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-26.570328, -103.844894)
-yaw_degrees = 31.33955
-size = Vector3(1, 8.717359, 1)
-color = Color(0.24338394, 0.42792442, 0.28029203, 1)
+position = Vector2(-100.21032, 61.789734)
+yaw_degrees = 24.145973
+size = Vector3(1, 12.463168, 1)
+color = Color(0.23696229, 0.42306903, 0.27418363, 1)
 accent = Color(1, 1, 1, 1)
 
 [sub_resource type="Resource" id="Resource_llt6w"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(3.5073547, -125.5067)
-yaw_degrees = 66.72295
-size = Vector3(1, 8.818936, 1)
-color = Color(0.15413235, 0.36044154, 0.19539419, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_0pdam"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(100.514206, 51.902054)
-yaw_degrees = 65.99985
-size = Vector3(1, 9.341443, 1)
-color = Color(0.22242716, 0.41207907, 0.26035753, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_n5qla"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-74.60556, -126.93816)
@@ -1047,25 +1029,7 @@ size = Vector3(1, 10.315489, 1)
 color = Color(0.14457105, 0.35321224, 0.18629928, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_mtus2"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(119.20349, -69.096954)
-yaw_degrees = 46.331455
-size = Vector3(1, 10.791775, 1)
-color = Color(0.15164104, 0.35855785, 0.1930244, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_kfly7"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(-92.93576, 59.296326)
-yaw_degrees = 33.144524
-size = Vector3(1, 11.74526, 1)
-color = Color(0.25003552, 0.43295366, 0.28661913, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_sloc6"]
+[sub_resource type="Resource" id="Resource_0pdam"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-39.242447, 112.1158)
@@ -1074,25 +1038,25 @@ size = Vector3(1, 12.342173, 1)
 color = Color(0.22321272, 0.41267303, 0.26110476, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_jlxd2"]
+[sub_resource type="Resource" id="Resource_n5qla"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(93.24367, 49.437775)
-yaw_degrees = 39.100563
-size = Vector3(1, 8.123444, 1)
-color = Color(0.20494172, 0.39885837, 0.24372503, 1)
+position = Vector2(19.15355, -116.60154)
+yaw_degrees = 18.940985
+size = Vector3(1, 9.567925, 1)
+color = Color(0.2059618, 0.39962965, 0.24469537, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_mkhqj"]
+[sub_resource type="Resource" id="Resource_mtus2"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(7.907135, -119.77042)
-yaw_degrees = 81.340836
-size = Vector3(1, 9.285671, 1)
-color = Color(0.20695455, 0.40038025, 0.24563968, 1)
+position = Vector2(49.437775, -121.679665)
+yaw_degrees = 27.442625
+size = Vector3(1, 10.365198, 1)
+color = Color(0.19956243, 0.3947911, 0.23860815, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_4lfno"]
+[sub_resource type="Resource" id="Resource_kfly7"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(117.54074, 77.438614)
@@ -1101,7 +1065,7 @@ size = Vector3(1, 8.346015, 1)
 color = Color(0.25114805, 0.43379486, 0.2876774, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_0di60"]
+[sub_resource type="Resource" id="Resource_sloc6"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-40.355476, 120.189224)
@@ -1110,7 +1074,7 @@ size = Vector3(1, 11.965887, 1)
 color = Color(0.20953572, 0.4023319, 0.24809495, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_w4mnd"]
+[sub_resource type="Resource" id="Resource_jlxd2"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-125.52383, 70.22688)
@@ -1119,43 +1083,43 @@ size = Vector3(1, 11.93751, 1)
 color = Color(0.2572186, 0.43838477, 0.29345182, 1)
 accent = Color(1, 1, 1, 1)
 
+[sub_resource type="Resource" id="Resource_mkhqj"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(-60.0688, 106.582245)
+yaw_degrees = 89.11134
+size = Vector3(1, 9.272878, 1)
+color = Color(0.24745205, 0.43100032, 0.2841617, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_4lfno"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(106.3434, 71.823105)
+yaw_degrees = 74.41662
+size = Vector3(1, 12.537235, 1)
+color = Color(0.19617096, 0.39222682, 0.23538211, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_0di60"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(-108.94972, -51.405563)
+yaw_degrees = 31.17686
+size = Vector3(1, 11.104404, 1)
+color = Color(0.19256955, 0.3895038, 0.23195639, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_w4mnd"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(106.951614, 66.09711)
+yaw_degrees = 84.94596
+size = Vector3(1, 9.006189, 1)
+color = Color(0.1797186, 0.37978724, 0.21973233, 1)
+accent = Color(1, 1, 1, 1)
+
 [sub_resource type="Resource" id="Resource_4u3tg"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(125.47226, -13.87645)
-yaw_degrees = 70.25031
-size = Vector3(1, 12.552609, 1)
-color = Color(0.2666073, 0.44548357, 0.30238256, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_w4s5u"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(83.673935, -108.94972)
-yaw_degrees = 34.58579
-size = Vector3(1, 9.495985, 1)
-color = Color(0.22555082, 0.41444084, 0.26332882, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_ikr1e"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(-119.21536, 91.39876)
-yaw_degrees = 68.23727
-size = Vector3(1, 9.9343, 1)
-color = Color(0.2669385, 0.445734, 0.3026976, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_kya0a"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(113.62407, -60.756783)
-yaw_degrees = 0.8604698
-size = Vector3(1, 10.604814, 1)
-color = Color(0.21169837, 0.40396705, 0.2501521, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_c2tsv"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-32.484886, 98.39134)
@@ -1164,7 +1128,7 @@ size = Vector3(1, 11.1335335, 1)
 color = Color(0.1519579, 0.35879743, 0.1933258, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_5ncj0"]
+[sub_resource type="Resource" id="Resource_w4s5u"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-112.70477, 82.74127)
@@ -1173,7 +1137,7 @@ size = Vector3(1, 11.309808, 1)
 color = Color(0.1829923, 0.38226247, 0.22284633, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_jlc3t"]
+[sub_resource type="Resource" id="Resource_ikr1e"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-108.58616, 61.360443)
@@ -1182,43 +1146,25 @@ size = Vector3(1, 9.149511, 1)
 color = Color(0.24531305, 0.42938304, 0.28212705, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_j1dk8"]
+[sub_resource type="Resource" id="Resource_kya0a"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-114.43155, -10.837036)
-yaw_degrees = 25.77472
-size = Vector3(1, 9.262875, 1)
-color = Color(0.25349236, 0.43556738, 0.28990737, 1)
+position = Vector2(-120.61277, 43.593857)
+yaw_degrees = 19.220446
+size = Vector3(1, 12.365913, 1)
+color = Color(0.16436498, 0.3681784, 0.20512766, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_x7c84"]
+[sub_resource type="Resource" id="Resource_c2tsv"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-54.90194, -120.61277)
-yaw_degrees = 16.376238
-size = Vector3(1, 11.351442, 1)
-color = Color(0.26072168, 0.44103345, 0.29678404, 1)
+position = Vector2(111.7594, -37.980583)
+yaw_degrees = 73.599144
+size = Vector3(1, 12.0986, 1)
+color = Color(0.24795169, 0.4313781, 0.28463697, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_hridg"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(-73.32851, 111.7594)
-yaw_degrees = 70.34183
-size = Vector3(1, 9.758192, 1)
-color = Color(0.253269, 0.4353985, 0.28969488, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_2xhj6"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(93.214615, -76.25833)
-yaw_degrees = 26.053194
-size = Vector3(1, 9.726354, 1)
-color = Color(0.19274105, 0.38963348, 0.23211953, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_yn1ab"]
+[sub_resource type="Resource" id="Resource_5ncj0"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(89.85452, -121.620636)
@@ -1227,7 +1173,7 @@ size = Vector3(1, 9.898328, 1)
 color = Color(0.22943154, 0.41737506, 0.26702023, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_g064q"]
+[sub_resource type="Resource" id="Resource_jlc3t"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-100.52006, -27.921967)
@@ -1236,7 +1182,7 @@ size = Vector3(1, 10.959404, 1)
 color = Color(0.17152317, 0.37359068, 0.21193667, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_d0lpj"]
+[sub_resource type="Resource" id="Resource_j1dk8"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(96.6351, 11.2378845)
@@ -1245,7 +1191,7 @@ size = Vector3(1, 10.80094, 1)
 color = Color(0.15533587, 0.36135152, 0.196539, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_el1x3"]
+[sub_resource type="Resource" id="Resource_x7c84"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(49.665634, -92.464645)
@@ -1254,70 +1200,52 @@ size = Vector3(1, 8.308746, 1)
 color = Color(0.19531183, 0.3915772, 0.2345649, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_qupgd"]
+[sub_resource type="Resource" id="Resource_hridg"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-117.13286, -67.269936)
-yaw_degrees = 54.941784
-size = Vector3(1, 8.439434, 1)
-color = Color(0.25269938, 0.43496782, 0.28915307, 1)
+position = Vector2(-117.8145, 102.556305)
+yaw_degrees = 53.19522
+size = Vector3(1, 12.257143, 1)
+color = Color(0.26102334, 0.44126153, 0.29707098, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_yhtf8"]
+[sub_resource type="Resource" id="Resource_2xhj6"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-85.036255, -117.8145)
-yaw_degrees = 78.7812
-size = Vector3(1, 12.503053, 1)
-color = Color(0.25768915, 0.43874058, 0.29389942, 1)
+position = Vector2(53.18831, -113.77749)
+yaw_degrees = 83.506744
+size = Vector3(1, 12.386719, 1)
+color = Color(0.19184393, 0.38895515, 0.23126617, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_yvq7b"]
+[sub_resource type="Resource" id="Resource_yn1ab"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-113.77749, 96.599976)
-yaw_degrees = 14.967396
-size = Vector3(1, 9.895406, 1)
-color = Color(0.26834267, 0.44679567, 0.30403328, 1)
+position = Vector2(-85.42607, -125.97332)
+yaw_degrees = 50.425728
+size = Vector3(1, 8.803221, 1)
+color = Color(0.20196383, 0.3966068, 0.24089241, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_3qsau"]
+[sub_resource type="Resource" id="Resource_g064q"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-125.97332, -86.87509)
-yaw_degrees = 34.32804
-size = Vector3(1, 10.258387, 1)
-color = Color(0.21710385, 0.4080541, 0.2552939, 1)
+position = Vector2(-127.51575, -43.474876)
+yaw_degrees = 19.434242
+size = Vector3(1, 10.546757, 1)
+color = Color(0.17992425, 0.37994272, 0.21992794, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_d3ne2"]
+[sub_resource type="Resource" id="Resource_d0lpj"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-58.284355, -127.51575)
-yaw_degrees = 26.421682
-size = Vector3(1, 9.650881, 1)
-color = Color(0.21000358, 0.4026856, 0.24853998, 1)
+position = Vector2(100.17497, 100.16603)
+yaw_degrees = 57.519672
+size = Vector3(1, 8.094114, 1)
+color = Color(0.15526931, 0.36130118, 0.19647567, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_5v6mu"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(-72.72038, 100.17497)
-yaw_degrees = 10.503852
-size = Vector3(1, 12.4563675, 1)
-color = Color(0.14162391, 0.35098392, 0.18349592, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_400k0"]
-script = ExtResource("3_uru2s")
-kind = 6
-position = Vector2(97.82657, 65.57118)
-yaw_degrees = 81.00542
-size = Vector3(1, 9.093761, 1)
-color = Color(0.16173004, 0.3661861, 0.20262124, 1)
-accent = Color(1, 1, 1, 1)
-
-[sub_resource type="Resource" id="Resource_g77ay"]
+[sub_resource type="Resource" id="Resource_el1x3"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-76.07555, 121.89252)
@@ -1326,7 +1254,7 @@ size = Vector3(1, 9.295076, 1)
 color = Color(0.17517778, 0.37635392, 0.215413, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_kt3oq"]
+[sub_resource type="Resource" id="Resource_qupgd"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-127.97244, -33.258698)
@@ -1335,7 +1263,7 @@ size = Vector3(1, 9.067584, 1)
 color = Color(0.209626, 0.40240014, 0.24818082, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_ek615"]
+[sub_resource type="Resource" id="Resource_yhtf8"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(35.75322, 99.359985)
@@ -1344,7 +1272,7 @@ size = Vector3(1, 12.820402, 1)
 color = Color(0.21458204, 0.4061474, 0.25289512, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_47vo0"]
+[sub_resource type="Resource" id="Resource_yvq7b"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-122.39759, -93.69537)
@@ -1353,7 +1281,7 @@ size = Vector3(1, 9.447659, 1)
 color = Color(0.25755578, 0.43863973, 0.29377255, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_yn20n"]
+[sub_resource type="Resource" id="Resource_3qsau"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-49.247192, 119.79149)
@@ -1362,7 +1290,7 @@ size = Vector3(1, 10.707584, 1)
 color = Color(0.24380648, 0.4282439, 0.28069395, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_14ge3"]
+[sub_resource type="Resource" id="Resource_d3ne2"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(68.401794, -104.54031)
@@ -1371,7 +1299,7 @@ size = Vector3(1, 9.969224, 1)
 color = Color(0.261074, 0.44129983, 0.29711914, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_hxmys"]
+[sub_resource type="Resource" id="Resource_5v6mu"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-109.281296, 120.028305)
@@ -1380,7 +1308,7 @@ size = Vector3(1, 9.419639, 1)
 color = Color(0.15681703, 0.3624714, 0.1979479, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_citlk"]
+[sub_resource type="Resource" id="Resource_400k0"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-95.33643, -55.10354)
@@ -1389,16 +1317,16 @@ size = Vector3(1, 9.031339, 1)
 color = Color(0.18345204, 0.38261008, 0.22328365, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_dmmw1"]
+[sub_resource type="Resource" id="Resource_g77ay"]
 script = ExtResource("3_uru2s")
 kind = 6
-position = Vector2(-127.466606, -63.261765)
-yaw_degrees = 1.6587152
-size = Vector3(1, 9.86101, 1)
-color = Color(0.23061438, 0.4182694, 0.26814538, 1)
+position = Vector2(-123.281876, 26.865494)
+yaw_degrees = 52.201073
+size = Vector3(1, 9.398135, 1)
+color = Color(0.21237305, 0.40447718, 0.25079387, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_56571"]
+[sub_resource type="Resource" id="Resource_kt3oq"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(-57.852455, -105.822685)
@@ -1407,13 +1335,85 @@ size = Vector3(1, 12.108406, 1)
 color = Color(0.18617852, 0.38467157, 0.22587712, 1)
 accent = Color(1, 1, 1, 1)
 
-[sub_resource type="Resource" id="Resource_qu180"]
+[sub_resource type="Resource" id="Resource_ek615"]
 script = ExtResource("3_uru2s")
 kind = 6
 position = Vector2(126.841415, 77.002304)
 yaw_degrees = 44.58211
 size = Vector3(1, 9.645159, 1)
 color = Color(0.14465368, 0.35327473, 0.18637788, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_47vo0"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(98.883575, -105.76212)
+yaw_degrees = 43.81625
+size = Vector3(1, 9.203627, 1)
+color = Color(0.2561358, 0.43756607, 0.29242182, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_yn20n"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(-127.99675, 103.774445)
+yaw_degrees = 69.081985
+size = Vector3(1, 9.056077, 1)
+color = Color(0.24901542, 0.43218237, 0.28564882, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_14ge3"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(100.254425, -126.743286)
+yaw_degrees = 43.55152
+size = Vector3(1, 10.205394, 1)
+color = Color(0.15499504, 0.3610938, 0.19621478, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_hxmys"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(-101.97154, -23.19728)
+yaw_degrees = 89.751884
+size = Vector3(1, 12.038202, 1)
+color = Color(0.21902196, 0.4095044, 0.25711843, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_citlk"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(-97.87237, 119.251144)
+yaw_degrees = 54.943153
+size = Vector3(1, 11.169001, 1)
+color = Color(0.16906607, 0.3717329, 0.20959944, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_dmmw1"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(120.14403, -83.32309)
+yaw_degrees = 48.15123
+size = Vector3(1, 11.56521, 1)
+color = Color(0.27732775, 0.45358926, 0.31258005, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_56571"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(-126.91705, -124.64424)
+yaw_degrees = 48.10101
+size = Vector3(1, 9.957501, 1)
+color = Color(0.16171296, 0.3661732, 0.20260501, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_qu180"]
+script = ExtResource("3_uru2s")
+kind = 6
+position = Vector2(118.63544, 88.71228)
+yaw_degrees = 54.297924
+size = Vector3(1, 9.614715, 1)
+color = Color(0.27054965, 0.44846433, 0.30613256, 1)
 accent = Color(1, 1, 1, 1)
 
 [resource]
@@ -1431,12 +1431,13 @@ ridge_starts = PackedVector4Array(60, -120, 120, -60, -120, 40, -60, 118)
 ridge_shapes = PackedVector2Array(12, 6, 10, 5)
 rim_start = 124.0
 rim_height = 30.0
+mesas = PackedVector4Array(0, -124, 13, 7, -118, -64, 9, 5, -118, -64, 4, 4, 116, -70, 8, 6)
 spawn_point = Vector3(0, 0, 6)
 bot_waypoints = PackedVector2Array(0, 6, 0, 40, 30, 60, 60, 30, 90, 0, 60, -20, 30, -40, 0, -64, -30, -50, -60, -20, -90, 0, -60, 30, -30, 60, 0, 30)
 wirtshaus_spots = PackedVector2Array(38, 36, -40, 38, -42, -38, 116, 30, -116, -32, 30, 112, 40, -100)
 structures = Array[ExtResource("3_uru2s")]([SubResource("Resource_r733d"), SubResource("Resource_a8ev6"), SubResource("Resource_784s4"), SubResource("Resource_4sk5v"), SubResource("Resource_8ye8d"), SubResource("Resource_8af2c"), SubResource("Resource_adtb7"), SubResource("Resource_fceq1"), SubResource("Resource_27fn8"), SubResource("Resource_dyae5"), SubResource("Resource_nw3vy"), SubResource("Resource_mp88g"), SubResource("Resource_bshmw"), SubResource("Resource_uv7ea"), SubResource("Resource_ikqrf"), SubResource("Resource_i0k5v"), SubResource("Resource_jkqed"), SubResource("Resource_5w7kc"), SubResource("Resource_e7v7u"), SubResource("Resource_71t2a"), SubResource("Resource_g6rdu"), SubResource("Resource_xhyo7"), SubResource("Resource_03pxj"), SubResource("Resource_18uf5"), SubResource("Resource_okbhp"), SubResource("Resource_0ff7a"), SubResource("Resource_yeyy3"), SubResource("Resource_lt2lu"), SubResource("Resource_ynpry"), SubResource("Resource_qrcbu"), SubResource("Resource_vvt0w"), SubResource("Resource_plmfa"), SubResource("Resource_p6xwx"), SubResource("Resource_ovwf3"), SubResource("Resource_a7u08"), SubResource("Resource_eoun0"), SubResource("Resource_vj2jo"), SubResource("Resource_i6ufm"), SubResource("Resource_jcb4l"), SubResource("Resource_7ln5t"), SubResource("Resource_utp0r"), SubResource("Resource_lfhy3"), SubResource("Resource_fof7e"), SubResource("Resource_o775b"), SubResource("Resource_btyvf"), SubResource("Resource_h8o78"), SubResource("Resource_32p3r"), SubResource("Resource_fwifo"), SubResource("Resource_m83uh"), SubResource("Resource_agrjs"), SubResource("Resource_icsf0"), SubResource("Resource_wgfb6"), SubResource("Resource_4eox8"), SubResource("Resource_6l5h2"), SubResource("Resource_00e0a"), SubResource("Resource_rha8f"), SubResource("Resource_321m1"), SubResource("Resource_40q76"), SubResource("Resource_hq4rg"), SubResource("Resource_4d0mh"), SubResource("Resource_wcyiw"), SubResource("Resource_n1qdf"), SubResource("Resource_5l347"), SubResource("Resource_jwtqh"), SubResource("Resource_kfnwe"), SubResource("Resource_mr0p5"), SubResource("Resource_3o45e"), SubResource("Resource_a4i5b"), SubResource("Resource_o2h0y"), SubResource("Resource_w5u6y"), SubResource("Resource_b5wvv"), SubResource("Resource_rblqj"), SubResource("Resource_614ay"), SubResource("Resource_x000e"), SubResource("Resource_v3kn4"), SubResource("Resource_xshjw"), SubResource("Resource_ooqgj"), SubResource("Resource_l41fu"), SubResource("Resource_8fgsc"), SubResource("Resource_t7jwn"), SubResource("Resource_t54yr"), SubResource("Resource_5oes2"), SubResource("Resource_q356n"), SubResource("Resource_hekiq"), SubResource("Resource_fvtef"), SubResource("Resource_nqkne"), SubResource("Resource_l33lc"), SubResource("Resource_m6fdm"), SubResource("Resource_o6q04"), SubResource("Resource_chhjl"), SubResource("Resource_kwr2i"), SubResource("Resource_s2ay0"), SubResource("Resource_aad3j"), SubResource("Resource_yjfpb"), SubResource("Resource_efv5p"), SubResource("Resource_1pxc0"), SubResource("Resource_funou"), SubResource("Resource_85oty"), SubResource("Resource_py5h5"), SubResource("Resource_vtwl8"), SubResource("Resource_cgy8l"), SubResource("Resource_0akf5"), SubResource("Resource_uunjr"), SubResource("Resource_nuoon"), SubResource("Resource_2n1sq"), SubResource("Resource_t46qn"), SubResource("Resource_3goys"), SubResource("Resource_hsvvm"), SubResource("Resource_lcydd"), SubResource("Resource_mr0ad"), SubResource("Resource_0dccc"), SubResource("Resource_60sdw"), SubResource("Resource_4q2q8"), SubResource("Resource_nufe2"), SubResource("Resource_rfl4x"), SubResource("Resource_4mtar"), SubResource("Resource_k7mgv"), SubResource("Resource_o2r5a"), SubResource("Resource_0jo6o"), SubResource("Resource_haihr"), SubResource("Resource_sp365"), SubResource("Resource_cmq50"), SubResource("Resource_llt6w"), SubResource("Resource_0pdam"), SubResource("Resource_n5qla"), SubResource("Resource_mtus2"), SubResource("Resource_kfly7"), SubResource("Resource_sloc6"), SubResource("Resource_jlxd2"), SubResource("Resource_mkhqj"), SubResource("Resource_4lfno"), SubResource("Resource_0di60"), SubResource("Resource_w4mnd"), SubResource("Resource_4u3tg"), SubResource("Resource_w4s5u"), SubResource("Resource_ikr1e"), SubResource("Resource_kya0a"), SubResource("Resource_c2tsv"), SubResource("Resource_5ncj0"), SubResource("Resource_jlc3t"), SubResource("Resource_j1dk8"), SubResource("Resource_x7c84"), SubResource("Resource_hridg"), SubResource("Resource_2xhj6"), SubResource("Resource_yn1ab"), SubResource("Resource_g064q"), SubResource("Resource_d0lpj"), SubResource("Resource_el1x3"), SubResource("Resource_qupgd"), SubResource("Resource_yhtf8"), SubResource("Resource_yvq7b"), SubResource("Resource_3qsau"), SubResource("Resource_d3ne2"), SubResource("Resource_5v6mu"), SubResource("Resource_400k0"), SubResource("Resource_g77ay"), SubResource("Resource_kt3oq"), SubResource("Resource_ek615"), SubResource("Resource_47vo0"), SubResource("Resource_yn20n"), SubResource("Resource_14ge3"), SubResource("Resource_hxmys"), SubResource("Resource_citlk"), SubResource("Resource_dmmw1"), SubResource("Resource_56571"), SubResource("Resource_qu180")])
 stempel_spots = PackedVector2Array(-92, 80, 98, 86, -30, -30, 68, -26, 118, -4, -120, 8, -6, 118, 98, -94, -70, -100)
-chest_spots = PackedVector2Array(-36, -4, 36, -4, 56, 8, -56, -8, 8, 56, -8, -54, 80, 62, -60, 60, 60, -66, -80, -60, 100, -40, -100, 40, 20, 92, -30, -86)
+chest_spots = PackedVector2Array(-36, -4, 36, -4, 56, 8, -56, -8, 8, 56, -8, -54, 80, 62, -60, 60, 60, -66, -80, -60, 100, -40, -100, 40, 20, 92, -30, -86, 0, -124, -118, -64, 116, -70)
 portal_point = Vector2(0, -76)
 paths = PackedVector4Array(0, -30, 0, -84, 0, 30, 0, 120, 30, 0, 128, 0, -30, 0, -128, 0, 22, -20, 64, -34, -20, 22, -84, 82, 20, 22, 88, 74, -8, -84, 8, -84, -12, -74, 12, -74)
 path_width = 5.0
