@@ -700,3 +700,100 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Preview deployed** to https://m4-meta.knoedlinger.pages.dev (with the Ehrentafel's preview database). From the
   preview (headless Edge, RTX 3080, 500 enemies, bot, 60 s): 153 fps avg, p95 8.4 ms, at most 127 draw calls, no
   console errors.
+
+## 2026-11-04 – M5 build (branch m5-polish)
+
+### Part 1: gamepad
+
+- **Claude: Xbox layout**, every action has its pad events in `InputSetup` next to the unchanged keys:
+  left stick moves, right stick looks (own `look_*` actions, squared curve, `camera_pad_yaw_speed`
+  3.2 / `camera_pad_pitch_speed` 1.6 rad/s times the "Stick-Tempo" setting), A jumps, RB or RT throws,
+  Start pauses, Back/View opens the inventory. On the Speisekarte X = Nochmal bitte, Y = Des mog i ned,
+  LB = Danke, passt eh; the D-pad walks the rows, A takes one. Menus use Godot's `ui_*` actions (D-pad,
+  A, B); LB/RB switch pages (map in Spielen, Rekorde, settings tabs), LT/RT the Grant level.
+- **Claude: no accidental picks** – A is also jump, so the Speisekarte only focuses its first row 0.4 s
+  after it opens (until then A does nothing), and the end screen ignores the pad's A/B for 1 s.
+  A pad cannot type: A on the name prompt takes the name as it stands (or "Knödlinger").
+- **Claude: keycaps follow the device** (`InputDevice` autoload remembers keyboard/mouse, pad or touch;
+  `KeycapLabel` shows "Esc", "B" or nothing). Number keycaps on the Speisekarte hide on the pad.
+  Vibration is left out (not dependable in browsers).
+- **Claude: Einstellungen in three tabs** (Ton & Bild, Steuerung, Spiel; Q/E or LB/RB), because gamepad,
+  quality and touch options no longer fit in two columns. New drawn widget `UiChoice` (‹ value ›) for
+  the choice settings.
+
+### Part 2: quality and the auto-quality scaler
+
+- **Claude: three levels** Hoch / Mittel / Niedrig plus Automatisch (default), in `balance.tres`:
+  render resolution x1 / 0.8 / 0.65, browser pixel ratio at most 2 / 1.5 / 1, sun shadows 45 m / 28 m /
+  off, and on Niedrig in a **solo** game 70 % of the crowd (in co-op the host's quality would change
+  everyone's game, so the crowd stays).
+- **Claude: render resolution in the browser = the canvas's pixel ratio**, not Godot's 3D scale.
+  Measured: `Viewport.scaling_3d_scale` below 1 cost about 4 ms per frame in the Compatibility renderer
+  on its own (151 → 96 fps at 500 enemies), because the 3D draws into an extra buffer and is copied.
+  `web/pixel_scale.js` hands Godot a smaller `devicePixelRatio`, which shrinks the whole backbuffer at no
+  per-frame cost (Niedrig 150 fps, the same as Hoch on this CPU-bound machine; the win is on GPU-bound
+  phones, whose ~2.6x screens are also capped at 2x on Hoch). The UI gets softer at Mittel/Niedrig; on a
+  desktop that only matters if a player picks it.
+- **Claude: Automatisch** steps down one level after 3 s in a row below 50 fps (phones 27), after a 5 s
+  warm-up; it steps back up after 20 s above 1.5x the target, never sooner than 60 s after a step down.
+  Automated runs stay on Hoch (`quality=` for tests), so measurements never change underneath.
+
+### Part 3: touch controls
+
+- **Claude: `TouchControls`** – a floating stick where the left thumb lands (left 45 % of the screen),
+  Hupfn and Schupfn bottom right, Pause and Inventory as round buttons under the clock, dragging anywhere
+  else on the right turns the camera (`camera_touch_sensitivity` times Maus-Tempo). It feeds the normal
+  actions; menus and the Speisekarte take taps as clicks. Shown by "Touch-Knöpfe" (Automatisch = once the
+  screen is touched, Immer, Nie), size 70-150 %, opacity; hidden while a full-screen panel is up.
+  The Knödl panel and the world markers move up above the buttons; the keyboard intro hides on touch.
+  A tap never captures the mouse pointer. Godot's (experimental) virtual keyboard is on, so the name
+  can be typed on a phone.
+- **Open (owner, Pixel 9 Pro):** the mobile budget (30 fps at 200 enemies) and whether the UI text is
+  big enough on a phone (the 1280x720 layout shrinks to about 0.6 on a phone in landscape, so 14 px
+  text becomes about 8 CSS px). If it is too small, a "UI-Größe" setting with a smaller base layout
+  on phones is the next step.
+
+### Part 4: loading screen and cache
+
+- **Claude: own page shell `web/shell.html`** – dark palette, a rolling Knödl, the title font, a gold
+  progress bar and a dialect joke every 3 s (16 `LOADING_JOKE_*` lines); phones held upright get
+  "Bitte quer halten". It stays until the game's first screen stands (`WebPage.loaded()` →
+  `knoedlReady()`, at most 8 s after the engine started). All its text comes from `i18n/strings.csv`
+  at build time (`{{KEY}}` placeholders, filled by `tools/pack_wasm.mjs`, which fails on leftovers).
+- **Claude: hashed file names** – the engine files are renamed to `k-<hash>.*` (one hash over wasm, pck
+  and scripts), the title font to `k-<fonthash>.ttf`; `_headers` gives `/k-*` a year of immutable
+  caching (the `! Cache-Control` detach drops the site-wide `no-cache`), `index.html` and the small
+  helper scripts stay `no-cache`. A new deploy is picked up at once, a returning player downloads
+  nothing but the page.
+
+### Part 5: content left over from M4
+
+- **Claude: Riesenknödl der Apokalypse** as an *item evolution* (`ItemData.evolves_from` /
+  `evolves_with`): holding Bröselbutter with Lederhosn at its evolution level (8) adds it by itself
+  (toast + jingle). The Knödl is twice the size (past the usual 4 m cap, `riesenknodl_size`) and never
+  loses mass – Bröselfresser bites, shedding while thrown and the Powidl cost do nothing; a cash-in or a
+  respawn still empties it. No chest gives it. Clients draw the size from the synced items.
+- **Claude: Watschn-Baum reflect** (`WeaponData.reflect_share` 2.0): each hit a player takes comes back
+  as 2x the HP lost (growing with the weapon's damage like its own hits) to every enemy within its reach.
+- **Claude: Jagatee sway** (`PassiveData.screen_wobble` 0.15 per level, full at 7): the camera rolls up
+  to 2.5° and nods a little, slowly; off with the new setting "Bildschirm wackeln".
+- **Moved to M6: Doppelportion** (a second Knödl on its own string). It needs a second Knödl body in the
+  physics and in every network codec (pose, world state, Brösel credit); that is co-op work.
+
+### Part 6: balance pass (bot data; the owner's playtest decides)
+
+- **Claude (bug): a character's own start weapon was locked** on a fresh profile when its quest was not
+  done yet (Kevin's Watschn-Aura unlocks at level 30): it never got a level card and stayed at level 1.
+  The start weapon and its evolution are now never locked for that character.
+- **Measured (2 bot runs each, Normal unless said):** Ferdl/Kirtag WON both (level 60-66), Resi/Kirtag
+  CLOSED both (level 40-59, 1-3 Stempel), Ferdl/Kirtag on Grantig 1 WON 1 CLOSED (level 49-51, 34-40
+  knock-downs), Toni/Gamskogl CLOSED both (level 26-32, 2.8-4.9k kills), Ferdl/Gamskogl CLOSED both
+  (level 37-42, 7-10k kills, first Oberkrampus at 8:30), Kevin/Gemeindebau (after the fix) CLOSED both
+  (level 49-56, 0 Stempel, 35-50 knock-downs).
+- **Claude: the tall maps get fewer enemies within reach** (they climb slowly), so the bot gets a third
+  of the Kirtag's kills and XP there. New `WaveData.enemy_hp`: Gamskogl-Piste 0.75, Gemeindebau-Hof 0.85,
+  Kirtag 1.0. Measured after it (Ferdl, 2 runs each): Gamskogl 1 WON 1 CLOSED (level 41-43, Hofrat beaten
+  at 14:58), Gemeindebau 1 WON 1 CLOSED (level 57-71, 27-30k kills) – a step below the Kirtag, as the
+  harder maps should be. The bot is also poor at climbing to the Stempel; real players will open the gate more
+  often than the logs suggest, so these maps are not tuned up to the Kirtag's win rate.
+- **Not touched here:** the first minutes (a parallel session adds early-game easing to `balance.tres`).

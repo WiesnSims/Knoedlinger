@@ -539,7 +539,7 @@ func _update_wave() -> void:
 			if types[t].attack != null and not types[t].boss:
 				enemies.type_weights[t] *= balance.kontrolle_elite_mult
 	enemies.hp_mult = (1.0 + balance.spawn_hp_per_minute * run_time / 60.0) \
-			* (1.0 + balance.coop_hp_per_player * maxi(players.size() - 1, 0)) * grant.enemy_hp
+			* (1.0 + balance.coop_hp_per_player * maxi(players.size() - 1, 0)) * grant.enemy_hp * wave.enemy_hp
 
 
 ## Host: Sperrstund' at 15:00. The crowd stops coming, the Riesen-Wirt sweeps the Kirtag empty,
@@ -1533,6 +1533,14 @@ func _spawn_player(peer_id: int, local: bool) -> Player:
 		build.apply_meta(_meta[peer_id])
 		build.extra_cards = character.extra_cards
 		_lock_content(build)
+		# The character's own weapon levels (and evolves) even before its quest unlocks it for the
+		# others: Kevin's Watschn-Aura stayed at level 1 on a fresh profile (balance log, M5).
+		var own: int = catalog.weapons.find(character.start_weapon)
+		if own >= 0:
+			build.locked.erase(Card.Kind.WEAPON * 256 + own)
+			var evolved: int = catalog.weapons.find(character.start_weapon.evolution)
+			if evolved >= 0:
+				build.locked.erase(Card.Kind.WEAPON * 256 + evolved)
 		build.add_start_weapon(character.start_weapon)
 		# Testing: --weapons=hagelkanone,sachertorte adds these too (locks and slots aside).
 		for id: String in LaunchArgs.get_string("weapons", "").split(",", false):

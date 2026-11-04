@@ -89,6 +89,10 @@ Every new UI must follow this file and use `ui/theme.tres`. After any UI change,
   the Speisekarte (inventory left, menu centre, stats right) and the end screen (inventory).
 - While a full-screen panel is open (Speisekarte, Tab screen, end screen) the HUD steps back
   entirely; the panel is the only thing on screen besides the dimmed game.
+- **Touch (M5):** `TouchControls` draws the stick (left, where the thumb lands; a faint hint
+  otherwise), Hupfn and Schupfn bottom right, Pause and Inventory as small round buttons under the
+  clock. The Knödl panel moves up above the buttons and world markers keep clear of them
+  (`Hud.set_touch_layout`). The keyboard intro hides on touch. Drawn shapes only, no text.
 
 ## 7. Motion
 
@@ -129,6 +133,11 @@ Every new UI must follow this file and use `ui/theme.tres`. After any UI change,
 1. A `CanvasLayer` whose UI root comes from `UiStyle.root(self)` (themed, full screen).
 2. Panels are `UiStyle.panel()`, text `UiStyle.label(&"<Variation>", tr("KEY"))`, rows and columns
    `UiStyle.hbox/vbox(&"Row16" | &"Gap16" ...)`, buttons `ActionPill`.
+   Keys are `KeycapLabel(action, "Esc")` (an `ActionPill` takes the action as its 2nd argument): it
+   shows the keyboard label, the gamepad glyph (A, B, X, Y, LB, RB, LT, RT, Start, Back) or nothing on
+   touch, following `InputDevice`. Every screen must work with the D-pad and A/B: something focusable
+   gets the focus when the screen opens; B (`ui_cancel`) closes it. Settings widgets are drawn:
+   `UiSlider`, `UiToggle`, `UiChoice` (‹ value ›).
 3. A new look = a new variation in `tools/ui/make_theme.gd`, regenerate, then use it. Never a colour
    or size in the screen's script (palette colours via `UiStyle.color()` only for drawn widgets).
 4. Shots with `tools/ui_shots.ps1` (add the screen as a scene there), check them against this file.
@@ -136,7 +145,8 @@ Every new UI must follow this file and use `ui/theme.tres`. After any UI change,
 ## 10. Checking it
 
 - `tools/ui_shots.ps1 -Name <label>`: HUD, busy HUD (10:00+), Speisekarte with a hovered row,
-  Inventory/Stats, end screen, at 1920x1080 and 1280x720, into `build/shots/ui/<label>/`.
+  Inventory/Stats, end screen, the touch controls (a real finger on the stick) and the settings tabs,
+  at 1920x1080 and 1280x720, into `build/shots/ui/<label>/`.
 - Look at every shot and check it against this list: corners only, 3 sizes, 8 px grid, no red
   except danger, rarity readable from the border, nothing overlaps, readable at 720p.
 - The shots also fail at 150 draw calls or more (the web budget counts the UI too).

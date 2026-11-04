@@ -4,23 +4,26 @@
 # kills, Stempel, bosses beaten and the result, the build. Prints a table and
 # fails on any Godot error or warning, or a run that did not reach Sperrstund'.
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/autoplay.ps1 [-Runs 3] [-Seed 1] [-Character ferdl]
+#        [-Map kirtag|gamskogl|gemeindebau] [-Grant 1]   (Grant level index, 0 = Gemuetlich .. 4)
 param(
     [int]$Runs = 3,
     [int]$Seed = 1,
-    [string]$Character = 'ferdl'
+    [string]$Character = 'ferdl',
+    [string]$Map = 'kirtag',
+    [int]$Grant = 1
 )
 . "$PSScriptRoot\common.ps1"
 
 $log = New-LogFile 'autoplay'
 $failures = @()
-$outDir = Join-Path $BuildDir ('balance\' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+$outDir = Join-Path $BuildDir ('balance\' + (Get-Date -Format 'yyyyMMdd-HHmmss') + "-$Character-$Map-g$Grant")
 New-Item -ItemType Directory -Force $outDir | Out-Null
 $outArg = $outDir -replace '\\', '/'
 # Every run is about 54,000 frames; allow ten minutes each.
 $started = Get-Date
 $code = Invoke-Logged -Exe $Godot -Arguments @('--headless', '--fixed-fps', '60', '--path', $Root,
     'res://scenes/run/run_world.tscn', '--', '--autoplay=1', "--runs=$Runs", "--seed=$Seed", "--character=$Character",
-    "--out=$outArg") -Log $log -Quiet
+    "--map=$Map", "--grant=$Grant", "--out=$outArg") -Log $log -Quiet
 if ($code -ne 0) { $failures += "godot exited with $code" }
 $failures += Get-Problems $log
 

@@ -125,6 +125,7 @@ enemies = Array[ExtResource("2_enemy")]([ExtResource("e_tourist"), ExtResource("
 entries = Array[ExtResource("3_entry")]([SubResource("entry_0"), SubResource("entry_1"), SubResource("entry_2"), SubResource("entry_3"), SubResource("entry_4"), SubResource("entry_5"), SubResource("entry_6"), SubResource("entry_7"), SubResource("entry_8"), SubResource("entry_9"), SubResource("entry_10"), SubResource("entry_11")])
 bosses = Array[ExtResource("4_boss")]([SubResource("boss_0"), SubResource("boss_1")])
 final_boss = ExtResource("b_hofrat")
+enemy_hp = 0.85
 formular_minute = 10.0
 final_boss_minute = 12.0
 bus_minute = 8.0

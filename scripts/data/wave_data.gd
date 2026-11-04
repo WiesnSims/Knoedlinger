@@ -13,6 +13,9 @@ extends Resource
 ## The main boss behind the gate (GAME-DESIGN.md "Run timeline"): at formular_minute the Formular
 ## appears (collect the Stempel to open the gate); at final_boss_minute he comes out anyway.
 @export var final_boss: BossData
+## Enemy HP on this map compared with the Kirtag (the tall maps bring fewer enemies within reach,
+## so each one counts more; balance log M5).
+@export var enemy_hp: float = 1.0
 @export var formular_minute: float = 10.0
 @export var final_boss_minute: float = 12.0
 ## The Touristenbus: for bus_seconds from bus_minute the crowd comes from one direction, with
