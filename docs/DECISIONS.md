@@ -669,3 +669,34 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Claude: 101 quests** (the design's target of 100); everything new that is not a start pick is unlocked by one.
 - **Claude: `?weapons=a,b` / `--weapons=`** gives extra weapons at the start (testing; ignores locks and slots).
 - **Measured (local, RTX 3080, run, 500 enemies, bot, 60 s, Edge):** 157 fps avg, p95 7.8 ms, at most 128 draw calls.
+
+### Part 6: maps (Gamskogl-Piste, Gemeindebau-Hof, Kirtag verticality)
+
+- **Claude: terrain for tall maps** – `MapData.tilt` (the whole map leans: a ski slope) and `mesas` (plateaus with
+  a steep edge of `mesa_edge` metres; stacked ones make several levels and real drops). Each map names its own
+  `wave` (enemies, bosses, the Formular); the Kirtag keeps its wave. Map generators share `tools/maps/map_kit.gd`.
+- **Claude: Gamskogl-Piste** (`tools/maps/make_gamskogl.gd`, 300 x 300 m): leans uphill to the north (17 %),
+  snow colours. The Talstation with the Knödl stand is the spawn at the bottom; groomed pistes zig-zag up past
+  the Mittelstation (a plateau with a ledge on it), the Schneebar (three levels with a lookout) and two hut shelves
+  to the Bergstation with the boss gate at the top. Moguls, a ridge, three kickers, a lift line, ski huts as
+  Wirtshäuser, firs round the edge. Stempel lie on the high ground. Its wave adds the Schneemann, more Radlfahrer
+  ("skiers"), the Wühlmaus. **The Lawine** is its 10:00 mini-boss (2,600 HP, a huge heap of snow): long marked
+  slides it dashes along, a ring of falling snow, a Schneemann escort. The Hofrat stays the final boss on every map.
+- **Claude: Gemeindebau-Hof** (`tools/maps/make_gemeindebau.gd`): a big courtyard ringed by four flat-roofed
+  council blocks (14 m, windows on both faces, a gate gap in every side). A long ramp inside each block leads onto
+  the roofs, which run all the way round (the high route); stairs from outside at two corners; the courtyard has a
+  raised garden in two tiers with stairs, laundry lines, a fountain; lower blocks with stairs onto some roofs in
+  the quarters outside; the Hausverwaltung with the gate in the north; Beisln as Wirtshäuser. Its wave adds
+  Gartenzwerge and Rasenmäher-Roboter early; the second Oberkrampus comes at 10:00.
+- **Claude: Kirtag verticality, a light touch** – an Alm (7 m) behind the Gemeindeamt, a lookout in two steps in the
+  west, a crag in the east, each with a chest spot on top.
+- **Claude: unlocks** – the Gamskogl-Piste opens with "Durchghalten" (survive 10 minutes), the Gemeindebau-Hof with
+  "Fünf Kirtage" (5 runs). Spielen chooses the map like the Grant level (‹ › or Left/Right).
+- **Measured (local, RTX 3080, run, 500 enemies, bot, 60 s):** Edge 157 fps / p95 7.8 ms / at most 128 draw calls,
+  Firefox 131 fps / p95 10 ms / at most 117. New maps in the browser: about 100 draw calls. Map bakes about 450 ms.
+- **Measured (balance log, 2 bot runs, Onkel Ferdl, Kirtag, Normal, after all of M4):** both WON (Hofrat beaten at
+  14:32 and 14:52, Oberkrampus at 5:21-6:17, Oberkrampus II at 10:31-13:02), level 60-66, 25.7k-30.8k kills, 15-27
+  knock-downs, 2-3 Stempel. The gap after the build rework (part 2) is closed again; tuning stays an M5 job.
+- **Preview deployed** to https://m4-meta.knoedlinger.pages.dev (with the Ehrentafel's preview database). From the
+  preview (headless Edge, RTX 3080, 500 enemies, bot, 60 s): 153 fps avg, p95 8.4 ms, at most 127 draw calls, no
+  console errors.
