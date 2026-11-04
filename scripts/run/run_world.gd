@@ -138,6 +138,9 @@ var _host_brosel: int = 0
 var _alive_held: int = 0
 ## Most Knödl a client showed at once (players come and go; the end count says little).
 var _knodls_max: int = 0
+## The most draw calls of a frame this second and what was up then (the [STATS] line).
+var _draws_peak: int = 0
+var _draws_peak_what: String = ""
 ## Most Doppelportion Knödl a client showed at once.
 var _seconds_max: int = 0
 var _bytes_sent_start: int = -1
@@ -433,7 +436,8 @@ func _process(delta: float) -> void:
 	var was_measuring: bool = stats.is_measuring()
 	if _resumed:
 		_resumed = false
-	else:
+	elif _loading == null:
+		# Co-op runs on behind the loading screen (no pause): shader compiling is not measured.
 		stats.add_frame(delta)
 		if _log_slow and delta > 0.04 and stats.is_measuring():
 			print("[SLOW] run %.1f s: %.0f ms, weapons %s, menu %s" % [run_time, delta * 1000.0,
@@ -443,12 +447,18 @@ func _process(delta: float) -> void:
 		_bytes_sent_start = NetworkManager.bytes_sent
 		_bytes_received_start = NetworkManager.bytes_received
 		_clients_at_measure = NetworkManager.client_ids().size()
+		if replica != null:
+			replica.reset_counters()
 	if enemies != null:
 		_host_frame(delta)
 	elif replica != null:
 		_client_frame(delta)
 	_local_frame(delta)
 	_send_pose(delta)
+	var draws: int = int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+	if draws > _draws_peak:
+		_draws_peak = draws
+		_draws_peak_what = "menu" if speisekarte.is_shown() else ("chest" if speisekarte._chest_panel.visible else "game")
 	_report(delta)
 	if _seconds > 0.0 and stats.measured_seconds() >= _seconds:
 		_finish()
@@ -979,6 +989,7 @@ func _send_world() -> void:
 		_outgoing = _outgoing.slice(RunEventCodec.MAX_EVENTS)
 		NetworkManager.send_run_events(RunEventCodec.encode(chunk))
 	NetworkManager.send_world_state(WorldStateCodec.encode(_world_frame()))
+	NetworkManager.flush()
 
 
 func _world_frame() -> WorldStateCodec.Frame:
@@ -1283,7 +1294,11 @@ func _report(delta: float) -> void:
 			"knodl": snappedf(knodl.knodl_mass, 0.1) if knodl != null else 0.0,
 			"draws": int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)),
 			"players": players.size(),
+			"menu": speisekarte.is_shown(),
+			"draws_peak": _draws_peak,
+			"peak_with": _draws_peak_what,
 		}
+		_draws_peak = 0
 		var json: String = JSON.stringify(line)
 		if not _autoplay:
 			print("[STATS] " + json)
@@ -1597,6 +1612,9 @@ func _on_offer(data: PackedByteArray) -> void:
 		OfferCodec.Type.OFFER:
 			_note_panel_mouse()
 			speisekarte.show_offer(offer, state.build)
+			# The host's own offer arrives deferred, after the HUD looked this frame: step back now,
+			# not a frame late (one frame with both drawn went over the draw-call budget, M6).
+			hud.refresh_cover()
 			speisekarte.show_player(state, knodls.get(NetworkManager.local_id()))
 			inventory.set_open(false)
 			# Solo is the only time the game stops (GAME-DESIGN.md); co-op runs on.

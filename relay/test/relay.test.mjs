@@ -125,6 +125,13 @@ test('frames carry the sender, targets are honoured', async () => {
 	b.send(-2, 5);
 	assert.deepEqual([...(await host.bytes())], [3, 5]);
 	assert.ok(await a.quiet());
+	// The host to exactly peers 2 and 3 (mask bits 1 and 2), and a newcomer (4) gets nothing.
+	const c = open(code);
+	await c.text('welcome');
+	host.send(0x20 | 0b110, 6);
+	assert.deepEqual([...(await a.bytes())], [1, 6]);
+	assert.deepEqual([...(await b.bytes())], [1, 6]);
+	assert.ok(await c.quiet());
 	host.ws.close();
 });
 

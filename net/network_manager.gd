@@ -176,12 +176,15 @@ func join_relay(code: String) -> Error:
 	return _open_relay(code)
 
 
-## Where the relay is: the page's own origin in the browser, else --relay=<url> or the live site.
+## Where the relay is: --relay=<url> / ?relay=<url> (tests: a local wrangler dev), else the page's own
+## origin in the browser, else the live site.
 func relay_base() -> String:
+	if LaunchArgs.has("relay"):
+		return LaunchArgs.get_string("relay")
 	if OS.has_feature("web"):
 		var origin: String = str(JavaScriptBridge.eval("location.origin", true))
 		return origin.replace("https://", "wss://").replace("http://", "ws://")
-	return LaunchArgs.get_string("relay", SITE.replace("https://", "wss://"))
+	return SITE.replace("https://", "wss://")
 
 
 ## The link that opens the game straight into this room (?room=KNDL).
@@ -368,6 +371,18 @@ func send_input(data: PackedByteArray) -> void:
 				continue
 			_rx_peer_input.rpc_id(peer, HOST_ID, data)
 			bytes_sent += data.size() + MESSAGE_OVERHEAD
+
+
+## Host: everything of this world send goes out now (relay; the WebSocket backend sends at once).
+func flush() -> void:
+	if _relay != null:
+		_relay.flush_now()
+
+
+## How far in the past clients show the host's enemies: more over the relay (a Cloudflare hop and
+## batching) than on the local WebSocket.
+func interpolation_delay_ms(balance: BalanceData) -> float:
+	return balance.relay_interpolation_delay_ms if backend == Backend.RELAY else balance.interpolation_delay_ms
 
 
 ## Relay traffic since the room opened (both ways), for the F3 overlay.

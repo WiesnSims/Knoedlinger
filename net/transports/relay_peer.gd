@@ -17,6 +17,8 @@ extends MultiplayerPeerExtension
 signal control(message: Dictionary)
 
 const LENGTH_BYTES: int = 2
+## A target byte 0x20 | mask names exactly the peers in the mask (bit k = peer k + 1).
+const MASK_TARGET: int = 0x20
 ## Every queued packet goes out within this (about 20 frames a second: the relay bills frames).
 const FLUSH_INTERVAL_MS: int = 50
 ## A quiet lobby says "ping" this often so the connection stays open.
@@ -156,6 +158,14 @@ func _unpack(data: PackedByteArray) -> void:
 		at += length
 
 
+## Sends everything queued now (the host after each world send: snapshots leave at a steady rate
+## instead of beating against the flush timer).
+func flush_now() -> void:
+	if _status == CONNECTION_CONNECTED and _socket.get_ready_state() == WebSocketPeer.STATE_OPEN:
+		_flush()
+		_last_flush = Time.get_ticks_msec()
+
+
 func _flush() -> void:
 	_queue_held()
 	for frame: PackedByteArray in _frames:
@@ -167,11 +177,20 @@ func _flush() -> void:
 func _queue_held() -> void:
 	if _held_for.is_empty():
 		return
-	var others: Array = _peers.filter(func(peer: int) -> bool: return not peer in _held_for)
-	if others.is_empty() or _held_for.has(0):
+	# Several peers at once go out as an exact mask (0x20 | bit per peer id - 1), never as "everyone":
+	# the relay may already know a newcomer we have not heard of, who must not get this (Godot's
+	# path cache refuses a packet twice, M6 browser check).
+	var mask: int = 0
+	for peer: int in _held_for:
+		if peer >= 1 and peer <= 5:
+			mask |= 1 << (peer - 1)
+		else:
+			mask = -1
+			break
+	if _held_for.has(0):
 		_queue(0, _held)
-	elif others.size() == 1 and _held_for.size() > 1:
-		_queue(-others[0], _held)
+	elif _held_for.size() > 1 and mask > 0:
+		_queue(MASK_TARGET | mask, _held)
 	else:
 		for peer: int in _held_for:
 			_queue(peer, _held)

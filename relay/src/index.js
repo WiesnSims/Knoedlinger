@@ -2,8 +2,9 @@
 // looks inside the game's packets.
 //
 // Binary frames: [peer i8][payload...]. From a player the byte is the target (0 = everyone else,
-// n = peer n, -n = everyone else but n); the relay rewrites it to the sender before passing it on, so
-// nobody can pretend to be the host. Text frames are JSON control messages (see control() below).
+// n = peer n, -n = everyone else but n, 0x20 | mask = exactly the peers in the mask, bit k = peer
+// k + 1: a broadcast never reaches someone who joined after the sender last looked); the relay
+// rewrites it to the sender before passing it on, so nobody can pretend to be the host. Text frames are JSON control messages (see control() below).
 import { DurableObject } from 'cloudflare:workers';
 import { routeRoom } from './route.js';
 
@@ -78,6 +79,7 @@ export class Room extends DurableObject {
 			return;
 		}
 		const target = (bytes[0] << 24) >> 24;
+		const mask = (bytes[0] & 0xe0) === 0x20 ? bytes[0] & 0x1f : -1;
 		const out = bytes.slice();
 		out[0] = meta.id;
 		for (const p of this.players()) {
@@ -85,7 +87,9 @@ export class Room extends DurableObject {
 			if (to === meta.id) {
 				continue;
 			}
-			if (target === 0 || (target > 0 && to === target) || (target < 0 && to !== -target)) {
+			const wanted = mask >= 0 ? (mask & (1 << (to - 1))) !== 0
+				: target === 0 || (target > 0 && to === target) || (target < 0 && to !== -target);
+			if (wanted) {
 				p.ws.send(out);
 			}
 		}

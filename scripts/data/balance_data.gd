@@ -384,6 +384,8 @@ extends Resource
 @export var snapshot_rate_hz: float = 15.0
 @export var pose_rate_hz: float = 20.0
 @export var interpolation_delay_ms: int = 100
+## The same over the relay (browsers): the Cloudflare hop and the relay's batching jitter more.
+@export var relay_interpolation_delay_ms: int = 150
 ## A slot that moves further than this between two snapshots was respawned: snap, do not lerp.
 @export var interpolation_snap_distance: float = 5.0
 ## Budget per client at 500 enemies (CLAUDE.md).

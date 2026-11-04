@@ -41,6 +41,17 @@ var rendered_frames: int = 0
 var intervals_ms: PackedFloat32Array = PackedFloat32Array()
 var events_spawned: int = 0
 var events_died: int = 0
+## Starts the sync measurement over (the run's measurement window begins after its warm-up; the
+## first seconds of a browser co-op run are every tab compiling shaders).
+func reset_counters() -> void:
+	underrun_ms = 0.0
+	max_underrun_ms = 0.0
+	_underrun_streak_ms = 0.0
+	pops = 0
+	clock_jumps = 0
+	intervals_ms.clear()
+
+
 ## Where enemies died since the caller last emptied it (x, z), for kill sounds.
 var recent_deaths := PackedVector2Array()
 ## The host's alive count in the snapshot being shown (the newest one can be ~100 ms ahead).
@@ -126,7 +137,7 @@ func push_events(data: PackedByteArray) -> void:
 func update(now_ms: int, delta: float) -> void:
 	if _frames.is_empty():
 		return
-	var render_ms: float = now_ms + _clock_offset - balance.interpolation_delay_ms
+	var render_ms: float = now_ms + _clock_offset - NetworkManager.interpolation_delay_ms(balance)
 	if _last_render_ms >= 0.0 and absf(render_ms - _last_render_ms - delta * 1000.0) > CLOCK_JUMP_MS:
 		clock_jumps += 1
 	_last_render_ms = render_ms

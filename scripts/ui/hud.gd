@@ -307,6 +307,11 @@ func toast(text: String, seconds: float = TOAST_SECONDS) -> void:
 		_toast_tween.tween_property(_toast, "modulate:a", 1.0, 0.15)
 
 
+## Steps back (or comes back) at once, when a panel opened outside the usual frame order.
+func refresh_cover() -> void:
+	_root.visible = not covered.call()
+
+
 func _process(delta: float) -> void:
 	_root.visible = not covered.call()
 	if _toast_timer > 0.0:

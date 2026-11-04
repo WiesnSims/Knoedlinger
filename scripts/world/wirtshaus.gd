@@ -75,6 +75,8 @@ func setup(map: MapData, p_spot: int, ground: Heightfield) -> void:
 	add_child(_mat)
 	_mat.global_position = _mat_centre + Vector3(0.0, 0.08, 0.0)
 	_sign = Label3D.new()
+	# Only nearby signs draw (draw calls, M6); the HUD marker points to the nearest open one.
+	_sign.visibility_range_end = 45.0
 	_sign.font = UiStyle.font("number")
 	_sign.name = "Sign"
 	_sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED

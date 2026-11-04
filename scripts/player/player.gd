@@ -73,6 +73,8 @@ func setup(p_peer_id: int, local: bool, p_balance: BalanceData, p_character: Cha
 	_look = _build_look(local)
 	add_child(_look)
 	_sign = Label3D.new()
+	# Co-op signs ("Bin glei wieder da", "Umgfoin!") only draw near the camera (draw calls, M6).
+	_sign.visibility_range_end = 70.0
 	_sign.font = UiStyle.font("number")
 	_sign.name = "BinGleiWiederDa"
 	_sign.text = tr("SIGN_BACK_SOON")
@@ -265,35 +267,49 @@ func _build_look(local: bool) -> Node3D:
 	var hat: Color = character.hat_color if character != null else Color(0.22, 0.35, 0.2)
 	var skin := Color(0.95, 0.78, 0.65)
 	var r: float = balance.player_radius
-	look.add_child(_part(_capsule(r * 0.95, 1.1), Vector3(0.0, 0.95, 0.0), coat))
-	look.add_child(_part(_capsule(r * 0.8, 0.7), Vector3(0.0, 0.35, 0.0), trousers))
-	look.add_child(_part(_sphere(0.3), Vector3(0.0, 1.62, 0.0), skin))
+	# One mesh with vertex colours, not a node per part: co-op shows four of them (draw calls, M6).
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	_add_part(tool, _capsule(r * 0.95, 1.1), Vector3(0.0, 0.95, 0.0), coat)
+	_add_part(tool, _capsule(r * 0.8, 0.7), Vector3(0.0, 0.35, 0.0), trousers)
+	_add_part(tool, _sphere(0.3), Vector3(0.0, 1.62, 0.0), skin)
 	# Every Knödlinger has the family's round nose (GAME-DESIGN.md: one shared visual trait).
-	look.add_child(_part(_sphere(0.12), Vector3(0.0, 1.6, 0.3), Color(0.95, 0.6, 0.5)))
+	_add_part(tool, _sphere(0.12), Vector3(0.0, 1.6, 0.3), Color(0.95, 0.6, 0.5))
 	var brim := CylinderMesh.new()
 	brim.top_radius = 0.42
 	brim.bottom_radius = 0.42
 	brim.height = 0.05
 	brim.radial_segments = 12
-	look.add_child(_part(brim, Vector3(0.0, 1.86, 0.0), hat))
+	_add_part(tool, brim, Vector3(0.0, 1.86, 0.0), hat)
 	var crown := CylinderMesh.new()
 	crown.top_radius = 0.2
 	crown.bottom_radius = 0.26
 	crown.height = 0.26
 	crown.radial_segments = 10
-	look.add_child(_part(crown, Vector3(0.0, 2.0, 0.0), hat))
+	_add_part(tool, crown, Vector3(0.0, 2.0, 0.0), hat)
+	var material := StandardMaterial3D.new()
+	material.vertex_color_use_as_albedo = true
+	material.roughness = 0.9
+	var body := MeshInstance3D.new()
+	body.name = "Body"
+	body.mesh = tool.commit()
+	body.material_override = material
+	look.add_child(body)
 	return look
 
 
-func _part(mesh: PrimitiveMesh, where: Vector3, color: Color) -> MeshInstance3D:
-	var material := StandardMaterial3D.new()
-	material.albedo_color = color
-	material.roughness = 0.9
-	mesh.material = material
-	var instance := MeshInstance3D.new()
-	instance.mesh = mesh
-	instance.position = where
-	return instance
+## Appends a primitive's triangles at `where` in `color` (stored linear: the Compatibility renderer
+## ignores vertex_color_is_srgb, docs/DECISIONS.md M1).
+func _add_part(tool: SurfaceTool, mesh: PrimitiveMesh, where: Vector3, color: Color) -> void:
+	var arrays: Array = mesh.get_mesh_arrays()
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	var linear: Color = color.srgb_to_linear()
+	for index: int in indices:
+		tool.set_color(linear)
+		tool.set_normal(normals[index])
+		tool.add_vertex(vertices[index] + where)
 
 
 static func _capsule(radius: float, height: float) -> CapsuleMesh:
