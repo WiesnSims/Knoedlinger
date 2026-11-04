@@ -1,6 +1,7 @@
 extends GutTest
-## PlayerBuild, CardDealer and LevelUpFlow: stats from passives, slots, rarity, evolutions, the
-## mirror on clients, and the Speisekarte flow (pick, reroll, banish, skip, queued level-ups).
+## PlayerBuild, CardDealer and LevelUpFlow: stats from stat upgrades and items, slots, rarity,
+## open-ended levels with rolled weapon mods, evolutions, chests and items, the mirror on clients, and
+## the Speisekarte flow (pick, reroll, banish, skip, queued level-ups).
 
 var balance: BalanceData
 var catalog: UpgradeCatalog
@@ -28,9 +29,19 @@ func _passive(id: StringName) -> int:
 	return -1
 
 
+func _item(id: StringName) -> int:
+	for k: int in catalog.items.size():
+		if catalog.items[k].id == id:
+			return k
+	return -1
+
+
 func _take(build: PlayerBuild, kind: Card.Kind, index: int, times: int = 1, rarity: int = Card.Rarity.COMMON) -> void:
 	for t: int in times:
-		build.apply(Card.new(kind, index, rarity), balance)
+		var card := Card.new(kind, index, rarity, 2)
+		if kind == Card.Kind.WEAPON and build.owned_weapon(index) != null:
+			CardDealer.roll_weapon_mod(card, build, balance, rng)
+		build.apply(card, balance)
 
 
 func test_passive_levels_add_up_and_rarity_scales_them() -> void:
@@ -43,18 +54,60 @@ func test_passive_levels_add_up_and_rarity_scales_them() -> void:
 	assert_almost_eq(build.stat(&"armor"), 2.0 + balance.rarity_bonus[Card.Rarity.HOFRAT], 0.001)
 
 
-func test_extra_jumps_count_levels_not_rarity() -> void:
+func test_items_stack_their_stats_and_respect_their_cap() -> void:
 	var build := PlayerBuild.new(catalog, balance)
-	_take(build, Card.Kind.PASSIVE, _passive(&"haferlschuhe"), 1, Card.Rarity.HOFRAT)
+	var shoes: int = _item(&"haferlschuhe")
+	build.add_item(shoes)
 	assert_eq(build.stat(&"extra_jumps"), 1.0)
-	assert_gt(build.stat(&"jump_height"), 0.1, "jump height does scale with rarity")
+	build.add_item(shoes)
+	assert_eq(build.stat(&"extra_jumps"), 2.0)
+	assert_almost_eq(build.stat(&"jump_height"), 0.2, 0.001)
+	assert_false(build.can_take_item(shoes), "two pairs at most")
+	var pig: int = _item(&"gluecksschwein")
+	for k: int in 5:
+		build.add_item(pig)
+	assert_eq(build.item_count(pig), 5)
+	assert_almost_eq(build.stat(&"luck"), 5 * catalog.items[pig].stats[&"luck"], 0.001)
 
 
-func test_levels_stop_at_the_max() -> void:
+func test_item_effects_add_up() -> void:
+	var build := PlayerBuild.new(catalog, balance)
+	build.add_item(_item(&"zweitschluessel"))
+	build.add_item(_item(&"zweitschluessel"))
+	assert_almost_eq(build.effect(&"free_chest"), 0.2, 0.001)
+	build.add_item(_item(&"marterl_kerze"))
+	assert_eq(roundi(build.effect(&"revive")), 1)
+	build.add_item(_item(&"sparbuch"))
+	build.set_chests_opened(4)
+	assert_almost_eq(build.stat(&"damage"), 4 * 0.03, 0.001, "Sparbuch: damage per chest opened")
+
+
+func test_levels_are_open_ended_and_weapon_cards_roll_a_mod() -> void:
 	var build := PlayerBuild.new(catalog, balance)
 	var shovel: int = _weapon(&"schneeschaufel")
-	_take(build, Card.Kind.WEAPON, shovel, 20)
-	assert_eq(build.owned_weapon(shovel).level, catalog.weapons[shovel].max_level)
+	_take(build, Card.Kind.WEAPON, shovel, 30)
+	var owned: PlayerBuild.OwnedWeapon = build.owned_weapon(shovel)
+	assert_eq(owned.level, 30, "no level cap")
+	var gained: float = 0.0
+	for m: int in PlayerBuild.WEAPON_MODS.size():
+		gained += owned.mods[m]
+	assert_gt(gained, 0.0, "every level after the first rolled something")
+	assert_lte(Formulas.weapon_amount(owned.data, owned.mods), owned.data.max_amount, "pieces stop at max_amount")
+	var lederhosn: int = _passive(&"lederhosn")
+	_take(build, Card.Kind.PASSIVE, lederhosn, 12)
+	assert_eq(build.owned_passive(lederhosn).level, 12)
+
+
+func test_a_weapon_mod_roll_follows_the_weapon_and_the_rarity() -> void:
+	var build := PlayerBuild.new(catalog, balance)
+	var spoon: int = _weapon(&"kochloeffel")
+	build.add_start_weapon(catalog.weapons[spoon])
+	for k: int in 40:
+		var card := Card.new(Card.Kind.WEAPON, spoon, Card.Rarity.HOFRAT, 2)
+		CardDealer.roll_weapon_mod(card, build, balance, rng)
+		var key: StringName = PlayerBuild.WEAPON_MODS[card.mod]
+		assert_true(catalog.weapons[spoon].level_mods.has(key), "only the weapon's own mods: %s" % key)
+		assert_almost_eq(card.value, catalog.weapons[spoon].level_mods[key] * balance.rarity_bonus[Card.Rarity.HOFRAT], 0.001)
 
 
 func test_the_deal_offers_different_items_and_respects_full_slots() -> void:
@@ -66,9 +119,11 @@ func test_the_deal_offers_different_items_and_respects_full_slots() -> void:
 		for a: int in cards.size():
 			for b: int in range(a + 1, cards.size()):
 				assert_false(cards[a].same_item(cards[b]), "no item twice on one menu")
+			for card: Card in cards:
+				assert_ne(card.kind, Card.Kind.ITEM, "items only come from chests")
 	# Fill every weapon slot: no new weapon may be offered any more.
 	for k: int in catalog.weapons.size():
-		if not catalog.weapons[k].is_evolution and build.weapon_slots_used() < balance.weapon_slots:
+		if not catalog.weapons[k].is_evolution and build.weapon_slots_used() < build.weapon_slots:
 			_take(build, Card.Kind.WEAPON, k)
 	for deal: int in 30:
 		for card: Card in CardDealer.deal(build, balance, rng, 3):
@@ -87,7 +142,7 @@ func test_evolutions_are_never_offered_as_new_weapons() -> void:
 func test_a_ready_evolution_is_on_the_menu_and_keeps_the_slot() -> void:
 	var build := PlayerBuild.new(catalog, balance)
 	var spoon: int = _weapon(&"kochloeffel")
-	_take(build, Card.Kind.WEAPON, spoon, catalog.weapons[spoon].max_level)
+	_take(build, Card.Kind.WEAPON, spoon, balance.evolution_level)
 	_take(build, Card.Kind.WEAPON, _weapon(&"skistoecke"))
 	assert_eq(build.evolutions_ready().size(), 0, "needs the passive too")
 	_take(build, Card.Kind.PASSIVE, _passive(&"brettljause"))
@@ -100,6 +155,7 @@ func test_a_ready_evolution_is_on_the_menu_and_keeps_the_slot() -> void:
 	assert_eq(build.weapons.size(), 2)
 	assert_eq(build.weapons[0].data.id, &"omas_nudelwalker")
 	assert_eq(build.weapons[0].fires, fires, "same slot, same fire counter")
+	assert_eq(build.weapons[0].level, balance.evolution_level, "keeps its level")
 	assert_eq(build.evolutions_ready().size(), 0)
 	for deal: int in 60:
 		for card: Card in CardDealer.deal(build, balance, rng, 3):
@@ -143,29 +199,64 @@ func test_luck_makes_rare_cards_likelier() -> void:
 func test_a_chest_gives_items_and_an_evolution_first() -> void:
 	var build := PlayerBuild.new(catalog, balance)
 	var orbit: int = _weapon(&"mozartkugel_orbit")
-	_take(build, Card.Kind.WEAPON, orbit, catalog.weapons[orbit].max_level)
+	_take(build, Card.Kind.WEAPON, orbit, balance.evolution_level)
 	_take(build, Card.Kind.PASSIVE, _passive(&"kraeuterlimo"))
-	var taken: Array[Card] = CardDealer.open_chest(build, balance, rng, 3, true)
+	var taken: Array[Card] = CardDealer.open_chest(build, balance, rng, 3, true, 0)
 	assert_eq(taken.size(), 3)
 	assert_eq(taken[0].kind, Card.Kind.EVOLUTION)
 	assert_eq(build.weapons[0].data.id, &"kugel_karussell")
+	for k: int in range(1, 3):
+		assert_eq(taken[k].kind, Card.Kind.ITEM)
+		assert_eq(catalog.items[taken[k].index].rarity, 0, "items of the chest's rarity")
+	assert_eq(build.items.size() + (1 if taken[1].index == taken[2].index else 0), 2)
+
+
+func test_a_chest_falls_back_when_its_rarity_is_used_up() -> void:
+	var build := PlayerBuild.new(catalog, balance)
+	# Hold every Hofratswürdig item there is: a Hofratswürdig chest still gives something.
+	for index: int in catalog.items.size():
+		while catalog.items[index].rarity == 3 and build.can_take_item(index):
+			build.add_item(index)
+	var picked: int = CardDealer.pick_item(build, rng, 3)
+	assert_gte(picked, 0)
+	assert_lt(catalog.items[picked].rarity, 3)
+
+
+func test_chest_rarity_has_a_floor_and_luck_raises_it() -> void:
+	for k: int in 200:
+		assert_gte(CardDealer.roll_chest_rarity(balance, rng, 0.0, 1), 1)
+	var rare_plain: int = 0
+	var rare_lucky: int = 0
+	for k: int in 2000:
+		if CardDealer.roll_chest_rarity(balance, rng, 0.0, 0) >= 2:
+			rare_plain += 1
+		if CardDealer.roll_chest_rarity(balance, rng, 1.0, 0) >= 2:
+			rare_lucky += 1
+	assert_gt(float(rare_lucky), rare_plain * 1.5)
 
 
 func test_the_mirror_rebuilds_the_same_stats() -> void:
 	var build := PlayerBuild.new(catalog, balance)
 	_take(build, Card.Kind.WEAPON, _weapon(&"skistoecke"), 3, Card.Rarity.FINE)
 	_take(build, Card.Kind.PASSIVE, _passive(&"kraeuterlimo"), 2, Card.Rarity.NOBLE)
-	_take(build, Card.Kind.PASSIVE, _passive(&"haferlschuhe"))
+	build.add_item(_item(&"haferlschuhe"))
+	build.add_item(_item(&"sparbuch"))
+	build.set_chests_opened(3)
 	build.weapons[0].fires = 99
 	var mirror := PlayerBuild.new(catalog)
-	assert_true(mirror.mirror(build.weapon_rows(), build.passive_rows(), 12, 2, 1))
+	assert_true(mirror.mirror(build.weapon_rows(), build.passive_rows(), build.item_rows(), 12, 2, 1, 3))
 	assert_eq(mirror.weapons[0].level, 3)
 	assert_eq(mirror.weapons[0].fires, 99)
-	assert_almost_eq(mirror.weapons[0].bonus, build.weapons[0].bonus, 0.01)
+	for m: int in PlayerBuild.WEAPON_MODS.size():
+		assert_almost_eq(mirror.weapons[0].mods[m], build.weapons[0].mods[m], 0.001)
 	assert_almost_eq(mirror.stat(&"move_speed"), build.stat(&"move_speed"), 0.001)
+	assert_almost_eq(mirror.stat(&"damage"), build.stat(&"damage"), 0.001)
 	assert_eq(mirror.stat(&"extra_jumps"), 1.0)
+	assert_eq(mirror.items.size(), 2)
 	assert_eq(mirror.gold, 12)
-	assert_false(mirror.mirror(PackedInt32Array([200, 1, 100, 0]), PackedInt32Array(), 0, 0, 0), "unknown item")
+	assert_false(mirror.mirror(PackedInt32Array([200, 1, 0, 0, 0, 0, 0, 0]), PackedInt32Array(), PackedInt32Array(), 0, 0, 0, 0),
+			"unknown weapon")
+	assert_false(mirror.mirror(PackedInt32Array(), PackedInt32Array(), PackedInt32Array([200, 1]), 0, 0, 0, 0), "unknown item")
 
 
 func test_the_flow_offers_and_applies_a_pick() -> void:

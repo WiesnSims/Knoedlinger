@@ -12,16 +12,20 @@ extends RefCounted
 ##   per player PLAYER_SIZE bytes: s32 peer | f32 hp | f32 max hp | f32 xp | u16 level |
 ##   u8 flags | u8 life | u8 pending levels | u8 Knödl state | u8 Knödl cooldown (1/20 s) |
 ##   u8 rerolls | f32 Knödl mass | 3 x f32 Knödl position | 4 x s16 Knödl rotation (q * 32767) |
-##   u16 gold | u8 banishes | u8 weapons | u8 passives | u8 chests opened | 2 bytes padding
-##   then per weapon u8 index | u8 level | u16 bonus * 100 | u8 fire counter,
-##   and per passive u8 index | u8 level | u16 bonus * 100.
+##   u16 gold | u8 banishes | u8 weapons | u8 passives | u8 chests opened | u8 items | 1 byte padding
+##   then per weapon u8 index | u8 level | u8 fire counter | 4 x u16 mod * 1000 (damage, rate, area,
+##   crit) | u8 extra pieces, per passive u8 index | u8 level | u16 bonus * 100, and per item
+##   u8 index | u8 count.
 
-const VERSION: int = 3
+const VERSION: int = 4
 const HEADER_SIZE: int = 31
 const WIRT_SIZE: int = 2
 const PLAYER_SIZE: int = 56
-const WEAPON_SIZE: int = 5
+const WEAPON_SIZE: int = 12
 const PASSIVE_SIZE: int = 4
+const ITEM_SIZE: int = 2
+## Ints per weapon row (PlayerBuild.weapon_rows()).
+const WEAPON_ROW: int = 8
 const FLAG_DOWNED: int = 1
 const FLAG_CHOOSING: int = 2
 const WIRT_OPEN: int = 1
@@ -54,9 +58,10 @@ class Entry:
 	var rerolls: int = 0
 	var banishes: int = 0
 	var chests_opened: int = 0
-	## PlayerBuild.weapon_rows() / passive_rows().
+	## PlayerBuild.weapon_rows() / passive_rows() / item_rows().
 	var weapons: PackedInt32Array = PackedInt32Array()
 	var passives: PackedInt32Array = PackedInt32Array()
+	var items: PackedInt32Array = PackedInt32Array()
 
 
 class Frame:
@@ -85,7 +90,8 @@ class Frame:
 static func encode(frame: Frame) -> PackedByteArray:
 	var size: int = HEADER_SIZE + frame.wirtshaeuser.size() * WIRT_SIZE + 1
 	for e: Entry in frame.entries:
-		size += PLAYER_SIZE + e.weapons.size() / 4 * WEAPON_SIZE + e.passives.size() / 3 * PASSIVE_SIZE
+		size += PLAYER_SIZE + e.weapons.size() / WEAPON_ROW * WEAPON_SIZE + e.passives.size() / 3 * PASSIVE_SIZE \
+				+ e.items.size() / 2 * ITEM_SIZE
 	var data := PackedByteArray()
 	data.resize(size)
 	data.fill(0)
@@ -134,23 +140,32 @@ static func encode(frame: Frame) -> PackedByteArray:
 		data.encode_s16(o + 46, roundi(q.w * 32767.0))
 		data.encode_u16(o + 48, clampi(e.gold, 0, 0xFFFF))
 		data.encode_u8(o + 50, clampi(e.banishes, 0, 255))
-		var weapon_count: int = e.weapons.size() / 4
+		var weapon_count: int = e.weapons.size() / WEAPON_ROW
 		var passive_count: int = e.passives.size() / 3
+		var item_count: int = e.items.size() / 2
 		data.encode_u8(o + 51, weapon_count)
 		data.encode_u8(o + 52, passive_count)
 		data.encode_u8(o + 53, clampi(e.chests_opened, 0, 255))
+		data.encode_u8(o + 54, item_count)
 		o += PLAYER_SIZE
 		for k: int in weapon_count:
-			data.encode_u8(o, e.weapons[k * 4])
-			data.encode_u8(o + 1, clampi(e.weapons[k * 4 + 1], 0, 255))
-			data.encode_u16(o + 2, clampi(e.weapons[k * 4 + 2], 0, 0xFFFF))
-			data.encode_u8(o + 4, e.weapons[k * 4 + 3] & 0xFF)
+			var w: int = k * WEAPON_ROW
+			data.encode_u8(o, e.weapons[w])
+			data.encode_u8(o + 1, clampi(e.weapons[w + 1], 0, 255))
+			data.encode_u8(o + 2, e.weapons[w + 2] & 0xFF)
+			for m: int in 4:
+				data.encode_u16(o + 3 + m * 2, clampi(e.weapons[w + 3 + m], 0, 0xFFFF))
+			data.encode_u8(o + 11, clampi(roundi(e.weapons[w + 7] / 1000.0), 0, 255))
 			o += WEAPON_SIZE
 		for k: int in passive_count:
 			data.encode_u8(o, e.passives[k * 3])
 			data.encode_u8(o + 1, clampi(e.passives[k * 3 + 1], 0, 255))
 			data.encode_u16(o + 2, clampi(e.passives[k * 3 + 2], 0, 0xFFFF))
 			o += PASSIVE_SIZE
+		for k: int in item_count:
+			data.encode_u8(o, e.items[k * 2])
+			data.encode_u8(o + 1, clampi(e.items[k * 2 + 1], 0, 255))
+			o += ITEM_SIZE
 	return data
 
 
@@ -211,17 +226,23 @@ static func decode(data: PackedByteArray) -> Frame:
 		var weapon_count: int = data.decode_u8(o + 51)
 		var passive_count: int = data.decode_u8(o + 52)
 		e.chests_opened = data.decode_u8(o + 53)
+		var item_count: int = data.decode_u8(o + 54)
 		if not e.knodl_position.is_finite() or not is_finite(e.hp) or not is_finite(e.knodl_mass):
 			return null
 		o += PLAYER_SIZE
-		if data.size() < o + weapon_count * WEAPON_SIZE + passive_count * PASSIVE_SIZE:
+		if data.size() < o + weapon_count * WEAPON_SIZE + passive_count * PASSIVE_SIZE + item_count * ITEM_SIZE:
 			return null
 		for w: int in weapon_count:
-			e.weapons.append_array([data.decode_u8(o), data.decode_u8(o + 1), data.decode_u16(o + 2), data.decode_u8(o + 4)])
+			e.weapons.append_array([data.decode_u8(o), data.decode_u8(o + 1), data.decode_u8(o + 2),
+					data.decode_u16(o + 3), data.decode_u16(o + 5), data.decode_u16(o + 7), data.decode_u16(o + 9),
+					data.decode_u8(o + 11) * 1000])
 			o += WEAPON_SIZE
 		for p: int in passive_count:
 			e.passives.append_array([data.decode_u8(o), data.decode_u8(o + 1), data.decode_u16(o + 2)])
 			o += PASSIVE_SIZE
+		for i: int in item_count:
+			e.items.append_array([data.decode_u8(o), data.decode_u8(o + 1)])
+			o += ITEM_SIZE
 		frame.entries.append(e)
 	if o != data.size():
 		return null

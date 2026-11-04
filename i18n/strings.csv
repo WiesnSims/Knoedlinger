@@ -164,7 +164,7 @@ CARD_MORE_PIECES,+1 Stück
 CARD_LEVEL_OF,Stufe %d/%d
 INV_TITLE,Inventar
 INV_WEAPONS,Waffen
-INV_PASSIVES,Passiv
+INV_PASSIVES,Verbesserungen
 INV_KNODL,Knödl-Rezepte
 INV_GOLD,Gold
 INV_REROLLS,Nochmal
@@ -238,3 +238,31 @@ SET_GLOSSARY,Dialekt-Hilfe
 SET_LANGUAGE,Sprache
 SET_LANGUAGE_DE,Deutsch (Österreich)
 SET_RESET,Standard
+INV_ITEMS,Kirtagsware
+STAT_RATE,Angriffstempo
+STAT_AMOUNT,Stück
+TOAST_REVIVED,Aufgstandn! Die Kerzn hat's gricht.
+ITEM_OMAS_REZEPT,Omas Rezept
+DESC_ITEM_OMAS_REZEPT,Bröselfresser lassn dein Knödl in Ruah. Respekt vor da Oma.
+ITEM_HAFERLSCHUHE,Haferlschuhe
+DESC_ITEM_HAFERLSCHUHE,Noch a Sprung in da Luft. Plattln geht a.
+ITEM_GLUECKSSCHWEIN,Glücksschwein
+DESC_ITEM_GLUECKSSCHWEIN,Bringt Glück. Und Hunger.
+ITEM_ZWEITSCHLUESSEL,Zweitschlüssel vom Gemeindeamt
+DESC_ITEM_ZWEITSCHLUESSEL,"Manchmal geht a Truhn umsonst auf. Fragen S' ned, woher."
+ITEM_SPARBUCH,Sparbuch
+DESC_ITEM_SPARBUCH,Jede Truhn macht di stärker. Zinsen wie früher.
+ITEM_MARTERL_KERZE,Marterl-Kerze
+DESC_ITEM_MARTERL_KERZE,"Brennt, wenn's drauf ankommt: einmal wieder aufstehn."
+ITEM_LEBKUCHENHERZ,Lebkuchenherz
+DESC_ITEM_LEBKUCHENHERZ,"Steht ""I mog di"" drauf. Lügt, aber hält."
+ITEM_KIRTAGSBREZN,Kirtagsbrezn
+DESC_ITEM_KIRTAGSBREZN,"Salzig, zach, heilsam."
+ITEM_ZUCKERWATTE,Zuckerwatte
+DESC_ITEM_ZUCKERWATTE,Klebt überall. Macht aber flott.
+ITEM_SCHIESSBUDENROSE,Schießbudenrose
+DESC_ITEM_SCHIESSBUDENROSE,Zielwasser inklusive.
+ITEM_GOLDHAUBE,Goldhaube
+DESC_ITEM_GOLDHAUBE,"Glänzt, also zahlt wer."
+ITEM_DOPPLER,Doppler
+DESC_ITEM_DOPPLER,Zwa Liter Selbstvertrauen.

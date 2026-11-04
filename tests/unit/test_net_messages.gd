@@ -61,7 +61,9 @@ func test_offer_round_trip() -> void:
 	offer.seconds = 8
 	offer.tier = 3
 	offer.value = 512
-	offer.cards = [Card.new(Card.Kind.WEAPON, 3, Card.Rarity.NOBLE, 5), Card.new(Card.Kind.HEAL, 0, 0, 1)]
+	offer.cards = [Card.new(Card.Kind.WEAPON, 3, Card.Rarity.NOBLE, 5, 2, 0.15), Card.new(Card.Kind.HEAL, 0, 0, 1),
+			Card.new(Card.Kind.ITEM, 7, Card.Rarity.HOFRAT, 2)]
+	offer.rarity = 2
 	var back: OfferCodec.Offer = OfferCodec.decode_offer(OfferCodec.encode_offer(offer))
 	assert_not_null(back)
 	assert_eq(back.type, OfferCodec.Type.CHEST)
@@ -72,7 +74,12 @@ func test_offer_round_trip() -> void:
 	assert_eq(back.seconds, 8)
 	assert_eq(back.tier, 3)
 	assert_eq(back.value, 512)
-	assert_eq(back.cards.size(), 2)
+	assert_eq(back.cards.size(), 3)
+	assert_eq(back.rarity, 2)
+	assert_eq(back.cards[0].mod, 2)
+	assert_almost_eq(back.cards[0].value, 0.15, 0.001)
+	assert_eq(back.cards[2].kind, Card.Kind.ITEM)
+	assert_eq(back.cards[2].level, 2)
 	assert_eq(back.cards[0].kind, Card.Kind.WEAPON)
 	assert_eq(back.cards[0].index, 3)
 	assert_eq(back.cards[0].rarity, Card.Rarity.NOBLE)

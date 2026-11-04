@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/sparbuch.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"sparbuch"
+name_key = "ITEM_SPARBUCH"
+desc_key = "DESC_ITEM_SPARBUCH"
+rarity = 1
+stats = Dictionary[StringName, float]({})
+effect = &"damage_per_chest"
+effect_value = 0.03
+icon = ExtResource("2_icon")
+color = Color(0.25, 0.5, 0.75, 1)

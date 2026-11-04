@@ -51,32 +51,30 @@ static func level_progress(total_xp: float, balance: BalanceData) -> float:
 	return total_xp / needed
 
 
-## Damage of one weapon hit before crits: base, + damage_per_level per level, the damage stat, and
-## the extra its rarer cards added ((bonus - level) * weapon_rarity_damage).
-static func weapon_damage(weapon: WeaponData, level: int, bonus: float, damage_stat: float, balance: BalanceData) -> float:
-	var levelled: float = 1.0 + weapon.damage_per_level * (level - 1)
-	var rarity: float = 1.0 + maxf(bonus - level, 0.0) * balance.weapon_rarity_damage
-	return weapon.damage * levelled * (1.0 + damage_stat) * rarity
+## Damage of one weapon hit before crits: base, its damage mod (what its level cards rolled) and
+## the damage stat. `mods` are PlayerBuild.OwnedWeapon.mods (indexed by PlayerBuild.WEAPON_MODS).
+static func weapon_damage(weapon: WeaponData, mods: PackedFloat32Array, damage_stat: float) -> float:
+	return weapon.damage * (1.0 + mods[0]) * (1.0 + damage_stat)
 
 
-## Seconds between attacks: faster per level and with the cooldown stat, never below 40 % each.
-static func weapon_cooldown(weapon: WeaponData, level: int, cooldown_stat: float) -> float:
-	var levelled: float = maxf(1.0 - weapon.cooldown_per_level * (level - 1), 0.4)
-	return weapon.cooldown * levelled * maxf(1.0 - cooldown_stat, 0.4)
+## Seconds between attacks: its rate mod divides it, the cooldown stat takes off a share (never
+## more than 60 %), and it never drops below balance.weapon_min_cooldown.
+static func weapon_cooldown(weapon: WeaponData, mods: PackedFloat32Array, cooldown_stat: float, balance: BalanceData) -> float:
+	return maxf(weapon.cooldown / (1.0 + maxf(mods[1], 0.0)) * maxf(1.0 - cooldown_stat, 0.4), balance.weapon_min_cooldown)
 
 
-## Size factor for reach, radius and orbit: bigger per level and with the area stat.
-static func weapon_area(weapon: WeaponData, level: int, area_stat: float) -> float:
-	return (1.0 + weapon.area_per_level * (level - 1)) * (1.0 + area_stat)
+## Size factor for reach, radius and orbit: its area mod and the area stat.
+static func weapon_area(weapon: WeaponData, mods: PackedFloat32Array, area_stat: float) -> float:
+	return (1.0 + mods[2]) * (1.0 + area_stat)
 
 
-## Shots or pieces per attack: the base amount plus one per reached entry of amount_levels.
-static func weapon_amount(weapon: WeaponData, level: int) -> int:
-	var amount: int = weapon.amount
-	for at: int in weapon.amount_levels:
-		if level >= at:
-			amount += 1
-	return amount
+static func weapon_crit(weapon: WeaponData, mods: PackedFloat32Array, crit_stat: float) -> float:
+	return weapon.crit_chance + mods[3] + crit_stat
+
+
+## Shots or pieces per attack: the base amount plus the amount mod, at most max_amount.
+static func weapon_amount(weapon: WeaponData, mods: PackedFloat32Array) -> int:
+	return mini(weapon.amount + roundi(mods[PlayerBuild.MOD_AMOUNT]), maxi(weapon.max_amount, weapon.amount))
 
 
 ## Where piece `k` of `count` of an orbiting weapon is, relative to the player (x, z). Host and

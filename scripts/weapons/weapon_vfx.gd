@@ -54,7 +54,7 @@ func sync(build: PlayerBuild, run_time: float, delta: float, shots: ProjectilePo
 			effect = _build(owned)
 			_effects[slot] = effect
 		var weapon: WeaponData = owned.data
-		var area: float = Formulas.weapon_area(weapon, owned.level, build.stat(&"area"))
+		var area: float = Formulas.weapon_area(weapon, owned.mods, build.stat(&"area"))
 		var fired: bool = owned.fires != effect.seen_fires
 		effect.seen_fires = owned.fires
 		if fired:
@@ -67,12 +67,12 @@ func sync(build: PlayerBuild, run_time: float, delta: float, shots: ProjectilePo
 			WeaponData.Pattern.ARC:
 				if fired:
 					(effect.nodes[0] as SwingVfx).play(area)
-					if Formulas.weapon_amount(weapon, owned.level) >= 2:
+					if Formulas.weapon_amount(weapon, owned.mods) >= 2:
 						(effect.nodes[1] as SwingVfx).play(area)
 			WeaponData.Pattern.PROJECTILE:
 				if fired and shots != null:
 					WeaponSystem.fire_shots(weapon, origin, player.facing_direction(),
-							Formulas.weapon_amount(weapon, owned.level), area, 0.0, shots)
+							Formulas.weapon_amount(weapon, owned.mods), area, 0.0, shots)
 			WeaponData.Pattern.RING:
 				var ring: Node3D = effect.nodes[0]
 				var t: float = effect.time / RING_SECONDS
@@ -93,7 +93,7 @@ func sync(build: PlayerBuild, run_time: float, delta: float, shots: ProjectilePo
 func _place_orbit(effect: Effect, owned: PlayerBuild.OwnedWeapon, build: PlayerBuild, origin: Vector3,
 		run_time: float, area: float) -> void:
 	var weapon: WeaponData = owned.data
-	var count: int = mini(Formulas.weapon_amount(weapon, owned.level), effect.multimesh.instance_count)
+	var count: int = mini(Formulas.weapon_amount(weapon, owned.mods), effect.multimesh.instance_count)
 	var size: float = weapon.projectile_radius * area * 2.0
 	var spin: float = run_time * 6.0
 	for k: int in count:
@@ -146,7 +146,7 @@ func _build(owned: PlayerBuild.OwnedWeapon) -> Effect:
 			# multiplies COLOR by stray per-instance data).
 			effect.multimesh.use_colors = true
 			effect.multimesh.mesh = MeshFactory.orbit_piece(weapon.look)
-			effect.multimesh.instance_count = Formulas.weapon_amount(weapon, weapon.max_level)
+			effect.multimesh.instance_count = maxi(weapon.max_amount, weapon.amount)
 			for k: int in effect.multimesh.instance_count:
 				effect.multimesh.set_instance_color(k, Color.WHITE)
 			effect.multimesh.visible_instance_count = 0

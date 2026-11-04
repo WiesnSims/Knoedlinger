@@ -108,8 +108,7 @@ func test_the_catalog_has_the_m2_content_with_texts() -> void:
 	var passive_count: int = 0
 	for passive: PassiveData in catalog.passives:
 		assert_not_null(passive)
-		if passive.kind == PassiveData.Kind.PASSIVE:
-			passive_count += 1
+		passive_count += 1
 		for key: String in [passive.name_key, passive.desc_key]:
 			assert_ne(TranslationServer.translate(key), StringName(key), key)
 		for stat: StringName in passive.stats:
@@ -119,6 +118,32 @@ func test_the_catalog_has_the_m2_content_with_texts() -> void:
 	assert_gte(passive_count, 6, "M2: six passives")
 	assert_lt(catalog.weapons.size(), 256)
 	assert_lt(catalog.passives.size(), 256)
+	assert_lt(catalog.items.size(), 256)
+	for weapon: WeaponData in catalog.weapons:
+		assert_false(weapon.level_mods.is_empty(), String(weapon.id))
+		for key: StringName in weapon.level_mods:
+			assert_true(PlayerBuild.WEAPON_MODS.has(key), "%s: unknown mod %s" % [weapon.id, key])
+			var label: String = "STAT_" + String(key).to_upper()
+			assert_ne(TranslationServer.translate(label), StringName(label), label)
+		assert_gte(weapon.max_amount, weapon.amount, String(weapon.id))
+
+
+func test_items_are_known_to_the_game() -> void:
+	var catalog: UpgradeCatalog = load("res://data/catalog/catalog.tres")
+	var per_rarity: PackedInt32Array = PackedInt32Array([0, 0, 0, 0])
+	for item: ItemData in catalog.items:
+		assert_not_null(item)
+		assert_not_null(item.icon, String(item.id))
+		per_rarity[clampi(item.rarity, 0, 3)] += 1
+		for key: String in [item.name_key, item.desc_key]:
+			assert_ne(TranslationServer.translate(key), StringName(key), key)
+		for stat: StringName in item.stats:
+			assert_true(PlayerBuild.STATS.has(stat), "%s: unknown stat %s" % [item.id, stat])
+		if item.effect != &"":
+			assert_true(PlayerBuild.EFFECTS.has(item.effect), "%s: unknown effect %s" % [item.id, item.effect])
+		assert_false(item.stats.is_empty() and item.effect == &"", "%s does something" % item.id)
+	for r: int in 4:
+		assert_gt(per_rarity[r], 0, "every chest rarity has items (rarity %d)" % r)
 
 
 func test_characters_start_with_a_weapon_from_the_catalog() -> void:

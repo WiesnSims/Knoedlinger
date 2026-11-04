@@ -529,3 +529,42 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Claude: `tools/ui_shots.ps1`** got the `title` set (name prompt, menu, Spielen, Einstellungen, then a run
   started from the menu) and the `pause` set; key steps can be chained (`Escape+Enter`) and text typed
   (`type:Resi`).
+
+### Part 2: the build rework (2 weapons + 4 stat upgrades, open-ended levels, items from chests)
+
+- **Claude: weapon levels are open-ended and every level card rolls one mod** of the weapon's own list
+  (`WeaponData.level_mods`): damage, attack rate, area, crit (fractions) or one more piece, drawn by
+  `balance.weapon_mod_weights` (damage 3, rate 2, area 2, crit 1.5, piece 1; no piece past `max_amount`). The
+  rarity multiplies the roll (x1 / 1.25 / 1.5 / 2; a piece stays one piece below Hofratswürdig). The card says
+  what it rolled ("+30 % Schaden", "+1 Stück", "+18 % Angriffstempo"). Formulas: damage x (1 + damage mod) x
+  (1 + damage stat); seconds between attacks / (1 + rate mod) x (1 - cooldown stat, at most 60 % off), never
+  below 0.08 s; area x (1 + area mod) x (1 + area stat). The old per-level growth and `amount_levels` are gone.
+- **Claude: evolution** at `balance.evolution_level` (8) with the partner stat held; the evolution keeps the
+  weapon's level and mods and keeps levelling.
+- **Claude: stat upgrades** (the passives) have no level cap (`max_level` 0) unless a counted stat needs one;
+  4 slots, 2 weapon slots (`PlayerBuild.weapon_slots` / `passive_slots`, so the meta can raise them).
+- **Claude: items (Kirtagsware)** are `ItemData` in `data/items/` (listed in the catalog): stats per copy, a
+  named effect, a rarity, an optional stack cap, an icon. First 12: Omas Rezept (Knödl, now an item), Haferlschuhe
+  (the double jump, now an item, 2 at most), Glücksschwein (luck), Zweitschlüssel vom Gemeindeamt (10 % chance per
+  copy that a map chest is free), Sparbuch (+3 % damage per chest opened), Marterl-Kerze (one revive at half HP per
+  copy, 2 at most), Lebkuchenherz (max HP), Kirtagsbrezn (regen), Zuckerwatte (speed), Schießbudenrose (crit),
+  Goldhaube (gold), Doppler (damage). The Knödl upgrades with their own mechanics (Bröselbutter, Powidl-Füllung,
+  Doppelportion, Bergab-Gesetz) and items with visible effects come with the content part of M4.
+- **Claude: chests roll a rarity** when they are placed (`chest_rarity_weights` 55/30/12/3, luck raises it like
+  card rarity; boss chests and XL cash-ins at least Fein) and give items of that rarity, falling back when the
+  player holds every copy there is. A short light column over each chest shows its rarity colour (same colours
+  as the UI borders). Map chest 1 item, Wirtshaus M 1, L 3 + rerolls, XL ready evolution first then items, boss
+  chests as before.
+- **Claude: wire formats** – offers v2 (each card carries its mod and value; chests their rarity), world state
+  v4 (weapon rows with level, fire counter and mods, item rows), so clients compute the same stats and show the
+  same inventory.
+- **Claude: UI** – the Speisekarte rows show the rolled gain and "Stufe n" instead of level pips (pips stay for
+  capped stats); the inventory has weapon slots, stat slots ("Verbesserungen") and the Kirtagsware with copies
+  in the corner and rarity frames. A chest reveal no longer shows through a Tab screen or pause menu.
+- **Claude (tuning): per-level rolls raised 1.5x for damage and rate, 1.2x for area** after the first balance
+  log: with 2 weapons instead of 6 the bot only reached 9-12k kills (M3: 29-32k).
+- **Measured (balance log, 2 bot runs, Onkel Ferdl, after the tuning):** level 40-45, 9.7k-18k kills, first
+  Oberkrampus beaten at 6:50-8:28, Oberkrampus II and the Hofrat not beaten (CLOSED), 22-35 knock-downs (the bot
+  never dodges the crowd), builds like Schneeschaufel 17 + Kuhglocke 14, 3-4 stat upgrades, 3-6 items. **Open:**
+  the run is clearly harder than in M3; the Stammtisch upgrades and weapon slots 3/4 (next part) are meant to
+  close that gap, and the numbers get a proper pass in M5.

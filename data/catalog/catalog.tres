@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/data/upgrade_catalog.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="2_weapon"]
 [ext_resource type="Script" path="res://scripts/data/passive_data.gd" id="3_passive"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="4_item"]
 [ext_resource type="Resource" path="res://data/weapons/schneeschaufel.tres" id="w_schneeschaufel"]
 [ext_resource type="Resource" path="res://data/weapons/kochloeffel.tres" id="w_kochloeffel"]
 [ext_resource type="Resource" path="res://data/weapons/skistoecke.tres" id="w_skistoecke"]
@@ -17,12 +18,23 @@
 [ext_resource type="Resource" path="res://data/passives/strickpullover.tres" id="p_strickpullover"]
 [ext_resource type="Resource" path="res://data/passives/pensionistenausweis.tres" id="p_pensionistenausweis"]
 [ext_resource type="Resource" path="res://data/passives/gamsbart_hut.tres" id="p_gamsbart_hut"]
-[ext_resource type="Resource" path="res://data/passives/haferlschuhe.tres" id="p_haferlschuhe"]
 [ext_resource type="Resource" path="res://data/passives/spagat_hanf.tres" id="p_spagat_hanf"]
 [ext_resource type="Resource" path="res://data/passives/wanderkarte.tres" id="p_wanderkarte"]
-[ext_resource type="Resource" path="res://data/passives/omas_rezept.tres" id="p_omas_rezept"]
+[ext_resource type="Resource" path="res://data/items/omas_rezept.tres" id="i_omas_rezept"]
+[ext_resource type="Resource" path="res://data/items/haferlschuhe.tres" id="i_haferlschuhe"]
+[ext_resource type="Resource" path="res://data/items/gluecksschwein.tres" id="i_gluecksschwein"]
+[ext_resource type="Resource" path="res://data/items/zweitschluessel.tres" id="i_zweitschluessel"]
+[ext_resource type="Resource" path="res://data/items/sparbuch.tres" id="i_sparbuch"]
+[ext_resource type="Resource" path="res://data/items/marterl_kerze.tres" id="i_marterl_kerze"]
+[ext_resource type="Resource" path="res://data/items/lebkuchenherz.tres" id="i_lebkuchenherz"]
+[ext_resource type="Resource" path="res://data/items/kirtagsbrezn.tres" id="i_kirtagsbrezn"]
+[ext_resource type="Resource" path="res://data/items/zuckerwatte.tres" id="i_zuckerwatte"]
+[ext_resource type="Resource" path="res://data/items/schiessbudenrose.tres" id="i_schiessbudenrose"]
+[ext_resource type="Resource" path="res://data/items/goldhaube.tres" id="i_goldhaube"]
+[ext_resource type="Resource" path="res://data/items/doppler.tres" id="i_doppler"]
 
 [resource]
 script = ExtResource("1_script")
 weapons = Array[ExtResource("2_weapon")]([ExtResource("w_schneeschaufel"), ExtResource("w_kochloeffel"), ExtResource("w_skistoecke"), ExtResource("w_kuhglocke"), ExtResource("w_watschn_aura"), ExtResource("w_mozartkugel_orbit"), ExtResource("w_omas_nudelwalker"), ExtResource("w_kugel_karussell")])
-passives = Array[ExtResource("3_passive")]([ExtResource("p_lederhosn"), ExtResource("p_brettljause"), ExtResource("p_kraeuterlimo"), ExtResource("p_strickpullover"), ExtResource("p_pensionistenausweis"), ExtResource("p_gamsbart_hut"), ExtResource("p_haferlschuhe"), ExtResource("p_spagat_hanf"), ExtResource("p_wanderkarte"), ExtResource("p_omas_rezept")])
+passives = Array[ExtResource("3_passive")]([ExtResource("p_lederhosn"), ExtResource("p_brettljause"), ExtResource("p_kraeuterlimo"), ExtResource("p_strickpullover"), ExtResource("p_pensionistenausweis"), ExtResource("p_gamsbart_hut"), ExtResource("p_spagat_hanf"), ExtResource("p_wanderkarte")])
+items = Array[ExtResource("4_item")]([ExtResource("i_omas_rezept"), ExtResource("i_haferlschuhe"), ExtResource("i_gluecksschwein"), ExtResource("i_zweitschluessel"), ExtResource("i_sparbuch"), ExtResource("i_marterl_kerze"), ExtResource("i_lebkuchenherz"), ExtResource("i_kirtagsbrezn"), ExtResource("i_zuckerwatte"), ExtResource("i_schiessbudenrose"), ExtResource("i_goldhaube"), ExtResource("i_doppler")])

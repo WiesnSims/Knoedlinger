@@ -1,7 +1,8 @@
 class_name InventoryPanel
 extends PanelContainer
-## The build as icon tiles (docs/UI-STYLE.md; Megabonk's inventory panel): weapons, passives and
-## Knödl upgrades, each tile with its level, free slots as faint outlines, gold and what is left of
+## The build as icon tiles (docs/UI-STYLE.md; Megabonk's inventory panel): weapons and stat
+## upgrades with their level, free slots as faint outlines, then the Kirtagsware (items from
+## chests, with how many of each, framed in their rarity), and gold and what is left of
 ## Nochmal bitte / Des mog i ned at the bottom. Shown left of the Speisekarte and in the Tab screen.
 ## Rebuilt only when the build changes; the tiles are drawn by TileGrid (a few draw calls per grid).
 
@@ -11,8 +12,8 @@ const WIDTH: float = 312.0
 
 var _weapons: TileGrid
 var _passives: TileGrid
-var _extras_title: Label
-var _extras: TileGrid
+var _items_title: Label
+var _items: TileGrid
 var _gold: Label
 var _rerolls: Label
 var _banishes: Label
@@ -28,9 +29,9 @@ func _init() -> void:
 	column.add_child(UiStyle.label(&"LabelTitle", tr("INV_TITLE")))
 	_weapons = _section(column, "INV_WEAPONS")
 	_passives = _section(column, "INV_PASSIVES")
-	var extras: Array = _section_parts(column, "INV_KNODL")
-	_extras_title = extras[0]
-	_extras = extras[1]
+	var items: Array = _section_parts(column, "INV_ITEMS")
+	_items_title = items[0]
+	_items = items[1]
 	var footer := UiStyle.hbox(&"Row16")
 	column.add_child(footer)
 	_gold = _counter(footer, "INV_GOLD")
@@ -38,40 +39,45 @@ func _init() -> void:
 	_banishes = _counter(footer, "INV_BANISHES")
 
 
-func show_build(build: PlayerBuild, balance: BalanceData) -> void:
+func show_build(build: PlayerBuild, _balance: BalanceData) -> void:
 	_gold.text = str(build.gold)
 	_rerolls.text = str(build.rerolls)
 	_banishes.text = str(build.banishes)
-	var signature: String = ""
+	var signature: String = "%d.%d|" % [build.weapon_slots, build.passive_slots]
 	for owned: PlayerBuild.OwnedWeapon in build.weapons:
 		signature += "%d.%d," % [owned.index, owned.level]
 	signature += "|"
 	for owned: PlayerBuild.OwnedPassive in build.passives:
 		signature += "%d.%d," % [owned.index, owned.level]
+	signature += "|"
+	for owned: PlayerBuild.OwnedItem in build.items:
+		signature += "%d.%d," % [owned.index, owned.count]
 	if signature == _signature:
 		return
 	_signature = signature
 	var weapons: Array[TileGrid.Tile] = []
 	for owned: PlayerBuild.OwnedWeapon in build.weapons:
-		weapons.append(_tile(owned.data.icon, owned.level, owned.data.max_level, owned.data.is_evolution,
-				TranslationServer.translate(owned.data.name_key)))
-	for k: int in range(build.weapons.size(), balance.weapon_slots):
+		weapons.append(_tile(owned.data.icon, owned.level, &"TileEvolution" if owned.data.is_evolution else &"TileRarity0",
+				TranslationServer.translate(owned.data.name_key), true))
+	for k: int in range(build.weapons.size(), build.weapon_slots):
 		weapons.append(TileGrid.Tile.new())
 	var passives: Array[TileGrid.Tile] = []
-	var extras: Array[TileGrid.Tile] = []
 	for owned: PlayerBuild.OwnedPassive in build.passives:
-		var name: String = TranslationServer.translate(owned.data.name_key)
-		if owned.data.kind == PassiveData.Kind.PASSIVE:
-			passives.append(_tile(owned.data.icon, owned.level, owned.data.max_level, false, name))
-		else:
-			extras.append(_tile(owned.data.icon, 0, 0, true, name))
-	for k: int in range(passives.size(), balance.passive_slots):
+		var maxed: bool = not owned.data.can_level(owned.level)
+		passives.append(_tile(owned.data.icon, owned.level, &"TileEvolution" if maxed else &"TileRarity0",
+				TranslationServer.translate(owned.data.name_key), true))
+	for k: int in range(passives.size(), build.passive_slots):
 		passives.append(TileGrid.Tile.new())
+	var items: Array[TileGrid.Tile] = []
+	for owned: PlayerBuild.OwnedItem in build.items:
+		# The count in the corner only once there are two or more.
+		items.append(_tile(owned.data.icon, owned.count if owned.count > 1 else 0,
+				StringName("TileRarity%d" % clampi(owned.data.rarity, 0, 3)), TranslationServer.translate(owned.data.name_key), false))
 	_weapons.set_tiles(weapons)
 	_passives.set_tiles(passives)
-	_extras.set_tiles(extras)
-	_extras_title.visible = not extras.is_empty()
-	_extras.visible = not extras.is_empty()
+	_items.set_tiles(items)
+	_items_title.visible = not items.is_empty()
+	_items.visible = not items.is_empty()
 
 
 func _section(column: VBoxContainer, title_key: String) -> TileGrid:
@@ -98,12 +104,16 @@ func _counter(row: HBoxContainer, key: String) -> Label:
 	return value
 
 
-## One owned item: its icon, its level in the corner; maxed or evolved items get the gold frame.
-func _tile(icon: Texture2D, level: int, max_level: int, special: bool, name: String) -> TileGrid.Tile:
-	var maxed: bool = max_level > 0 and level >= max_level
+## One owned thing: its icon, a number in the corner (level, or copies of an item), its frame.
+func _tile(icon: Texture2D, number: int, variation: StringName, name: String, is_level: bool) -> TileGrid.Tile:
 	var tile := TileGrid.Tile.new()
 	tile.icon = icon
-	tile.level = level
-	tile.variation = &"TileEvolution" if special or maxed else &"TileRarity0"
-	tile.tooltip = name if level <= 0 else "%s · %s" % [name, tr("CARD_LEVEL") % level]
+	tile.level = number
+	tile.variation = variation
+	if number <= 0:
+		tile.tooltip = name
+	elif is_level:
+		tile.tooltip = "%s · %s" % [name, tr("CARD_LEVEL") % number]
+	else:
+		tile.tooltip = "%s ×%d" % [name, number]
 	return tile

@@ -1,9 +1,10 @@
 class_name WeaponData
 extends Resource
-## One auto-firing weapon (GAME-DESIGN.md, "Weapons"): a pattern plus its numbers. Levels 2..max
-## raise damage, area and the fire rate by the *_per_level fractions and add one more of it at each
-## entry of `amount_levels`. A weapon at max level plus its `evolves_with` passive can become its
-## `evolution` (a weapon of its own with `is_evolution`, never offered as a normal card).
+## One auto-firing weapon (GAME-DESIGN.md, "Weapons"): a pattern plus its numbers. Levels are
+## open-ended (Megabonk-style): every level card rolls one of the weapon's `level_mods` (more damage,
+## a faster rate, more area, one more piece, more crit), its rarity scaling the gain. A weapon at
+## balance.evolution_level with its `evolves_with` stat held can become its `evolution` (a weapon of
+## its own with `is_evolution`, never offered as a normal card); it keeps its level and its mods.
 
 ## ARC: melee arc in facing direction. PROJECTILE: shots in facing direction that pierce.
 ## RING: a shockwave around the player. AURA: damages everything close, all the time.
@@ -18,7 +19,6 @@ enum Look { BALL, PIN, SPEAR }
 @export var desc_key: String = ""
 @export var pattern: Pattern = Pattern.ARC
 @export var look: Look = Look.BALL
-@export var max_level: int = 8
 ## Seconds between attacks; AURA: between its damage ticks (ORBIT: unused, it hits all the time).
 @export var cooldown: float = 1.2
 @export var damage: float = 3.0
@@ -56,11 +56,12 @@ enum Look { BALL, PIN, SPEAR }
 @export var hit_interval: float = 0.4
 
 @export_group("Levels")
-@export var damage_per_level: float = 0.2
-@export var cooldown_per_level: float = 0.03
-@export var area_per_level: float = 0.05
-## Levels at which it gains one more shot / piece.
-@export var amount_levels: PackedInt32Array = PackedInt32Array()
+## What a level card can roll, mod -> gain per level on a Gewöhnlich card (rarity multiplies it):
+## &"damage", &"rate" (attacks per second), &"area", &"crit" as fractions (0.15 = +15 %), &"amount" in
+## pieces. Which one a card rolls is drawn by balance.weapon_mod_weights.
+@export var level_mods: Dictionary[StringName, float] = {&"damage": 0.15, &"rate": 0.08, &"area": 0.1}
+## Most shots / pieces it can reach through &"amount" cards.
+@export var max_amount: int = 1
 
 @export_group("Evolution")
 @export var evolves_with: PassiveData

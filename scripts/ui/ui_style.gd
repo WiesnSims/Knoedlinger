@@ -110,16 +110,16 @@ static func card_icon(card: Card, catalog: UpgradeCatalog) -> Texture2D:
 			return catalog.weapons[card.index].icon
 		Card.Kind.PASSIVE:
 			return catalog.passives[card.index].icon
+		Card.Kind.ITEM:
+			return catalog.items[card.index].icon
 		Card.Kind.GOLD:
 			return load(ICON_GOLD)
 	return load(ICON_HEAL)
 
 
-## Highest level of the card's item (0 for gold and heal, which have none).
+## Highest level of the card's item (0 = open-ended, and for gold and heal, which have none).
 static func card_max_level(card: Card, catalog: UpgradeCatalog) -> int:
 	match card.kind:
-		Card.Kind.WEAPON:
-			return catalog.weapons[card.index].max_level
 		Card.Kind.PASSIVE:
 			return catalog.passives[card.index].max_level
 	return 0
@@ -138,6 +138,9 @@ static func build_icon_atlas(catalog: UpgradeCatalog) -> void:
 	for passive: PassiveData in catalog.passives:
 		if passive.icon != null and not icons.has(passive.icon):
 			icons.append(passive.icon)
+	for item: ItemData in catalog.items:
+		if item.icon != null and not icons.has(item.icon):
+			icons.append(item.icon)
 	for path: String in [ICON_GOLD, ICON_HEAL]:
 		icons.append(load(path))
 	if icons.is_empty():

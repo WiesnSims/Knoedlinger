@@ -22,6 +22,8 @@ var build: PlayerBuild
 # Host only.
 var hurt_timer: float = 0.0
 var downed_timer: float = 0.0
+## Revives taken from items (Marterl-Kerze) this run.
+var revives_used: int = 0
 ## The last Schupfn press counter acted on (InputMessage.schupfn_presses).
 var schupfn_seen: int = 0
 var deaths: int = 0

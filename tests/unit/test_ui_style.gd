@@ -62,7 +62,12 @@ func test_change_line_names_the_gain() -> void:
 	card.kind = Card.Kind.WEAPON
 	card.index = 0
 	card.level = 2
+	card.mod = PlayerBuild.WEAPON_MODS.find(&"damage")
+	card.value = 0.3
 	var text: String = Speisekarte.change_text(card, catalog, balance, null)
-	assert_true(text.begins_with("+"), "weapon level line: %s" % text)
+	assert_eq(text, "+30 %% %s" % TranslationServer.translate("STAT_DAMAGE"), "weapon level line")
+	card.mod = PlayerBuild.MOD_AMOUNT
+	card.value = 1.0
+	assert_eq(Speisekarte.change_text(card, catalog, balance, null), "+1 %s" % TranslationServer.translate("STAT_AMOUNT"))
 	card.level = 1
 	assert_eq(Speisekarte.change_text(card, catalog, balance, null), TranslationServer.translate("CARD_NEW"))

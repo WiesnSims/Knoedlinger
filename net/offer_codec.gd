@@ -5,13 +5,13 @@ extends RefCounted
 ## the Wirt"); the player answers an offer with a Choice. Solo goes through the same messages.
 ##
 ## Offer: u8 version | u8 type | u16 seq | u8 rerolls | u8 banishes | u8 pending levels |
-##        u8 seconds to choose (0 = no limit) | u8 tier | u16 value | u8 cards,
-##        per card u8 kind | u8 index | u8 rarity | u8 level
+##        u8 seconds to choose (0 = no limit) | u8 tier | u16 value | u8 cards | u8 chest rarity,
+##        per card u8 kind | u8 index | u8 rarity | u8 level | u8 weapon mod | u16 mod value * 1000
 ## Choice: u8 version | u16 seq | u8 action | u8 card
 
-const VERSION: int = 1
-const OFFER_HEADER: int = 12
-const CARD_SIZE: int = 4
+const VERSION: int = 2
+const OFFER_HEADER: int = 13
+const CARD_SIZE: int = 7
 const CHOICE_SIZE: int = 5
 
 enum Type { OFFER, CHEST, NOTICE }
@@ -31,6 +31,8 @@ class Offer:
 	var tier: int = 0
 	## CHEST: gold given; NOTICE: which Notice.
 	var value: int = 0
+	## CHEST: the rarity it rolled.
+	var rarity: int = 0
 	var cards: Array[Card] = []
 
 
@@ -54,12 +56,15 @@ static func encode_offer(offer: Offer) -> PackedByteArray:
 	data.encode_u8(8, clampi(offer.tier, 0, 255))
 	data.encode_u16(9, clampi(offer.value, 0, 0xFFFF))
 	data.encode_u8(11, offer.cards.size())
+	data.encode_u8(12, clampi(offer.rarity, 0, 255))
 	var o: int = OFFER_HEADER
 	for card: Card in offer.cards:
 		data.encode_u8(o, card.kind)
 		data.encode_u8(o + 1, card.index)
 		data.encode_u8(o + 2, card.rarity)
 		data.encode_u8(o + 3, clampi(card.level, 0, 255))
+		data.encode_u8(o + 4, clampi(card.mod, 0, 255))
+		data.encode_u16(o + 5, clampi(roundi(card.value * 1000.0), 0, 0xFFFF))
 		o += CARD_SIZE
 	return data
 
@@ -81,12 +86,14 @@ static func decode_offer(data: PackedByteArray) -> Offer:
 	offer.seconds = data.decode_u8(7)
 	offer.tier = data.decode_u8(8)
 	offer.value = data.decode_u16(9)
+	offer.rarity = data.decode_u8(12)
 	var o: int = OFFER_HEADER
 	for k: int in count:
 		var kind: int = data.decode_u8(o)
-		if kind > Card.Kind.HEAL:
+		if kind > Card.Kind.ITEM:
 			return null
-		offer.cards.append(Card.new(kind as Card.Kind, data.decode_u8(o + 1), data.decode_u8(o + 2), data.decode_u8(o + 3)))
+		offer.cards.append(Card.new(kind as Card.Kind, data.decode_u8(o + 1), data.decode_u8(o + 2), data.decode_u8(o + 3),
+				data.decode_u8(o + 4), data.decode_u16(o + 5) / 1000.0))
 		o += CARD_SIZE
 	return offer
 

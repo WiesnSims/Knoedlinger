@@ -12,6 +12,26 @@ const CAPACITY: int = 256
 const STRIDE: int = 16
 ## BOSS_CHEST value: items in the low byte, this bit = evolutions first.
 const EVOLUTION_BIT: int = 0x100
+## CHEST / BOSS_CHEST value: the chest's rarity sits in bits 12-13 (a map chest's price below them).
+const RARITY_SHIFT: int = 12
+const LOW_MASK: int = 0xFFF
+## Light over a chest in its rarity colour (Gewöhnlich .. Hofratswürdig, docs/UI-STYLE.md palette).
+const RARITY_LIGHT: Array[Color] = [Color("b8b8c0"), Color("5ccb6b"), Color("4aa3ff"), Color("b57bff")]
+const STEMPEL_LIGHT := Color(1.0, 0.85, 0.35)
+const BEAMS: int = 32
+
+
+static func chest_value(low: int, rarity: int) -> int:
+	return (low & LOW_MASK) | (clampi(rarity, 0, 3) << RARITY_SHIFT)
+
+
+static func chest_rarity(value: int) -> int:
+	return (value >> RARITY_SHIFT) & 3
+
+
+## A map chest's base price; a boss chest's items and evolution bit.
+static func chest_low(value: int) -> int:
+	return value & LOW_MASK
 
 var capacity: int = CAPACITY
 var alive := PackedByteArray()
@@ -65,7 +85,8 @@ func setup(ground: Heightfield) -> void:
 		var buffer := PackedFloat32Array()
 		buffer.resize(capacity * STRIDE)
 		_buffers.append(buffer)
-	# A light beam over every Stempel, so it can be found across the village.
+	# A light beam over every Stempel, so it can be found across the village, and a short one over
+	# every chest in its rarity colour.
 	_beam = MultiMesh.new()
 	_beam.transform_format = MultiMesh.TRANSFORM_3D
 	_beam.use_colors = true
@@ -78,9 +99,9 @@ func setup(ground: Heightfield) -> void:
 	column.cap_top = false
 	column.cap_bottom = false
 	_beam.mesh = column
-	_beam.instance_count = 16
+	_beam.instance_count = BEAMS
 	_beam.visible_instance_count = 0
-	_beam_buffer.resize(16 * STRIDE)
+	_beam_buffer.resize(BEAMS * STRIDE)
 	var beam_material := ShaderMaterial.new()
 	beam_material.shader = load("res://shaders/beam.gdshader")
 	var beams := MultiMeshInstance3D.new()
@@ -229,18 +250,23 @@ func draw(delta: float) -> void:
 		buffer[o + 14] = 1.0
 		buffer[o + 15] = 1.0
 		counts[kind] += 1
-		if kind == Kind.STEMPEL and beams < 16:
+		var chest: bool = kind == Kind.CHEST or kind == Kind.BOSS_CHEST
+		if (kind == Kind.STEMPEL or chest) and beams < BEAMS:
 			var bo: int = beams * STRIDE
+			var height: float = 40.0 if kind == Kind.STEMPEL else 7.0
+			var light: Color = STEMPEL_LIGHT if kind == Kind.STEMPEL else RARITY_LIGHT[chest_rarity(values[slot])]
 			for k: int in STRIDE:
 				_beam_buffer[bo + k] = 0.0
-			_beam_buffer[bo] = 1.0
+			_beam_buffer[bo] = 1.0 if kind == Kind.STEMPEL else 0.6
 			_beam_buffer[bo + 3] = x
-			_beam_buffer[bo + 5] = 40.0
-			_beam_buffer[bo + 7] = y + 20.0
-			_beam_buffer[bo + 10] = 1.0
+			_beam_buffer[bo + 5] = height
+			_beam_buffer[bo + 7] = y + height * 0.5
+			_beam_buffer[bo + 10] = 1.0 if kind == Kind.STEMPEL else 0.6
 			_beam_buffer[bo + 11] = z
-			for k: int in 4:
-				_beam_buffer[bo + 12 + k] = 1.0
+			_beam_buffer[bo + 12] = light.r
+			_beam_buffer[bo + 13] = light.g
+			_beam_buffer[bo + 14] = light.b
+			_beam_buffer[bo + 15] = 1.0
 			beams += 1
 	for kind: int in Kind.size():
 		_meshes[kind].buffer = buffers[kind]

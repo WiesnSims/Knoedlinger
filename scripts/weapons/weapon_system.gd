@@ -16,23 +16,23 @@ static func update(build: PlayerBuild, player: Player, enemies: EnemyManager, pr
 		run_time: float, delta: float, rng: RandomNumberGenerator, balance: BalanceData) -> void:
 	for owned: PlayerBuild.OwnedWeapon in build.weapons:
 		var weapon: WeaponData = owned.data
-		var area: float = Formulas.weapon_area(weapon, owned.level, build.stat(&"area"))
-		var damage: float = Formulas.weapon_damage(weapon, owned.level, owned.bonus, build.stat(&"damage"), balance)
-		var crit: float = weapon.crit_chance + build.stat(&"crit")
+		var area: float = Formulas.weapon_area(weapon, owned.mods, build.stat(&"area"))
+		var damage: float = Formulas.weapon_damage(weapon, owned.mods, build.stat(&"damage"))
+		var crit: float = Formulas.weapon_crit(weapon, owned.mods, build.stat(&"crit"))
 		if weapon.pattern == WeaponData.Pattern.ORBIT:
 			orbit_hit(owned, player.global_position, enemies, run_time, area, damage, crit, build.stat(&"move_speed"), rng)
 			continue
 		owned.timer -= delta
 		if owned.timer > 0.0:
 			continue
-		var cooldown: float = Formulas.weapon_cooldown(weapon, owned.level, build.stat(&"cooldown"))
+		var cooldown: float = Formulas.weapon_cooldown(weapon, owned.mods, build.stat(&"cooldown"), balance)
 		owned.timer += cooldown
 		if owned.timer < 0.0:
 			owned.timer = cooldown
 		var hit_damage: float = damage * (weapon.crit_multiplier if rng.randf() < crit else 1.0)
 		var origin: Vector3 = player.global_position
 		var facing: Vector3 = player.facing_direction()
-		var amount: int = Formulas.weapon_amount(weapon, owned.level)
+		var amount: int = Formulas.weapon_amount(weapon, owned.mods)
 		match weapon.pattern:
 			WeaponData.Pattern.ARC:
 				arc_hit(weapon, origin, facing, enemies, hit_damage, area)
@@ -124,7 +124,7 @@ static func orbit_hit(owned: PlayerBuild.OwnedWeapon, origin: Vector3, enemies: 
 	if owned.hit_until.size() != enemies.capacity:
 		owned.hit_until.resize(enemies.capacity)
 		owned.hit_until.fill(0.0)
-	var count: int = Formulas.weapon_amount(weapon, owned.level)
+	var count: int = Formulas.weapon_amount(weapon, owned.mods)
 	var piece_radius: float = weapon.projectile_radius * area
 	var grid: SpatialHash = enemies.grid
 	var hit: int = 0

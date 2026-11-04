@@ -25,18 +25,21 @@ func _place(manager: EnemyManager, points: Array[Vector2]) -> void:
 	manager.update(0.0001, PackedVector3Array([Vector3(45.0, 0.0, 45.0)]))
 
 
-func test_weapon_numbers_grow_with_level_and_stats() -> void:
+func test_weapon_numbers_grow_with_mods_and_stats() -> void:
 	var shovel: WeaponData = load("res://data/weapons/schneeschaufel.tres")
-	assert_almost_eq(Formulas.weapon_damage(shovel, 1, 1.0, 0.0, balance), shovel.damage, 0.001)
-	assert_almost_eq(Formulas.weapon_damage(shovel, 3, 3.0, 0.0, balance), shovel.damage * (1.0 + 2.0 * shovel.damage_per_level), 0.001)
-	assert_gt(Formulas.weapon_damage(shovel, 3, 4.0, 0.0, balance), Formulas.weapon_damage(shovel, 3, 3.0, 0.0, balance),
-			"rarer cards hit harder")
-	assert_almost_eq(Formulas.weapon_damage(shovel, 1, 1.0, 0.5, balance), shovel.damage * 1.5, 0.001)
-	assert_lt(Formulas.weapon_cooldown(shovel, 8, 0.0), shovel.cooldown)
-	assert_almost_eq(Formulas.weapon_cooldown(shovel, 1, 5.0), shovel.cooldown * 0.4, 0.001, "never below 40 %")
-	assert_almost_eq(Formulas.weapon_area(shovel, 1, 0.2), 1.2, 0.001)
-	assert_eq(Formulas.weapon_amount(shovel, 4), 1)
-	assert_eq(Formulas.weapon_amount(shovel, 5), 2)
+	var none := PackedFloat32Array([0.0, 0.0, 0.0, 0.0, 0.0])
+	assert_almost_eq(Formulas.weapon_damage(shovel, none, 0.0), shovel.damage, 0.001)
+	var mods := PackedFloat32Array([0.6, 1.0, 0.25, 0.1, 5.0])
+	assert_almost_eq(Formulas.weapon_damage(shovel, mods, 0.0), shovel.damage * 1.6, 0.001)
+	assert_almost_eq(Formulas.weapon_damage(shovel, none, 0.5), shovel.damage * 1.5, 0.001)
+	assert_almost_eq(Formulas.weapon_cooldown(shovel, mods, 0.0, balance), shovel.cooldown / 2.0, 0.001, "rate +100 % = twice as often")
+	assert_almost_eq(Formulas.weapon_cooldown(shovel, none, 5.0, balance), shovel.cooldown * 0.4, 0.001, "the stat takes at most 60 %")
+	assert_almost_eq(Formulas.weapon_cooldown(shovel, PackedFloat32Array([0.0, 999.0, 0.0, 0.0, 0.0]), 0.0, balance),
+			balance.weapon_min_cooldown, 0.001)
+	assert_almost_eq(Formulas.weapon_area(shovel, mods, 0.2), 1.25 * 1.2, 0.001)
+	assert_almost_eq(Formulas.weapon_crit(shovel, mods, 0.05), shovel.crit_chance + 0.15, 0.001)
+	assert_eq(Formulas.weapon_amount(shovel, none), 1)
+	assert_eq(Formulas.weapon_amount(shovel, mods), shovel.max_amount, "capped")
 
 
 func test_armor_reduces_hits_but_never_to_nothing() -> void:

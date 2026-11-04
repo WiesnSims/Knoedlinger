@@ -567,6 +567,7 @@ func _on_pause_toggled(open: bool) -> void:
 ## Solo: a full-screen panel (Tab screen, pause menu) stops the game while it is open.
 func _hold_pause(open: bool) -> void:
 	if open:
+		speisekarte.hide_chest()
 		if NetworkManager.is_host() and NetworkManager.client_ids().is_empty() and not get_tree().paused:
 			get_tree().paused = true
 			_panel_paused = true
@@ -649,7 +650,7 @@ func _cash_in(peer: int, wirt: Wirtshaus, tier: int) -> void:
 	if tier == 2:
 		state.build.rerolls += balance.wirtshaus_l_rerolls
 	var items: int = balance.wirtshaus_chest_items[tier] if tier < balance.wirtshaus_chest_items.size() else 0
-	level_flow.give_chest(peer, state, tier, items, tier == 3, gold)
+	level_flow.give_chest(peer, state, tier, items, tier == 3, gold, -1, balance.boss_chest_min_rarity if tier == 3 else 0)
 	knodl.set_knodl_mass(_knodl_start_mass(knodl))
 	print("[RUN] cash-in peer=%d tier=%d t=%.1f" % [peer, tier, run_time])
 
@@ -710,6 +711,15 @@ func _feed_knodls(delta: float) -> void:
 
 func _on_downed(peer: int) -> void:
 	var state: PlayerState = states[peer]
+	# Marterl-Kerze: one revive per copy, back up at once with half the HP.
+	if state.revives_used < roundi(state.build.effect(&"revive")):
+		state.revives_used += 1
+		state.deaths -= 1
+		state.downed = false
+		state.downed_timer = 0.0
+		state.hp = state.max_hp * balance.item_revive_hp
+		events.toast("TOAST_REVIVED")
+		return
 	state.downed_times.append(run_time)
 	if _respawn:
 		return
@@ -792,6 +802,7 @@ func _world_frame() -> WorldStateCodec.Frame:
 		e.chests_opened = state.chests_opened
 		e.weapons = state.build.weapon_rows()
 		e.passives = state.build.passive_rows()
+		e.items = state.build.item_rows()
 		frame.entries.append(e)
 	return frame
 
@@ -930,7 +941,7 @@ func _bot_goal(local: Player, knodl: Knodl) -> Vector2:
 		if heal >= 0 and here.distance_to(Vector2(loot.xs[heal], loot.zs[heal])) < 30.0:
 			return Vector2(loot.xs[heal], loot.zs[heal])
 	chest = loot.nearest(LootField.Kind.CHEST, at.x, at.z)
-	if chest >= 0 and state != null and state.build.gold >= loot.values[chest] + balance.map_chest_price_step * state.chests_opened \
+	if chest >= 0 and state != null and state.build.gold >= _chest_price(chest, state) \
 			and here.distance_to(Vector2(loot.xs[chest], loot.zs[chest])) < 40.0:
 		return Vector2(loot.xs[chest], loot.zs[chest])
 	if knodl != null and knodl.knodl_mass >= balance.bot_cash_in_mass:
@@ -1109,6 +1120,10 @@ func _run_summary() -> Dictionary:
 		for owned: PlayerBuild.OwnedPassive in state.build.passives:
 			passives.append("%s %d" % [owned.data.id, owned.level])
 		summary["passives"] = passives
+		var items: Array = []
+		for owned: PlayerBuild.OwnedItem in state.build.items:
+			items.append("%s %d" % [owned.data.id, owned.count])
+		summary["items"] = items
 	if knodl != null:
 		summary["knodl_mass"] = snappedf(knodl.knodl_mass, 0.1)
 		summary["knodl_radius"] = snappedf(knodl.radius, 0.01)
@@ -1198,7 +1213,7 @@ func _on_world_state(data: PackedByteArray) -> void:
 		state.life = e.life
 		state.pending_levels = e.pending_levels
 		state.chests_opened = e.chests_opened
-		if not state.build.mirror(e.weapons, e.passives, e.gold, e.rerolls, e.banishes):
+		if not state.build.mirror(e.weapons, e.passives, e.items, e.gold, e.rerolls, e.banishes, e.chests_opened):
 			push_warning("World state names an item this build does not know.")
 		var knodl: Knodl = knodls.get(e.peer_id)
 		if knodl == null:
@@ -1428,7 +1443,8 @@ func _place_map_chests() -> void:
 	spots.assign(map.chest_spots)
 	for k: int in mini(balance.map_chest_count, spots.size()):
 		var pick: int = _loot_rng.randi_range(0, spots.size() - 1)
-		_drop_loot(LootField.Kind.CHEST, spots[pick].x, spots[pick].y, balance.map_chest_price)
+		var rarity: int = CardDealer.roll_chest_rarity(balance, _loot_rng, 0.0, 0)
+		_drop_loot(LootField.Kind.CHEST, spots[pick].x, spots[pick].y, LootField.chest_value(balance.map_chest_price, rarity))
 		spots.remove_at(pick)
 
 
@@ -1484,7 +1500,8 @@ func _on_bosses_beaten(beaten: Array[BossDirector.Active]) -> void:
 			_drop_loot(LootField.Kind.COIN, x + _loot_rng.randf_range(-3.0, 3.0), z + _loot_rng.randf_range(-3.0, 3.0),
 					floori(float(data.gold) / coins) + (1 if k < data.gold % coins else 0))
 		var chest: int = data.chest_items | (LootField.EVOLUTION_BIT if data.chest_evolution else 0)
-		_drop_loot(LootField.Kind.BOSS_CHEST, x, z, chest)
+		var rarity: int = CardDealer.roll_chest_rarity(balance, _loot_rng, 0.0, balance.boss_chest_min_rarity)
+		_drop_loot(LootField.Kind.BOSS_CHEST, x, z, LootField.chest_value(chest, rarity))
 		events.boss(boss.index, RunEventCodec.BossState.BEATEN, boss.slot)
 		if data.final:
 			gate_flags |= WorldStateCodec.GATE_BOSS_BEATEN
@@ -1619,12 +1636,16 @@ func _collect_loot(delta: float) -> void:
 							_open_gate()
 				LootField.Kind.CHEST:
 					if d < balance.chest_pickup_radius:
-						var price: int = loot.values[slot] + balance.map_chest_price_step * state.chests_opened
+						var price: int = _chest_price(slot, state)
 						if state.build.gold >= price:
-							state.build.gold -= price
+							# Zweitschlüssel vom Gemeindeamt: sometimes the chest is open anyway.
+							if _loot_rng.randf() >= state.build.effect(&"free_chest"):
+								state.build.gold -= price
+							var rarity: int = LootField.chest_rarity(loot.values[slot])
 							state.chests_opened += 1
+							state.build.set_chests_opened(state.chests_opened)
 							_take_loot(slot, peer)
-							level_flow.give_chest(peer, state, CHEST_TIER_MAP, balance.map_chest_items, false, 0)
+							level_flow.give_chest(peer, state, CHEST_TIER_MAP, balance.map_chest_items, false, 0, rarity)
 						elif not _no_gold_timers.has(peer):
 							_no_gold_timers[peer] = NOTICE_INTERVAL
 							level_flow.notify(peer, OfferCodec.Notice.NO_GOLD)
@@ -1632,7 +1653,14 @@ func _collect_loot(delta: float) -> void:
 					if d < balance.chest_pickup_radius:
 						var value: int = loot.values[slot]
 						_take_loot(slot, peer)
-						level_flow.give_chest(peer, state, CHEST_TIER_BOSS, value & 0xFF, (value & LootField.EVOLUTION_BIT) != 0, 0)
+						level_flow.give_chest(peer, state, CHEST_TIER_BOSS, value & 0xFF, (value & LootField.EVOLUTION_BIT) != 0, 0,
+								LootField.chest_rarity(value))
+
+
+## What a map chest costs this player: its base price, dearer for every chest they opened.
+func _chest_price(slot: int, state: PlayerState) -> int:
+	var opened: int = state.chests_opened if state != null else 0
+	return LootField.chest_low(loot.values[slot]) + balance.map_chest_price_step * opened
 
 
 func _take_loot(slot: int, peer: int) -> void:
@@ -1780,7 +1808,7 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 	var hint: String = ""
 	var chest: int = loot.nearest(LootField.Kind.CHEST, from.x, from.z)
 	if chest >= 0 and Vector2(loot.xs[chest] - from.x, loot.zs[chest] - from.z).length() < 7.0:
-		var price: int = loot.values[chest] + balance.map_chest_price_step * (state.chests_opened if state != null else 0)
+		var price: int = _chest_price(chest, state)
 		hint = tr("HINT_CHEST") % [price, state.build.gold if state != null and state.build != null else 0]
 	hud.show_hint(hint)
 	if state != null:
