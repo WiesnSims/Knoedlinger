@@ -8,6 +8,12 @@ const PATH: String = "res://data/content.tres"
 
 @export var characters: Array[CharacterData] = []
 @export var maps: Array[MapInfo] = []
+## The meta (Profile): Stammtisch upgrades, Gemeindeamt quests, Grant levels from easy to hard.
+@export var upgrades: Array[MetaUpgradeData] = []
+@export var quests: Array[QuestData] = []
+@export var grants: Array[GrantData] = []
+## The Almanach's bestiary, in order.
+@export var enemies: Array[EnemyTypeData] = []
 
 
 static func load_default() -> GameContent:

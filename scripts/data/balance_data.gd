@@ -224,6 +224,18 @@ extends Resource
 ## A revive from an item (Marterl-Kerze) brings the player back with this share of their max HP.
 @export var item_revive_hp: float = 0.5
 
+@export_group("Meta")
+## Schilling a run pays (GAME-DESIGN.md: gold, cash-ins, 25 % of the Knödl when knocked out):
+## per gold picked up, per cash-in by tier S..XL, the Knödl share, a win bonus, +10 % per extra player.
+@export var schilling_per_gold: float = 0.5
+@export var schilling_per_cash_in: PackedFloat32Array = PackedFloat32Array([5.0, 15.0, 40.0, 100.0])
+@export var schilling_knodl_share: float = 0.25
+@export var schilling_win_bonus: float = 100.0
+@export var coop_schilling_per_player: float = 0.1
+## Grant modifiers: Föhn pushes every Knödl this hard (m/s^2, in gusts), Kontrolle multiplies elites.
+@export var foehn_force: float = 3.0
+@export var kontrolle_elite_mult: float = 2.0
+
 @export_group("Wirtshaus")
 ## Open Wirtshäuser per run (each serves once) out of the map's spots; +1 per extra player.
 @export var wirtshaus_count: int = 3

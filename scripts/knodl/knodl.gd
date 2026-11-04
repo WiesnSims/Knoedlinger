@@ -35,6 +35,8 @@ var radius: float = 0.5
 var state: State = State.ATTACHED
 ## The Spagat's length factor (Spagat aus Hanf); also reels in faster by the same factor.
 var string_mult: float = 1.0
+## Host: a push on the Knödl in m/s^2 (Grant modifier Föhn).
+var wind: Vector3 = Vector3.ZERO
 ## Seconds until Schupfn works again.
 var cooldown: float = 0.0
 ## Stats for tests and the balance log.
@@ -357,6 +359,8 @@ func _integrate_forces(body: PhysicsDirectBodyState3D) -> void:
 			var remaining: float = maxf(_reel_timer, 0.2)
 			var wanted: Vector3 = to_holder / remaining
 			v = v.lerp(wanted, minf(10.0 * dt, 1.0))
+	if state != State.REELING:
+		v += wind * dt
 	var max_speed: float = balance.knodl_max_speed * sort.roll_speed_mult
 	if v.length() > max_speed:
 		v = v.normalized() * max_speed

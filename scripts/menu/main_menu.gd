@@ -15,10 +15,10 @@ const MARGIN: float = 64.0
 ## [label key, screen id, enabled]. Screens that come later in M4 are listed but greyed out.
 const ENTRIES: Array = [
 	["MENU_PLAY", &"play", true],
-	["MENU_STAMMTISCH", &"stammtisch", false],
-	["MENU_QUESTS", &"quests", false],
-	["MENU_RECORDS", &"records", false],
-	["MENU_ALMANACH", &"almanach", false],
+	["MENU_STAMMTISCH", &"stammtisch", true],
+	["MENU_QUESTS", &"quests", true],
+	["MENU_RECORDS", &"records", true],
+	["MENU_ALMANACH", &"almanach", true],
 	["MENU_SETTINGS", &"settings", true],
 	["MENU_COOP", &"coop", false],
 ]
@@ -31,6 +31,7 @@ var _entries: Array[Button] = []
 var _screens: Dictionary[StringName, Control] = {}
 var _current: StringName = &""
 var _name_label: Label
+var _schilling_label: Label
 var _name_prompt: PanelContainer
 var _name_edit: LineEdit
 var _left: Control
@@ -122,6 +123,9 @@ func _build_ui() -> void:
 	_left.add_child(footer)
 	_name_label = UiStyle.label(&"LabelSmall")
 	footer.add_child(_name_label)
+	_schilling_label = UiStyle.label(&"LabelAccent")
+	footer.add_child(_schilling_label)
+	Profile.changed.connect(_update_name)
 	footer.add_child(UiStyle.label(&"LabelMuted", tr("MENU_VERSION") % NetworkManager.version))
 	_update_name()
 	Settings.changed.connect(func(key: StringName) -> void:
@@ -142,6 +146,19 @@ func _build_ui() -> void:
 	var settings := SettingsPanel.new()
 	settings.closed.connect(_close_screen)
 	_screens[&"settings"] = settings
+	for id: StringName in [&"stammtisch", &"quests", &"records", &"almanach"]:
+		var screen: Control
+		match id:
+			&"stammtisch":
+				screen = StammtischScreen.new(content)
+			&"quests":
+				screen = QuestsScreen.new(content)
+			&"records":
+				screen = RecordsScreen.new(content)
+			&"almanach":
+				screen = AlmanachScreen.new(content)
+		screen.connect(&"closed", _close_screen)
+		_screens[id] = screen
 	for id: StringName in _screens:
 		_screens[id].visible = false
 		area.add_child(_screens[id])
@@ -150,6 +167,7 @@ func _build_ui() -> void:
 
 func _update_name() -> void:
 	_name_label.text = tr("MENU_PLAYER") % Settings.player_name()
+	_schilling_label.text = tr("MENU_SCHILLING") % Profile.schilling()
 
 
 func _open(id: StringName) -> void:
@@ -184,12 +202,14 @@ func _close_screen() -> void:
 		_entries[index].grab_focus()
 
 
-func _start_run(character: StringName, map: StringName) -> void:
+func _start_run(character: StringName, map: StringName, grant: int) -> void:
 	if _starting:
 		return
 	_starting = true
 	RunSetup.character = String(character)
 	RunSetup.map = String(map)
+	RunSetup.grant = grant
+	Profile.remember_choice(character, map, grant)
 	RunSetup.from_menu = true
 	GameAudio.set_music_speed(1.0)
 	get_tree().change_scene_to_file.call_deferred(RUN_SCENE)

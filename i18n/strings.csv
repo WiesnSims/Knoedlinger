@@ -266,3 +266,145 @@ ITEM_GOLDHAUBE,Goldhaube
 DESC_ITEM_GOLDHAUBE,"Glänzt, also zahlt wer."
 ITEM_DOPPLER,Doppler
 DESC_ITEM_DOPPLER,Zwa Liter Selbstvertrauen.
+META_BERGKAS_ABO,Bergkas-Abo
+DESC_META_BERGKAS_ABO,Jede Wochn a Laib. +10 max. HP pro Stufe.
+META_WETZSTEIN,Wetzstein
+DESC_META_WETZSTEIN,Alles a bissl schärfer. +5 % Schaden pro Stufe.
+META_WANDERSCHUHE,Wanderschuhe
+DESC_META_WANDERSCHUHE,Eingetreten und bequem. +3 % Tempo pro Stufe.
+META_GROSSER_TEIG,Großer Teig
+DESC_META_GROSSER_TEIG,Der Knödl startet 25 % schwerer pro Stufe.
+META_NOCHMAL_ZETTERL,Nochmal-Zetterl
+DESC_META_NOCHMAL_ZETTERL,"Ein ""Nochmal bitte"" mehr pro Runde und Stufe."
+META_BESCHWERDEFORMULAR,Beschwerdeformular
+DESC_META_BESCHWERDEFORMULAR,"Ein ""Des mog i ned"" mehr pro Runde und Stufe."
+META_HUFEISEN_UEBERM_TOR,Hufeisen überm Tor
+DESC_META_HUFEISEN_UEBERM_TOR,"+5 % Glück pro Stufe. Hängt verkehrt, wirkt trotzdem."
+META_HOSENSACK,Zweiter Hosensack
+DESC_META_HOSENSACK,"Platz für no a Waffn: dritter, dann vierter Waffenplatz."
+META_NACHSCHLAG,Nachschlag
+DESC_META_NACHSCHLAG,"Einmal pro Runde wieder aufstehn, pro Stufe."
+META_WANDERSTECKEN,Wanderstecken
+DESC_META_WANDERSTECKEN,+10 % Sammelradius pro Stufe.
+GRANT_GEMUETLICH,Gemütlich
+DESC_GRANT_GEMUETLICH,Für an gmiatlichn Nachmittag. Weniger Schilling.
+GRANT_NORMAL,Normal
+DESC_GRANT_NORMAL,Wia da Kirtag halt is.
+GRANT_GRANTIG,Grantig
+DESC_GRANT_GRANTIG,Zaacher und schneller. Föhn schiebt dein Knödl umanand.
+GRANT_HOFRATSGRANT,Hofratsgrant
+DESC_GRANT_HOFRATSGRANT,Viel zaacher. Streik: a Wirtshaus hat zua.
+GRANT_WELTUNTERGANG,Weltuntergang
+DESC_GRANT_WELTUNTERGANG,Alles auf einmal. Kontrolle: doppelt so viele Elite.
+QUEST_GELSENPLAGE,Gelsenplage
+DESC_QUEST_GELSENPLAGE,Erledig 1.000 Gelsen.
+QUEST_REISEGRUPPE,Reisegruppe
+DESC_QUEST_REISEGRUPPE,Erledig 2.000 Touristen-Zombies.
+QUEST_DACKELSCHAU,Dackelschau
+DESC_QUEST_DACKELSCHAU,Erledig 500 Kampf-Dackel.
+QUEST_TAUBENFUETTERN,Taubenfüttern verboten
+DESC_QUEST_TAUBENFUETTERN,Erledig 300 Tauben.
+QUEST_WILDSAU,Wildsau-Jagd
+DESC_QUEST_WILDSAU,Erledig 200 Wildschweine.
+QUEST_ZEHNTAUSEND,Zehntausend
+DESC_QUEST_ZEHNTAUSEND,Erledig insgesamt 10.000 Gegner.
+QUEST_ERSTE_EINKEHR,Erste Einkehr
+DESC_QUEST_ERSTE_EINKEHR,Kehr einmal in an Wirtshaus ein.
+QUEST_STAMMGAST,Stammgast
+DESC_QUEST_STAMMGAST,Kehr insgesamt 10-mal ein.
+QUEST_RIESENPORTION,Riesenportion
+DESC_QUEST_RIESENPORTION,Kehr mit an XL-Knödl ein.
+QUEST_LEHRLING,Lehrling
+DESC_QUEST_LEHRLING,Erreich Level 20 in einer Runde.
+QUEST_GESELLE,Geselle
+DESC_QUEST_GESELLE,Erreich Level 30 in einer Runde.
+QUEST_FERDL_MEISTER,Hausmeister-Meister
+DESC_QUEST_FERDL_MEISTER,Erreich Level 40 mit Onkel Ferdl.
+QUEST_FUENF_KIRTAGE,Fünf Kirtage
+DESC_QUEST_FUENF_KIRTAGE,Spiel 5 Runden.
+QUEST_DURCHGHALTEN,Durchghalten
+DESC_QUEST_DURCHGHALTEN,Überleb 10 Minuten in einer Runde.
+QUEST_KRAMPUS_WEG,"Krampus, schleich di"
+DESC_QUEST_KRAMPUS_WEG,Besieg den Oberkrampus.
+QUEST_KRAMPUS_NOCHMAL,Und nochmal
+DESC_QUEST_KRAMPUS_NOCHMAL,Besieg den Oberkrampus a zweites Mal in einer Runde.
+QUEST_HOFRAT_ABGELEHNT,Abgelehnt!
+DESC_QUEST_HOFRAT_ABGELEHNT,Besieg den Hofrat der Unterwelt.
+QUEST_OHNE_SCHUPFN,Ohne Schupfn
+DESC_QUEST_OHNE_SCHUPFN,Besieg den Hofrat in einer Runde ganz ohne Schupfn.
+QUEST_ERSTER_SIEG,Bis zur Sperrstund'
+DESC_QUEST_ERSTER_SIEG,Gewinn a Runde.
+QUEST_KIRTAGSKOENIG,Kirtagskönig
+DESC_QUEST_KIRTAGSKOENIG,Gewinn 3 Runden am Kirtag.
+QUEST_AMTSWEG,Amtsweg
+DESC_QUEST_AMTSWEG,Sammel insgesamt 9 Stempel.
+QUEST_RIESENKNOEDL,Riesenknödl
+DESC_QUEST_RIESENKNOEDL,Lass dein Knödl auf 2.000 Masse wachsen.
+QUEST_SPAREFROH,Sparefroh
+DESC_QUEST_SPAREFROH,Verdien insgesamt 1.000 Schilling.
+QUEST_SAMMLER,Sammler
+DESC_QUEST_SAMMLER,Find 8 verschiedene Kirtagswaren.
+QUEST_GRANTSCHERBN,Grantscherbn
+DESC_QUEST_GRANTSCHERBN,Gewinn a Runde auf Grantig oder schwerer.
+DESC_ENEMY_GELSE,"Sticht, summt, stirbt. Meistens in der Reihenfolge."
+DESC_ENEMY_TOURIST,Bleibt für a Selfie stehn. Auch mitten im Kampf.
+DESC_ENEMY_DACKEL,"Klein, schnell, beleidigt. Sehr beleidigt."
+DESC_ENEMY_TAUBE,Will nur dein Knödl. Und dann no a Stückl.
+DESC_ENEMY_WILDSCHWEIN,Riecht Brösel auf hundert Meter. Und rennt hin.
+DESC_ENEMY_PERCHTE,"Schwer, laut, haut auf an Fleck. Weg vom Fleck!"
+DESC_ENEMY_RADLER,Zieht an Strich und fahrt drüber. Klingelt nie.
+DESC_ENEMY_AKTEN_GEIST,"Eine Akte, die si selbst ablegt. In dir."
+DESC_ENEMY_FORMULAR,In dreifacher Ausfertigung. Alle drei bissig.
+DESC_ENEMY_OBERKRAMPUS,Hat a Rute und kein Kalender. Kommt trotzdem.
+DESC_ENEMY_HOFRAT,Der Hofrat der Unterwelt. Antrag abgelehnt.
+STAMMTISCH_TITLE,Stammtisch
+STAMMTISCH_RANK,Stufe %d/%d
+STAMMTISCH_MAXED,Voll
+SCHILLING_AMOUNT,%d S
+META_EFFECT_WEAPON_SLOTS,+%d Waffenplatz
+META_EFFECT_REROLLS,+%d Nochmal bitte
+META_EFFECT_BANISHES,+%d Des mog i ned
+META_EFFECT_KNODL_START,+%d %% Startknödl
+META_EFFECT_REVIVES,+%d Nachschlag
+QUESTS_TITLE,Aufträge vom Gemeindeamt
+QUEST_DONE,Gestempelt
+RECORDS_TITLE,Rekorde
+RECORDS_NONE,Do warst no ned.
+REC_TIME,Zeit
+REC_WINS,Gwonnen
+REC_LEVEL,Level
+REC_KILLS,Gegner
+REC_KNODL,Knödl
+REC_SCHILLING,Schilling
+RECORDS_OWN,Eigene
+RECORDS_BOARD,Ehrentafel
+ALMANACH_TITLE,Almanach
+ALM_FAMILY,Familie
+ALM_WEAPONS,Waffen
+ALM_STATS,Verbesserungen
+ALM_ITEMS,Kirtagsware
+ALM_ENEMIES,Viecher
+ALM_UNKNOWN,???
+ALM_UNKNOWN_LINE,Noch ned gsehn.
+ALM_LOCKED,Gibt's für: %s
+ALM_COUNT,%d / %d entdeckt
+END_SCHILLING,Schilling
+END_QUEST_DONE,Auftrag erledigt: %s
+END_UNLOCKED,freigschalten!
+END_GRANT_UP,Neue Grant-Stufe freigschalten!
+PLAY_GRANT,Wia grantig?
+PLAY_LOCKED,Gibt's für: %s
+MENU_SCHILLING,%d Schilling
+SAVE_TITLE,Spielstand
+SAVE_LINE,"Dein Spielstand als Code: kopieren, aufheben, woanders wieder laden."
+SAVE_COPY,Code kopieren
+SAVE_COPIED,Kopiert!
+SAVE_LOAD,Code laden
+SAVE_LOADED,Spielstand gladen!
+SAVE_BAD_format,Des is ka Knödlinger-Code.
+SAVE_BAD_check,Der Code is ned vollständig.
+SAVE_BAD_data,Mit dem Code kann i nix anfangen.
+SAVE_RESET,Alles löschen
+SAVE_RESET_SURE,Sicher? Nochmal drücken.
+SAVE_RESET_DONE,Neu angfangen.
+SAVE_PLACEHOLDER,Code do einfügen

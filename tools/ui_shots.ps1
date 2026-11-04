@@ -36,6 +36,8 @@ $scenes = @(
     @{ Id = 'pause'; Query = "$common&knodl_mass=160"; At = '24,27'; Press = 'Escape,ArrowDown+Enter' },
     # A plain start (fresh browser profile): the name prompt, the menu, Spielen, Einstellungen.
     # Then back, Spielen, "Auf geht's!": the run started from the menu.
+    # The meta screens of a fresh profile: Stammtisch, Aufträge, Rekorde, Almanach, then Spielen.
+    @{ Id = 'meta'; Query = 'mute=1&debug=0'; At = '12,15,18,21,24,27'; Press = 'type:Resi+Enter,ArrowDown+Enter,Escape+ArrowDown+Enter,Escape+ArrowDown+Enter,Escape+ArrowDown+Enter,Escape+ArrowUp+ArrowUp+ArrowUp+ArrowUp+Enter' },
     @{ Id = 'title'; Query = 'mute=1&debug=0'; At = '12,15,18,21,26,34,44'; Press = ',type:Resi+Enter,Enter,Escape+ArrowDown+Enter,Escape+ArrowUp+Enter+Enter,,' }
 )
 try {

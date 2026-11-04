@@ -5,6 +5,8 @@ extends Resource
 @export var id: StringName = &""
 ## Translation key of the player-facing name.
 @export var name_key: String = ""
+## Translation key of its deadpan line in the Almanach.
+@export var desc_key: String = ""
 @export var max_hp: float = 3.0
 @export var speed: float = 3.0
 @export var radius: float = 0.4

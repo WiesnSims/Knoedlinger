@@ -17,8 +17,10 @@ var target_count: int = 0
 var respawn_delay: float = 0.0
 ## Spawn mix per type (WaveData.weights_at); empty = EnemyTypeData.spawn_weight.
 var type_weights: PackedFloat32Array = PackedFloat32Array()
-## New enemies get their type's max HP times this (time and co-op scaling).
+## New enemies get their type's max HP times this (time and co-op scaling), and their speed times
+## speed_mult (the Grant level).
 var hp_mult: float = 1.0
+var speed_mult: float = 1.0
 ## New enemies appear on a ring this far from a random player.
 var ring_min: float = 0.0
 var ring_max: float = 0.0
@@ -458,7 +460,7 @@ func _reset(slot: int, t: int) -> void:
 	attack_timer[slot] = _rng.randf_range(1.0, data.attack.cooldown) if data.attack != null else 0.0
 	hp[slot] = data.max_hp * hp_mult
 	max_hp[slot] = data.max_hp * hp_mult
-	speed[slot] = data.speed * _rng.randf_range(0.85, 1.15)
+	speed[slot] = data.speed * speed_mult * _rng.randf_range(0.85, 1.15)
 	radius[slot] = data.radius
 	flash[slot] = 0.0
 	phase[slot] = _rng.randf() * TAU

@@ -35,6 +35,8 @@ var cash_ins: PackedInt32Array = PackedInt32Array([0, 0, 0, 0])
 var mass_eaten_by_enemies: float = 0.0
 ## Map chests opened (each one costs more: balance.map_chest_price_step). In the world state.
 var chests_opened: int = 0
+## Client: the Schilling the host says this run pays (the world state).
+var schilling: int = 0
 ## Run time of every level-up (balance log: is the first one within 10 s?).
 var level_times: PackedFloat32Array = PackedFloat32Array()
 ## Run time of every knock-down.

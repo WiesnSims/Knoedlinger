@@ -1,6 +1,7 @@
 extends Node3D
 ## One run (M3: the Kirtag map with bosses, the gate and loot). Solo, host or client, from LaunchArgs:
 ##   --character=ferdl          who plays (data/characters/<id>.tres)
+##   --grant=1                  Grant level (index into GameContent.grants; 1 = Normal)
 ##   --map=kirtag               which map (data/maps/<id>.tres; testfeld is the M1 test field)
 ##   --respawn=1                knocked down = back at the spawn after a few seconds instead of the
 ##                              run ending (the automated checks and the balance log)
@@ -56,6 +57,10 @@ var map: MapData
 var wave: WaveData
 var catalog: UpgradeCatalog
 var character: CharacterData
+var content: GameContent
+## The Grant level of this run (difficulty) and its index.
+var grant: GrantData
+var grant_index: int = 1
 var types: Array[EnemyTypeData] = []
 var terrain: Heightfield
 var ground: Heightfield
@@ -172,6 +177,15 @@ var _sound_level: int = 0
 var _last_xp: float = 0.0
 var _knodl_state_heard: int = 0
 var _knodl_hits_heard: int = 0
+## Host: enemies beaten per type id (quests, Almanach).
+var _kills_by_type: Dictionary[StringName, int] = {}
+## Host: the Stammtisch bonus each player brings (the local one from the Profile; clients send
+## theirs with the co-op lobby in M6).
+var _meta: Dictionary[int, Dictionary] = {}
+## What the Profile paid for this run (shown on the end screen); recorded once.
+var _reward: Dictionary = {}
+var _recorded: bool = false
+var _wind_angle: float = 0.0
 
 
 func _ready() -> void:
@@ -192,6 +206,9 @@ func _ready() -> void:
 	catalog = load(CATALOG_PATH)
 	UiStyle.build_icon_atlas(catalog)
 	character = _load_character(RunSetup.character_id())
+	content = GameContent.load_default()
+	grant_index = clampi(LaunchArgs.get_int("grant", RunSetup.grant), 0, content.grants.size() - 1)
+	grant = content.grants[grant_index]
 	types = wave.enemies
 	run_time = maxf(LaunchArgs.get_float("start_time", 0.0), 0.0)
 	var seed_value: int = LaunchArgs.get_int("seed", 1) + _autoplay_run * 7919
@@ -285,6 +302,7 @@ func _ready() -> void:
 		enemies = EnemyManager.new(balance, types, slots, seed_value, ground, map.half_size)
 		enemies.ring_min = balance.spawn_first_ring_min
 		enemies.ring_max = balance.spawn_first_ring_max
+		enemies.speed_mult = grant.enemy_speed
 		_update_wave()
 		if _forced_enemies > 0:
 			enemies.populate(_forced_enemies, _player_positions())
@@ -292,7 +310,8 @@ func _ready() -> void:
 			enemies.respawn_delay = balance.spawn_respawn_delay
 			enemies.target_count = balance.spawn_start_count
 		level_flow = LevelUpFlow.new(balance, seed_value)
-		_open_wirtshaeuser(balance.wirtshaus_count, seed_value)
+		# Grant "Streik": one Wirtshaus stays shut.
+		_open_wirtshaeuser(balance.wirtshaus_count - (1 if grant.modifier == &"streik" else 0), seed_value)
 		_scatter_start_brosel(seed_value)
 		bosses = BossDirector.new(balance, enemies, hazards, wave)
 		_place_map_chests()
@@ -403,7 +422,7 @@ func _host_frame(delta: float) -> void:
 			knodls[knodl_peers[k]].bite(eaten, balance.knodl_bite_spill)
 	for t: int in peers.size():
 		var state: PlayerState = states[peers[t]]
-		var hit: float = Formulas.hit_damage(enemies.touch_damage[t], state.build.stat(&"armor"), balance)
+		var hit: float = Formulas.hit_damage(enemies.touch_damage[t] * grant.enemy_damage, state.build.stat(&"armor"), balance)
 		if not _god and phase == Phase.RUNNING and state.hurt(hit, balance):
 			_on_downed(peers[t])
 	for peer: int in players:
@@ -430,6 +449,11 @@ func _host_frame(delta: float) -> void:
 	projectiles.update(delta, enemies)
 	hazards.update(delta)
 	_resolve_hazards()
+	if grant.modifier == &"foehn":
+		_wind_angle += delta * 0.07
+		var gust: float = balance.foehn_force * (0.55 + 0.45 * sin(run_time * 0.5))
+		for peer: int in knodls:
+			knodls[peer].wind = Vector3(cos(_wind_angle), 0.0, sin(_wind_angle)) * gust
 	var t2: int = Time.get_ticks_usec()
 	stats.add_system("knodl_weapons", t2 - t1)
 	_drop_brosel()
@@ -458,8 +482,13 @@ func _host_frame(delta: float) -> void:
 ## Host: the spawn mix and enemy HP follow the clock and the number of players.
 func _update_wave() -> void:
 	enemies.type_weights = wave.weights_at(run_time)
+	# Grant "Kontrolle": elites (enemies with an attack of their own) come twice as often.
+	if grant.modifier == &"kontrolle":
+		for t: int in mini(enemies.type_weights.size(), types.size()):
+			if types[t].attack != null and not types[t].boss:
+				enemies.type_weights[t] *= balance.kontrolle_elite_mult
 	enemies.hp_mult = (1.0 + balance.spawn_hp_per_minute * run_time / 60.0) \
-			* (1.0 + balance.coop_hp_per_player * maxi(players.size() - 1, 0))
+			* (1.0 + balance.coop_hp_per_player * maxi(players.size() - 1, 0)) * grant.enemy_hp
 
 
 ## Host: Sperrstund' at 15:00. The crowd stops coming, the Riesen-Wirt sweeps the Kirtag empty,
@@ -549,8 +578,9 @@ func _on_run_ended() -> void:
 	if _seconds > 0.0:
 		return
 	var local_state: PlayerState = states.get(NetworkManager.local_id())
+	_record_profile(Result.keys()[result])
 	end_screen.show_result(_run_summary(), not NetworkManager.is_online(),
-			local_state.build if local_state != null else null, balance)
+			local_state.build if local_state != null else null, balance, _reward)
 
 
 ## Solo: the Tab screen pauses the game like the Speisekarte does; co-op runs on.
@@ -580,6 +610,10 @@ func _hold_pause(open: bool) -> void:
 
 ## Pause menu "Zum Menü" or the end screen: leave the run for the title screen.
 func _quit_to_menu() -> void:
+	# Leaving early still pays what the run made so far (like being knocked out).
+	if phase != Phase.ENDED:
+		result = Result.LOST
+		_record_profile("QUIT")
 	_finished = true
 	get_tree().paused = false
 	if NetworkManager.is_online():
@@ -658,6 +692,8 @@ func _cash_in(peer: int, wirt: Wirtshaus, tier: int) -> void:
 ## Host: Brösel from the dead and from Knödl that shed (thrown, or bitten).
 func _drop_brosel() -> void:
 	for k: int in enemies.kill_x.size():
+		var id: StringName = types[enemies.kill_type[k]].id
+		_kills_by_type[id] = _kills_by_type.get(id, 0) + 1
 		var kx: float = enemies.kill_x[k]
 		var kz: float = enemies.kill_z[k]
 		if k < 4:
@@ -711,8 +747,8 @@ func _feed_knodls(delta: float) -> void:
 
 func _on_downed(peer: int) -> void:
 	var state: PlayerState = states[peer]
-	# Marterl-Kerze: one revive per copy, back up at once with half the HP.
-	if state.revives_used < roundi(state.build.effect(&"revive")):
+	# Marterl-Kerze (per copy) and the Stammtisch's Nachschlag: back up at once with half the HP.
+	if state.revives_used < roundi(state.build.effect(&"revive") + state.build.meta.get(&"revives", 0.0)):
 		state.revives_used += 1
 		state.deaths -= 1
 		state.downed = false
@@ -800,6 +836,7 @@ func _world_frame() -> WorldStateCodec.Frame:
 		e.rerolls = state.build.rerolls
 		e.banishes = state.build.banishes
 		e.chests_opened = state.chests_opened
+		e.schilling = _schilling_of(peer)
 		e.weapons = state.build.weapon_rows()
 		e.passives = state.build.passive_rows()
 		e.items = state.build.item_rows()
@@ -1089,9 +1126,20 @@ func _run_summary() -> Dictionary:
 	var knodl: Knodl = knodls.get(id)
 	var summary: Dictionary = {"time": snappedf(run_time, 0.1), "phase": Phase.keys()[phase],
 		"brosel_alive": brosel.active_count, "result": Result.keys()[result], "stempel": stempel_found,
-		"hofrat_beaten": (gate_flags & WorldStateCodec.GATE_BOSS_BEATEN) != 0, "bosses_beaten": _bosses_beaten.duplicate()}
+		"hofrat_beaten": (gate_flags & WorldStateCodec.GATE_BOSS_BEATEN) != 0, "bosses_beaten": _bosses_beaten.duplicate(),
+		"character": String(character.id), "map": String(map.id), "grant": grant_index}
+	var boss_ids: Array = []
+	for beaten: Array in _bosses_beaten:
+		boss_ids.append(beaten[0])
+	summary["bosses"] = boss_ids
+	var by_type: Dictionary = {}
+	for enemy_id: StringName in _kills_by_type:
+		by_type[String(enemy_id)] = _kills_by_type[enemy_id]
+	summary["kills_by_type"] = by_type
 	if state != null:
 		summary["level"] = state.level
+		summary["schilling"] = _schilling_of(id) if NetworkManager.is_host() else state.schilling
+		summary["stempel"] = stempel_found
 		summary["xp"] = snappedf(state.xp, 0.1)
 		summary["hp"] = snappedf(state.hp, 0.1)
 		summary["deaths"] = state.deaths
@@ -1116,6 +1164,14 @@ func _run_summary() -> Dictionary:
 		for owned: PlayerBuild.OwnedWeapon in state.build.weapons:
 			weapons.append("%s %d" % [owned.data.id, owned.level])
 		summary["weapons"] = weapons
+		var ids: Dictionary = {"weapons": [], "passives": [], "items": []}
+		for owned: PlayerBuild.OwnedWeapon in state.build.weapons:
+			ids["weapons"].append(String(owned.data.id))
+		for owned: PlayerBuild.OwnedPassive in state.build.passives:
+			ids["passives"].append(String(owned.data.id))
+		for owned: PlayerBuild.OwnedItem in state.build.items:
+			ids["items"].append(String(owned.data.id))
+		summary["found"] = ids
 		var passives: Array = []
 		for owned: PlayerBuild.OwnedPassive in state.build.passives:
 			passives.append("%s %d" % [owned.data.id, owned.level])
@@ -1213,6 +1269,7 @@ func _on_world_state(data: PackedByteArray) -> void:
 		state.life = e.life
 		state.pending_levels = e.pending_levels
 		state.chests_opened = e.chests_opened
+		state.schilling = e.schilling
 		if not state.build.mirror(e.weapons, e.passives, e.items, e.gold, e.rerolls, e.banishes, e.chests_opened):
 			push_warning("World state names an item this build does not know.")
 		var knodl: Knodl = knodls.get(e.peer_id)
@@ -1373,13 +1430,20 @@ func _spawn_player(peer_id: int, local: bool) -> Player:
 	players[peer_id] = player
 	if NetworkManager.is_host():
 		var build := PlayerBuild.new(catalog, balance)
+		_meta[peer_id] = Profile.meta_bonus() if local and not _autoplay else {}
+		build.apply_meta(_meta[peer_id])
+		_lock_content(build)
 		build.add_start_weapon(character.start_weapon)
 		states[peer_id] = PlayerState.new(peer_id, balance.player_max_hp, build)
+		states[peer_id].refresh_max_hp(balance.player_max_hp)
+		states[peer_id].hp = states[peer_id].max_hp
 		var knodl: Knodl = _spawn_knodl(peer_id, player, true)
 		knodl.place_at(player.spawn_point + Vector3(0.0, 0.6, knodl.rest_length()))
 	elif local:
-		# The host's world state fills it in.
-		states[peer_id] = PlayerState.new(peer_id, balance.player_max_hp, PlayerBuild.new(catalog))
+		# The host's world state fills it in; the Stammtisch bonus moves this player like the host does.
+		var mirror := PlayerBuild.new(catalog)
+		mirror.apply_meta(Profile.meta_bonus())
+		states[peer_id] = PlayerState.new(peer_id, balance.player_max_hp, mirror)
 	var vfx := WeaponVfx.new()
 	vfx.setup(player)
 	add_child(vfx)
@@ -1397,10 +1461,54 @@ func _spawn_knodl(peer_id: int, holder: Player, simulated: bool) -> Knodl:
 	return knodl
 
 
+## Host: what is still locked behind a quest (Profile) stays out of the Speisekarte and the chests.
+func _lock_content(build: PlayerBuild) -> void:
+	for k: int in catalog.weapons.size():
+		if not Profile.is_unlocked(&"weapon", catalog.weapons[k].id):
+			build.locked[Card.Kind.WEAPON * 256 + k] = true
+	for k: int in catalog.passives.size():
+		if not Profile.is_unlocked(&"passive", catalog.passives[k].id):
+			build.locked[Card.Kind.PASSIVE * 256 + k] = true
+	for k: int in catalog.items.size():
+		if not Profile.is_unlocked(&"item", catalog.items[k].id):
+			build.locked[Card.Kind.ITEM * 256 + k] = true
+
+
+## Host: the Schilling a player's run is worth so far (GAME-DESIGN.md: gold, cash-ins, and 25 % of the
+## Knödl when knocked out), times the Grant level and the co-op bonus.
+func _schilling_of(peer: int) -> int:
+	var state: PlayerState = states.get(peer)
+	var knodl: Knodl = knodls.get(peer)
+	if state == null:
+		return 0
+	var total: float = state.build.gold_earned * balance.schilling_per_gold
+	for tier: int in mini(state.cash_ins.size(), balance.schilling_per_cash_in.size()):
+		total += state.cash_ins[tier] * balance.schilling_per_cash_in[tier]
+	if result == Result.LOST and knodl != null:
+		total += knodl.knodl_mass * balance.schilling_knodl_share
+	elif result == Result.WON:
+		total += balance.schilling_win_bonus
+	total *= grant.schilling * (1.0 + balance.coop_schilling_per_player * maxi(players.size() - 1, 0))
+	return roundi(total)
+
+
+## The local player's run goes into the Profile once (Schilling, quests, records). Not for the
+## balance log or measuring runs.
+func _record_profile(outcome: String) -> void:
+	if _recorded or _autoplay or _seconds > 0.0:
+		return
+	_recorded = true
+	var summary: Dictionary = _run_summary()
+	summary["result"] = outcome
+	_reward = Profile.record_run(summary)
+	Profile.remember_choice(character.id, map.id, grant_index)
+
+
 func _knodl_start_mass(knodl: Knodl) -> float:
 	if _start_mass >= 0.0:
 		return _start_mass
-	return balance.knodl_start_mass * knodl.sort.start_mass_mult
+	var meta: Dictionary = _meta.get(knodl.owner_peer, {})
+	return balance.knodl_start_mass * knodl.sort.start_mass_mult * (1.0 + float(meta.get(&"knodl_start", 0.0)))
 
 
 ## Where a player starts: the map's spawn point, players side by side, on the ground.
@@ -1472,7 +1580,7 @@ func _resolve_hazards() -> void:
 				if at.y - ground.height_at(at.x, at.z) > balance.hazard_dodge_height:
 					continue
 				if HazardField.contains(h, at.x, at.z, balance.player_radius):
-					if state.hurt(Formulas.hit_damage(attack.damage, state.build.stat(&"armor"), balance), balance):
+					if state.hurt(Formulas.hit_damage(attack.damage * grant.enemy_damage, state.build.stat(&"armor"), balance), balance):
 						_on_downed(peer)
 		if attack.dash and h.source >= 0:
 			if bosses.is_boss_slot(h.source):

@@ -151,7 +151,7 @@ static func _fill_pool(build: PlayerBuild, balance: BalanceData, pool: Array[Car
 	var catalog: UpgradeCatalog = build.catalog
 	for index: int in catalog.weapons.size():
 		var data: WeaponData = catalog.weapons[index]
-		if build.banished.has(Card.Kind.WEAPON * 256 + index):
+		if build.banished.has(Card.Kind.WEAPON * 256 + index) or build.locked.has(Card.Kind.WEAPON * 256 + index):
 			continue
 		var owned: PlayerBuild.OwnedWeapon = build.owned_weapon(index)
 		if owned == null:
@@ -163,7 +163,7 @@ static func _fill_pool(build: PlayerBuild, balance: BalanceData, pool: Array[Car
 			weights.append(balance.card_weight_weapon_level)
 	for index: int in catalog.passives.size():
 		var data: PassiveData = catalog.passives[index]
-		if build.banished.has(Card.Kind.PASSIVE * 256 + index):
+		if build.banished.has(Card.Kind.PASSIVE * 256 + index) or build.locked.has(Card.Kind.PASSIVE * 256 + index):
 			continue
 		var owned: PlayerBuild.OwnedPassive = build.owned_passive(index)
 		if owned == null:

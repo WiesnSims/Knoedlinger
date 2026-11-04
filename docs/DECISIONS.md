@@ -568,3 +568,42 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   never dodges the crowd), builds like Schneeschaufel 17 + Kuhglocke 14, 3-4 stat upgrades, 3-6 items. **Open:**
   the run is clearly harder than in M3; the Stammtisch upgrades and weapon slots 3/4 (next part) are meant to
   close that gap, and the numbers get a proper pass in M5.
+
+### Part 3: meta (Profile, Schilling, Stammtisch, quests, Grant levels, records, Almanach)
+
+- **Claude: the `Profile` autoload** keeps the progress in `user://profile.json` (IndexedDB in the browser):
+  Schilling, Stammtisch ranks, stamped quests, lifetime counters, records per character and map, the Grant level
+  reached, the last choice in Spielen and what the Almanach has seen. Einstellungen → "Spielstand" copies it as a
+  code (`KNDL1.<gzip+base64url>.<check>`) and loads one back (refuses foreign or damaged codes), or starts over
+  (asks twice). Automated runs keep it in memory only. An older save is merged onto a fresh one, so new keys
+  never break old saves.
+- **Claude: Schilling per run** = 0.5 per gold picked up + per cash-in 5 / 15 / 40 / 100 (S..XL) + 100 for a win,
+  or 25 % of the Knödl's mass when knocked out (GAME-DESIGN.md), times the Grant level's factor and +10 % per
+  extra player. "Zum Menü" from the pause menu pays like being knocked out. The host computes it per player
+  (world state v4 carries it to clients for their end screen).
+- **Claude: Stammtisch** (10 upgrades, `data/stammtisch/`, `MetaUpgradeData`): Bergkas-Abo (+10 max HP, 10
+  ranks), Wetzstein (+5 % damage, 10), Wanderschuhe (+3 % speed, 5), Großer Teig (+25 % start Knödl, 5),
+  Nochmal-Zetterl (+1 reroll, 5), Beschwerdeformular (+1 banish, 5), Hufeisen überm Tor (+5 % luck, 5),
+  Zweiter Hosensack (weapon slots 3 and 4, 500 / 1,500 S), Nachschlag (a revive per run, 2), Wanderstecken (+10 %
+  pickup reach, 5). Prices grow per rank (`cost_base * cost_growth^rank`). Icons reuse the item/stat icons for now.
+  **Decided: weapon slots 3 and 4 are a Stammtisch upgrade**, not a quest.
+- **Claude: quests** (25 for now, `data/quests/`, `QuestData`): kills per enemy or in total, cash-ins (any, XL),
+  level in one run, runs, survive, bosses (Oberkrampus, his second visit, the Hofrat, the Hofrat without a single
+  Schupfn), wins, Stempel, biggest Knödl, Schilling earned, items found, a win on Grantig. **Whatever a quest
+  unlocks is locked until it is done** (no separate flags): Mozartkugel-Orbit (beat the Oberkrampus),
+  Watschn-Aura (level 30), Marterl-Kerze (first win), Sparbuch (10 cash-ins), Zweitschlüssel (9 Stempel),
+  Doppler (10,000 kills), Goldhaube (1,000 Schilling). Locked things stay off the Speisekarte and out of chests.
+  The count grows to 100 with the content part.
+- **Claude: Grant levels** (`data/grant/`, `GrantData`): Gemütlich (HP / damage x0.7, Schilling x0.7), Normal,
+  Grantig (HP x1.4, speed x1.1, damage x1.2, Schilling x1.4, Föhn: wind gusts push every Knödl), Hofratsgrant
+  (x2 / 1.2 / 1.4 / 2, Streik: one Wirtshaus fewer), Weltuntergang (x3 / 1.3 / 1.7 / 3, Kontrolle: elites twice as
+  often until the Kontrolleur enemy exists). Gemütlich and Normal are open; a win unlocks the next level.
+  Chosen in Spielen (Q/E); `?grant=<index>` for tests.
+- **Claude: co-op and the meta** – each player's Stammtisch bonus is applied per player on the host; the
+  local player's comes from the Profile, remote players get none until the M6 lobby sends each player's loadout
+  (character and ranks). Unlocks for the shared card pool are the host's.
+- **Claude: new menu screens** – Stammtisch (rows with rank and price, Schilling top right), Aufträge
+  (forms with a progress ring or the stamp, open ones closest to done first), Rekorde (own records per map and
+  character; the online board joins it in the next part), Almanach (Familie, Waffen, Verbesserungen, Kirtagsware,
+  Viecher; unknown entries are "???", locked ones name their quest; enemies got a deadpan line each). The end
+  screen shows the Schilling and the quests stamped. The menu footer shows the Schilling.

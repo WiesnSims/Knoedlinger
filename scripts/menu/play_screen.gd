@@ -1,10 +1,11 @@
 class_name PlayScreen
 extends PanelContainer
-## "Spielen": pick a Knödlinger and a map, then off to the Kirtag. Characters are cards with a
-## drawn portrait (the chosen one has the gold border); under them the chosen one's start weapon,
-## Knödl sort and trait; then the maps; "Auf geht's!" (Enter) starts the run.
+## "Spielen": pick a Knödlinger, a map and how grantig it gets, then off to the Kirtag. Characters
+## are cards with a drawn portrait (the chosen one has the gold border); under them the chosen one's
+## start weapon, Knödl sort and trait; then the maps and the Grant level; "Auf geht's!" (Enter)
+## starts the run. Locked characters and maps show the quest that unlocks them.
 
-signal start_pressed(character: StringName, map: StringName)
+signal start_pressed(character: StringName, map: StringName, grant: int)
 signal closed
 
 const CARD := Vector2(136.0, 176.0)
@@ -21,6 +22,11 @@ var _knodl_name: Label
 var _trait: Label
 var _map_desc: Label
 var _start: ActionPill
+var _grant: int = 1
+var _grant_name: Label
+var _grant_desc: Label
+var _grant_down: ActionPill
+var _grant_up: ActionPill
 
 
 func _init(p_content: GameContent) -> void:
@@ -68,6 +74,28 @@ func _init(p_content: GameContent) -> void:
 		_map_cards[info.id] = card
 	_map_desc = UiStyle.label(&"LabelMuted")
 	maps.add_child(_map_desc)
+	# Grant level: the hardest one unlocked so far at most.
+	var grants := UiStyle.vbox()
+	column.add_child(grants)
+	grants.add_child(UiStyle.label(&"LabelAccent", tr("PLAY_GRANT")))
+	var grant_row := UiStyle.hbox(&"Row16")
+	grants.add_child(grant_row)
+	_grant_down = ActionPill.new("Q")
+	_grant_down.set_label("‹")
+	_grant_down.pressed.connect(func() -> void: _select_grant(_grant - 1))
+	grant_row.add_child(_grant_down)
+	_grant_name = UiStyle.label(&"LabelSmall")
+	_grant_name.custom_minimum_size = Vector2(136.0, 0.0)
+	_grant_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_grant_name.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	grant_row.add_child(_grant_name)
+	_grant_up = ActionPill.new("E")
+	_grant_up.set_label("›")
+	_grant_up.pressed.connect(func() -> void: _select_grant(_grant + 1))
+	grant_row.add_child(_grant_up)
+	_grant_desc = UiStyle.label(&"LabelMuted")
+	_grant_desc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	grant_row.add_child(_grant_desc)
 	var buttons := UiStyle.hbox(&"Row16")
 	column.add_child(buttons)
 	_start = ActionPill.new("Enter")
@@ -78,10 +106,24 @@ func _init(p_content: GameContent) -> void:
 	back.set_label(tr("MENU_BACK"))
 	back.pressed.connect(func() -> void: closed.emit())
 	buttons.add_child(back)
-	var first: StringName = StringName(RunSetup.character)
+	refresh()
+
+
+## The Profile may have changed (a run, a quest): locks, last choice, Grant levels.
+func refresh() -> void:
+	for character: CharacterData in content.characters:
+		var card: Button = _character_cards[character.id]
+		var quest: QuestData = Profile.unlocking_quest(&"character", character.id)
+		(card.get_meta(&"portrait") as FamilyPortrait).locked = quest != null
+		(card.get_meta(&"portrait") as FamilyPortrait).queue_redraw()
+		(card.get_meta(&"name") as Label).text = tr(character.name_key) if quest == null else tr("ALM_UNKNOWN")
+		(card.get_meta(&"role") as Label).text = tr(character.role_key) if quest == null else tr(quest.title_key)
+	var last: Dictionary = Profile.last_choice()
+	var first: StringName = StringName(str(last.get("character", RunSetup.character)))
 	_select_character(first if _character_cards.has(first) else content.characters[0].id)
-	var first_map: StringName = StringName(RunSetup.map)
+	var first_map: StringName = StringName(str(last.get("map", RunSetup.map)))
 	_select_map(first_map if _map_cards.has(first_map) else content.maps[0].id)
+	_select_grant(int(last.get("grant", RunSetup.grant)))
 
 
 func focus_first() -> void:
@@ -114,6 +156,9 @@ func _character_card(character: CharacterData) -> Button:
 	role.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	role.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	column.add_child(role)
+	card.set_meta(&"portrait", portrait)
+	card.set_meta(&"name", name)
+	card.set_meta(&"role", role)
 	return card
 
 
@@ -149,6 +194,14 @@ func _select_character(id: StringName) -> void:
 	var character: CharacterData = content.character(id)
 	if character == null:
 		return
+	_update_start()
+	var quest: QuestData = Profile.unlocking_quest(&"character", id)
+	if quest != null:
+		_weapon_icon.texture = null
+		_weapon_name.text = ""
+		_knodl_name.text = ""
+		_trait.text = tr("PLAY_LOCKED") % tr(quest.title_key) + " – " + tr(quest.desc_key)
+		return
 	var weapon: WeaponData = character.start_weapon
 	_weapon_icon.texture = weapon.icon if weapon != null else null
 	_weapon_name.text = tr(weapon.name_key) if weapon != null else ""
@@ -161,12 +214,36 @@ func _select_map(id: StringName) -> void:
 	for key: StringName in _map_cards:
 		_map_cards[key].theme_type_variation = &"CardEvolution" if key == id else &"CardRarity0"
 	var info: MapInfo = content.map_info(id)
-	_map_desc.text = tr(info.desc_key) if info != null else ""
+	var quest: QuestData = Profile.unlocking_quest(&"map", id)
+	if quest != null:
+		_map_desc.text = tr("PLAY_LOCKED") % tr(quest.title_key)
+	else:
+		_map_desc.text = tr(info.desc_key) if info != null else ""
+	_update_start()
+
+
+func _select_grant(index: int) -> void:
+	_grant = clampi(index, 0, Profile.grant_unlocked())
+	var data: GrantData = content.grants[_grant]
+	_grant_name.text = tr(data.name_key)
+	_grant_desc.text = tr(data.desc_key)
+	_grant_down.disabled = _grant <= 0
+	_grant_up.disabled = _grant >= Profile.grant_unlocked()
+
+
+## Only an unlocked character on an unlocked map can start.
+func _update_start() -> void:
+	if _start != null:
+		_start.disabled = _character == &"" or _map == &"" or not Profile.is_unlocked(&"character", _character) \
+				or not Profile.is_unlocked(&"map", _map)
 
 
 func _on_start() -> void:
+	if _start.disabled:
+		GameAudio.play(&"no_gold")
+		return
 	GameAudio.play(&"card")
-	start_pressed.emit(_character, _map)
+	start_pressed.emit(_character, _map, _grant)
 
 
 ## Enter starts even while a card has the focus (the card would only take it as a click).
@@ -177,3 +254,6 @@ func _input(event: InputEvent) -> void:
 	if key.physical_keycode == KEY_ENTER or key.physical_keycode == KEY_KP_ENTER:
 		get_viewport().set_input_as_handled()
 		_on_start()
+	elif key.physical_keycode == KEY_Q or key.physical_keycode == KEY_E:
+		get_viewport().set_input_as_handled()
+		_select_grant(_grant + (1 if key.physical_keycode == KEY_E else -1))

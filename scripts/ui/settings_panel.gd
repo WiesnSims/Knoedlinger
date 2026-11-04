@@ -38,6 +38,8 @@ var _toggles: Dictionary[StringName, UiToggle] = {}
 var _formats: Dictionary[StringName, String] = {}
 var _name: LineEdit
 var _first: Control
+var _save: SaveCodeBox
+var _settings_row: HBoxContainer
 
 
 func _init() -> void:
@@ -71,6 +73,21 @@ func _init() -> void:
 		Settings.reset_defaults()
 		refresh())
 	buttons.add_child(reset)
+	# The save as a code, in place of the settings while it is open.
+	_save = SaveCodeBox.new()
+	_save.visible = false
+	column.add_child(_save)
+	column.move_child(_save, 2)
+	var save := ActionPill.new()
+	save.set_label(tr("SAVE_TITLE"))
+	save.toggle_mode = true
+	save.toggled.connect(func(on: bool) -> void:
+		_save.visible = on
+		_settings_row.visible = not on
+		if on:
+			_save.refresh())
+	buttons.add_child(save)
+	_settings_row = row
 	refresh()
 
 

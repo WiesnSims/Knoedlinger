@@ -6,6 +6,7 @@
 script = ExtResource("1_script")
 id = &"formular"
 name_key = "ENEMY_FORMULAR"
+desc_key = "DESC_ENEMY_FORMULAR"
 max_hp = 1.5
 speed = 4.6
 radius = 0.3

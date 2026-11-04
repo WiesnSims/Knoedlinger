@@ -12,7 +12,7 @@ extends RefCounted
 ##   per player PLAYER_SIZE bytes: s32 peer | f32 hp | f32 max hp | f32 xp | u16 level |
 ##   u8 flags | u8 life | u8 pending levels | u8 Knödl state | u8 Knödl cooldown (1/20 s) |
 ##   u8 rerolls | f32 Knödl mass | 3 x f32 Knödl position | 4 x s16 Knödl rotation (q * 32767) |
-##   u16 gold | u8 banishes | u8 weapons | u8 passives | u8 chests opened | u8 items | 1 byte padding
+##   u16 gold | u8 banishes | u8 weapons | u8 passives | u8 chests opened | u8 items | u16 Schilling
 ##   then per weapon u8 index | u8 level | u8 fire counter | 4 x u16 mod * 1000 (damage, rate, area,
 ##   crit) | u8 extra pieces, per passive u8 index | u8 level | u16 bonus * 100, and per item
 ##   u8 index | u8 count.
@@ -20,7 +20,7 @@ extends RefCounted
 const VERSION: int = 4
 const HEADER_SIZE: int = 31
 const WIRT_SIZE: int = 2
-const PLAYER_SIZE: int = 56
+const PLAYER_SIZE: int = 57
 const WEAPON_SIZE: int = 12
 const PASSIVE_SIZE: int = 4
 const ITEM_SIZE: int = 2
@@ -58,6 +58,8 @@ class Entry:
 	var rerolls: int = 0
 	var banishes: int = 0
 	var chests_opened: int = 0
+	## What the run pays this player so far (shown on their end screen).
+	var schilling: int = 0
 	## PlayerBuild.weapon_rows() / passive_rows() / item_rows().
 	var weapons: PackedInt32Array = PackedInt32Array()
 	var passives: PackedInt32Array = PackedInt32Array()
@@ -147,6 +149,7 @@ static func encode(frame: Frame) -> PackedByteArray:
 		data.encode_u8(o + 52, passive_count)
 		data.encode_u8(o + 53, clampi(e.chests_opened, 0, 255))
 		data.encode_u8(o + 54, item_count)
+		data.encode_u16(o + 55, clampi(e.schilling, 0, 0xFFFF))
 		o += PLAYER_SIZE
 		for k: int in weapon_count:
 			var w: int = k * WEAPON_ROW
@@ -227,6 +230,7 @@ static func decode(data: PackedByteArray) -> Frame:
 		var passive_count: int = data.decode_u8(o + 52)
 		e.chests_opened = data.decode_u8(o + 53)
 		var item_count: int = data.decode_u8(o + 54)
+		e.schilling = data.decode_u16(o + 55)
 		if not e.knodl_position.is_finite() or not is_finite(e.hp) or not is_finite(e.knodl_mass):
 			return null
 		o += PLAYER_SIZE

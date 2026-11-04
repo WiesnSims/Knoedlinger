@@ -43,3 +43,12 @@ func test_content_lists_characters_and_maps() -> void:
 		assert_true(ResourceLoader.exists("res://data/maps/%s.tres" % info.id), String(info.id))
 	assert_not_null(content.character(&"ferdl"))
 	assert_eq(RunSetup.character_id(), RunSetup.character)
+
+
+func test_every_scene_script_compiles() -> void:
+	# Scripts only the scenes load (not the tests) would otherwise hide a parse error until a run.
+	for path: String in ["res://scripts/run/run_world.gd", "res://scripts/menu/main_menu.gd",
+			"res://scripts/stress/stress_arena.gd", "res://scripts/core/boot.gd"]:
+		var script: GDScript = load(path)
+		assert_not_null(script, path)
+		assert_true(script != null and script.can_instantiate(), path)

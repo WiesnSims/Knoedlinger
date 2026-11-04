@@ -69,11 +69,17 @@ var rerolls: int = 0
 var banishes: int = 0
 ## Map chests this player opened (Sparbuch: damage per chest).
 var chests_opened: int = 0
+## Host: all gold this player picked up in the run (it becomes Schilling at the end).
+var gold_earned: int = 0
+## The player's Stammtisch bonus (Profile.meta_bonus()), stats on top of the build.
+var meta: Dictionary[StringName, float] = {}
 var weapon_slots: int = 2
 var passive_slots: int = 4
 var evolution_level: int = 8
-## Host: item keys (Card.item_key()) this player banished for the run.
+## Host: item keys (Card.item_key()) this player banished for the run, and those still locked
+## behind a quest (Profile).
 var banished: Dictionary[int, bool] = {}
+var locked: Dictionary[int, bool] = {}
 
 
 func _init(p_catalog: UpgradeCatalog, balance: BalanceData = null) -> void:
@@ -84,6 +90,17 @@ func _init(p_catalog: UpgradeCatalog, balance: BalanceData = null) -> void:
 		weapon_slots = balance.weapon_slots
 		passive_slots = balance.passive_slots
 		evolution_level = balance.evolution_level
+	recompute()
+
+
+## The Stammtisch ranks this player brings: their stats, plus slots, rerolls and banishes.
+func apply_meta(bonus: Dictionary) -> void:
+	meta.clear()
+	for key: Variant in bonus:
+		meta[StringName(str(key))] = float(bonus[key])
+	weapon_slots += roundi(meta.get(&"weapon_slots", 0.0))
+	rerolls += roundi(meta.get(&"rerolls", 0.0))
+	banishes += roundi(meta.get(&"banishes", 0.0))
 	recompute()
 
 
@@ -129,8 +146,10 @@ func item_count(index: int) -> int:
 	return owned.count if owned != null else 0
 
 
-## True while this player can still take another copy of the item.
+## True while this player can still take another copy of the item (and it is unlocked).
 func can_take_item(index: int) -> bool:
+	if locked.has(Card.Kind.ITEM * 256 + index):
+		return false
 	var data: ItemData = catalog.items[index]
 	return data.max_stacks <= 0 or item_count(index) < data.max_stacks
 
@@ -220,7 +239,9 @@ func add_item(index: int) -> void:
 
 ## Gold with the gold bonus.
 func add_gold(amount: int) -> void:
-	gold += roundi(amount * (1.0 + stat(&"gold")))
+	var gained: int = roundi(amount * (1.0 + stat(&"gold")))
+	gold += gained
+	gold_earned += maxi(gained, 0)
 
 
 func set_chests_opened(count: int) -> void:
@@ -246,6 +267,9 @@ func recompute() -> void:
 		if owned.data.effect != &"":
 			effects[owned.data.effect] = effects.get(owned.data.effect, 0.0) + owned.data.effect_value * owned.count
 	stats[&"damage"] += effect(&"damage_per_chest") * chests_opened
+	for key: StringName in meta:
+		if stats.has(key):
+			stats[key] += meta[key]
 
 
 ## Client: takes the host's view of this build (from the world state): rows as weapon_rows(),
