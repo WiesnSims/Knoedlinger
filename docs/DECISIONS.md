@@ -362,3 +362,30 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Owner: the focus is on the M4 maps.** Gamskogl-Piste and Gemeindebau-Hof are built tall from the start: steep
   climbs that enemies scramble up slowly (`enemy_climb_slope`), real drops, high ground as a safe-ish route with
   rewards, and several levels of height instead of a single plateau.
+
+## 2026-11-04 – Plan for M4: focused builds and a chest-only item category (not started)
+
+- **Owner: a separate item category that only chests give** (like Megabonk's items, which come from chests, shops
+  and shrines while its level-ups only offer weapons and tomes). Working name *Kirtagsware*, data in
+  `data/items/`. No slot limit, items stack, each has a rarity; chests show their rarity by colour, luck raises it.
+  Sources: map chests (gold, rising price as now), boss chests (free), Wirtshaus cash-ins (M 1 item, L 3 items +
+  rerolls, XL ready evolutions first, then items).
+- **Owner: the Speisekarte offers only weapons and stat upgrades** (the current passives), with luck-scaled rarity.
+- **Owner: 2 weapon slots**, a 3rd and 4th unlocked permanently between runs (Gemeindeamt quest or Stammtisch
+  upgrade; exact path chosen when the meta is built in M4). Every character still starts with 1 weapon. Replaces
+  the 6 weapon slots of pillar 4.
+- **Owner: 4 stat-upgrade slots** (like Megabonk's tomes), replacing the 6 passive slots.
+- **Owner: open-ended levels with rolled bonuses** for weapons and stats (Megabonk-style): each card shows what it
+  gives (e.g. "+18 % Schaden", "+1 Projektil"), rarity scales the roll. Needed because a run reaches level 46-54
+  (M2 balance log): with 2 weapons capped at 8 levels the Speisekarte would run dry around level 35. An evolution
+  happens when a weapon reaches its evolution level (a balance number, starting at 8) with the matching stat held.
+- **Owner: the Knödl upgrades become items** (Bröselbutter, Powidl-Füllung, Doppelportion, Bergab-Gesetz, Omas
+  Rezept). Riesenknödl der Apokalypse = Bröselbutter item + Lederhosn stat at its evolution level.
+- **Claude: about 30 items for v1**; some must have visible effects so the screen still gets busy with 2 weapons.
+  First ideas: Zweitschlüssel vom Gemeindeamt (chance a chest is free, like Megabonk's Key), Sparbuch (damage per
+  chest opened), Glücksschwein (luck), Marterl-Kerze (one revive per run).
+- **Claude: build this first in M4**, before the new content, so all 16 weapons, the stats and the items are made
+  for the new system. GAME-DESIGN.md (pillar 4, level-up pool, weapons, passives, evolutions, items, Stammtisch,
+  M4) is updated to match.
+- **Open (not decided):** a stall-owner merchant and Marterl shrines as further item sources (Megabonk's Shady
+  Guy, challenge and greed shrines).

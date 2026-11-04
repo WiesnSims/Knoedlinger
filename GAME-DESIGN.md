@@ -48,7 +48,7 @@ Glossary for non-Austrian readers: *Knödl* = dumpling, *Brösel* = breadcrumbs,
 1. Movement is the only required input; all weapons fire automatically.
 2. First level-up within 10 s, then roughly every 15–30 s for the first 5 minutes.
 3. Level-up = choose 1 of 3 (reroll, banish, skip available).
-4. 6 weapon slots + 6 passive slots; max weapon + matching passive = evolution.
+4. Focused builds: 2 weapon slots (a 3rd and 4th are unlocked permanently between runs) + 4 stat slots, with open-ended levels; weapon at its evolution level + matching stat = evolution. Items come only from chests and have no slot limit.
 5. Enemy count ramps to hundreds; the screen must look overwhelming by minute 10.
 6. Every enemy attack is telegraphed in one colour (we use Krampus-red ground decals).
 7. Runs of about 15 minutes, ending in a boss and the Sperrstund' wave.
@@ -85,14 +85,14 @@ Brotato's engine note is from memory and approximate; all other rows link their 
 | Kaspressknödl | Flat disc | Skims like a stone, pierces lines of enemies |
 | Grammelknödl | Greasy | Leaves a slippery trail that slows enemies |
 
-### Knödl upgrades (appear in the level-up pool)
+### Knödl upgrades (items, found only in chests)
 
 - **Bröselbutter** — enemies touching the Knödl stick to it (true Katamari), adding spikes that deal damage; they fall off after 5 s.
 - **Powidl-Füllung** — Schupfn ends in an explosion that costs 10% mass.
 - **Doppelportion** — a second, smaller Knödl on its own string.
 - **Bergab-Gesetz** — +100% speed and damage on slopes.
 - **Omas Rezept** — Bröselfresser ignore your Knödl.
-- **Knödl-Evolution: Riesenknödl der Apokalypse** — max Bröselbutter + Lederhosn: the Knödl never sheds mass and is permanently twice the size.
+- **Knödl-Evolution: Riesenknödl der Apokalypse** — Bröselbutter item + Lederhosn stat at its evolution level: the Knödl never sheds mass and is permanently twice the size.
 
 ### Edge cases for implementation
 
@@ -147,12 +147,12 @@ Camera: third-person chase cam, about 50° pitch, 14 m distance, follows movemen
 - XP needed to go from level n to n+1: `5 + 8*n + 0.4*n^2` (1→2 needs ~13, 20→21 ~325, 50→51 ~1405).
 - Brösel sizes: small 1 XP, medium 5, large 25 (elites), golden Kaiserschmarrn bit 100 (bosses).
 - Level-up UI is the **Speisekarte**: the Ober presents 3 cards — *"Was darf's sein?"* Buttons: *Nochmal bitte* (reroll, 3 per run), *Des mog i ned* (banish, 3 per run), *Danke, passt eh* (skip, small gold).
-- Card pool per level: new weapon, weapon level, new passive, passive level, Knödl upgrade. Rarity (Gewöhnlich, Fein, Edel, Hofratswürdig) scales the bonus; luck stat raises the odds.
+- Card pool per level: new weapon (while a weapon slot is free), weapon level, new stat upgrade (while a stat slot is free), stat upgrade level. Nothing else: items come only from chests. Levels are open-ended (Megabonk-style): each card shows its rolled bonus (e.g. *+18 % Schaden*, *+1 Projektil*, *+Fläche*), and rarity (Gewöhnlich, Fein, Edel, Hofratswürdig) scales that bonus; luck stat raises the odds.
 - Multiple queued level-ups open one after another. **Solo:** the game is paused during the menu. **Co-op:** the game keeps running; the choosing player stands still under a *"Bin glei wieder da"* sign, is invulnerable and ignored by enemies while the Speisekarte is open (max 8 s per card, then a random card is picked). Their Knödl keeps rolling on its own.
 
 ## Content: characters, weapons, passives, enemies, maps
 
-**v1 ships 8 characters, 16 weapons, 14 passives, 8 evolutions, 14 enemy types, 4 bosses and 3 maps.** All live in `data/*.json` (or Godot `.tres` resources) so Claude Code can add more without touching logic.
+**v1 ships 8 characters, 16 weapons, 14 stat upgrades (passives), about 30 items, 8 evolutions, 14 enemy types, 4 bosses and 3 maps.** All live in `data/*.json` (or Godot `.tres` resources) so Claude Code can add more without touching logic.
 
 ### Characters — Die Familie Knödlinger (start unlocked: first 3)
 
@@ -167,7 +167,9 @@ Camera: third-person chase cam, about 50° pitch, 14 m distance, follows movemen
 | Kommerzialrat Gustl Knödlinger | The black sheep with a title | Stempel | Kaspressknödl | Every 60 s a free banish; enemies sometimes "pause for a coffee break" |
 | Kevin Knödlinger | The youngest, Schuhplattler | Watschn-Aura | Germknödl | Every 5th jump creates a shockwave |
 
-### Weapons (auto-fire, 8 levels each)
+### Weapons (auto-fire, open-ended levels with rolled bonuses)
+
+Each character starts with 1 weapon; level-ups level it or offer a new random weapon while a slot is free (2 slots, 3–4 after meta unlocks).
 
 | Weapon | Pattern |
 | --- | --- |
@@ -188,11 +190,11 @@ Camera: third-person chase cam, about 50° pitch, 14 m distance, follows movemen
 | Krampusrute | Chain lightning |
 | Sachertorte-Mine | Dropped mines, big splash |
 
-### Passives (5 levels each)
+### Stat upgrades / passives (4 slots, open-ended levels with rolled bonuses)
 
 Lederhosn (armor), Gamsbart-Hut (crit), Bergkas (max HP), Brettljause (regen), Kräuterlimo (move speed), Jagatee (damage, slight screen wobble), Pensionistenausweis (cooldown), Wanderkarte (pickup range), Hufeisen vom Kirtag (luck), Krügerl (attack speed), Strickpullover (area), Kaffeehaus-Zeitung (duration), Bausparvertrag (gold gain), Spagat aus Hanf (Knödl string length + reel speed).
 
-### Evolutions (max weapon + passive)
+### Evolutions (weapon at its evolution level + matching stat upgrade)
 
 | Weapon | + Passive | = Evolution |
 | --- | --- | --- |
@@ -203,7 +205,15 @@ Lederhosn (armor), Gamsbart-Hut (crit), Bergkas (max HP), Brettljause (regen), K
 | Obstler-Flammenwerfer | Jagatee | **Schnapsbrennerei** — burning trail behind you |
 | Mozartkugel-Orbit | Kräuterlimo | **Kugel-Karussell** — orbit doubles, spins faster with speed |
 | Watschn-Aura | Lederhosn | **Watschn-Baum** — aura reflects damage |
-| Knödl | Bröselbutter + Lederhosn | **Riesenknödl der Apokalypse** (see twist) |
+| Knödl | Bröselbutter (item) + Lederhosn | **Riesenknödl der Apokalypse** (see twist) |
+
+### Items: Kirtagsware (chests only)
+
+A third build layer next to weapons and stats, like Megabonk's items: passive gear with special effects, **no slot limit, stacking**, each with a rarity. Items never appear on the Speisekarte; they come only from chests (map chests bought with rising gold prices, free boss chests, Wirtshaus cash-ins). Chest colour shows its rarity; luck raises it. Data-driven like everything else (`data/items/`).
+
+- The Knödl upgrades above are items.
+- Some items must cause visible effects (sparks, hail, extra hits), so the screen still fills with chaos at 2 weapons.
+- Starting ideas (one deadpan line each, as always): *Zweitschlüssel vom Gemeindeamt* (chance a chest is free), *Sparbuch* (more damage per chest opened), *Glücksschwein* (luck), *Marterl-Kerze* (a revive per run).
 
 ### Enemies
 
@@ -267,7 +277,7 @@ Lederhosn (armor), Gamsbart-Hut (crit), Bergkas (max HP), Brettljause (regen), K
 **Between runs the family sits at the Stammtisch of the Gasthaus Zum Goldenen Knödl: spend Schilling on permanent upgrades, unlock family members through Gemeindeamt quests, and raise the difficulty with Grant levels.** Progress is saved in the browser (`user://` → IndexedDB) with an export/import code so players don't lose it when clearing the cache.
 
 - **Currency: Schilling** (the old Austrian money — a joke older players will love). Earned from gold pickups, Wirtshaus cash-ins and 25% of the Knödl's mass on death.
-- **Stammtisch upgrades** (permanent, 5–10 ranks each): max HP, damage, speed, starting Knödl size, rerolls, banishes, luck, revival (*"Nachschlag"*), magnet.
+- **Stammtisch upgrades** (permanent, 5–10 ranks each): max HP, damage, speed, starting Knödl size, rerolls, banishes, luck, weapon slots 3 and 4, revival (*"Nachschlag"*), magnet.
 - **Gemeindeamt quests** ("Aufträge"), each one stamped on a form when done: kill 1,000 Gelsen; cash in an XL Knödl; reach level 40 with Oma Resi; beat the Hofrat without Schupfn. Quests unlock characters, weapons, Knödl sorts and maps. Target 100 at launch.
 - **Grant levels** (difficulty, like Halls of Torment's Agony mode): Gemütlich (easy) → Normal → Grantig → Hofratsgrant → Weltuntergang. Each adds enemy HP/speed and a modifier (e.g. *Föhn*: wind pushes the Knödl; *Streik*: one Wirtshaus closed; *Kontrolle*: Kontrolleure everywhere). Higher levels multiply Schilling.
 - **Almanach**: bestiary and item list that fills as you discover things, each with a deadpan dialect line.
@@ -341,7 +351,7 @@ Also: hashed filenames + `_headers` with long cache for `.wasm`/`.pck`, and a lo
 2. **M1 – Knödl prototype.** Player movement + jump, chase cam, the Knödl on its Spagat, Brösel absorption, size growth, contact damage, Schupfn and reel-in. One weapon, one enemy type. *This milestone decides whether the twist is fun* — tune until it is.
 3. **M2 – Core loop.** XP formula, Speisekarte level-up UI, 6 weapons, 6 passives, 2 evolutions, 5 enemy types, Wirtshaus cash-in, Bröselfresser, 15-minute timer with Sperrstund'.
 4. **M3 – First full map.** Kirtag map, boss gate with Stempel quest, Oberkrampus and Hofrat bosses, chests, gold, death/victory screens, sound and music pass.
-5. **M4 – Meta and content.** Stammtisch hub, Schilling, save/load with export code, all 8 Knödlinger, all weapons/passives/evolutions, quests, Grant levels, maps 2 and 3 (built with Megabonk-style verticality: steep climbs, drops, several levels; no fall damage), and a light verticality pass on the Kirtag map.
+5. **M4 – Meta and content.** First the build rework (2 weapon + 4 stat slots, open-ended levels with rolled bonuses, chest-only items incl. the Knödl upgrades), then Stammtisch hub, Schilling, save/load with export code, all 8 Knödlinger, all weapons/passives/evolutions, quests, Grant levels, maps 2 and 3 (built with Megabonk-style verticality: steep climbs, drops, several levels; no fall damage), and a light verticality pass on the Kirtag map.
 6. **M5 – Polish.** Auto-quality scaler, gamepad, options (volume, flashing, glossary), loading screen, balance pass from playtest data, mobile touch controls if fps allows.
 7. **M6 – Co-op (Familienausflug).** Signaling server + room codes, WebRTC transport, lobby in the Stammtisch, enemy snapshot sync, revives, shared XP, scaling, Knödl-Pass, Riesenknödl merge, co-op quests and the Familienstreit event. Test with 4 browser tabs and headless clients.
 
