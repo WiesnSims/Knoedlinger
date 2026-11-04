@@ -496,3 +496,36 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   `window.knoedlDraws`, which the debug overlay keeps current even while a menu pauses the game), and
   `docs/UI-STYLE.md` got a "Draw calls" section. Open for M6: re-measure a 4-player crowd with a Speisekarte
   open; the rows (about 20 draw calls) can use the same drawn-in-passes trick if needed.
+
+## 2026-11-04 – M4 build (branch m4-meta)
+
+### Part 1: main menu, settings, pause menu
+
+- **Claude: a plain start opens the title screen**, any run option (`bot`, `autoplay`, `net`, `enemies`,
+  `character`, `scene` ...; only `mute`, `debug`, `log_slow` are neutral) starts that scene directly as before
+  (`boot.gd`), so every automated check is unchanged.
+- **Claude: the title screen** shows the Kirtag map slowly turning behind the menu (the same map data and
+  builder as the run, no extra assets), the logo and the entries on the left, the chosen screen on the right.
+  Entries: Spielen, Stammtisch, Aufträge, Rekorde, Almanach, Einstellungen, Stammtisch aufmachen. The ones
+  whose systems come later in M4 (and co-op in M6) are greyed out ("Kummt bald.") until they exist.
+- **Claude: Spielen** = character cards with a small drawn portrait (every Knödlinger has the round family
+  nose), the chosen one's start weapon, Knödl sort and trait, then the map. What the menus list comes from
+  `data/content.tres` (`GameContent`: characters and `MapInfo` entries), so new characters and maps are data.
+  The choice goes through `RunSetup`; URL/command-line flags still win.
+- **Claude: the logo is drawn** (`TitleLogo`, the title font at 88 px): the one exception to "three font
+  sizes", written into docs/UI-STYLE.md, because a title screen with a 32 px logo looks like a dialog.
+- **Claude: settings** live in `user://settings.cfg` (`Settings` autoload): volume for everything, music,
+  effects and barks (own audio buses) plus mute; fullscreen; camera distance, FOV, mouse speed, look smoothing,
+  invert; "Weniger Blitzen" (enemy hit flashes at 35 %); dialect help (stored now, used by the glossary);
+  language (German only). Automated runs (headless, `bot`, `autoplay`, `net`) never read or write the file,
+  so a player's settings never change a measurement. Sliders and switches are drawn widgets in the palette
+  (`UiSlider`, `UiToggle`); the theme got `MenuEntry` and `LineEdit` styles.
+- **Claude: the name is asked once** on the first start ("Wia hoaßt'n du?"), at most 16 characters, no
+  markup characters, fallback "Knödlinger"; changeable in Einstellungen.
+- **Claude: pause menu** on Esc in a run (Weiter, Einstellungen, Zum Menü); solo pauses, co-op runs on.
+  The camera no longer frees the mouse on Esc itself: Esc is the pause menu, which frees it. The browser
+  swallows the Esc that ends pointer lock, so losing the pointer lock also opens the pause menu. The end screen
+  got "Zum Menü" (Esc) next to "Nochmal!" (Enter).
+- **Claude: `tools/ui_shots.ps1`** got the `title` set (name prompt, menu, Spielen, Einstellungen, then a run
+  started from the menu) and the `pause` set; key steps can be chained (`Escape+Enter`) and text typed
+  (`type:Resi`).

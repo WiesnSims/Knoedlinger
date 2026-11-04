@@ -30,7 +30,11 @@ $scenes = @(
     @{ Id = 'busy'; Query = "$common&start_time=598&god=1"; At = '34' },
     @{ Id = 'menu'; Query = "$common&pick_delay=90"; At = '22,24'; Move = 'center,card' },
     @{ Id = 'inventory'; Query = "$common&knodl_mass=160"; At = '40'; Press = 'Tab' },
-    @{ Id = 'end'; Query = "$common&start_time=891"; At = '32' }
+    @{ Id = 'end'; Query = "$common&start_time=891"; At = '32' },
+    @{ Id = 'pause'; Query = "$common&knodl_mass=160"; At = '24,27'; Press = 'Escape,ArrowDown+Enter' },
+    # A plain start (fresh browser profile): the name prompt, the menu, Spielen, Einstellungen.
+    # Then back, Spielen, "Auf geht's!": the run started from the menu.
+    @{ Id = 'title'; Query = 'mute=1&debug=0'; At = '12,15,18,21,26,34,44'; Press = ',type:Resi+Enter,Enter,Escape+ArrowDown+Enter,Escape+ArrowUp+Enter+Enter,,' }
 )
 try {
     foreach ($size in $Sizes.Split(',')) {

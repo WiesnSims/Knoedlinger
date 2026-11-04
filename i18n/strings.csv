@@ -190,3 +190,51 @@ END_STAT_CASH_INS,Eingekehrt
 END_STAT_BOSSES,Bosse erledigt
 END_STAT_STEMPEL,Stempel gsammelt
 END_STAT_DOWNED,Umgfoin
+GAME_TITLE,Knödlinger
+GAME_SUBTITLE,Bis zur Sperrstund'!
+MENU_PLAY,Spielen
+MENU_STAMMTISCH,Stammtisch
+MENU_QUESTS,Aufträge
+MENU_RECORDS,Rekorde
+MENU_ALMANACH,Almanach
+MENU_SETTINGS,Einstellungen
+MENU_COOP,Stammtisch aufmachen
+MENU_SOON,Kummt bald.
+MENU_BACK,Zurück
+MENU_VERSION,Version %s
+MENU_PLAYER,Servus %s!
+PLAY_TITLE,Wer geht heut auf'n Kirtag?
+PLAY_MAP,Wohin?
+PLAY_START,Auf geht's!
+MAP_KIRTAG_DESC,"Der Dorfplatz von Unterhinterkogl. Flach, gmütlich, voller Zombies."
+ROLE_FERDL,Hausmeister
+TRAIT_FERDL,"Grant: jeder Treffer, den er einsteckt, macht ihn 1 % stärker, bis 30 %."
+NAME_TITLE,Wia hoaßt'n du?
+NAME_LINE,"Der Name steht auf da Ehrentafel und spater am Stammtisch. Ändern kannst'n in de Einstellungen."
+NAME_OK,Passt
+PAUSE_TITLE,Kurz Pause
+PAUSE_RESUME,Weiter
+PAUSE_QUIT,Zum Menü
+END_MENU,Zum Menü
+SET_TITLE,Einstellungen
+SET_GROUP_SOUND,Ton
+SET_GROUP_DISPLAY,Anzeige
+SET_GROUP_CAMERA,Kamera
+SET_GROUP_GAME,Spiel
+SET_VOLUME_MASTER,Gesamt
+SET_VOLUME_MUSIC,Musik
+SET_VOLUME_SFX,Effekte
+SET_VOLUME_VOICE,Sprüche
+SET_MUTE,Stumm
+SET_FULLSCREEN,Vollbild
+SET_REDUCE_FLASHING,Weniger Blitzen
+SET_CAMERA_DISTANCE,Abstand
+SET_CAMERA_FOV,Sichtfeld
+SET_MOUSE_SENSITIVITY,Maus-Tempo
+SET_LOOK_SMOOTHING,Glättung
+SET_INVERT_Y,Maus umdrehen
+SET_PLAYER_NAME,Dein Name
+SET_GLOSSARY,Dialekt-Hilfe
+SET_LANGUAGE,Sprache
+SET_LANGUAGE_DE,Deutsch (Österreich)
+SET_RESET,Standard

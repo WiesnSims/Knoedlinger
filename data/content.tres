@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="GameContent" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/game_content.gd" id="1_content"]
+[ext_resource type="Script" path="res://scripts/data/map_info.gd" id="2_map_info"]
+[ext_resource type="Resource" path="res://data/characters/ferdl.tres" id="3_ferdl"]
+
+[sub_resource type="Resource" id="Map_kirtag"]
+script = ExtResource("2_map_info")
+id = &"kirtag"
+name_key = "MAP_KIRTAG"
+desc_key = "MAP_KIRTAG_DESC"
+swatch = Color(0.47, 0.62, 0.33, 1)
+
+[resource]
+script = ExtResource("1_content")
+characters = Array[Resource]([ExtResource("3_ferdl")])
+maps = Array[Resource]([SubResource("Map_kirtag")])

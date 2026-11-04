@@ -6,6 +6,9 @@ extends Resource
 @export var id: StringName = &""
 ## Translation key of the player-facing name.
 @export var name_key: String = ""
+## Translation keys: the role in the family (one line) and the passive trait.
+@export var role_key: String = ""
+@export var trait_key: String = ""
 @export var start_weapon: WeaponData
 @export var knodl_sort: KnodlSortData
 ## Jumps on top of balance.player_jumps (Cousin Toni starts with a double jump).

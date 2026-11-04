@@ -88,6 +88,9 @@ func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFl
 		var flyer: float = 1.0 if _types[t].flying else 0.0
 		# Bosses are hit all the time; a full flash would wash them out.
 		var flash_mult: float = 0.3 if _types[t].boss else 1.0
+		# Einstellungen: "Weniger Blitzen".
+		if Settings.get_bool(&"reduce_flashing"):
+			flash_mult *= 0.35
 		var o: int = 0
 		for i: int in used:
 			if alive[i] == 0 or type[i] != t:

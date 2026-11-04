@@ -1,7 +1,7 @@
 extends GutTest
 ## docs/UI-STYLE.md: one theme for every screen, no per-node overrides, three font sizes.
 
-const UI_DIRS: Array[String] = ["res://scripts/ui", "res://scripts/systems"]
+const UI_DIRS: Array[String] = ["res://scripts/ui", "res://scripts/systems", "res://scripts/menu"]
 
 
 func _scripts() -> Dictionary[String, String]:
@@ -36,7 +36,7 @@ func test_three_font_sizes() -> void:
 
 func test_variations_used_in_code_exist() -> void:
 	var theme: Theme = UiStyle.theme()
-	var pattern := RegEx.create_from_string("&\"((?:Label|Hud|Card|Tile|Bar|Panel|Gap|Row|Keycap|Tight)[A-Za-z0-9]*)\"")
+	var pattern := RegEx.create_from_string("&\"((?:Label|Hud|Card|Tile|Bar|Panel|Gap|Row|Keycap|Tight|Menu)[A-Za-z0-9]*)\"")
 	for path: String in _scripts():
 		for found: RegExMatch in pattern.search_all(_scripts()[path]):
 			var name: String = found.get_string(1)

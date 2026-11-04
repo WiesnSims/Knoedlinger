@@ -88,6 +88,7 @@ var hud: Hud
 var speisekarte: Speisekarte
 var end_screen: RunEndScreen
 var inventory: InventoryScreen
+var pause: PauseMenu
 var stats := FrameStats.new()
 var run_time: float = 0.0
 var phase: Phase = Phase.RUNNING
@@ -135,8 +136,10 @@ var _weapon_rng := RandomNumberGenerator.new()
 var _riesen_wirt: Node3D
 ## The first frame after a solo pause carries the paused time; it is left out of the frame stats.
 var _resumed: bool = false
-## The Tab screen holds the solo pause (not the Speisekarte).
-var _inventory_paused: bool = false
+## The Tab screen or the pause menu holds the solo pause (not the Speisekarte).
+var _panel_paused: bool = false
+## The pointer was captured last frame (the browser lets go of it on Esc without telling the game).
+var _was_captured: bool = false
 var _log_slow: bool = false
 ## The key the local player is stored under; a client only learns its real peer id once joined.
 var _local_key: int = 1
@@ -184,11 +187,11 @@ func _ready() -> void:
 	_start_mass = LaunchArgs.get_float("knodl_mass", -1.0)
 	_respawn = LaunchArgs.get_flag("respawn", false) or _autoplay
 	balance = load("res://data/balance.tres")
-	map = _load_map(LaunchArgs.get_string("map", "kirtag"))
+	map = _load_map(RunSetup.map_id())
 	wave = load(WAVE_PATH)
 	catalog = load(CATALOG_PATH)
 	UiStyle.build_icon_atlas(catalog)
-	character = _load_character(LaunchArgs.get_string("character", "ferdl"))
+	character = _load_character(RunSetup.character_id())
 	types = wave.enemies
 	run_time = maxf(LaunchArgs.get_float("start_time", 0.0), 0.0)
 	var seed_value: int = LaunchArgs.get_int("seed", 1) + _autoplay_run * 7919
@@ -270,7 +273,14 @@ func _ready() -> void:
 	inventory.name = "Inventory"
 	add_child(inventory)
 	inventory.toggled.connect(_on_inventory_toggled)
-	hud.covered = func() -> bool: return speisekarte.is_shown() or inventory.is_open() or end_screen.visible
+	end_screen.menu_pressed.connect(_quit_to_menu)
+	pause = PauseMenu.new()
+	pause.name = "Pause"
+	add_child(pause)
+	pause.toggled.connect(_on_pause_toggled)
+	pause.quit_pressed.connect(_quit_to_menu)
+	hud.covered = func() -> bool:
+		return speisekarte.is_shown() or inventory.is_open() or end_screen.visible or pause.is_open()
 	if host:
 		enemies = EnemyManager.new(balance, types, slots, seed_value, ground, map.half_size)
 		enemies.ring_min = balance.spawn_first_ring_min
@@ -547,14 +557,33 @@ func _on_run_ended() -> void:
 func _on_inventory_toggled(open: bool) -> void:
 	if open:
 		inventory.show_player(states.get(NetworkManager.local_id()), knodls.get(NetworkManager.local_id()), balance)
+	_hold_pause(open)
+
+
+func _on_pause_toggled(open: bool) -> void:
+	_hold_pause(open)
+
+
+## Solo: a full-screen panel (Tab screen, pause menu) stops the game while it is open.
+func _hold_pause(open: bool) -> void:
+	if open:
 		if NetworkManager.is_host() and NetworkManager.client_ids().is_empty() and not get_tree().paused:
 			get_tree().paused = true
-			_inventory_paused = true
-	elif _inventory_paused:
-		_inventory_paused = false
+			_panel_paused = true
+	elif _panel_paused and not inventory.is_open() and not pause.is_open():
+		_panel_paused = false
 		if not speisekarte.is_open():
 			get_tree().paused = false
 			_resumed = true
+
+
+## Pause menu "Zum Menü" or the end screen: leave the run for the title screen.
+func _quit_to_menu() -> void:
+	_finished = true
+	get_tree().paused = false
+	if NetworkManager.is_online():
+		NetworkManager.leave()
+	get_tree().change_scene_to_file.call_deferred("res://scenes/menu/main_menu.tscn")
 
 
 func _restart() -> void:
@@ -829,11 +858,19 @@ func _local_frame(delta: float) -> void:
 			speisekarte.show_player(state, knodl)
 		if inventory.is_open():
 			inventory.show_player(state, knodl, balance)
-	inventory.allowed = not speisekarte.is_open() and phase != Phase.ENDED
+	inventory.allowed = not speisekarte.is_open() and not pause.is_open() and phase != Phase.ENDED
 	if not inventory.allowed and inventory.is_open():
 		inventory.set_open(false)
+	pause.allowed = not speisekarte.is_open() and not inventory.is_open() and phase != Phase.ENDED
+	if not pause.allowed and pause.is_open():
+		pause.set_open(false)
+	# The browser lets go of the pointer on Esc without passing the key on: treat it as Esc.
+	var captured: bool = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
+	if _was_captured and not captured and pause.allowed:
+		pause.set_open(true)
+	_was_captured = captured
 	hud.show_mouse_hint(camera.mouse_capture_allowed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED
-			and not speisekarte.is_open() and phase != Phase.ENDED)
+			and not speisekarte.is_open() and not pause.is_open() and phase != Phase.ENDED)
 
 
 func _point_to_wirtshaus(local: Player) -> void:

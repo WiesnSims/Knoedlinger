@@ -34,6 +34,14 @@ static func has(key: String) -> bool:
 	return _values.has(key)
 
 
+## Every option given (command line or URL).
+static func keys() -> Array[String]:
+	_parse()
+	var out: Array[String] = []
+	out.assign(_values.keys())
+	return out
+
+
 ## For tests: replaces the parsed values.
 static func override(values: Dictionary[String, String]) -> void:
 	_values = values

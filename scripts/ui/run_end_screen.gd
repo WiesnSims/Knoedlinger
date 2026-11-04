@@ -7,6 +7,7 @@ extends CanvasLayer
 ## Schilling and the 25 % Knödl payout are saved from M4 on.
 
 signal again_pressed
+signal menu_pressed
 
 const WIDTH: float = 400.0
 ## Summary key, label key, how to show it.
@@ -23,6 +24,7 @@ var _line: Label
 var _grid: GridContainer
 var _inventory: InventoryPanel
 var _again: ActionPill
+var _menu: ActionPill
 
 
 func _ready() -> void:
@@ -59,7 +61,13 @@ func _ready() -> void:
 	_again = ActionPill.new("Enter")
 	_again.set_label(tr("END_AGAIN"))
 	_again.pressed.connect(func() -> void: again_pressed.emit())
-	column.add_child(_again)
+	var buttons := UiStyle.hbox(&"Row16")
+	column.add_child(buttons)
+	buttons.add_child(_again)
+	_menu = ActionPill.new("Esc")
+	_menu.set_label(tr("END_MENU"))
+	_menu.pressed.connect(func() -> void: menu_pressed.emit())
+	buttons.add_child(_menu)
 	_inventory = InventoryPanel.new()
 	row.add_child(_inventory)
 	visible = false
@@ -102,7 +110,11 @@ func show_result(summary: Dictionary, can_restart: bool, build: PlayerBuild = nu
 
 func _unhandled_input(event: InputEvent) -> void:
 	var key: InputEventKey = event as InputEventKey
-	if visible and _again.visible and key != null and key.pressed and not key.echo \
-			and (key.physical_keycode == KEY_ENTER or key.physical_keycode == KEY_KP_ENTER):
+	if not visible or key == null or not key.pressed or key.echo:
+		return
+	if _again.visible and (key.physical_keycode == KEY_ENTER or key.physical_keycode == KEY_KP_ENTER):
 		get_viewport().set_input_as_handled()
 		again_pressed.emit()
+	elif key.physical_keycode == KEY_ESCAPE:
+		get_viewport().set_input_as_handled()
+		menu_pressed.emit()

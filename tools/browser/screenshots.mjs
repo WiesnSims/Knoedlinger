@@ -2,7 +2,8 @@
 //   node screenshots.mjs --url=http://127.0.0.1:8061/?bot=1 --out=../../build/shots/m2 --at=4,12,30 [--echo=[SLOW]]
 //        [--move=10:10,640:360,10:10]   (mouse position before each shot)
 //        [--size=1920x1080]              (viewport, default 1280x720)
-//        [--keys=,Tab,]                   (key pressed before each shot, empty = none)
+//        [--keys=,Tab,]                   (key pressed before each shot, empty = none; "Escape+Enter" =
+//                                          several in a row, "type:Resi" types text)
 //        [--max-draws=150]                (fail when a moment needs this many draw calls or more)
 // Saves <out>-<seconds>s.png per moment (and prints the draw calls of that moment) and exits 1 on any console error. --echo prints every console
 // line that starts with the given text.
@@ -50,9 +51,17 @@ for (const at of args.at.split(',').map(Number)) {
 	}
 	if (args.keys) {
 		const key = args.keys.split(',')[Math.min(args.at.split(',').indexOf(String(at)), args.keys.split(',').length - 1)];
+		// "Escape+ArrowDown+Enter" presses one after another; "type:Resi" types text.
+		for (const step of key ? key.split('+') : []) {
+			if (step.startsWith('type:')) {
+				await page.keyboard.type(step.slice(5), { delay: 60 });
+			} else {
+				await page.keyboard.press(step);
+			}
+			await page.waitForTimeout(250);
+		}
 		if (key) {
-			await page.keyboard.press(key);
-			await page.waitForTimeout(400);
+			await page.waitForTimeout(300);
 		}
 	}
 	await page.screenshot({ path: `${args.out}-${at}s.png` });

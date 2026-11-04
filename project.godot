@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 NetworkManager="*res://net/network_manager.gd"
 DebugOverlay="*res://scripts/systems/debug_overlay.gd"
 GameAudio="*res://scripts/systems/game_audio.gd"
+Settings="*res://scripts/core/settings.gd"
 
 [debug]
 

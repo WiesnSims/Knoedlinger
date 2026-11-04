@@ -38,6 +38,8 @@ Every new UI must follow this file and use `ui/theme.tres`. After any UI change,
 
 - Grenze Gotisch (the "Fraktur-ish display font", GAME-DESIGN.md) is for titles only, never for
   numbers or sentences.
+- The one exception to three sizes is the logo on the title screen (`TitleLogo`): a drawn graphic in
+  Grenze Gotisch at 88 px, the way a logo image would be. No other text is drawn outside the theme.
 - HUD text over the 3D world gets a soft shadow (`Hud*` variations), never a thick outline.
 - Fonts live in `assets/fonts/` (OFL, licences next to them).
 
@@ -118,6 +120,8 @@ Every new UI must follow this file and use `ui/theme.tres`. After any UI change,
 | `CardRarity0..3`, `CardEvolution` | Button | Speisekarte rows, border = rarity |
 | `TileRarity0..3`, `TileEvolution` | PanelContainer | inventory/chest icon tiles |
 | `Button` (default) | | pill buttons |
+| `MenuEntry` | Button | main and pause menu entries (gold bar on the left when focused) |
+| `LineEdit` (default) | | text fields (the player name) |
 | `BarHp`, `BarXp`, `BarBoss`, `BarTimer` | ProgressBar | bars |
 
 ## 9. Building a new screen
