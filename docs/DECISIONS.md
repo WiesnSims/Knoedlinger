@@ -336,3 +336,6 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Measured (local, RTX 3080, run, 500 enemies held, bot, 60 s):** Edge 178 fps / p95 7.4 ms, Firefox 164 fps /
   p95 8 ms, at most 123 draw calls. `.pck` 2.5 MiB (audio ~2.4 MiB). Map bake 0.5 s native. Headless: host + 3
   clients from 9:55 pass (347 run events, 305 marks, all loot on every client).
+- **Preview deployed** to https://m3-kirtag.knoedlinger.pages.dev (build 6478e4a). From the preview (headless, RTX 3080,
+  500 enemies, bot, 60 s): Edge 192 fps / p95 6.4 ms, Firefox 200 fps / p95 7 ms, at most 120 draw calls; no console
+  errors.
