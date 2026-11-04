@@ -4,7 +4,9 @@ extends Resource
 ## pole. The player and the Knödl collide with it through Jolt; enemies walk on its top through the
 ## map's baked ground field (they are data, not physics bodies).
 
-enum Kind { BLOCK, RAMP, STAIRS, POLE }
+## ROOF: a gable roof (a triangular prism) whose ridge runs along x at half the depth. SPIRE: a
+## four-sided pyramid. Both start at position.y and do not sink into the ground.
+enum Kind { BLOCK, RAMP, STAIRS, POLE, ROOF, SPIRE }
 
 ## How far below `position.y` every prop reaches, so it never floats on bumpy ground.
 const SINK: float = 1.5
@@ -20,6 +22,8 @@ const SINK: float = 1.5
 @export var color: Color = Color(0.62, 0.45, 0.3)
 ## False for things enemies walk through or around (poles, fences): left out of the ground field.
 @export var walkable: bool = true
+## False for decoration the player and the Knödl pass through (window frames, tree crowns, flags).
+@export var solid: bool = true
 
 
 ## The prop's top height at a world position, or -INF outside its footprint.
@@ -36,6 +40,10 @@ func top_at(x: float, z: float) -> float:
 			var count: int = maxi(steps, 1)
 			var step: int = mini(int((local.y + hz) / size.z * count), count - 1)
 			return position.y + size.y * float(step + 1) / count
+		Kind.ROOF:
+			return position.y + size.y * (1.0 - absf(local.y) / hz)
+		Kind.SPIRE:
+			return position.y + size.y * (1.0 - maxf(absf(local.x) / hx, absf(local.y) / hz))
 	return position.y + size.y
 
 

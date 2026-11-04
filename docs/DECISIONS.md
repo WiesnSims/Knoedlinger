@@ -260,3 +260,90 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Owner: M2 approved** after playtest round 1 (icons, hover-only card details); merged into `main`, branch
   `m2-core` deleted. Next: M3 (first full map: Kirtag, boss gate with Stempel quest, Oberkrampus and Hofrat,
   chests, gold, death and victory screens, sound and music). Movement speed is revisited with the real map size.
+
+## 2026-11-04 – M3 build (branch m3-kirtag)
+
+- **Claude: the Kirtag map** (`data/maps/kirtag.tres`, 300 x 300 m, GAME-DESIGN.md map 1) is laid out by
+  `tools/maps/make_kirtag.gd` and saved as data. Centre: the gravel Kirtag square with the family's Knödl stand
+  (spawn), the Maibaum, two open beer tents with tables, a bandstand, stalls, a fountain. Four roads with ~40
+  houses, the Gemeindeamt with the boss gate in the north, the church east, a farm with orchard and a barn whose
+  back ramp leads onto its roof south-east, the chapel on its hill south-west, ~90 firs toward the mountains.
+  Seven Wirtshaus spots (3 open per run), nine Stempel spots, fourteen chest spots. The test field stays as
+  `?map=testfeld`.
+- **Claude: buildings are `MapStructure` entries** (house, tent, stall, church, Amt, bandstand, fir, fruit tree,
+  Maibaum, Knödl stand, fence, fountain, barn, chapel, crates, bench) that `StructureKit` expands into props.
+  New prop kinds: gable `ROOF` and pyramid `SPIRE`; `solid = false` for decoration (windows, tree crowns). Roofs
+  are walkable (Megabonk-style routes, e.g. the barn). Paths and the plaza are painted into the terrain colours.
+  All props are still one mesh and one draw call.
+- **Claude: see-through instead of camera collision** (M2 carry-over "the camera can end up inside props").
+  The camera still only avoids terrain; houses, trees and enemies between the camera and the player are
+  dithered away in a circle around the player, and anything right at the lens fades out
+  (`shaders/world_props.gdshader`, the same uniforms in the enemy shader).
+- **Claude: telegraphed attacks are data** (`AttackData`: circle or line, on the target, around the attacker or
+  in a ring, telegraph time, damage, cooldown, dash, summons). The host's `HazardField` draws them as Krampus-red
+  marks that fill up, then hits everyone inside; jumping higher than 1.1 m over a mark dodges it. Marks reach
+  clients as run events.
+- **Claude: elites** (GAME-DESIGN.md 5:00-10:00): Perchte (from 5:00; stands still and slams a 3.6 m circle
+  around itself) and Radlfahrer (from 6:00; marks a 16 m line toward you, then dashes along it). Both drop a
+  25er Brösel and a coin. Akten-Geister (from 10:00, and the Hofrat's summons) split into 3 Formulare.
+- **Claude: bosses are enemies in "controlled" slots**, so weapons, the Knödl, snapshots and the renderer need
+  nothing new; `BossDirector` moves them and plays their attacks from `BossData`. Oberkrampus at 5:00 (700 HP,
+  10 Kampf-Dackel escort; Rute slam, charge with dash, chain ring), the second Kirtag mini-boss at 10:00 is
+  **the Oberkrampus again, stronger** (2,200 HP, Perchten escort; the Lawine is the ski map's), the **Hofrat der
+  Unterwelt** (6,000 HP; ABGELEHNT stamps, the Warteschlange of Akten-Geister, Dienstweg lines, a ring). Boss HP
+  is fixed (not scaled by the clock), +50 % per extra player. A boss drops golden Kaiserschmarrn bits, coins and
+  a free boss chest (the Hofrat's gives evolutions first). Bosses are immune to the Riesen-Wirt's broom.
+- **Claude: the gate** (Megabonk-style goal): at 10:00 the Formular appears and three Stempel lie at random spots
+  (gold light beams, HUD markers); with all three the gate in front of the Gemeindeamt opens and walking in
+  brings the Hofrat out. At 12:00 he comes out anyway.
+- **Claude: winning and losing.** Sperrstund' with the Hofrat beaten = win ("Gwonnen"); Sperrstund' with him alive
+  = "da Hofrat sitzt no in seim Amt" (not a win); knocked down in solo = the run is over (end screen after 2.5 s).
+  Co-op until the M6 revives: down for 30 s, then back at the spawn; the run is lost when everyone is down at
+  once. `?respawn=1` keeps the M2 rule for the automated checks and the balance log. Schilling and the 25 %
+  Knödl payout are saved from M4 on; the end screen shows no Schilling yet.
+- **Claude: loot** (`LootField`, host-owned, mirrored by run events): coins (1 gold each; 0.6 % of kills, every
+  elite, bosses drop 8 heavy coins), Gulasch (0.15 % of kills, heals 35), Stempel, map chests (6 per run; 25
+  gold, +15 for each chest that player opened before; one item) and boss chests (free). Gold so far only buys map
+  chests; the rest becomes Schilling in M4. Walking over loot picks it up (no extra button, pillar 1).
+- **Claude: the Touristenbus** at 8:00: a coach pulls up near a player and for 45 s the crowd comes from its
+  side, 80 enemies more than usual.
+- **Claude: run events** (`net/run_event_codec.gd`, reliable): attack marks, loot appearing and taken, toasts,
+  bosses arriving and beaten, the bus, sound cues. The host shows its own events through the same code. World
+  state v3 adds the Formular, the gate, the result and the focused boss's exact HP (the boss bar).
+- **Claude: audio is synthesised** (`tools/audio/make_audio.mjs`, Node + the MIT `wasm-media-encoders` Vorbis
+  encoder; no ffmpeg on this machine): "Volksmusik-Techno" for the Kirtag (G major, 128 BPM, accordion with
+  musette reeds, tuba oom-pah, zither, kick; speeds up 12 % toward Sperrstund'), a boss track (E minor, 140 BPM,
+  Krampus bells), a slowed Schunkel waltz for Sperrstund' (3/4, 80 BPM), and 28 effects (jodel sting on
+  level-up from a little formant singer, ka-ching on Einkehren, the stamp, the bus horn ...). 2.4 MiB of OGG.
+  **Barks are placeholders** from the Windows Austrian TTS voice ("Microsoft Michael", de-AT): "Na servas!" at
+  the start, "Heast!" at low HP, "Geh bitte." when a boss falls, "Des is ma wurscht." on skip, "Mahlzeit!" on
+  every cash-in; recordings can replace the files 1:1. `GameAudio` (autoload) limits voices per sound, fades
+  placed sounds with distance and keeps barks 8 s apart.
+- **Claude: the bot** (automated checks, balance log) now dodges marks, collects Stempel, walks into the gate,
+  faces bosses at 2.5 m, picks up boss chests, Gulasch and chests it can afford, and sidesteps and jumps when it
+  is stuck on a house (no path finding).
+- **Claude: `mp_test.ps1 -StartTime 595`** plays the real timeline from 9:55. With 4 players the crowd is 840
+  enemies (+60 % per extra player); clients then get 63.5 KiB/s, above the 60 KiB/s budget, which CLAUDE.md sets
+  for 500 enemies (500 held: 37.9 KiB/s). In timeline mode the check scales the budget with the crowd (about
+  38 B per enemy per second). Fitting a full 4-player crowd under 60 KiB/s is M6 work.
+- **Open: movement speed** stays 7 m/s (the owner wants to judge it on the real map): crossing the playable
+  village takes about 35 s.
+- **Measured (balance log, 3 bot runs, Onkel Ferdl):** Oberkrampus beaten at 5:27-5:48,
+  Oberkrampus II at 13:21-14:38 (he arrives with the Formular, and the bot runs for the Stempel first), Hofrat
+  beaten in 1 of 3 runs (WON at 14:32), the other two CLOSED. Bot found 2-3 Stempel. Gold left at the end
+  320-680. The bot (no crowd dodging) is first knocked down at 0:33-1:07: **with solo death now ending the run
+  this is the main question for the playtest** (knobs: `player_max_hp`, `player_hurt_cooldown`, tourist damage).
+- **Measured (local, RTX 3080, run, 500 enemies held, bot, 60 s):** Edge 178 fps / p95 7.4 ms, Firefox 164 fps /
+  p95 8 ms, at most 123 draw calls. `.pck` 2.5 MiB (audio ~2.4 MiB). Map bake 0.5 s native. Headless: host + 3
+  clients from 9:55 pass (347 run events, 305 marks, all loot on every client).
+- **Preview deployed** to https://m3-kirtag.knoedlinger.pages.dev (build 6478e4a). From the preview (headless, RTX 3080,
+  500 enemies, bot, 60 s): Edge 192 fps / p95 6.4 ms, Firefox 200 fps / p95 7 ms, at most 120 draw calls; no console
+  errors.
+
+## 2026-11-04 – M3 approved
+
+- **Owner: M3 approved** on the first preview; merged into `main`, branch `m3-kirtag` deleted. The open M3
+  questions (early-game harshness now that solo death ends the run, boss HP 700 / 2,200 / 6,000, movement speed
+  7 m/s, real voice barks instead of the TTS placeholders) stay as they are and are revisited in the M5 balance
+  pass or when the owner raises them. Next: M4 (Stammtisch hub, Schilling, save/load with export code, all 8
+  Knödlinger, all weapons/passives/evolutions, quests, Grant levels, maps 2 and 3).

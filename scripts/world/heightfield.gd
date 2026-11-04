@@ -72,7 +72,7 @@ static func bake_ground(map: MapData, terrain: Heightfield) -> Heightfield:
 		for ix: int in n:
 			field.heights[row + ix] = terrain.height_at(field.world_x(ix), z)
 	for prop: MapProp in map.all_props():
-		if not prop.walkable:
+		if not prop.walkable or not prop.solid:
 			continue
 		var bounds: Rect2 = prop.footprint_bounds()
 		var x0: int = clampi(floori((bounds.position.x + map.half_size) / field.cell), 0, n - 1)

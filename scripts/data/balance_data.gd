@@ -223,6 +223,46 @@ extends Resource
 @export var wirtshaus_chest_items: PackedInt32Array = PackedInt32Array([0, 1, 3, 5])
 @export var wirtshaus_l_rerolls: int = 2
 
+@export_group("Bosses and the gate")
+## Boss HP per extra player (GAME-DESIGN.md: +50 %).
+@export var coop_boss_hp_per_player: float = 0.5
+## Enemy slots kept free beyond the crowd for bosses, escorts, summons and splits.
+@export var spawn_extra_slots: int = 64
+## Stempel to find for the Formular, and how close a player must get to one.
+@export var stempel_count: int = 3
+@export var stempel_pickup_radius: float = 2.2
+## A player this close to the open gate brings the Hofrat out.
+@export var portal_radius: float = 4.5
+## A player whose feet are higher than this above the ground jumps over an attack mark.
+@export var hazard_dodge_height: float = 1.1
+
+@export_group("Loot")
+## Map chests per run (out of the map's chest spots), what one costs and how many items it gives.
+@export var map_chest_count: int = 6
+@export var map_chest_price: int = 25
+## Every map chest a player opens makes their next one this much dearer.
+@export var map_chest_price_step: int = 15
+@export var map_chest_items: int = 1
+@export var chest_pickup_radius: float = 2.0
+## Gold per coin; any kill drops a coin with this chance (elites and bosses drop theirs for sure).
+@export var coin_value: int = 1
+@export var coin_drop_chance: float = 0.006
+## Coins this close fly to the player (times the Wanderkarte bonus); picked up within the radius.
+@export var coin_magnet_range: float = 4.0
+@export var coin_pickup_radius: float = 1.2
+## A Gulasch drops with this chance per kill and heals this much.
+@export var heal_drop_chance: float = 0.0015
+@export var heal_amount: float = 35.0
+
+@export_group("Death")
+## Solo: knocked down = the run is over, the end screen comes after this pause.
+@export var death_screen_delay: float = 2.5
+## Co-op until the M6 revives: a knocked-down player is back at the spawn after this; the run is
+## lost when everyone is down at once.
+@export var coop_down_seconds: float = 30.0
+## Share of the Knödl's mass paid out as Schilling when a run is lost (GAME-DESIGN.md: 25 %).
+@export var death_schilling_share: float = 0.25
+
 @export_group("Bot")
 ## The bot walks its Knödl to a Wirtshaus once it is this heavy.
 @export var bot_cash_in_mass: float = 350.0

@@ -1,6 +1,9 @@
 extends Node3D
-## One run (M2: the core loop on the test field). Solo, host or client, from LaunchArgs:
+## One run (M3: the Kirtag map with bosses, the gate and loot). Solo, host or client, from LaunchArgs:
 ##   --character=ferdl          who plays (data/characters/<id>.tres)
+##   --map=kirtag               which map (data/maps/<id>.tres; testfeld is the M1 test field)
+##   --respawn=1                knocked down = back at the spawn after a few seconds instead of the
+##                              run ending (the automated checks and the balance log)
 ##   --enemies=500              hold this many enemies (stress); without it the wave timeline runs
 ##   --seconds=60               measure for this long after warm-up, print [RESULT], quit (desktop)
 ##   --bot=0                    no bot; the player stands still until WASD
@@ -16,10 +19,13 @@ extends Node3D
 ## browser also gets window.knoedlStats / knoedlResult.
 
 ## RUNNING until Sperrstund' (balance.run_seconds), then the Riesen-Wirt sweeps for
-## sperrstund_seconds, then the run is ENDED (a win).
+## sperrstund_seconds, then the run is ENDED. It also ends early when everyone is down.
 enum Phase { RUNNING, SPERRSTUND, ENDED }
+## How a run ended: WON = Sperrstund' with the Hofrat beaten, CLOSED = Sperrstund' without,
+## LOST = everyone knocked down.
+enum Result { NONE, WON, CLOSED, LOST }
 
-const MAP_PATH: String = "res://data/maps/testfeld.tres"
+const MAP_DIR: String = "res://data/maps"
 const WAVE_PATH: String = "res://data/waves/kirtag.tres"
 const CATALOG_PATH: String = "res://data/catalog/catalog.tres"
 const CHARACTER_DIR: String = "res://data/characters"
@@ -37,6 +43,11 @@ const BOT_WIRT_REACH: float = 110.0
 const NOTICE_INTERVAL: float = 3.0
 ## The Riesen-Wirt sweeps enemies within this radius out of the Kirtag.
 const RIESEN_WIRT_SWEEP: float = 4.0
+## Chest reveal titles beyond the Wirtshaus tiers (CHEST_TITLE_4 / _5): a map Kistl, a boss chest.
+const CHEST_TIER_MAP: int = 4
+const CHEST_TIER_BOSS: int = 5
+## A boss's gold falls as this many coins.
+const BOSS_COINS: int = 8
 
 static var _autoplay_run: int = 0
 
@@ -59,6 +70,18 @@ var states: Dictionary[int, PlayerState] = {}
 var knodls: Dictionary[int, Knodl] = {}
 var weapon_vfx: Dictionary[int, WeaponVfx] = {}
 var wirtshaeuser: Array[Wirtshaus] = []
+var hazards: HazardField
+var loot: LootField
+var gate: PortalGate
+## Host: the bosses of the run.
+var bosses: BossDirector
+## Host: run events of this frame (attack marks, loot, toasts ...).
+var events := RunEventCodec.Queue.new()
+var result: Result = Result.NONE
+## The Formular quest and the gate (host state, mirrored in the world state).
+var stempel_found: int = 0
+var stempel_total: int = 0
+var gate_flags: int = 0
 var level_flow: LevelUpFlow
 var camera: ChaseCamera
 var hud: Hud
@@ -114,6 +137,35 @@ var _resumed: bool = false
 var _log_slow: bool = false
 ## The key the local player is stored under; a client only learns its real peer id once joined.
 var _local_key: int = 1
+var _respawn: bool = false
+## Host: which mini-bosses have come, the bus, the death countdown, gold notices per player.
+var _bosses_started: Dictionary[int, bool] = {}
+var _bus_left: float = 0.0
+var _bus_done: bool = false
+var _lose_timer: float = -1.0
+var _no_gold_timers: Dictionary[int, float] = {}
+var _loot_rng := RandomNumberGenerator.new()
+## Run events waiting for the next send to the clients.
+var _outgoing: Array[RunEventCodec.Event] = []
+## The boss in the HUD bar: BossDirector.list index (or NO_BOSS), its body's slot and HP.
+var _focus_boss: int = WorldStateCodec.NO_BOSS
+var _focus_slot: int = 0
+var _focus_hp: float = 0.0
+var _focus_max_hp: float = 0.0
+## Every boss of the run by index, for names on clients (the same list the host's director has).
+var _boss_list: Array[BossData] = []
+## (index, run time) of every boss beaten, for the summary.
+var _bosses_beaten: Array = []
+var _bus: TouristenBus
+var _run_events_received: int = 0
+var _hazards_seen: int = 0
+var _gate_shown: int = -1
+var _last_hp: float = 0.0
+var _was_downed: bool = false
+var _sound_level: int = 0
+var _last_xp: float = 0.0
+var _knodl_state_heard: int = 0
+var _knodl_hits_heard: int = 0
 
 
 func _ready() -> void:
@@ -127,8 +179,9 @@ func _ready() -> void:
 	_god = LaunchArgs.get_flag("god", false)
 	_log_slow = LaunchArgs.get_flag("log_slow", false)
 	_start_mass = LaunchArgs.get_float("knodl_mass", -1.0)
+	_respawn = LaunchArgs.get_flag("respawn", false) or _autoplay
 	balance = load("res://data/balance.tres")
-	map = load(MAP_PATH)
+	map = _load_map(LaunchArgs.get_string("map", "kirtag"))
 	wave = load(WAVE_PATH)
 	catalog = load(CATALOG_PATH)
 	UiStyle.build_icon_atlas(catalog)
@@ -137,10 +190,15 @@ func _ready() -> void:
 	run_time = maxf(LaunchArgs.get_float("start_time", 0.0), 0.0)
 	var seed_value: int = LaunchArgs.get_int("seed", 1) + _autoplay_run * 7919
 	_weapon_rng.seed = seed_value
+	_loot_rng.seed = seed_value * 13 + 5
+	for entry: WaveBoss in wave.bosses:
+		_boss_list.append(entry.boss)
+	if wave.final_boss != null:
+		_boss_list.append(wave.final_boss)
 	var t0: int = Time.get_ticks_msec()
 	terrain = Heightfield.bake_terrain(map)
 	ground = Heightfield.bake_ground(map, terrain)
-	MapBuilder.build(map, terrain, self)
+	var props_material: ShaderMaterial = MapBuilder.build(map, terrain, self)
 	_bake_ms = Time.get_ticks_msec() - t0
 	var host: bool = NetworkManager.is_host()
 	var slots: int = CLIENT_SLOTS
@@ -148,7 +206,7 @@ func _ready() -> void:
 		var crowd: float = balance.spawn_max_count
 		if NetworkManager.is_online():
 			crowd *= 1.0 + balance.coop_count_per_player * (MAX_PLAYERS - 1)
-		slots = maxi(_forced_enemies, mini(ceili(crowd), CLIENT_SLOTS))
+		slots = maxi(_forced_enemies, mini(ceili(crowd) + balance.spawn_extra_slots, CLIENT_SLOTS))
 	renderer = EnemyRenderer.new()
 	renderer.name = "EnemyRenderer"
 	add_child(renderer)
@@ -161,6 +219,17 @@ func _ready() -> void:
 	projectiles.name = "Projectiles"
 	add_child(projectiles)
 	projectiles.setup(balance, 400, ground)
+	hazards = HazardField.new()
+	hazards.name = "Hazards"
+	add_child(hazards)
+	hazards.setup(ground, seed_value)
+	loot = LootField.new()
+	loot.name = "Loot"
+	add_child(loot)
+	loot.setup(ground)
+	gate = PortalGate.new()
+	add_child(gate)
+	gate.setup(map, ground)
 	for spot: int in map.wirtshaus_spots.size():
 		var wirt := Wirtshaus.new()
 		add_child(wirt)
@@ -175,6 +244,9 @@ func _ready() -> void:
 	add_child(camera)
 	camera.mouse_capture_allowed = not _bot or LaunchArgs.get_flag("mouse", false)
 	camera.setup(balance, local)
+	if props_material != null:
+		camera.see_through.append(props_material)
+	camera.see_through.append_array(renderer.materials)
 	camera.make_current()
 	ShaderWarmup.attach(camera)
 	hud = Hud.new()
@@ -204,6 +276,8 @@ func _ready() -> void:
 		level_flow = LevelUpFlow.new(balance, seed_value)
 		_open_wirtshaeuser(balance.wirtshaus_count, seed_value)
 		_scatter_start_brosel(seed_value)
+		bosses = BossDirector.new(balance, enemies, hazards, wave)
+		_place_map_chests()
 	else:
 		replica = EnemyReplica.new(balance, types, slots)
 	NetworkManager.snapshot_received.connect(_on_snapshot)
@@ -211,6 +285,7 @@ func _ready() -> void:
 	NetworkManager.player_input_received.connect(_on_player_input)
 	NetworkManager.world_state_received.connect(_on_world_state)
 	NetworkManager.brosel_received.connect(_on_brosel)
+	NetworkManager.run_events_received.connect(_on_run_events)
 	NetworkManager.offer_received.connect(_on_offer)
 	NetworkManager.choice_received.connect(_on_choice)
 	NetworkManager.peer_joined.connect(_on_peer_joined)
@@ -219,6 +294,8 @@ func _ready() -> void:
 	NetworkManager.join_failed.connect(_on_join_failed)
 	NetworkManager.session_ended.connect(_on_session_ended)
 	DebugOverlay.visible = (_bot and not _autoplay) or LaunchArgs.get_flag("debug", false)
+	GameAudio.music(&"kirtag")
+	GameAudio.bark(&"servas")
 	print("[RUN] role=%s map=%s character=%s enemies=%s seconds=%s bot=%s bake_ms=%d adapter=%s" % [
 		_role(), map.id, character.id, _forced_enemies if _forced_enemies > 0 else "wave", _seconds, _bot,
 		_bake_ms, RenderingServer.get_video_adapter_name()])
@@ -267,8 +344,11 @@ func _host_frame(delta: float) -> void:
 	if _forced_enemies == 0 and phase == Phase.RUNNING:
 		var ramp: float = balance.spawn_start_count + balance.spawn_count_per_minute * run_time / 60.0
 		ramp *= 1.0 + balance.coop_count_per_player * (players.size() - 1)
-		enemies.target_count = mini(int(ramp), mini(ceili(balance.spawn_max_count * (1.0 + balance.coop_count_per_player
-				* (players.size() - 1))), enemies.capacity))
+		var cap: int = ceili(balance.spawn_max_count * (1.0 + balance.coop_count_per_player * (players.size() - 1)))
+		if _bus_left > 0.0:
+			ramp += wave.bus_extra
+			cap += wave.bus_extra
+		enemies.target_count = mini(int(ramp), mini(cap, enemies.capacity - balance.spawn_extra_slots))
 	var peers: Array[int] = []
 	var targets := PackedVector3Array()
 	for peer: int in players:
@@ -290,6 +370,9 @@ func _host_frame(delta: float) -> void:
 	var t0: int = Time.get_ticks_usec()
 	enemies.update(delta, targets, knodl_targets)
 	_alive_held = enemies.alive_count
+	_start_attacks()
+	_on_bosses_beaten(bosses.update(delta, targets, phase == Phase.RUNNING))
+	bosses.touch_damage(targets, enemies.touch_damage)
 	if run_time > 1.0:
 		enemies.ring_min = balance.spawn_ring_min
 		enemies.ring_max = balance.spawn_ring_max
@@ -327,13 +410,18 @@ func _host_frame(delta: float) -> void:
 			WeaponSystem.update(state.build, player, enemies, projectiles, run_time, delta, _weapon_rng, balance)
 		knodl.crush(enemies)
 	projectiles.update(delta, enemies)
+	hazards.update(delta)
+	_resolve_hazards()
 	var t2: int = Time.get_ticks_usec()
 	stats.add_system("knodl_weapons", t2 - t1)
 	_drop_brosel()
 	_feed_knodls(delta)
 	_check_wirtshaeuser(delta)
+	_collect_loot(delta)
 	level_flow.update(states, delta, not NetworkManager.client_ids().is_empty())
+	_update_timeline(delta)
 	_update_phase(delta)
+	_flush_events()
 	var t3: int = Time.get_ticks_usec()
 	stats.add_system("brosel", t3 - t2)
 	renderer.draw(enemies.capacity, enemies.alive, enemies.pos_x, enemies.pos_z, enemies.yaw, enemies.type,
@@ -361,6 +449,12 @@ func _update_wave() -> void:
 func _update_phase(delta: float) -> void:
 	match phase:
 		Phase.RUNNING:
+			if _lose_timer >= 0.0:
+				_lose_timer -= delta
+				if _lose_timer < 0.0:
+					result = Result.LOST
+					_set_phase(Phase.ENDED)
+				return
 			if run_time >= balance.run_seconds:
 				_set_phase(Phase.SPERRSTUND)
 				enemies.target_count = 0
@@ -370,8 +464,11 @@ func _update_phase(delta: float) -> void:
 				var at: Vector3 = _riesen_wirt.global_position
 				var found: int = enemies.grid.query(at.x, at.z, RIESEN_WIRT_SWEEP)
 				for k: int in found:
-					enemies.despawn(enemies.grid.results[k])
+					# Bosses stay (a swept boss is not a beaten boss).
+					if enemies.controlled[enemies.grid.results[k]] == 0:
+						enemies.despawn(enemies.grid.results[k])
 			if _phase_timer >= balance.sperrstund_seconds:
+				result = Result.WON if gate_flags & WorldStateCodec.GATE_BOSS_BEATEN else Result.CLOSED
 				_set_phase(Phase.ENDED)
 
 
@@ -383,7 +480,10 @@ func _set_phase(new_phase: Phase) -> void:
 	match phase:
 		Phase.SPERRSTUND:
 			hud.toast(tr("TOAST_SPERRSTUND"))
+			GameAudio.play(&"sperrstund")
+			GameAudio.music(&"sperrstund")
 			_spawn_riesen_wirt()
+			hazards.clear()
 		Phase.ENDED:
 			_on_run_ended()
 
@@ -419,6 +519,12 @@ func _move_riesen_wirt(delta: float) -> void:
 
 func _on_run_ended() -> void:
 	speisekarte.close()
+	if result == Result.WON:
+		GameAudio.play(&"victory")
+	else:
+		GameAudio.play(&"defeat")
+		if result == Result.LOST:
+			GameAudio.music(&"")
 	if _autoplay:
 		_write_balance_log()
 		return
@@ -498,8 +604,19 @@ func _cash_in(peer: int, wirt: Wirtshaus, tier: int) -> void:
 ## Host: Brösel from the dead and from Knödl that shed (thrown, or bitten).
 func _drop_brosel() -> void:
 	for k: int in enemies.kill_x.size():
+		var kx: float = enemies.kill_x[k]
+		var kz: float = enemies.kill_z[k]
+		if k < 4:
+			GameAudio.play(&"kill", Vector3(kx, ground.height_at(kx, kz), kz))
 		for piece: int in Formulas.split_into_brosel(enemies.kill_xp[k], balance):
-			brosel.drop(enemies.kill_x[k], enemies.kill_z[k], piece, true)
+			brosel.drop(kx, kz, piece, true)
+		var coins: int = types[enemies.kill_type[k]].gold_drop
+		if coins == 0 and _loot_rng.randf() < balance.coin_drop_chance:
+			coins = 1
+		for c: int in coins:
+			_drop_loot(LootField.Kind.COIN, kx + _loot_rng.randf_range(-1.0, 1.0), kz + _loot_rng.randf_range(-1.0, 1.0), balance.coin_value)
+		if _loot_rng.randf() < balance.heal_drop_chance:
+			_drop_loot(LootField.Kind.HEAL, kx, kz, roundi(balance.heal_amount))
 	enemies.clear_kills()
 	for peer: int in knodls:
 		var knodl: Knodl = knodls[peer]
@@ -539,9 +656,17 @@ func _feed_knodls(delta: float) -> void:
 
 
 func _on_downed(peer: int) -> void:
-	states[peer].downed_times.append(run_time)
-	if peer == NetworkManager.local_id():
-		hud.toast(tr("TOAST_DOWNED"))
+	var state: PlayerState = states[peer]
+	state.downed_times.append(run_time)
+	if _respawn:
+		return
+	# Solo: the run is over. Co-op: down until the M6 revives exist (coop_down_seconds); the run
+	# is lost when everyone is down at once.
+	state.downed_timer = INF if players.size() <= 1 else balance.coop_down_seconds
+	for other: int in states:
+		if not states[other].downed:
+			return
+	_lose_timer = balance.death_screen_delay
 
 
 func _on_respawned(peer: int) -> void:
@@ -564,6 +689,10 @@ func _send_world() -> void:
 	NetworkManager.send_snapshot(snapshot)
 	if not changes[0].is_empty() or not changes[1].is_empty():
 		NetworkManager.send_brosel(BroselCodec.encode(changes[1], changes[0], brosel))
+	while not _outgoing.is_empty():
+		var chunk: Array[RunEventCodec.Event] = _outgoing.slice(0, RunEventCodec.MAX_EVENTS)
+		_outgoing = _outgoing.slice(RunEventCodec.MAX_EVENTS)
+		NetworkManager.send_run_events(RunEventCodec.encode(chunk))
 	NetworkManager.send_world_state(WorldStateCodec.encode(_world_frame()))
 
 
@@ -575,6 +704,14 @@ func _world_frame() -> WorldStateCodec.Frame:
 	frame.run_time = run_time
 	frame.brosel_alive = brosel.active_count
 	frame.phase = phase
+	frame.stempel_found = stempel_found
+	frame.stempel_total = stempel_total
+	frame.gate = gate_flags
+	frame.result = result
+	frame.boss = _focus_boss
+	frame.boss_slot = _focus_slot
+	frame.boss_hp = _focus_hp
+	frame.boss_max_hp = _focus_max_hp
 	for wirt: Wirtshaus in wirtshaeuser:
 		var flags: int = (WorldStateCodec.WIRT_OPEN if wirt.open else 0) | (WorldStateCodec.WIRT_SERVED if wirt.served else 0)
 		frame.wirtshaeuser.append(Vector3i(wirt.spot, flags, wirt.tier))
@@ -599,6 +736,7 @@ func _world_frame() -> WorldStateCodec.Frame:
 		e.gold = state.build.gold
 		e.rerolls = state.build.rerolls
 		e.banishes = state.build.banishes
+		e.chests_opened = state.chests_opened
 		e.weapons = state.build.weapon_rows()
 		e.passives = state.build.passive_rows()
 		frame.entries.append(e)
@@ -614,6 +752,10 @@ func _client_frame(delta: float) -> void:
 			replica.radius, replica.flash, replica.phase)
 	brosel.draw()
 	projectiles.update(delta, null)
+	hazards.update(delta)
+	for at: Vector2 in replica.recent_deaths:
+		GameAudio.play(&"kill", Vector3(at.x, ground.height_at(at.x, at.y), at.y))
+	replica.recent_deaths.clear()
 	stats.add_system("replica", Time.get_ticks_usec() - t0)
 
 
@@ -656,6 +798,7 @@ func _local_frame(delta: float) -> void:
 		_seen_served[wirt.spot] = wirt.served
 	_point_to_wirtshaus(local)
 	_move_riesen_wirt(delta)
+	_show_run_state(local, state, delta)
 	if state != null:
 		hud.show_state(state, knodl, run_time, balance)
 	hud.show_mouse_hint(camera.mouse_capture_allowed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED
@@ -687,6 +830,41 @@ func _nearest_open_wirtshaus(from: Vector3) -> Wirtshaus:
 ## Where the bot walks first: a heavy Knödl goes to the nearest open Wirtshaus, else to Brösel.
 func _bot_goal(local: Player, knodl: Knodl) -> Vector2:
 	var at: Vector3 = local.global_position
+	var here := Vector2(at.x, at.z)
+	# Out of any attack mark first (sideways out of a line, straight out of a circle).
+	for h: HazardField.Hazard in hazards.hazards:
+		if h.left > 0.0 and HazardField.contains(h, at.x, at.z, 0.8):
+			if h.shape == AttackData.Shape.LINE:
+				var side := Vector2(cos(h.angle), -sin(h.angle))
+				var rel := Vector2(at.x - h.x, at.z - h.z)
+				return here + side * signf(rel.dot(side) + 0.001) * (h.radius + 2.5)
+			var away := Vector2(at.x - h.x, at.z - h.z)
+			return Vector2(h.x, h.z) + (away.normalized() if away.length() > 0.1 else Vector2.RIGHT) * (h.radius + 2.5)
+	# The Formular quest: Stempel, then the gate.
+	var stempel: int = loot.nearest(LootField.Kind.STEMPEL, at.x, at.z)
+	if stempel >= 0:
+		return Vector2(loot.xs[stempel], loot.zs[stempel])
+	if gate_flags & WorldStateCodec.GATE_OPEN and not gate_flags & WorldStateCodec.GATE_BOSS_OUT:
+		var mouth: Vector3 = gate.mouth()
+		return Vector2(mouth.x, mouth.z)
+	# Stay a few metres in front of a boss, facing it, the way a player fights one (its marks are
+	# dodged above).
+	var boss_at: Vector3 = _boss_position() if _focus_boss != WorldStateCodec.NO_BOSS else Vector3.INF
+	if boss_at.is_finite() and here.distance_to(Vector2(boss_at.x, boss_at.z)) < 60.0:
+		var boss_2d := Vector2(boss_at.x, boss_at.z)
+		return boss_2d + (here - boss_2d).normalized() * 2.5
+	var chest: int = loot.nearest(LootField.Kind.BOSS_CHEST, at.x, at.z)
+	if chest >= 0 and here.distance_to(Vector2(loot.xs[chest], loot.zs[chest])) < 80.0:
+		return Vector2(loot.xs[chest], loot.zs[chest])
+	var state: PlayerState = states.get(local.peer_id)
+	if state != null and state.hp < state.max_hp * 0.6:
+		var heal: int = loot.nearest(LootField.Kind.HEAL, at.x, at.z)
+		if heal >= 0 and here.distance_to(Vector2(loot.xs[heal], loot.zs[heal])) < 30.0:
+			return Vector2(loot.xs[heal], loot.zs[heal])
+	chest = loot.nearest(LootField.Kind.CHEST, at.x, at.z)
+	if chest >= 0 and state != null and state.build.gold >= loot.values[chest] + balance.map_chest_price_step * state.chests_opened \
+			and here.distance_to(Vector2(loot.xs[chest], loot.zs[chest])) < 40.0:
+		return Vector2(loot.xs[chest], loot.zs[chest])
 	if knodl != null and knodl.knodl_mass >= balance.bot_cash_in_mass:
 		var wirt: Wirtshaus = _nearest_open_wirtshaus(at)
 		if wirt != null and at.distance_to(wirt.mat_centre()) < BOT_WIRT_REACH:
@@ -772,7 +950,7 @@ func _finish() -> void:
 	_finished = true
 	get_tree().paused = false
 	var seconds: float = maxf(stats.measured_seconds(), 0.001)
-	var result: Dictionary = {
+	var report: Dictionary = {
 		"scene": "run",
 		"role": _role(),
 		"enemies_config": _forced_enemies,
@@ -788,16 +966,17 @@ func _finish() -> void:
 		"run": _run_summary(),
 	}
 	if _ended_reason != "":
-		result["ended_reason"] = _ended_reason
+		report["ended_reason"] = _ended_reason
 	if _snapshots_encoded > 0:
-		result["snapshot_bytes_avg"] = _snapshot_bytes / _snapshots_encoded
+		report["snapshot_bytes_avg"] = _snapshot_bytes / _snapshots_encoded
 	if enemies != null:
-		result["kills"] = enemies.kills
-		result["enemies_alive"] = _alive_held
+		report["kills"] = enemies.kills
+		report["enemies_alive"] = _alive_held
+		report["loot"] = loot.count
 	if NetworkManager.is_online() or _ended_reason != "":
 		var sent: int = NetworkManager.bytes_sent - maxi(_bytes_sent_start, 0)
 		var received: int = NetworkManager.bytes_received - maxi(_bytes_received_start, 0)
-		result["net"] = {
+		report["net"] = {
 			"kib_per_s_in": snappedf(received / seconds / 1024.0, 0.01),
 			"kib_per_s_out": snappedf(sent / seconds / 1024.0, 0.01),
 			"kib_per_s_out_per_client": snappedf(sent / seconds / 1024.0 / maxi(_clients_at_measure, 1), 0.01),
@@ -812,8 +991,11 @@ func _finish() -> void:
 		replica_stats["brosel_host"] = _host_brosel
 		replica_stats["knodls_shown"] = _knodls_max
 		replica_stats["offers_received"] = _offers_received
-		result["replica"] = replica_stats
-	var json: String = JSON.stringify(result)
+		replica_stats["run_events"] = _run_events_received
+		replica_stats["hazards_seen"] = _hazards_seen
+		replica_stats["loot_shown"] = loot.count
+		report["replica"] = replica_stats
+	var json: String = JSON.stringify(report)
 	print("[RESULT] " + json)
 	if OS.has_feature("web"):
 		JavaScriptBridge.eval("window.knoedlResult = %s;" % json)
@@ -827,7 +1009,8 @@ func _run_summary() -> Dictionary:
 	var state: PlayerState = states.get(id)
 	var knodl: Knodl = knodls.get(id)
 	var summary: Dictionary = {"time": snappedf(run_time, 0.1), "phase": Phase.keys()[phase],
-		"brosel_alive": brosel.active_count}
+		"brosel_alive": brosel.active_count, "result": Result.keys()[result], "stempel": stempel_found,
+		"hofrat_beaten": (gate_flags & WorldStateCodec.GATE_BOSS_BEATEN) != 0, "bosses_beaten": _bosses_beaten.duplicate()}
 	if state != null:
 		summary["level"] = state.level
 		summary["xp"] = snappedf(state.xp, 0.1)
@@ -914,6 +1097,14 @@ func _on_world_state(data: PackedByteArray) -> void:
 	_world_states += 1
 	run_time = frame.run_time
 	_host_brosel = frame.brosel_alive
+	stempel_found = frame.stempel_found
+	stempel_total = frame.stempel_total
+	gate_flags = frame.gate
+	result = frame.result as Result
+	_focus_boss = frame.boss
+	_focus_slot = frame.boss_slot
+	_focus_hp = frame.boss_hp
+	_focus_max_hp = frame.boss_max_hp
 	for wirt_state: Vector3i in frame.wirtshaeuser:
 		if wirt_state.x < wirtshaeuser.size():
 			var wirt: Wirtshaus = wirtshaeuser[wirt_state.x]
@@ -938,6 +1129,7 @@ func _on_world_state(data: PackedByteArray) -> void:
 		state.choosing = e.choosing
 		state.life = e.life
 		state.pending_levels = e.pending_levels
+		state.chests_opened = e.chests_opened
 		if not state.build.mirror(e.weapons, e.passives, e.gold, e.rerolls, e.banishes):
 			push_warning("World state names an item this build does not know.")
 		var knodl: Knodl = knodls.get(e.peer_id)
@@ -1025,6 +1217,14 @@ func _on_peer_joined(peer_id: int) -> void:
 			all.append(i)
 	if not all.is_empty():
 		NetworkManager.send_brosel_to(peer_id, BroselCodec.encode(PackedInt32Array(), all, brosel))
+	# Everything lying around (chests, coins, Stempel) for the new client.
+	var lying := RunEventCodec.Queue.new()
+	for slot: int in loot.all_slots():
+		lying.loot(loot.ids[slot], loot.kinds[slot], loot.xs[slot], loot.zs[slot], loot.values[slot])
+	var list: Array[RunEventCodec.Event] = lying.take()
+	while not list.is_empty():
+		NetworkManager.send_run_events_to(peer_id, RunEventCodec.encode(list.slice(0, RunEventCodec.MAX_EVENTS)))
+		list = list.slice(RunEventCodec.MAX_EVENTS)
 
 
 func _on_peer_left(peer_id: int) -> void:
@@ -1140,6 +1340,440 @@ func _role() -> String:
 		NetworkManager.Mode.CLIENT:
 			return "client"
 	return "solo"
+
+
+## Host: a loot item on the ground, announced to everyone.
+func _drop_loot(kind: LootField.Kind, x: float, z: float, value: int) -> void:
+	var half: float = map.half_size - 2.0
+	x = clampf(x, -half, half)
+	z = clampf(z, -half, half)
+	var id: int = loot.add(kind, x, z, value)
+	if id >= 0:
+		events.loot(id, kind, x, z, value)
+
+
+## Host: the run's map chests at random spots (GAME-DESIGN.md: random chest placement).
+func _place_map_chests() -> void:
+	var spots: Array[Vector2] = []
+	spots.assign(map.chest_spots)
+	for k: int in mini(balance.map_chest_count, spots.size()):
+		var pick: int = _loot_rng.randi_range(0, spots.size() - 1)
+		_drop_loot(LootField.Kind.CHEST, spots[pick].x, spots[pick].y, balance.map_chest_price)
+		spots.remove_at(pick)
+
+
+## Host: elites that started an attack this frame put their marks down.
+func _start_attacks() -> void:
+	for k: int in enemies.attack_slot.size():
+		var slot: int = enemies.attack_slot[k]
+		var attack: AttackData = types[enemies.type[slot]].attack
+		if attack != null:
+			hazards.start_attack(attack, enemies.pos_x[slot], enemies.pos_z[slot], enemies.attack_x[k], enemies.attack_z[k], slot)
+	enemies.clear_attacks()
+
+
+## Host: marks that hit this frame hurt the players inside (jumping over one dodges it), send
+## dashers along their line and bring summons.
+func _resolve_hazards() -> void:
+	for h: HazardField.Hazard in hazards.hits:
+		var attack: AttackData = h.attack
+		if phase == Phase.RUNNING and not _god:
+			for peer: int in players:
+				var state: PlayerState = states[peer]
+				if state.downed or state.choosing:
+					continue
+				var at: Vector3 = players[peer].global_position
+				if at.y - ground.height_at(at.x, at.z) > balance.hazard_dodge_height:
+					continue
+				if HazardField.contains(h, at.x, at.z, balance.player_radius):
+					if state.hurt(Formulas.hit_damage(attack.damage, state.build.stat(&"armor"), balance), balance):
+						_on_downed(peer)
+		if attack.dash and h.source >= 0:
+			if bosses.is_boss_slot(h.source):
+				bosses.on_hit(h)
+			elif enemies.alive[h.source] != 0:
+				enemies.start_dash(h.source, sin(h.angle), cos(h.angle), h.length / HazardField.DASH_SECONDS, HazardField.DASH_SECONDS)
+		if attack.summon != null and attack.summon_count > 0:
+			var t: int = types.find(attack.summon)
+			for c: int in (attack.summon_count if t >= 0 else 0):
+				enemies.spawn_at(t, h.x + _loot_rng.randf_range(-1.5, 1.5), h.z + _loot_rng.randf_range(-1.5, 1.5))
+
+
+## Host: a boss fell: golden Kaiserschmarrn bits, coins and its chest where it stood.
+func _on_bosses_beaten(beaten: Array[BossDirector.Active]) -> void:
+	for boss: BossDirector.Active in beaten:
+		var data: BossData = boss.data
+		var x: float = boss.last_x
+		var z: float = boss.last_z
+		for k: int in data.golden_brosel:
+			var angle: float = TAU * k / maxi(data.golden_brosel, 1)
+			brosel.drop(x + cos(angle) * 2.0, z + sin(angle) * 2.0, balance.brosel_values[3], true)
+		# A handful of heavy coins rather than dozens of single ones.
+		var coins: int = clampi(data.gold, 0, BOSS_COINS)
+		for k: int in coins:
+			_drop_loot(LootField.Kind.COIN, x + _loot_rng.randf_range(-3.0, 3.0), z + _loot_rng.randf_range(-3.0, 3.0),
+					floori(float(data.gold) / coins) + (1 if k < data.gold % coins else 0))
+		var chest: int = data.chest_items | (LootField.EVOLUTION_BIT if data.chest_evolution else 0)
+		_drop_loot(LootField.Kind.BOSS_CHEST, x, z, chest)
+		events.boss(boss.index, RunEventCodec.BossState.BEATEN, boss.slot)
+		if data.final:
+			gate_flags |= WorldStateCodec.GATE_BOSS_BEATEN
+		_bosses_beaten.append([String(data.id), snappedf(run_time, 0.1)])
+		print("[RUN] boss beaten %s t=%.1f" % [data.id, run_time])
+
+
+## Host: the run's timeline beyond the crowd (GAME-DESIGN.md "Run timeline"): mini-bosses, the
+## Touristenbus, the Formular and the Hofrat behind the gate.
+func _update_timeline(delta: float) -> void:
+	if _bus_left > 0.0:
+		_bus_left -= delta
+		if _bus_left <= 0.0:
+			enemies.spawn_sector_width = 0.0
+	if phase != Phase.RUNNING or _forced_enemies > 0:
+		return
+	var minute: float = run_time / 60.0
+	for k: int in wave.bosses.size():
+		if not _bosses_started.has(k) and minute >= wave.bosses[k].minute:
+			_bosses_started[k] = true
+			_spawn_boss_near_players(k)
+	if not _bus_done and minute >= wave.bus_minute:
+		_start_bus()
+	if wave.final_boss == null:
+		return
+	if gate_flags & WorldStateCodec.GATE_FORMULAR == 0 and minute >= wave.formular_minute:
+		_start_formular()
+	if gate_flags & WorldStateCodec.GATE_BOSS_OUT == 0:
+		var mouth: Vector3 = gate.mouth()
+		var entered: bool = false
+		if gate_flags & WorldStateCodec.GATE_OPEN:
+			for peer: int in players:
+				var at: Vector3 = players[peer].global_position
+				if not states[peer].downed and Vector2(at.x - mouth.x, at.z - mouth.z).length() < balance.portal_radius:
+					entered = true
+		var forced: bool = minute >= wave.final_boss_minute
+		if entered or forced:
+			gate_flags |= WorldStateCodec.GATE_BOSS_OUT
+			if forced and not entered:
+				events.toast("TOAST_HOFRAT_FORCED")
+			_spawn_boss(_boss_list.size() - 1, mouth.x, mouth.z)
+
+
+func _spawn_boss_near_players(index: int) -> void:
+	var positions: PackedVector3Array = _player_positions()
+	var centre: Vector3 = positions[_loot_rng.randi_range(0, positions.size() - 1)] if not positions.is_empty() else Vector3.ZERO
+	var angle: float = _loot_rng.randf() * TAU
+	var distance: float = _boss_list[index].arrive_distance
+	var half: float = map.half_size - 15.0
+	_spawn_boss(index, clampf(centre.x + cos(angle) * distance, -half, half), clampf(centre.z + sin(angle) * distance, -half, half))
+
+
+func _spawn_boss(index: int, x: float, z: float) -> void:
+	var boss: BossDirector.Active = bosses.spawn(index, x, z, players.size())
+	if boss != null:
+		events.boss(index, RunEventCodec.BossState.ARRIVED, boss.slot)
+		print("[RUN] boss %s t=%.1f" % [boss.data.id, run_time])
+
+
+## Host: the Formular appears; its Stempel lie at random spots of the map.
+func _start_formular() -> void:
+	gate_flags |= WorldStateCodec.GATE_FORMULAR
+	var spots: Array[Vector2] = []
+	spots.assign(map.stempel_spots)
+	stempel_total = mini(balance.stempel_count, spots.size())
+	for k: int in stempel_total:
+		var pick: int = _loot_rng.randi_range(0, spots.size() - 1)
+		_drop_loot(LootField.Kind.STEMPEL, spots[pick].x, spots[pick].y, k)
+		spots.remove_at(pick)
+	events.toast("TOAST_FORMULAR")
+	if stempel_total == 0:
+		_open_gate()
+
+
+func _open_gate() -> void:
+	gate_flags |= WorldStateCodec.GATE_OPEN
+	events.toast("TOAST_GATE_OPEN")
+	var mouth: Vector3 = gate.mouth()
+	events.cue(RunEventCodec.Cue.GATE_OPEN, mouth.x, mouth.z)
+
+
+## Host: the Touristenbus pulls up near a player and the crowd comes from its side for a while.
+func _start_bus() -> void:
+	_bus_done = true
+	var positions: PackedVector3Array = _player_positions()
+	if positions.is_empty():
+		return
+	_bus_left = wave.bus_seconds
+	var centre: Vector3 = positions[_loot_rng.randi_range(0, positions.size() - 1)]
+	var angle: float = _loot_rng.randf() * TAU
+	enemies.spawn_sector_angle = angle
+	enemies.spawn_sector_width = 0.9
+	var half: float = map.half_size - 14.0
+	var x: float = clampf(centre.x + cos(angle) * 24.0, -half, half)
+	var z: float = clampf(centre.z + sin(angle) * 24.0, -half, half)
+	events.bus(x, z, atan2(centre.x - x, centre.z - z))
+
+
+## Host: players walking over loot: coins, Gulasch, Stempel, chests (map chests cost gold).
+func _collect_loot(delta: float) -> void:
+	for peer: int in _no_gold_timers.keys():
+		_no_gold_timers[peer] -= delta
+		if _no_gold_timers[peer] <= 0.0:
+			_no_gold_timers.erase(peer)
+	var reach: float = maxf(balance.chest_pickup_radius, balance.stempel_pickup_radius)
+	for peer: int in players:
+		var state: PlayerState = states[peer]
+		if state.downed or state.choosing:
+			continue
+		var at: Vector3 = players[peer].global_position
+		var reach_mult: float = 1.0 + state.build.stat(&"pickup")
+		loot.attract(at.x, at.z, balance.coin_magnet_range * reach_mult, delta)
+		for slot: int in loot.near(at.x, at.y, at.z, reach):
+			if loot.alive[slot] == 0:
+				continue
+			var d: float = Vector2(loot.xs[slot] - at.x, loot.zs[slot] - at.z).length()
+			match loot.kinds[slot]:
+				LootField.Kind.COIN:
+					if d < balance.coin_pickup_radius:
+						state.build.add_gold(loot.values[slot])
+						_take_loot(slot, peer)
+				LootField.Kind.HEAL:
+					if d < balance.coin_pickup_radius and state.hp < state.max_hp:
+						state.heal(loot.values[slot])
+						_take_loot(slot, peer)
+				LootField.Kind.STEMPEL:
+					if d < balance.stempel_pickup_radius:
+						_take_loot(slot, peer)
+						stempel_found += 1
+						events.toast("TOAST_STEMPEL_%d" % mini(stempel_found, 3))
+						if stempel_found >= stempel_total:
+							_open_gate()
+				LootField.Kind.CHEST:
+					if d < balance.chest_pickup_radius:
+						var price: int = loot.values[slot] + balance.map_chest_price_step * state.chests_opened
+						if state.build.gold >= price:
+							state.build.gold -= price
+							state.chests_opened += 1
+							_take_loot(slot, peer)
+							level_flow.give_chest(peer, state, CHEST_TIER_MAP, balance.map_chest_items, false, 0)
+						elif not _no_gold_timers.has(peer):
+							_no_gold_timers[peer] = NOTICE_INTERVAL
+							level_flow.notify(peer, OfferCodec.Notice.NO_GOLD)
+				LootField.Kind.BOSS_CHEST:
+					if d < balance.chest_pickup_radius:
+						var value: int = loot.values[slot]
+						_take_loot(slot, peer)
+						level_flow.give_chest(peer, state, CHEST_TIER_BOSS, value & 0xFF, (value & LootField.EVOLUTION_BIT) != 0, 0)
+
+
+func _take_loot(slot: int, peer: int) -> void:
+	var id: int = loot.ids[slot]
+	# The event is shown before the item goes (the sound needs to know what it was).
+	events.taken(id, peer)
+	_flush_events()
+	loot.remove(id)
+
+
+## Host: this frame's run events: shown here right away, sent to the clients with the next world
+## state.
+func _flush_events() -> void:
+	for h: HazardField.Hazard in hazards.take_made():
+		events.hazard(h)
+	for key: String in bosses.take_toasts():
+		events.toast(key)
+	_update_focus()
+	var batch: Array[RunEventCodec.Event] = events.take()
+	for e: RunEventCodec.Event in batch:
+		_present(e)
+	if not NetworkManager.client_ids().is_empty():
+		_outgoing.append_array(batch)
+
+
+## Host: the boss in the HUD bar is the latest one still standing.
+func _update_focus() -> void:
+	_focus_boss = WorldStateCodec.NO_BOSS
+	_focus_max_hp = 0.0
+	if bosses.active.is_empty():
+		return
+	var boss: BossDirector.Active = bosses.active.back()
+	_focus_boss = boss.index
+	_focus_slot = boss.slot
+	_focus_hp = maxf(enemies.hp[boss.slot], 0.0)
+	_focus_max_hp = enemies.max_hp[boss.slot]
+
+
+## Client: run events from the host.
+func _on_run_events(data: PackedByteArray) -> void:
+	if NetworkManager.is_host():
+		return
+	for e: RunEventCodec.Event in RunEventCodec.decode(data):
+		_run_events_received += 1
+		_present(e)
+		match e.kind:
+			RunEventCodec.Kind.HAZARD:
+				hazards.add_remote(e.id, e.a, e.x, e.z, e.angle, e.radius, e.length, e.seconds)
+				_hazards_seen += 1
+			RunEventCodec.Kind.LOOT:
+				loot.add_remote(e.id, e.a, e.x, e.z, e.b)
+			RunEventCodec.Kind.TAKEN:
+				loot.remove(e.id)
+
+
+## Every role: the sound, toast or look of a run event.
+func _present(e: RunEventCodec.Event) -> void:
+	var local: Player = players.get(NetworkManager.local_id())
+	match e.kind:
+		RunEventCodec.Kind.HAZARD:
+			if local != null and Vector2(e.x - local.global_position.x, e.z - local.global_position.z).length() < e.radius + e.length + 10.0:
+				GameAudio.play(&"warn", Vector3(e.x, ground.height_at(e.x, e.z), e.z))
+		RunEventCodec.Kind.TAKEN:
+			var slot: int = loot.slot_of(e.id)
+			if slot < 0:
+				return
+			var at: Vector3 = loot.position_of(slot)
+			match loot.kinds[slot]:
+				LootField.Kind.COIN:
+					GameAudio.play(&"coin", at)
+				LootField.Kind.HEAL:
+					GameAudio.play(&"heal", at)
+				LootField.Kind.STEMPEL:
+					GameAudio.play(&"stempel", at)
+				_:
+					GameAudio.play(&"chest", at)
+		RunEventCodec.Kind.TOAST:
+			hud.toast(tr(e.text))
+		RunEventCodec.Kind.BOSS:
+			if e.a >= _boss_list.size():
+				return
+			var data: BossData = _boss_list[e.a]
+			if e.c == RunEventCodec.BossState.ARRIVED:
+				hud.toast(tr(data.intro_key))
+				GameAudio.play(&"boss_arrive")
+			else:
+				hud.toast(tr(data.defeat_key))
+				GameAudio.play(&"boss_beaten")
+				GameAudio.bark(&"geh_bitte")
+		RunEventCodec.Kind.BUS:
+			if _bus != null:
+				_bus.queue_free()
+			_bus = TouristenBus.new()
+			add_child(_bus)
+			_bus.setup(Vector3(e.x, 0.0, e.z), e.angle, ground)
+			hud.toast(tr("TOAST_BUS"))
+			GameAudio.play(&"bus_horn", Vector3(e.x, ground.height_at(e.x, e.z), e.z))
+		RunEventCodec.Kind.CUE:
+			if e.a == RunEventCodec.Cue.GATE_OPEN:
+				GameAudio.play(&"gate_open")
+
+
+## Every role: the gate, the boss bar, the Formular line, markers, hints, music and the local
+## player's sounds.
+func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
+	loot.draw(delta)
+	var gate_state: PortalGate.State = PortalGate.State.SEALED
+	if gate_flags & WorldStateCodec.GATE_BOSS_BEATEN:
+		gate_state = PortalGate.State.DONE
+	elif gate_flags & WorldStateCodec.GATE_BOSS_OUT:
+		gate_state = PortalGate.State.BOSS_OUT
+	elif gate_flags & WorldStateCodec.GATE_OPEN:
+		gate_state = PortalGate.State.OPEN
+	var gate_key: int = gate_state * 256 + stempel_found * 16 + stempel_total
+	if gate_key != _gate_shown:
+		_gate_shown = gate_key
+		gate.set_state(gate_state, stempel_found, stempel_total)
+	var boss_alive: bool = _focus_boss != WorldStateCodec.NO_BOSS and _focus_boss < _boss_list.size() and _focus_max_hp > 0.0
+	hud.show_boss(tr(_boss_list[_focus_boss].name_key) if boss_alive else "", _focus_hp, _focus_max_hp if boss_alive else 0.0)
+	var formular: String = ""
+	if gate_flags & WorldStateCodec.GATE_BOSS_BEATEN:
+		formular = tr("HUD_HOFRAT_BEATEN")
+	elif gate_flags & WorldStateCodec.GATE_BOSS_OUT:
+		formular = ""
+	elif gate_flags & WorldStateCodec.GATE_OPEN:
+		formular = tr("HUD_GATE_OPEN")
+	elif gate_flags & WorldStateCodec.GATE_FORMULAR:
+		formular = tr("HUD_FORMULAR") % [stempel_found, stempel_total]
+	hud.show_formular(formular)
+	hud.begin_markers()
+	var from: Vector3 = local.global_position if local != null else Vector3.ZERO
+	if phase == Phase.RUNNING:
+		for slot: int in loot.capacity:
+			if loot.alive[slot] != 0 and loot.kinds[slot] == LootField.Kind.STEMPEL:
+				var at: Vector3 = loot.position_of(slot)
+				hud.marker(camera, at + Vector3(0.0, 3.0, 0.0), tr("HUD_STEMPEL_MARKER") % roundi(from.distance_to(at)), Color(1.0, 0.86, 0.45))
+		if gate_flags & WorldStateCodec.GATE_OPEN and not gate_flags & WorldStateCodec.GATE_BOSS_OUT:
+			var mouth: Vector3 = gate.mouth()
+			hud.marker(camera, mouth + Vector3(0.0, 6.0, 0.0), tr("HUD_GATE_MARKER") % roundi(from.distance_to(mouth)), Color(0.6, 1.0, 0.65))
+		if boss_alive:
+			var boss_at: Vector3 = _boss_position()
+			if boss_at.is_finite() and from.distance_to(boss_at) > 18.0:
+				hud.marker(camera, boss_at + Vector3(0.0, 5.0, 0.0), "%s · %d m" % [tr(_boss_list[_focus_boss].name_key), roundi(from.distance_to(boss_at))], Color(0.8, 0.65, 1.0))
+	hud.end_markers()
+	var hint: String = ""
+	var chest: int = loot.nearest(LootField.Kind.CHEST, from.x, from.z)
+	if chest >= 0 and Vector2(loot.xs[chest] - from.x, loot.zs[chest] - from.z).length() < 7.0:
+		hint = tr("HINT_CHEST") % (loot.values[chest] + balance.map_chest_price_step * (state.chests_opened if state != null else 0))
+	hud.show_hint(hint)
+	if state != null:
+		hud.downed_key = "TOAST_DOWNED" if _respawn or players.size() > 1 else "TOAST_DOWNED_SOLO"
+	# Sounds of the local player, from the state the host keeps.
+	if state != null:
+		if state.hp < _last_hp - 0.01 and not state.downed:
+			GameAudio.play(&"hurt")
+			if state.hp < state.max_hp * 0.3:
+				GameAudio.bark(&"heast")
+		if state.downed and not _was_downed:
+			GameAudio.play(&"downed")
+		if state.level > _sound_level and _sound_level > 0:
+			GameAudio.play(&"level_up")
+		elif state.xp > _last_xp + 0.01:
+			GameAudio.play(&"brosel")
+		_last_xp = state.xp
+		_last_hp = state.hp
+		_was_downed = state.downed
+		_sound_level = state.level
+	var knodl: Knodl = knodls.get(NetworkManager.local_id())
+	if knodl != null:
+		if knodl.state != _knodl_state_heard:
+			if knodl.state == Knodl.State.THROWN:
+				GameAudio.play(&"schupfn", knodl.global_position)
+			elif knodl.state == Knodl.State.REELING:
+				GameAudio.play(&"reel", knodl.global_position)
+			_knodl_state_heard = knodl.state
+		if knodl.hits > _knodl_hits_heard:
+			GameAudio.play(&"knodl_hit", knodl.global_position)
+		_knodl_hits_heard = knodl.hits
+	for h: HazardField.Hazard in hazards.struck:
+		GameAudio.play(&"slam", Vector3(h.x, ground.height_at(h.x, h.z), h.z))
+	if local != null:
+		GameAudio.set_listener(local.global_position)
+	if phase == Phase.RUNNING:
+		GameAudio.music(&"boss" if boss_alive else &"kirtag")
+		if not boss_alive:
+			GameAudio.set_music_speed(1.0 + 0.12 * clampf(run_time / balance.run_seconds, 0.0, 1.0))
+
+
+## Where the boss in the HUD bar stands (host: its slot; client: its replica), or INF.
+func _boss_position() -> Vector3:
+	var x: float = 0.0
+	var z: float = 0.0
+	if enemies != null:
+		if _focus_slot >= enemies.capacity or enemies.alive[_focus_slot] == 0:
+			return Vector3.INF
+		x = enemies.pos_x[_focus_slot]
+		z = enemies.pos_z[_focus_slot]
+	elif replica != null:
+		if _focus_slot >= replica.capacity or replica.alive[_focus_slot] == 0:
+			return Vector3.INF
+		x = replica.x[_focus_slot]
+		z = replica.z[_focus_slot]
+	return Vector3(x, ground.height_at(x, z), z)
+
+
+func _load_map(id: String) -> MapData:
+	var path: String = MAP_DIR.path_join(id + ".tres")
+	if not ResourceLoader.exists(path):
+		push_warning("Unknown map '%s', playing the Kirtag." % id)
+		path = MAP_DIR.path_join("kirtag.tres")
+	return load(path) as MapData
 
 
 func _load_character(id: String) -> CharacterData:

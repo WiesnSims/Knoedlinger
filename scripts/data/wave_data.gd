@@ -8,6 +8,18 @@ extends Resource
 @export var id: StringName = &""
 @export var enemies: Array[EnemyTypeData] = []
 @export var entries: Array[WaveEntry] = []
+## Mini-bosses on the clock.
+@export var bosses: Array[WaveBoss] = []
+## The main boss behind the gate (GAME-DESIGN.md "Run timeline"): at formular_minute the Formular
+## appears (collect the Stempel to open the gate); at final_boss_minute he comes out anyway.
+@export var final_boss: BossData
+@export var formular_minute: float = 10.0
+@export var final_boss_minute: float = 12.0
+## The Touristenbus: for bus_seconds from bus_minute the crowd comes from one direction, with
+## bus_extra more enemies.
+@export var bus_minute: float = 8.0
+@export var bus_seconds: float = 45.0
+@export var bus_extra: int = 80
 
 
 ## Spawn weight per entry of `enemies` at this run time.

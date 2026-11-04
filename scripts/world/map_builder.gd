@@ -12,7 +12,8 @@ const SNOW_HEIGHT: float = 13.0
 
 
 ## Builds the map under `parent` from its baked terrain.
-static func build(map: MapData, terrain: Heightfield, parent: Node3D) -> void:
+## Returns the props' see-through material (ChaseCamera drives it), or null without props.
+static func build(map: MapData, terrain: Heightfield, parent: Node3D) -> ShaderMaterial:
 	_build_environment(map, parent)
 	var body := StaticBody3D.new()
 	body.name = "Terrain"
@@ -34,7 +35,7 @@ static func build(map: MapData, terrain: Heightfield, parent: Node3D) -> void:
 	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mesh.material_override = vertex_color_material()
 	body.add_child(mesh)
-	_build_props(map, parent)
+	return _build_props(map, parent)
 
 
 static func vertex_color_material() -> StandardMaterial3D:
@@ -100,6 +101,9 @@ static func _ground_color(map: MapData, p: Vector3, normal: Vector3) -> Color:
 	var patch: float = 0.5 + 0.5 * sin(p.x * 0.11 + sin(p.z * 0.07) * 2.0) * cos(p.z * 0.09 - p.x * 0.03)
 	var color: Color = map.grass_color.lerp(map.meadow_color, patch * 0.7)
 	var steep: float = smoothstep(0.86, 0.68, normal.y)
+	var path: float = map.path_cover(p.x, p.z)
+	if path > 0.0:
+		color = color.lerp(map.path_color.darkened(0.06 * patch), path * (1.0 - steep))
 	color = color.lerp(map.rock_color, steep)
 	if p.y > SNOW_HEIGHT:
 		color = color.lerp(Color(0.93, 0.95, 0.97), smoothstep(SNOW_HEIGHT, SNOW_HEIGHT + 3.0, p.y) * (1.0 - steep * 0.6))
@@ -135,9 +139,9 @@ static func _build_environment(map: MapData, parent: Node3D) -> void:
 	parent.add_child(sun)
 
 
-static func _build_props(map: MapData, parent: Node3D) -> void:
+static func _build_props(map: MapData, parent: Node3D) -> ShaderMaterial:
 	if map.all_props().is_empty():
-		return
+		return null
 	var body := StaticBody3D.new()
 	body.name = "Props"
 	body.collision_layer = LAYER_WORLD
@@ -181,10 +185,30 @@ static func _build_props(map: MapData, parent: Node3D) -> void:
 				shape.shape = cylinder
 				shape.position += Vector3(0.0, (top + bottom) * 0.5, 0.0)
 				builder.add_cylinder(prop.transform(), sx, bottom, top, 8, prop.color)
-		body.add_child(shape)
+			MapProp.Kind.ROOF:
+				var prism := ConvexPolygonShape3D.new()
+				prism.points = PackedVector3Array([
+					Vector3(-sx, 0.0, -sz), Vector3(sx, 0.0, -sz), Vector3(-sx, 0.0, sz), Vector3(sx, 0.0, sz),
+					Vector3(-sx, top, 0.0), Vector3(sx, top, 0.0)])
+				shape.shape = prism
+				builder.add_convex(prop.transform(), prism.points, prop.color)
+			MapProp.Kind.SPIRE:
+				var pyramid := ConvexPolygonShape3D.new()
+				pyramid.points = PackedVector3Array([
+					Vector3(-sx, 0.0, -sz), Vector3(sx, 0.0, -sz), Vector3(-sx, 0.0, sz), Vector3(sx, 0.0, sz),
+					Vector3(0.0, top, 0.0)])
+				shape.shape = pyramid
+				builder.add_convex(prop.transform(), pyramid.points, prop.color)
+		if prop.solid:
+			body.add_child(shape)
+		else:
+			shape.free()
 	var mesh := MeshInstance3D.new()
 	mesh.name = "PropMesh"
 	mesh.mesh = builder.commit()
 	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	mesh.material_override = vertex_color_material()
+	var material := ShaderMaterial.new()
+	material.shader = load("res://shaders/world_props.gdshader")
+	mesh.material_override = material
 	body.add_child(mesh)
+	return material

@@ -137,6 +137,7 @@ func open_seconds() -> float:
 ## A new offer from the host for the local player.
 func show_offer(offer: OfferCodec.Offer, _build: PlayerBuild) -> void:
 	_offer = offer
+	GameAudio.play(&"menu_open")
 	_banish_mode = false
 	_banish.set_pressed_no_signal(false)
 	_title.text = tr("MENU_TITLE") if offer.pending <= 1 else tr("MENU_TITLE_MORE") % offer.pending
@@ -169,7 +170,10 @@ func show_offer(offer: OfferCodec.Offer, _build: PlayerBuild) -> void:
 
 ## What a Wirtshaus cash-in gave (tier, gold, cards), as icon tiles.
 func show_chest(offer: OfferCodec.Offer) -> void:
-	_chest_title.text = tr("CHEST_TITLE") % tr("TIER_%d" % offer.tier)
+	_chest_title.text = tr("CHEST_TITLE") % tr("TIER_%d" % offer.tier) if offer.tier < 4 else tr("CHEST_TITLE_%d" % offer.tier)
+	GameAudio.play(&"cash_in" if offer.tier < 4 else &"chest")
+	if offer.tier < 4:
+		GameAudio.play(&"mahlzeit")
 	for child: Node in _chest_items.get_children():
 		child.queue_free()
 	if offer.value > 0:
@@ -340,6 +344,9 @@ func _on_banish_toggled(on: bool) -> void:
 func _answer(action: OfferCodec.Action, card: int) -> void:
 	if _offer == null:
 		return
+	GameAudio.play(&"card")
+	if action == OfferCodec.Action.SKIP:
+		GameAudio.bark(&"wurscht")
 	var choice := OfferCodec.Choice.new()
 	choice.seq = _offer.seq
 	choice.action = action

@@ -25,3 +25,15 @@ extends Resource
 ## much of its mass per second while touching it.
 @export var eats_knodl: bool = false
 @export var bite_per_second: float = 0.0
+## Elites: one telegraphed attack (null = it only hurts by touch).
+@export var attack: AttackData
+## Bosses are not moved by the crowd logic; BossDirector moves them and runs their BossData.
+@export var boss: bool = false
+## On death it falls apart into this many of another type (Akten-Geist: 3 Formulare).
+@export var split_into: EnemyTypeData
+@export var split_count: int = 0
+## Gold coins it drops on death (elites and bosses).
+@export var gold_drop: int = 0
+## Which model MeshFactory builds: "" = the plain fodder figure, or perchte, radler, akten,
+## formular, krampus, hofrat.
+@export var look: StringName = &""

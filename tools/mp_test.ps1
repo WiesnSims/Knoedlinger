@@ -8,9 +8,11 @@
 # matches the host, every player's Knoedl is shown, the host rejected no pose, and every client got
 # Speisekarte offers from the host and levelled up by answering them.
 # -HostLeavesFirst: the host quits mid-run and every client must notice it ("host_left") and end cleanly.
+# -StartTime 595: instead of holding -Enemies, the host plays the real timeline from that second (M3:
+# bosses, attack marks, the Formular, loot); every client must then get run events, marks and loot.
 # -Scene stress runs the M0 stress arena instead.
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/mp_test.ps1 [-Clients 3] [-Seconds 20] [-HostLeavesFirst]
-#        [-Scene run|stress]
+#        [-Scene run|stress] [-StartTime 595]
 param(
     [int]$Clients = 1,
     [ValidateSet('run', 'stress')][string]$Scene = 'run',
@@ -21,7 +23,8 @@ param(
     [double]$MaxKibPerSecond = 60,
     [switch]$HostLeavesFirst,
     [switch]$Coop,
-    [switch]$NoRejectTest
+    [switch]$NoRejectTest,
+    [int]$StartTime = -1
 )
 . "$PSScriptRoot\common.ps1"
 
@@ -51,7 +54,8 @@ function Get-Result([string]$Path) {
 }
 
 $hostSeconds = if ($HostLeavesFirst) { [math]::Max([int]($Seconds / 2), 5) } else { $Seconds + 10 }
-$hostRun = Start-Godot 'host' @('--net=ws', '--host', "--port=$Port", "--enemies=$Enemies", "--projectiles=$Projectiles", "--seconds=$hostSeconds", '--bot=1')
+$crowd = if ($StartTime -ge 0) { "--start_time=$StartTime" } else { "--enemies=$Enemies" }
+$hostRun = Start-Godot 'host' @('--net=ws', '--host', "--port=$Port", $crowd, "--projectiles=$Projectiles", "--seconds=$hostSeconds", '--bot=1', '--respawn=1')
 $deadline = (Get-Date).AddSeconds(30)
 while ((Get-Date) -lt $deadline -and -not (Select-String -Path $hostRun.Log -Pattern 'LISTENING' -Quiet -ErrorAction SilentlyContinue)) {
     Start-Sleep -Milliseconds 200
@@ -108,7 +112,10 @@ foreach ($run in $runs) {
         $n, $net.kib_per_s_in, $rep.snapshots, $rep.interval_ms_p95, $rep.interval_ms_max, $rep.underrun_ms_max_streak, `
         $rep.pops, $rep.clock_jumps, $rep.alive_shown, $rep.alive_host)
     if ($rep.snapshots -lt 10) { $failures += "${n}: only $($rep.snapshots) snapshots" }
-    if ($net.kib_per_s_in -ge $MaxKibPerSecond) { $failures += "${n}: $($net.kib_per_s_in) KiB/s down (budget $MaxKibPerSecond)" }
+    # The budget (CLAUDE.md) is for 500 enemies; the real co-op timeline holds more (+60 % per extra
+    # player), so it scales with the crowd the client was shown.
+    $budget = if ($StartTime -ge 0) { $MaxKibPerSecond * [math]::Max(1.0, $rep.alive_host / 500.0) } else { $MaxKibPerSecond }
+    if ($net.kib_per_s_in -ge $budget) { $failures += "${n}: $($net.kib_per_s_in) KiB/s down (budget $([math]::Round($budget, 1)) for $($rep.alive_host) enemies)" }
     if ($rep.decode_errors -gt 0) { $failures += "${n}: $($rep.decode_errors) decode errors" }
     if ($rep.underrun_ms_max_streak -gt 2 * $intervalMs) { $failures += "${n}: buffer dry for $($rep.underrun_ms_max_streak) ms in a row" }
     if ($rep.pops -gt 0) { $failures += "${n}: $($rep.pops) pops" }
@@ -124,6 +131,12 @@ foreach ($run in $runs) {
         }
         if (-not $HostLeavesFirst -and $rep.knodls_shown -lt $Clients + 1) { $failures += "${n}: shows $($rep.knodls_shown) Knoedl for $($Clients + 1) players" }
         Write-Host ("{0}: level {1}, {2} Speisekarte messages, weapons {3}" -f $n, $r.run.level, $rep.offers_received, ($r.run.weapons -join ', '))
+        Write-Host ("{0}: {1} run events, {2} attack marks, {3} loot shown" -f $n, $rep.run_events, $rep.hazards_seen, $rep.loot_shown)
+        if ($rep.loot_shown -lt 1) { $failures += "${n}: no loot shown (the map chests come with the join)" }
+        if ($StartTime -ge 0 -and -not $HostLeavesFirst) {
+            if ($rep.run_events -lt 5) { $failures += "${n}: only $($rep.run_events) run events" }
+            if ($rep.hazards_seen -lt 1) { $failures += "${n}: no attack marks reached the client" }
+        }
         if (-not $HostLeavesFirst) {
             if ($rep.offers_received -lt 1) { $failures += "${n}: no Speisekarte offer reached the client" }
             if ($r.run.level -lt 2) { $failures += "${n}: still level $($r.run.level)" }
@@ -147,4 +160,4 @@ if ($hostResult -and $hostResult.net) {
         $hostResult.net.kib_per_s_out, $hostResult.snapshot_bytes_avg, $hostResult.frame.frame_ms_p95)
 }
 Write-Host "process logs: $runDir"
-Complete-Script -Name "mp_test -Clients $Clients$(if ($HostLeavesFirst) { ' -HostLeavesFirst' })" -Log $log -Failures $failures
+Complete-Script -Name "mp_test -Clients $Clients$(if ($HostLeavesFirst) { ' -HostLeavesFirst' })$(if ($StartTime -ge 0) { " -StartTime $StartTime" })" -Log $log -Failures $failures

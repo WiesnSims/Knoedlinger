@@ -59,6 +59,8 @@ func sync(build: PlayerBuild, run_time: float, delta: float, shots: ProjectilePo
 		effect.seen_fires = owned.fires
 		if fired:
 			effect.time = 0.0
+			if player.is_local and weapon.pattern == WeaponData.Pattern.ARC:
+				GameAudio.play(&"swing", player.global_position)
 		else:
 			effect.time += delta
 		match weapon.pattern:

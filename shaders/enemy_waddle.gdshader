@@ -9,6 +9,19 @@ uniform float bob_height = 0.06;
 uniform vec3 flash_color : source_color = vec3(1.0, 1.0, 1.0);
 // Debugging only: 1 shows the vertex colour unlit, 2 the normal, 3 the instance custom data.
 uniform int debug_view = 0;
+// See-through (ChaseCamera, like shaders/world_props.gdshader): enemies between the camera and the
+// player are dithered in a circle around the player, and anything right at the lens fades out.
+uniform vec2 focus_uv = vec2(0.5);
+uniform float focus_depth = 0.0;
+uniform float cut_radius = 0.0;
+uniform float aspect = 1.7778;
+uniform float near_fade = 2.5;
+
+float bayer4(vec2 p) {
+	ivec2 i = ivec2(mod(p, 4.0));
+	int m[16] = int[16](0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5);
+	return (float(m[i.x + i.y * 4]) + 0.5) / 16.0;
+}
 
 varying float flash;
 varying vec3 debug_custom;
@@ -41,6 +54,15 @@ void fragment() {
 	// Vertex colours are authored in sRGB; lighting works in linear.
 	ALBEDO = mix(srgb_to_linear(COLOR.rgb), flash_color, flash);
 	ROUGHNESS = 1.0;
+	float depth = -VERTEX.z;
+	float hide = 1.0 - clamp((depth - 0.5) / near_fade, 0.0, 1.0);
+	if (cut_radius > 0.0 && depth < focus_depth - 1.0) {
+		float d = length((SCREEN_UV - focus_uv) * vec2(aspect, 1.0));
+		hide = max(hide, smoothstep(cut_radius, cut_radius * 0.55, d) * 0.7);
+	}
+	if (bayer4(FRAGCOORD.xy) < hide) {
+		discard;
+	}
 	if (debug_view == 1) { ALBEDO = vec3(0.0); EMISSION = COLOR.rgb; }
 	if (debug_view == 2) { ALBEDO = vec3(0.0); EMISSION = NORMAL * 0.5 + 0.5; }
 	if (debug_view == 3) { ALBEDO = vec3(0.0); EMISSION = vec3(fract(debug_custom.x), debug_custom.y, debug_custom.z); }

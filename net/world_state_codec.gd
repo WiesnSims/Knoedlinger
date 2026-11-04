@@ -6,16 +6,18 @@ extends RefCounted
 ##
 ## Layout (little endian):
 ##   u8 version | u16 seq | u32 host ms | f32 run time | u16 Brösel alive | u8 phase |
-##   u8 Wirtshäuser, each u8 spot | u8 flags (open, served, tier << 2) | u8 players
+##   u8 Formular Stempel found | u8 Stempel total | u8 gate flags | u8 result | u8 boss (255 = none) |
+##   u16 boss slot | f32 boss hp | f32 boss max hp | u8 padding |
+##   then per Wirtshaus (the count is the u8 at offset 14) u8 spot | u8 flags (open, served, tier << 2) | u8 players
 ##   per player PLAYER_SIZE bytes: s32 peer | f32 hp | f32 max hp | f32 xp | u16 level |
 ##   u8 flags | u8 life | u8 pending levels | u8 Knödl state | u8 Knödl cooldown (1/20 s) |
 ##   u8 rerolls | f32 Knödl mass | 3 x f32 Knödl position | 4 x s16 Knödl rotation (q * 32767) |
-##   u16 gold | u8 banishes | u8 weapons | u8 passives | 3 bytes padding
+##   u16 gold | u8 banishes | u8 weapons | u8 passives | u8 chests opened | 2 bytes padding
 ##   then per weapon u8 index | u8 level | u16 bonus * 100 | u8 fire counter,
 ##   and per passive u8 index | u8 level | u16 bonus * 100.
 
-const VERSION: int = 2
-const HEADER_SIZE: int = 15
+const VERSION: int = 3
+const HEADER_SIZE: int = 31
 const WIRT_SIZE: int = 2
 const PLAYER_SIZE: int = 56
 const WEAPON_SIZE: int = 5
@@ -24,6 +26,12 @@ const FLAG_DOWNED: int = 1
 const FLAG_CHOOSING: int = 2
 const WIRT_OPEN: int = 1
 const WIRT_SERVED: int = 2
+## Gate flags: the Formular is out, the gate is open, the final boss is out, he is beaten.
+const GATE_FORMULAR: int = 1
+const GATE_OPEN: int = 2
+const GATE_BOSS_OUT: int = 4
+const GATE_BOSS_BEATEN: int = 8
+const NO_BOSS: int = 255
 
 
 class Entry:
@@ -45,6 +53,7 @@ class Entry:
 	var gold: int = 0
 	var rerolls: int = 0
 	var banishes: int = 0
+	var chests_opened: int = 0
 	## PlayerBuild.weapon_rows() / passive_rows().
 	var weapons: PackedInt32Array = PackedInt32Array()
 	var passives: PackedInt32Array = PackedInt32Array()
@@ -59,6 +68,16 @@ class Frame:
 	## RunWorld.Phase.
 	var phase: int = 0
 	## Per Wirtshaus: Vector3i(spot, flags, tier).
+	var stempel_found: int = 0
+	var stempel_total: int = 0
+	var gate: int = 0
+	## RunWorld.Result.
+	var result: int = 0
+	## The boss shown in the HUD bar (BossDirector.list index) or NO_BOSS.
+	var boss: int = NO_BOSS
+	var boss_slot: int = 0
+	var boss_hp: float = 0.0
+	var boss_max_hp: float = 0.0
 	var wirtshaeuser: Array[Vector3i] = []
 	var entries: Array[Entry] = []
 
@@ -77,6 +96,14 @@ static func encode(frame: Frame) -> PackedByteArray:
 	data.encode_u16(11, clampi(frame.brosel_alive, 0, 0xFFFF))
 	data.encode_u8(13, frame.phase)
 	data.encode_u8(14, frame.wirtshaeuser.size())
+	data.encode_u8(15, clampi(frame.stempel_found, 0, 255))
+	data.encode_u8(16, clampi(frame.stempel_total, 0, 255))
+	data.encode_u8(17, frame.gate & 0xFF)
+	data.encode_u8(18, frame.result & 0xFF)
+	data.encode_u8(19, frame.boss & 0xFF)
+	data.encode_u16(20, frame.boss_slot & 0xFFFF)
+	data.encode_float(22, frame.boss_hp)
+	data.encode_float(26, frame.boss_max_hp)
 	var o: int = HEADER_SIZE
 	for wirt: Vector3i in frame.wirtshaeuser:
 		data.encode_u8(o, wirt.x)
@@ -111,6 +138,7 @@ static func encode(frame: Frame) -> PackedByteArray:
 		var passive_count: int = e.passives.size() / 3
 		data.encode_u8(o + 51, weapon_count)
 		data.encode_u8(o + 52, passive_count)
+		data.encode_u8(o + 53, clampi(e.chests_opened, 0, 255))
 		o += PLAYER_SIZE
 		for k: int in weapon_count:
 			data.encode_u8(o, e.weapons[k * 4])
@@ -137,6 +165,16 @@ static func decode(data: PackedByteArray) -> Frame:
 	frame.brosel_alive = data.decode_u16(11)
 	frame.phase = data.decode_u8(13)
 	var wirt_count: int = data.decode_u8(14)
+	frame.stempel_found = data.decode_u8(15)
+	frame.stempel_total = data.decode_u8(16)
+	frame.gate = data.decode_u8(17)
+	frame.result = data.decode_u8(18)
+	frame.boss = data.decode_u8(19)
+	frame.boss_slot = data.decode_u16(20)
+	frame.boss_hp = data.decode_float(22)
+	frame.boss_max_hp = data.decode_float(26)
+	if not is_finite(frame.boss_hp) or not is_finite(frame.boss_max_hp):
+		return null
 	var o: int = HEADER_SIZE
 	if data.size() < o + wirt_count * WIRT_SIZE + 1:
 		return null
@@ -172,6 +210,7 @@ static func decode(data: PackedByteArray) -> Frame:
 		e.banishes = data.decode_u8(o + 50)
 		var weapon_count: int = data.decode_u8(o + 51)
 		var passive_count: int = data.decode_u8(o + 52)
+		e.chests_opened = data.decode_u8(o + 53)
 		if not e.knodl_position.is_finite() or not is_finite(e.hp) or not is_finite(e.knodl_mass):
 			return null
 		o += PLAYER_SIZE

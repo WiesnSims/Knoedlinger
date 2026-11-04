@@ -23,6 +23,10 @@ var mouse_capture_allowed: bool = true
 var auto_turn: bool = true
 ## Metres; > 0 replaces the zoom (the M0 stress view).
 var distance_override: float = 0.0
+## Materials with the see-through uniforms (map props, enemies): told where the player is.
+var see_through: Array[ShaderMaterial] = []
+## The see-through circle around the player, in metres.
+var see_through_radius: float = 1.9
 
 var _yaw_target: float = 0.0
 var _pitch_target: float = 0.0
@@ -137,3 +141,24 @@ func _place(distance: float) -> void:
 			wanted = at + (_focus - at).normalized() * balance.camera_collision_margin
 	global_position = wanted
 	look_at(_focus)
+	_update_see_through()
+
+
+## Tells the props' shader where the player is on screen, so walls in front of them turn see-through.
+func _update_see_through() -> void:
+	if see_through.is_empty() or not is_inside_tree():
+		return
+	var view: Vector2 = get_viewport().get_visible_rect().size
+	var body: Vector3 = _target_position() + Vector3(0.0, 1.0, 0.0)
+	var depth: float = global_position.distance_to(body)
+	if view.y <= 0.0 or depth < 0.1 or is_position_behind(body):
+		for material: ShaderMaterial in see_through:
+			material.set_shader_parameter(&"cut_radius", 0.0)
+		return
+	var uv: Vector2 = unproject_position(body) / view
+	var radius: float = see_through_radius / (depth * tan(deg_to_rad(fov) * 0.5)) * 0.5
+	for material: ShaderMaterial in see_through:
+		material.set_shader_parameter(&"focus_uv", uv)
+		material.set_shader_parameter(&"focus_depth", depth)
+		material.set_shader_parameter(&"aspect", view.x / view.y)
+		material.set_shader_parameter(&"cut_radius", radius)

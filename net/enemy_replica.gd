@@ -41,6 +41,8 @@ var rendered_frames: int = 0
 var intervals_ms: PackedFloat32Array = PackedFloat32Array()
 var events_spawned: int = 0
 var events_died: int = 0
+## Where enemies died since the caller last emptied it (x, z), for kill sounds.
+var recent_deaths := PackedVector2Array()
 ## The host's alive count in the snapshot being shown (the newest one can be ~100 ms ahead).
 var shown_host_alive: int = 0
 
@@ -116,6 +118,9 @@ func push_events(data: PackedByteArray) -> void:
 		return
 	events_spawned += (events["spawned"] as PackedInt32Array).size()
 	events_died += (events["died"] as PackedInt32Array).size()
+	for slot: int in events["died"] as PackedInt32Array:
+		if slot >= 0 and slot < capacity and recent_deaths.size() < 64:
+			recent_deaths.append(Vector2(x[slot], z[slot]))
 
 
 func update(now_ms: int, delta: float) -> void:

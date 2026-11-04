@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/enemies/formular.tres" id="2_formular"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"akten_geist"
+name_key = "ENEMY_AKTEN_GEIST"
+max_hp = 8.0
+speed = 1.8
+radius = 0.5
+model_scale = 1.1
+contact_damage = 6.0
+brosel_xp = 5
+knockback_factor = 0.6
+body_color = Color(0.82, 0.74, 0.55, 1)
+head_color = Color(0.97, 0.96, 0.92, 1)
+flying = true
+spawn_weight = 0.0
+split_into = ExtResource("2_formular")
+split_count = 3
+look = &"akten"

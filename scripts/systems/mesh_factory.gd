@@ -41,6 +41,12 @@ static func merge(parts: Array[Dictionary]) -> ArrayMesh:
 static func enemy(type: EnemyTypeData) -> ArrayMesh:
 	var s: float = type.model_scale
 	var parts: Array[Dictionary] = []
+	if type.look != &"":
+		parts = _special_look(type)
+		for part: Dictionary in parts:
+			var placed: Transform3D = part["transform"]
+			part["transform"] = Transform3D(placed.basis.scaled(Vector3.ONE * s), placed.origin * s)
+		return merge(parts)
 	var head := SphereMesh.new()
 	head.radius = 0.32
 	head.height = 0.64
@@ -209,3 +215,109 @@ static func blob_quad() -> PlaneMesh:
 
 static func _part(mesh: PrimitiveMesh, transform: Transform3D, color: Color) -> Dictionary:
 	return {"mesh": mesh, "transform": transform, "color": color}
+
+
+static func _sphere(radius: float, segments: int = 10) -> SphereMesh:
+	var mesh := SphereMesh.new()
+	mesh.radius = radius
+	mesh.height = radius * 2.0
+	mesh.radial_segments = segments
+	mesh.rings = maxi(segments / 2, 3)
+	return mesh
+
+
+static func _box(size: Vector3) -> BoxMesh:
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	return mesh
+
+
+## A cylinder (top_radius 0 makes a cone) standing on its middle.
+static func _cylinder(top: float, bottom: float, height: float, segments: int = 8) -> CylinderMesh:
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = top
+	mesh.bottom_radius = bottom
+	mesh.height = height
+	mesh.radial_segments = segments
+	mesh.rings = 1
+	return mesh
+
+
+static func _at(where: Vector3, euler: Vector3 = Vector3.ZERO) -> Transform3D:
+	return Transform3D(Basis.from_euler(euler), where)
+
+
+## Elites, bosses and the Hofrat's paperwork: built like the fodder (facing +z, feet at y 0, about
+## 1.6 m before model_scale), one merged mesh each.
+static func _special_look(type: EnemyTypeData) -> Array[Dictionary]:
+	var body: Color = type.body_color
+	var head: Color = type.head_color
+	var parts: Array[Dictionary] = []
+	var dark := Color(0.12, 0.1, 0.09)
+	match type.look:
+		&"perchte":
+			# Shaggy fur, a carved wooden mask with horns, cow bells on the belt.
+			parts.append(_part(_cylinder(0.42, 0.6, 1.1, 10), _at(Vector3(0.0, 0.6, 0.0)), body))
+			for k: int in 6:
+				var angle: float = TAU * k / 6.0
+				parts.append(_part(_box(Vector3(0.3, 0.5, 0.12)), _at(Vector3(sin(angle) * 0.52, 0.3, cos(angle) * 0.52), Vector3(0.0, angle, 0.2)), body.darkened(0.2)))
+			parts.append(_part(_sphere(0.34), _at(Vector3(0.0, 1.38, 0.05)), head))
+			parts.append(_part(_box(Vector3(0.36, 0.12, 0.1)), _at(Vector3(0.0, 1.28, 0.34)), Color(0.95, 0.95, 0.9)))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_cylinder(0.0, 0.1, 0.7, 6), _at(Vector3(side * 0.28, 1.75, 0.0), Vector3(0.0, 0.0, -side * 0.5)), Color(0.9, 0.86, 0.75)))
+				parts.append(_part(_sphere(0.06, 6), _at(Vector3(side * 0.12, 1.45, 0.32)), dark))
+				parts.append(_part(_cylinder(0.08, 0.12, 0.18, 6), _at(Vector3(side * 0.3, 0.75, 0.42)), Color(0.85, 0.7, 0.3)))
+		&"radler":
+			# A cyclist in lycra on a bike, helmet on, bent over the handlebar.
+			for z: float in [-0.5, 0.5]:
+				parts.append(_part(_cylinder(0.38, 0.38, 0.07, 12), _at(Vector3(0.0, 0.38, z), Vector3(0.0, 0.0, PI / 2.0)), dark))
+			parts.append(_part(_box(Vector3(0.06, 0.08, 1.0)), _at(Vector3(0.0, 0.62, 0.0), Vector3(0.2, 0.0, 0.0)), Color(0.9, 0.9, 0.95)))
+			parts.append(_part(_cylinder(0.24, 0.28, 0.75, 8), _at(Vector3(0.0, 1.05, 0.05), Vector3(0.9, 0.0, 0.0)), body))
+			parts.append(_part(_sphere(0.24), _at(Vector3(0.0, 1.32, 0.42)), Color(0.95, 0.78, 0.65)))
+			parts.append(_part(_sphere(0.27), _at(Vector3(0.0, 1.42, 0.38)), head))
+			parts.append(_part(_box(Vector3(0.3, 0.06, 0.06)), _at(Vector3(0.0, 1.34, 0.64)), dark))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_box(Vector3(0.1, 0.5, 0.1)), _at(Vector3(side * 0.15, 0.62, 0.02)), body.darkened(0.3)))
+				parts.append(_part(_box(Vector3(0.08, 0.45, 0.08)), _at(Vector3(side * 0.2, 1.05, 0.48), Vector3(-0.9, 0.0, 0.0)), body))
+		&"akten":
+			# A floating file folder with papers sticking out and a stern pair of glasses.
+			parts.append(_part(_box(Vector3(0.75, 0.95, 0.18)), _at(Vector3(0.0, 1.0, 0.0)), body))
+			for k: int in 3:
+				parts.append(_part(_box(Vector3(0.62, 0.2, 0.12)), _at(Vector3(0.05 * k - 0.05, 1.5 + k * 0.03, 0.0), Vector3(0.0, 0.0, 0.1 * (k - 1))), head))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_cylinder(0.11, 0.11, 0.04, 8), _at(Vector3(side * 0.16, 1.15, 0.11), Vector3(PI / 2.0, 0.0, 0.0)), dark))
+			parts.append(_part(_box(Vector3(0.36, 0.05, 0.04)), _at(Vector3(0.0, 0.92, 0.11)), dark))
+		&"formular":
+			parts.append(_part(_box(Vector3(0.5, 0.7, 0.04)), _at(Vector3(0.0, 1.0, 0.0), Vector3(0.2, 0.0, 0.1)), body))
+			for k: int in 4:
+				parts.append(_part(_box(Vector3(0.36, 0.03, 0.05)), _at(Vector3(0.0, 1.2 - k * 0.12, 0.0), Vector3(0.2, 0.0, 0.1)), head))
+		&"krampus":
+			# Black fur, long horns, a long tongue, chains, the Rute and a basket on his back.
+			parts.append(_part(_cylinder(0.45, 0.58, 1.05, 12), _at(Vector3(0.0, 0.62, 0.0)), body))
+			parts.append(_part(_sphere(0.36, 12), _at(Vector3(0.0, 1.42, 0.06)), head))
+			parts.append(_part(_box(Vector3(0.14, 0.42, 0.06)), _at(Vector3(0.0, 1.12, 0.38), Vector3(0.3, 0.0, 0.0)), Color(0.7, 0.32, 0.42)))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_cylinder(0.0, 0.11, 0.9, 6), _at(Vector3(side * 0.34, 1.86, -0.05), Vector3(-0.35, 0.0, -side * 0.65)), Color(0.85, 0.8, 0.68)))
+				parts.append(_part(_sphere(0.06, 6), _at(Vector3(side * 0.13, 1.5, 0.36)), Color(0.98, 0.85, 0.3)))
+				parts.append(_part(_box(Vector3(0.16, 0.6, 0.16)), _at(Vector3(side * 0.6, 0.95, 0.15), Vector3(-0.4, 0.0, side * 0.25)), body))
+			for k: int in 5:
+				parts.append(_part(_box(Vector3(0.12, 0.12, 0.05)), _at(Vector3(-0.45 + k * 0.22, 0.9 - absf(k - 2) * 0.06, 0.48)), Color(0.55, 0.55, 0.58)))
+			parts.append(_part(_cylinder(0.05, 0.08, 1.2, 5), _at(Vector3(0.72, 1.1, 0.5), Vector3(0.6, 0.0, 0.0)), Color(0.5, 0.36, 0.22)))
+			parts.append(_part(_cylinder(0.32, 0.26, 0.5, 8), _at(Vector3(0.0, 1.05, -0.5)), Color(0.55, 0.4, 0.25)))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_box(Vector3(0.2, 0.4, 0.25)), _at(Vector3(side * 0.2, 0.12, 0.05)), dark))
+		&"hofrat":
+			# Grey suit, white shirt, tie, glasses, a briefcase and the giant ABGELEHNT stamp.
+			parts.append(_part(_cylinder(0.42, 0.48, 1.0, 12), _at(Vector3(0.0, 0.8, 0.0)), body))
+			parts.append(_part(_box(Vector3(0.3, 0.55, 0.08)), _at(Vector3(0.0, 1.0, 0.43)), Color(0.96, 0.96, 0.95)))
+			parts.append(_part(_box(Vector3(0.09, 0.45, 0.06)), _at(Vector3(0.0, 0.98, 0.48)), Color(0.2, 0.36, 0.28)))
+			parts.append(_part(_sphere(0.32, 12), _at(Vector3(0.0, 1.55, 0.0)), head))
+			parts.append(_part(_cylinder(0.33, 0.33, 0.14, 10), _at(Vector3(0.0, 1.62, -0.04)), Color(0.75, 0.75, 0.78)))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_cylinder(0.08, 0.08, 0.03, 8), _at(Vector3(side * 0.12, 1.58, 0.3), Vector3(PI / 2.0, 0.0, 0.0)), dark))
+				parts.append(_part(_box(Vector3(0.18, 0.5, 0.2)), _at(Vector3(side * 0.13, 0.25, 0.0)), body.darkened(0.25)))
+			parts.append(_part(_box(Vector3(0.16, 0.55, 0.16)), _at(Vector3(0.55, 1.15, 0.2), Vector3(-0.3, 0.0, 0.3)), body))
+			parts.append(_part(_cylinder(0.06, 0.06, 0.5, 6), _at(Vector3(0.68, 1.55, 0.38)), Color(0.5, 0.36, 0.22)))
+			parts.append(_part(_box(Vector3(0.6, 0.22, 0.45)), _at(Vector3(0.68, 1.85, 0.38)), Color(0.42, 0.3, 0.58)))
+			parts.append(_part(_box(Vector3(0.5, 0.36, 0.12)), _at(Vector3(-0.58, 0.6, 0.1)), Color(0.42, 0.28, 0.16)))
+	return parts

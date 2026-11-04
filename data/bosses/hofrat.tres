@@ -1,0 +1,82 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/boss_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/data/attack_data.gd" id="2_attack"]
+[ext_resource type="Resource" path="res://data/enemies/hofrat.tres" id="3_body"]
+[ext_resource type="Resource" path="res://data/enemies/akten_geist.tres" id="4_akten"]
+
+[sub_resource type="Resource" id="stamps"]
+script = ExtResource("2_attack")
+id = &"hofrat_abgelehnt"
+shape = 0
+aim = 0
+radius = 3.0
+telegraph = 1.2
+damage = 22.0
+count = 5
+spread = 9.0
+range = 40.0
+toast_key = "BOSS_HOFRAT_ABGELEHNT"
+
+[sub_resource type="Resource" id="queue"]
+script = ExtResource("2_attack")
+id = &"hofrat_warteschlange"
+shape = 0
+aim = 2
+radius = 1.6
+telegraph = 1.0
+damage = 10.0
+count = 6
+spread = 7.0
+range = 40.0
+summon = ExtResource("4_akten")
+summon_count = 2
+toast_key = "BOSS_HOFRAT_QUEUE"
+
+[sub_resource type="Resource" id="lines"]
+script = ExtResource("2_attack")
+id = &"hofrat_dienstweg"
+shape = 1
+aim = 0
+radius = 1.3
+length = 30.0
+telegraph = 1.3
+damage = 24.0
+count = 5
+spread = 18.0
+range = 40.0
+toast_key = "BOSS_HOFRAT_DIENSTWEG"
+
+[sub_resource type="Resource" id="ring"]
+script = ExtResource("2_attack")
+id = &"hofrat_umlauf"
+shape = 0
+aim = 2
+radius = 3.4
+telegraph = 1.4
+damage = 20.0
+count = 8
+spread = 9.0
+range = 40.0
+
+[resource]
+script = ExtResource("1_script")
+id = &"hofrat"
+name_key = "BOSS_HOFRAT"
+intro_key = "BOSS_HOFRAT_INTRO"
+defeat_key = "BOSS_HOFRAT_DEFEAT"
+enemy = ExtResource("3_body")
+max_hp = 6000.0
+speed = 3.0
+attacks = Array[ExtResource("2_attack")]([SubResource("stamps"), SubResource("queue"), SubResource("lines"), SubResource("stamps"), SubResource("ring")])
+attack_pause = 2.2
+enraged_below = 0.5
+enraged_pause_mult = 0.55
+escort = ExtResource("4_akten")
+escort_count = 6
+chest_items = 5
+chest_evolution = true
+gold = 80
+golden_brosel = 6
+final = true
+arrive_distance = 20.0

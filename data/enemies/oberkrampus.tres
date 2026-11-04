@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"oberkrampus"
+name_key = "BOSS_OBERKRAMPUS"
+max_hp = 900.0
+speed = 3.2
+radius = 1.4
+model_scale = 2.1
+contact_damage = 14.0
+brosel_xp = 0
+knockback_factor = 0.0
+body_color = Color(0.17, 0.13, 0.11, 1)
+head_color = Color(0.33, 0.24, 0.2, 1)
+spawn_weight = 0.0
+boss = true
+look = &"krampus"

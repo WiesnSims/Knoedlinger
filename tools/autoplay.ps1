@@ -1,6 +1,7 @@
 # Balance log (GAME-DESIGN.md "Balance log"): the bot plays whole 15-minute runs headless, as fast as
 # the CPU allows (fixed 60 Hz steps), and writes one JSON per run to build/balance/<stamp>/: time,
-# level and when each level came, knock-downs, Knoedl cash-ins, kills, the build. Prints a table and
+# level and when each level came, knock-downs (the bot gets back up, see --respawn), Knoedl cash-ins,
+# kills, Stempel, bosses beaten and the result, the build. Prints a table and
 # fails on any Godot error or warning, or a run that did not reach Sperrstund'.
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/autoplay.ps1 [-Runs 3] [-Seed 1] [-Character ferdl]
 param(
@@ -25,13 +26,14 @@ $failures += Get-Problems $log
 
 $files = @(Get-ChildItem -Path $outDir -Filter 'run-*.json' | Sort-Object Name)
 if ($files.Count -ne $Runs) { $failures += "expected $Runs run logs, found $($files.Count)" }
-Write-Host ('{0,-4} {1,6} {2,6} {3,8} {4,8} {5,6} {6,8} {7,10} {8,8}' -f 'run', 'time', 'level', 'first lv', 'lv10 at', 'downs', 'kills', 'cash-ins', 'eaten')
+Write-Host ('{0,-4} {1,6} {2,6} {3,8} {4,8} {5,6} {6,8} {7,10} {8,8} {9,7} {10,-7} {11}' -f 'run', 'time', 'level', 'first lv', 'lv10 at', 'downs', 'kills', 'cash-ins', 'eaten', 'stempel', 'result', 'bosses beaten at')
 foreach ($file in $files) {
     $r = Get-Content -Raw -Path $file.FullName -Encoding UTF8 | ConvertFrom-Json
     $first = if ($r.level_times.Count -gt 0) { $r.level_times[0] } else { '-' }
     $ten = if ($r.level_times.Count -ge 9) { $r.level_times[8] } else { '-' }
-    Write-Host ('{0,-4} {1,6} {2,6} {3,8} {4,8} {5,6} {6,8} {7,10} {8,8}' -f $r.run, $r.time, $r.level, $first, $ten, $r.deaths, `
-        $r.kills, ($r.cash_ins -join '/'), $r.mass_eaten)
+    $bosses = ($r.bosses_beaten | ForEach-Object { '{0}@{1}' -f $_[0], $_[1] }) -join ' '
+    Write-Host ('{0,-4} {1,6} {2,6} {3,8} {4,8} {5,6} {6,8} {7,10} {8,8} {9,7} {10,-7} {11}' -f $r.run, $r.time, $r.level, $first, $ten, $r.deaths, `
+        $r.kills, ($r.cash_ins -join '/'), $r.mass_eaten, $r.stempel, $r.result, $bosses)
     if ($r.phase -ne 'ENDED') { $failures += "run $($r.run) ended in phase $($r.phase)" }
 }
 Write-Host ("{0} runs in {1:N0} s, logs in {2}" -f $files.Count, ((Get-Date) - $started).TotalSeconds, $outDir)

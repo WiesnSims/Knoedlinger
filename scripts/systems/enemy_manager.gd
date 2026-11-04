@@ -22,6 +22,10 @@ var hp_mult: float = 1.0
 ## New enemies appear on a ring this far from a random player.
 var ring_min: float = 0.0
 var ring_max: float = 0.0
+## While spawn_sector_width > 0, new enemies only come from that slice of the ring (radians around
+## spawn_sector_angle): a wave from one direction (the Touristenbus).
+var spawn_sector_angle: float = 0.0
+var spawn_sector_width: float = 0.0
 var grid: SpatialHash
 ## The ground enemies walk on; null = flat at y = 0 (stress test).
 var ground: Heightfield
@@ -45,6 +49,26 @@ var kb_x: PackedFloat32Array = PackedFloat32Array()
 var kb_z: PackedFloat32Array = PackedFloat32Array()
 ## Seconds until a Knödl may hurt this enemy again.
 var knodl_timer: PackedFloat32Array = PackedFloat32Array()
+## Elites: seconds until their attack is ready again, and seconds they still stand still while
+## their telegraph fills up.
+var attack_timer: PackedFloat32Array = PackedFloat32Array()
+var busy: PackedFloat32Array = PackedFloat32Array()
+## A dash along an attack line: velocity and seconds left.
+var dash_x: PackedFloat32Array = PackedFloat32Array()
+var dash_z: PackedFloat32Array = PackedFloat32Array()
+var dash_time: PackedFloat32Array = PackedFloat32Array()
+## 1 = moved by someone else (BossDirector), not by the crowd logic.
+var controlled: PackedByteArray = PackedByteArray()
+
+## Attacks elites started this update (slot and the target point), for the HazardField; the
+## caller empties them.
+var attack_slot: PackedInt32Array = PackedInt32Array()
+var attack_x: PackedFloat32Array = PackedFloat32Array()
+var attack_z: PackedFloat32Array = PackedFloat32Array()
+## Type of each enemy in the kill list (gold drops, boss deaths).
+var kill_type: PackedInt32Array = PackedInt32Array()
+## Slot of each enemy in the kill list.
+var kill_slot: PackedInt32Array = PackedInt32Array()
 
 ## Slots that spawned / died since the last take_events(), for the network's reliable events.
 var spawned: PackedInt32Array = PackedInt32Array()
@@ -66,6 +90,9 @@ var _rng := RandomNumberGenerator.new()
 var _frame: int = 0
 var _eats: PackedByteArray = PackedByteArray()
 var _bites: PackedFloat32Array = PackedFloat32Array()
+## Per type: its attack (or null) and the type index it splits into (-1 = none).
+var _attacks: Array[AttackData] = []
+var _split_type: PackedInt32Array = PackedInt32Array()
 
 
 func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: int, seed_value: int = 1,
@@ -85,14 +112,18 @@ func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: in
 	alive.fill(0)
 	type.fill(0)
 	for name: String in ["pos_x", "pos_z", "yaw", "hp", "max_hp", "speed", "radius", "flash", "phase",
-			"respawn_timer", "kb_x", "kb_z", "knodl_timer"]:
+			"respawn_timer", "kb_x", "kb_z", "knodl_timer", "attack_timer", "busy", "dash_x", "dash_z", "dash_time"]:
 		var array := PackedFloat32Array()
 		array.resize(capacity)
 		array.fill(0.0)
 		set(name, array)
+	controlled.resize(capacity)
+	controlled.fill(0)
 	for t: EnemyTypeData in types:
 		_eats.append(1 if t.eats_knodl else 0)
 		_bites.append(t.bite_per_second)
+		_attacks.append(t.attack)
+		_split_type.append(types.find(t.split_into) if t.split_into != null else -1)
 
 
 ## Fills `count` slots right away around the given players (start of the stress test).
@@ -148,6 +179,8 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 			flash[i] = maxf(flash[i] - delta * 6.0, 0.0)
 		if knodl_timer[i] > 0.0:
 			knodl_timer[i] -= delta
+		if controlled[i] != 0:
+			continue
 		var x: float = pos_x[i]
 		var z: float = pos_z[i]
 		var best_sq: float = INF
@@ -183,7 +216,25 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 		var r: float = radius[i]
 		var vx: float = 0.0
 		var vz: float = 0.0
-		if distance > 0.001:
+		# Elites start their attack when the target is in range, then stand still while the mark
+		# on the ground fills up (or dash along their line once it hits).
+		var attack: AttackData = _attacks[type[i]]
+		if attack != null and not eater:
+			attack_timer[i] -= step
+			if attack_timer[i] <= 0.0 and busy[i] <= 0.0 and dash_time[i] <= 0.0 and distance < attack.range:
+				attack_timer[i] = attack.cooldown * _rng.randf_range(0.85, 1.15)
+				busy[i] = attack.telegraph + 0.25
+				attack_slot.append(i)
+				attack_x.append(tx)
+				attack_z.append(tz)
+		if dash_time[i] > 0.0:
+			dash_time[i] -= step
+			vx = dash_x[i]
+			vz = dash_z[i]
+		elif busy[i] > 0.0:
+			busy[i] -= step
+			yaw[i] = atan2(tx - x, tz - z)
+		elif distance > 0.001:
 			vx = (tx - x) / distance * speed[i]
 			vz = (tz - z) / distance * speed[i]
 		# Keep out of the player's body instead of walking into it, and hurt them on touch. A player
@@ -291,7 +342,55 @@ func damage(slot: int, amount: float, kx: float = 0.0, kz: float = 0.0) -> bool:
 	kill_x.append(pos_x[slot])
 	kill_z.append(pos_z[slot])
 	kill_xp.append(types[type[slot]].brosel_xp)
+	kill_type.append(type[slot])
+	kill_slot.append(slot)
+	controlled[slot] = 0
+	var split: int = _split_type[type[slot]]
+	if split >= 0:
+		for k: int in types[type[slot]].split_count:
+			var angle: float = TAU * k / maxi(types[type[slot]].split_count, 1)
+			spawn_at(split, pos_x[slot] + cos(angle) * 0.8, pos_z[slot] + sin(angle) * 0.8)
 	return true
+
+
+## Puts one enemy of type `t` at (x, z) right away, outside the normal crowd if a spare slot is
+## free (bosses, summons, splits). `is_controlled`: BossDirector moves it. Returns the slot or -1.
+func spawn_at(t: int, x: float, z: float, is_controlled: bool = false, hp_scale: float = 1.0) -> int:
+	var slot: int = -1
+	for i: int in range(capacity - 1, -1, -1):
+		if alive[i] == 0 and (i >= target_count or slot < 0):
+			slot = i
+			if i >= target_count:
+				break
+	if slot < 0:
+		return -1
+	_reset(slot, t)
+	var half: float = bounds - 0.5
+	pos_x[slot] = clampf(x, -half, half)
+	pos_z[slot] = clampf(z, -half, half)
+	hp[slot] *= hp_scale
+	max_hp[slot] *= hp_scale
+	controlled[slot] = 1 if is_controlled else 0
+	return slot
+
+
+## Sends an enemy along (dx, dz) at `dash_speed` for `seconds` (an attack line's dash).
+func start_dash(slot: int, dx: float, dz: float, dash_speed: float, seconds: float) -> void:
+	var length: float = sqrt(dx * dx + dz * dz)
+	if alive[slot] == 0 or length < 0.001:
+		return
+	dash_x[slot] = dx / length * dash_speed
+	dash_z[slot] = dz / length * dash_speed
+	dash_time[slot] = seconds
+	busy[slot] = 0.0
+	yaw[slot] = atan2(dx, dz)
+
+
+## Empties the attack requests once the caller has read them.
+func clear_attacks() -> void:
+	attack_slot.clear()
+	attack_x.clear()
+	attack_z.clear()
 
 
 ## Removes an enemy without a kill (no Brösel, no kill count): the Riesen-Wirt sweeps it out.
@@ -303,6 +402,7 @@ func despawn(slot: int) -> void:
 	respawn_timer[slot] = respawn_delay
 	kb_x[slot] = 0.0
 	kb_z[slot] = 0.0
+	controlled[slot] = 0
 	died.append(slot)
 
 
@@ -330,19 +430,32 @@ func clear_kills() -> void:
 	kill_x.clear()
 	kill_z.clear()
 	kill_xp.clear()
+	kill_type.clear()
+	kill_slot.clear()
 
 
 func _spawn(slot: int, targets: PackedVector3Array) -> void:
 	var t: int = _pick_type()
-	var data: EnemyTypeData = types[t]
 	var center: Vector3 = targets[_rng.randi_range(0, targets.size() - 1)] if not targets.is_empty() else Vector3.ZERO
 	var angle: float = _rng.randf() * TAU
+	if spawn_sector_width > 0.0:
+		angle = spawn_sector_angle + _rng.randf_range(-0.5, 0.5) * spawn_sector_width
 	var distance: float = _rng.randf_range(ring_min, ring_max)
 	var half: float = bounds - 0.5
+	_reset(slot, t)
 	pos_x[slot] = clampf(center.x + cos(angle) * distance, -half, half)
 	pos_z[slot] = clampf(center.z + sin(angle) * distance, -half, half)
 	yaw[slot] = angle + PI
+
+
+## A fresh enemy of type `t` in `slot` (position set by the caller).
+func _reset(slot: int, t: int) -> void:
+	var data: EnemyTypeData = types[t]
 	type[slot] = t
+	controlled[slot] = 0
+	busy[slot] = 0.0
+	dash_time[slot] = 0.0
+	attack_timer[slot] = _rng.randf_range(1.0, data.attack.cooldown) if data.attack != null else 0.0
 	hp[slot] = data.max_hp * hp_mult
 	max_hp[slot] = data.max_hp * hp_mult
 	speed[slot] = data.speed * _rng.randf_range(0.85, 1.15)

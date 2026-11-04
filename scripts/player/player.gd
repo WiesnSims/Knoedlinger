@@ -199,6 +199,7 @@ func apply_remote(message: InputMessage) -> void:
 
 
 func _jump() -> void:
+	GameAudio.play(&"jump", global_position)
 	# Jump height grows with the bonus: v = v0 * sqrt(1 + bonus).
 	velocity.y = balance.player_jump_velocity * sqrt(1.0 + maxf(stat_jump_height, 0.0))
 	jumps_used += 1
