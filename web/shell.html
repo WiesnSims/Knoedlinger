@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#12141a">
+<title>$GODOT_PROJECT_NAME</title>
+<!-- Knödlinger's page around the Godot engine (docs/DECISIONS.md, M5): the loading screen with a
+     rolling Knödl, a progress bar and rotating dialect jokes, and a "turn your phone" hint.
+     tools/pack_wasm.mjs fills in the text from i18n/strings.csv (double-brace KEY as HTML, double-brace js:KEY as a
+     JS string, the jokes LOADING_JOKE_*) and the hashed file names. Colours are the UI palette (docs/UI-STYLE.md). -->
+<style>
+@font-face {
+	font-family: 'Knoedl Title';
+	src: url('/*KNOEDL_TITLE_FONT*/') format('truetype');
+	font-display: swap;
+}
+:root {
+	--bg: #12141a;
+	--panel: #1c1f27;
+	--text: #f5f1e8;
+	--muted: #9a9aa6;
+	--accent: #ffc94a;
+	--danger: #e5383b;
+	--knodl: #efd9a0;
+	--knodl-edge: #b08a48;
+}
+html, body, #canvas {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+body {
+	background: var(--bg);
+	color: var(--text);
+	overflow: hidden;
+	touch-action: none;
+	font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+#canvas {
+	display: block;
+}
+#canvas:focus {
+	outline: none;
+}
+#status {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 24px;
+	padding: 16px;
+	background: radial-gradient(ellipse at 50% 35%, #232733 0%, var(--bg) 70%);
+	transition: opacity 0.4s ease;
+	z-index: 2;
+}
+#status.done {
+	opacity: 0;
+	pointer-events: none;
+}
+#knodl {
+	width: 96px;
+	height: 96px;
+	border-radius: 50%;
+	background:
+		radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.45) 0 10%, transparent 11%),
+		radial-gradient(circle at 62% 40%, var(--knodl-edge) 0 4%, transparent 5%),
+		radial-gradient(circle at 40% 66%, var(--knodl-edge) 0 3%, transparent 4%),
+		radial-gradient(circle at 70% 70%, var(--knodl-edge) 0 3.5%, transparent 4.5%),
+		radial-gradient(circle at 24% 52%, var(--knodl-edge) 0 2.5%, transparent 3.5%),
+		radial-gradient(circle at 50% 50%, var(--knodl) 0 60%, var(--knodl-edge) 100%);
+	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
+	animation: roll 1.6s linear infinite;
+}
+@keyframes roll {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
+}
+#title {
+	font-family: 'Knoedl Title', Georgia, serif;
+	font-size: clamp(40px, 8vw, 72px);
+	line-height: 1;
+	margin: 0;
+}
+#subtitle {
+	color: var(--accent);
+	font-size: 16px;
+	font-weight: 700;
+	margin: -16px 0 0;
+}
+#bar {
+	width: min(400px, 80vw);
+	height: 8px;
+	border-radius: 4px;
+	background: rgba(0, 0, 0, 0.45);
+	overflow: hidden;
+}
+#bar-fill {
+	height: 100%;
+	width: 0%;
+	border-radius: 4px;
+	background: var(--accent);
+	transition: width 0.2s ease;
+}
+#bar.waiting #bar-fill {
+	width: 30%;
+	animation: waiting 1.2s ease-in-out infinite alternate;
+}
+@keyframes waiting {
+	from { margin-left: 0%; }
+	to { margin-left: 70%; }
+}
+#joke {
+	min-height: 2.6em;
+	max-width: min(480px, 90vw);
+	color: var(--muted);
+	font-size: 14px;
+	text-align: center;
+	transition: opacity 0.3s ease;
+}
+#notice {
+	display: none;
+	max-width: min(480px, 90vw);
+	padding: 16px;
+	border-radius: 8px;
+	border: 1px solid var(--danger);
+	background: var(--panel);
+	text-align: center;
+	line-height: 1.4;
+}
+#rotate {
+	display: none;
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	background: var(--bg);
+	font-size: 20px;
+	font-weight: 700;
+	text-align: center;
+}
+/* Phones held upright: the game wants landscape. */
+@media (orientation: portrait) and (pointer: coarse) {
+	#rotate {
+		display: flex;
+	}
+}
+</style>
+$GODOT_HEAD_INCLUDE
+</head>
+<body>
+<canvas id="canvas">{{LOADING_NO_CANVAS}}</canvas>
+<noscript>{{LOADING_NO_JS}}</noscript>
+<div id="status">
+	<div id="knodl"></div>
+	<h1 id="title">{{GAME_TITLE}}</h1>
+	<p id="subtitle">{{GAME_SUBTITLE}}</p>
+	<div id="bar" class="waiting"><div id="bar-fill"></div></div>
+	<div id="joke"></div>
+	<div id="notice"></div>
+</div>
+<div id="rotate">{{LOADING_ROTATE}}</div>
+<script src="$GODOT_URL"></script>
+<script>
+const GODOT_CONFIG = $GODOT_CONFIG;
+const GODOT_THREADS_ENABLED = $GODOT_THREADS_ENABLED;
+const engine = new Engine(GODOT_CONFIG);
+
+(function () {
+	const JOKES = /*KNOEDL_JOKES*/[];
+	// The longest the loading screen waits for the game to say it is ready.
+	const READY_FALLBACK_MS = 8000;
+	const status = document.getElementById('status');
+	const bar = document.getElementById('bar');
+	const fill = document.getElementById('bar-fill');
+	const joke = document.getElementById('joke');
+	const notice = document.getElementById('notice');
+
+	// A new joke every few seconds, never the same twice in a row.
+	let last = -1;
+	function nextJoke() {
+		if (JOKES.length === 0) {
+			return;
+		}
+		let k = Math.floor(Math.random() * JOKES.length);
+		if (k === last) {
+			k = (k + 1) % JOKES.length;
+		}
+		last = k;
+		joke.style.opacity = '0';
+		setTimeout(() => {
+			joke.textContent = JOKES[k];
+			joke.style.opacity = '1';
+		}, 300);
+	}
+	nextJoke();
+	const jokeTimer = setInterval(nextJoke, 3200);
+
+	let finished = false;
+	function hide() {
+		if (finished) {
+			return;
+		}
+		finished = true;
+		clearInterval(jokeTimer);
+		status.classList.add('done');
+		setTimeout(() => status.remove(), 500);
+	}
+	// The game calls this once its first screen stands (scripts/core/web_page.gd).
+	window.knoedlReady = hide;
+
+	function fail(err) {
+		console.error(err);
+		clearInterval(jokeTimer);
+		bar.style.display = 'none';
+		joke.style.display = 'none';
+		notice.style.display = 'block';
+		notice.textContent = err instanceof Error ? err.message : String(err || {{js:LOADING_ERROR}});
+	}
+
+	const missing = Engine.getMissingFeatures({ threads: GODOT_THREADS_ENABLED });
+	if (missing.length !== 0) {
+		fail({{js:LOADING_MISSING}}.replace('%s', missing.join(', ')));
+		return;
+	}
+	engine.startGame({
+		onProgress: function (current, total) {
+			if (current > 0 && total > 0) {
+				bar.classList.remove('waiting');
+				fill.style.width = `${Math.min(100, (current / total) * 100).toFixed(1)}%`;
+			} else {
+				bar.classList.add('waiting');
+			}
+		},
+	}).then(() => {
+		bar.classList.remove('waiting');
+		fill.style.width = '100%';
+		setTimeout(hide, READY_FALLBACK_MS);
+	}, fail);
+}());
+</script>
+</body>
+</html>

@@ -1,5 +1,9 @@
-# Cloudflare Pages headers (docs/DECISIONS.md, M0): every file is revalidated by ETag on each visit,
-# so a new deploy is picked up at once. Hashed file names with long caching come in M5.
+# Cloudflare Pages headers (docs/DECISIONS.md, M0 and M5): the page and the small helper scripts are
+# revalidated by ETag on every visit, so a new deploy is picked up at once. The engine files carry a
+# content hash in their name (k-<hash>.*, tools/pack_wasm.mjs) and never change: cached for a year.
 /*
   Cache-Control: no-cache
   X-Content-Type-Options: nosniff
+/k-*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable

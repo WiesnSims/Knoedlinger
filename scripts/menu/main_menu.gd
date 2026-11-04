@@ -54,6 +54,7 @@ func _ready() -> void:
 	else:
 		_entries[0].grab_focus()
 	print("[MENU] ready")
+	WebPage.loaded()
 
 
 func _process(delta: float) -> void:

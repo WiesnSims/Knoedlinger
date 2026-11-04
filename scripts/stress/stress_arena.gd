@@ -50,6 +50,7 @@ var _last_pose_ms: Dictionary[int, int] = {}
 
 func _ready() -> void:
 	InputSetup.ensure_actions()
+	WebPage.loaded.call_deferred()
 	stats.warmup = WARMUP_SECONDS
 	_enemy_count = maxi(LaunchArgs.get_int("enemies", 500), 0)
 	_projectile_count = maxi(LaunchArgs.get_int("projectiles", 300), 0)
