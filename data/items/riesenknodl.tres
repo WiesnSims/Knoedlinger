@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/riesenknodl.svg" id="2_icon"]
+[ext_resource type="Resource" path="res://data/items/broeselbutter.tres" id="3_from"]
+[ext_resource type="Resource" path="res://data/passives/lederhosn.tres" id="4_with"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"riesenknodl"
+name_key = "ITEM_RIESENKNODL"
+desc_key = "DESC_ITEM_RIESENKNODL"
+rarity = 3
+stats = Dictionary[StringName, float]({})
+effect = &"riesenknodl"
+effect_value = 1.0
+max_stacks = 1
+knodl = true
+evolves_from = ExtResource("3_from")
+evolves_with = ExtResource("4_with")
+icon = ExtResource("2_icon")
+color = Color(1, 0.79, 0.29, 1)

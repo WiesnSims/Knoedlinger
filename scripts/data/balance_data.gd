@@ -346,6 +346,13 @@ extends Resource
 ## Budget per client at 500 enemies (CLAUDE.md).
 @export var client_bandwidth_budget_kbps: float = 60.0
 
+@export_group("Riesenknödl and camera sway")
+## Riesenknödl der Apokalypse: the Knödl's radius times this, past the usual cap.
+@export var riesenknodl_size: float = 2.0
+## Degrees the camera rolls at full sway (Jagatee), and how fast it sways.
+@export var camera_wobble_degrees: float = 2.5
+@export var camera_wobble_speed: float = 0.9
+
 @export_group("Quality")
 ## QualityScaler (GAME-DESIGN.md, performance item 6), per level Hoch / Mittel / Niedrig.
 ## Render resolution factor: in the browser times the screen's pixel ratio (the whole canvas, UI

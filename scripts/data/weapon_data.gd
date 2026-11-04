@@ -65,6 +65,10 @@ enum Look { BALL, PIN, SPEAR }
 @export var slow_mult: float = 1.0
 @export var slow_seconds: float = 0.0
 
+## A hit the player takes comes back as this share of it to every enemy inside the weapon's reach
+## (Watschn-Baum), growing with the weapon's damage like its own hits.
+@export var reflect_share: float = 0.0
+
 @export_group("Drops, mines, chains")
 ## DROP / MINE: radius of one impact. CHAIN: how far the hit jumps to the next enemy.
 @export var impact_radius: float = 1.5

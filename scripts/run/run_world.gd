@@ -97,6 +97,7 @@ var pause: PauseMenu
 var stats := FrameStats.new()
 var quality: QualityScaler
 var touch: TouchControls
+var _riesen_seen: bool = false
 var run_time: float = 0.0
 var phase: Phase = Phase.RUNNING
 
@@ -470,6 +471,7 @@ func _host_frame(delta: float) -> void:
 			_on_downed(peers[t])
 		if state.hp < hp_before:
 			_on_hurt(peers[t])
+			_reflect_hit(peers[t], hp_before - state.hp)
 	for peer: int in players:
 		var state: PlayerState = states[peer]
 		var player: Player = players[peer]
@@ -739,7 +741,7 @@ func _cash_in(peer: int, wirt: Wirtshaus, tier: int) -> void:
 		state.build.rerolls += balance.wirtshaus_l_rerolls
 	var items: int = balance.wirtshaus_chest_items[tier] if tier < balance.wirtshaus_chest_items.size() else 0
 	level_flow.give_chest(peer, state, tier, items, tier == 3, gold, -1, balance.boss_chest_min_rarity if tier == 3 else 0)
-	knodl.set_knodl_mass(_knodl_start_mass(knodl))
+	knodl.reset_knodl_mass(_knodl_start_mass(knodl))
 	print("[RUN] cash-in peer=%d tier=%d t=%.1f" % [peer, tier, run_time])
 
 
@@ -857,7 +859,7 @@ func _on_downed(peer: int) -> void:
 
 func _on_respawned(peer: int) -> void:
 	var knodl: Knodl = knodls[peer]
-	knodl.set_knodl_mass(_knodl_start_mass(knodl))
+	knodl.reset_knodl_mass(_knodl_start_mass(knodl))
 	knodl.place_at(_spawn_position(peer) + Vector3(0.0, 0.6, knodl.rest_length()))
 	_respawn_grace[peer] = RESPAWN_GRACE
 
@@ -968,9 +970,18 @@ func _local_frame(delta: float) -> void:
 		var peer_knodl: Knodl = knodls.get(peer)
 		if peer_knodl != null:
 			peer_knodl.string_mult = 1.0 + build.stat(&"string_length")
+			if not NetworkManager.is_host():
+				# Clients only draw the size; the mass rule is the host's.
+				peer_knodl.set_size_rule(balance.riesenknodl_size if build.effect(&"riesenknodl") > 0.0 else 1.0, false)
 			player.speed_factor = Formulas.knodl_speed_factor(peer_knodl.radius, balance)
 		if weapon_vfx.has(peer):
 			weapon_vfx[peer].sync(build, run_time, delta, null if NetworkManager.is_host() else projectiles)
+	if state != null:
+		camera.wobble = state.build.screen_wobble()
+		if state.build.effect(&"riesenknodl") > 0.0 and not _riesen_seen:
+			_riesen_seen = true
+			hud.toast(tr("TOAST_RIESENKNODL"), 3.0)
+			GameAudio.play(&"level_up")
 	if local != null:
 		local.camera_yaw = camera.yaw
 		if local.bot != null and Engine.get_process_frames() % 10 == 0:
@@ -1613,6 +1624,19 @@ func _on_hurt(peer: int) -> void:
 		build.recompute()
 
 
+## Host: Watschn-Baum and every weapon with `reflect_share`: the hit comes back to all in reach.
+func _reflect_hit(peer: int, taken: float) -> void:
+	var build: PlayerBuild = states[peer].build
+	for owned: PlayerBuild.OwnedWeapon in build.weapons:
+		var damage: float = Formulas.reflect_damage(taken, owned.data, owned.mods, build.stat(&"damage"))
+		if damage <= 0.0:
+			continue
+		var at: Vector3 = players[peer].global_position
+		var reach: float = owned.data.reach * Formulas.weapon_area(owned.data, owned.mods, build.stat(&"area"))
+		_ring_damage(at, reach, damage, owned.data.knockback)
+		events.cue(RunEventCodec.Cue.SHOCKWAVE, at.x, at.z)
+
+
 ## Kommerzialrat Gustl: a few enemies near him stop for a coffee.
 func _coffee_break(at: Vector3) -> void:
 	var found: int = enemies.grid.query(at.x, at.z, balance.coffee_range)
@@ -1673,7 +1697,13 @@ func _update_item_effects(delta: float) -> void:
 		var build: PlayerBuild = states[peer].build
 		var knodl: Knodl = knodls.get(peer)
 		var player: Player = players[peer]
+		# Item evolutions (Riesenknödl der Apokalypse) arrive by themselves once earned.
+		for index: int in build.item_evolutions_ready():
+			build.add_item(index)
+			print("[RUN] item evolution peer=%d %s t=%.1f" % [peer, build.catalog.items[index].id, run_time])
 		if knodl != null:
+			var riesen: bool = build.effect(&"riesenknodl") > 0.0
+			knodl.set_size_rule(balance.riesenknodl_size if riesen else 1.0, riesen)
 			knodl.spikes = build.effect(&"knodl_spikes")
 			knodl.slope_bonus = build.effect(&"knodl_slope")
 			# Powidl-Füllung: the end of a Schupfn bursts.

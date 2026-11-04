@@ -15,6 +15,9 @@ extends Resource
 ## Card and HUD icon (assets/icons).
 @export var icon: Texture2D
 ## Card and HUD colour (never Krampus red: that is reserved for enemy attacks).
+## How far the camera sways per level (Jagatee: "die Welt wackelt a bissl"), 0..1 of
+## balance.camera_wobble_degrees in all; the "Bildschirm wackeln" setting turns it off.
+@export var screen_wobble: float = 0.0
 @export var color: Color = Color(0.55, 0.75, 0.45)
 
 

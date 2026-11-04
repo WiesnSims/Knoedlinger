@@ -174,6 +174,70 @@ func test_touch_controls_follow_the_setting() -> void:
 	Settings.set_value(&"touch_controls", "auto")
 
 
+func test_watschn_baum_reflects_hits_and_grows_with_its_damage() -> void:
+	var baum: WeaponData = load("res://data/weapons/watschn_baum.tres")
+	var plain := PackedFloat32Array([0.0, 0.0, 0.0, 0.0, 0.0])
+	assert_almost_eq(Formulas.reflect_damage(10.0, baum, plain, 0.0), 10.0 * baum.reflect_share, 0.001)
+	assert_gt(Formulas.reflect_damage(10.0, baum, plain, 0.5), Formulas.reflect_damage(10.0, baum, plain, 0.0))
+	var aura: WeaponData = load("res://data/weapons/watschn_aura.tres")
+	assert_eq(Formulas.reflect_damage(10.0, aura, plain, 0.0), 0.0, "only the evolution hits back")
+
+
+func test_riesenknodl_comes_from_broeselbutter_and_lederhosn() -> void:
+	var catalog: UpgradeCatalog = load("res://data/catalog/catalog.tres")
+	var balance: BalanceData = load("res://data/balance.tres")
+	var build := PlayerBuild.new(catalog, balance)
+	var riesen: int = _index_of(catalog.items, &"riesenknodl")
+	var butter: int = _index_of(catalog.items, &"broeselbutter")
+	var lederhosn: int = _index_of(catalog.passives, &"lederhosn")
+	assert_false(build.can_take_item(riesen), "no chest ever holds it")
+	build.add_item(butter)
+	for k: int in build.evolution_level:
+		build.apply(Card.new(Card.Kind.PASSIVE, lederhosn, Card.Rarity.COMMON, k + 1), balance)
+	assert_eq(build.item_evolutions_ready(), [riesen] as Array[int])
+	build.add_item(riesen)
+	assert_eq(build.item_evolutions_ready(), [] as Array[int], "given once")
+	assert_eq(build.effect(&"riesenknodl"), 1.0)
+
+
+func test_riesenknodl_is_twice_the_size_and_keeps_its_mass() -> void:
+	var balance: BalanceData = load("res://data/balance.tres")
+	var player := Player.new()
+	player.setup(1, false, balance, null, null)
+	add_child_autofree(player)
+	var knodl := Knodl.new()
+	knodl.setup(1, balance, load("res://data/knodl/semmelknoedl.tres"), player, true)
+	add_child_autofree(knodl)
+	knodl.set_knodl_mass(5000.0)
+	var capped: float = knodl.radius
+	knodl.set_size_rule(balance.riesenknodl_size, true)
+	assert_almost_eq(knodl.radius, capped * balance.riesenknodl_size, 0.001, "past the usual cap")
+	knodl.bite(500.0, 0.5)
+	knodl.set_knodl_mass(100.0)
+	assert_eq(knodl.knodl_mass, 5000.0, "nothing eats or sheds it")
+	knodl.reset_knodl_mass(30.0)
+	assert_eq(knodl.knodl_mass, 30.0, "a cash-in still empties it")
+	assert_true(knodl.keeps_mass)
+
+
+func test_jagatee_sways_the_camera_a_little() -> void:
+	var catalog: UpgradeCatalog = load("res://data/catalog/catalog.tres")
+	var balance: BalanceData = load("res://data/balance.tres")
+	var build := PlayerBuild.new(catalog, balance)
+	assert_eq(build.screen_wobble(), 0.0)
+	var jagatee: int = _index_of(catalog.passives, &"jagatee")
+	for k: int in 20:
+		build.apply(Card.new(Card.Kind.PASSIVE, jagatee, Card.Rarity.COMMON, k + 1), balance)
+	assert_eq(build.screen_wobble(), 1.0, "capped")
+
+
+func _index_of(list: Array, id: StringName) -> int:
+	for k: int in list.size():
+		if list[k].id == id:
+			return k
+	return -1
+
+
 func _touch(index: int, at: Vector2, pressed: bool) -> InputEventScreenTouch:
 	var event := InputEventScreenTouch.new()
 	event.index = index

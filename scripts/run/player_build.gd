@@ -21,8 +21,9 @@ const MOD_AMOUNT: int = 4
 ## chest opened, a revive per copy.
 ## Knödl items: spikes (damage per second to what it touches), a burst when a Schupfn ends, a
 ## downhill bonus. Visible ones: kills blow up (chance), a bell ring around the player.
+## Riesenknödl: the Knödl is twice the size and never loses mass.
 const EFFECTS: Array[StringName] = [&"free_chest", &"damage_per_chest", &"revive", &"knodl_spikes", &"knodl_burst",
-	&"knodl_slope", &"kill_blast", &"bell"]
+	&"knodl_slope", &"kill_blast", &"bell", &"riesenknodl"]
 
 
 class OwnedWeapon:
@@ -162,7 +163,30 @@ func can_take_item(index: int) -> bool:
 	if locked.has(Card.Kind.ITEM * 256 + index):
 		return false
 	var data: ItemData = catalog.items[index]
+	if data.evolves_from != null:
+		return false
 	return data.max_stacks <= 0 or item_count(index) < data.max_stacks
+
+
+## Item evolutions this player has earned but not got yet (catalog indices).
+func item_evolutions_ready() -> Array[int]:
+	var ready: Array[int] = []
+	for index: int in catalog.items.size():
+		var data: ItemData = catalog.items[index]
+		if data.evolves_from == null or data.evolves_with == null or item_count(index) > 0:
+			continue
+		var partner: OwnedPassive = owned_passive(catalog.passives.find(data.evolves_with))
+		if item_count(catalog.items.find(data.evolves_from)) > 0 and partner != null and partner.level >= evolution_level:
+			ready.append(index)
+	return ready
+
+
+## The camera sway of the passives held (0..1).
+func screen_wobble() -> float:
+	var sway: float = 0.0
+	for owned: OwnedPassive in passives:
+		sway += owned.data.screen_wobble * owned.level
+	return clampf(sway, 0.0, 1.0)
 
 
 ## The start weapon of the character, at level 1.

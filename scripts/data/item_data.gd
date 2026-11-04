@@ -20,6 +20,10 @@ extends Resource
 @export var max_stacks: int = 0
 ## Knödl upgrades are listed apart in the inventory.
 @export var knodl: bool = false
+## An item evolution (GAME-DESIGN.md: Riesenknödl der Apokalypse): no chest gives it; the host
+## hands it out once a player holds `evolves_from` and has `evolves_with` at its evolution level.
+@export var evolves_from: ItemData
+@export var evolves_with: PassiveData
 ## Tile and chest icon (assets/icons).
 @export var icon: Texture2D
 @export var color: Color = Color(0.85, 0.75, 0.5)

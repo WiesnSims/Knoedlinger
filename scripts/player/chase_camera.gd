@@ -31,6 +31,9 @@ var see_through_radius: float = 1.9
 var _sensitivity: float = 0.0
 var _pad_speed: float = 1.0
 var _touch_speed: float = 1.0
+## 0..1: a slow sway of the view (the Jagatee); off with the "Bildschirm wackeln" setting.
+var wobble: float = 0.0
+var _wobble_time: float = 0.0
 var _invert: float = 1.0
 var _smoothing: float = 0.0
 var _yaw_target: float = 0.0
@@ -182,6 +185,12 @@ func _place(distance: float) -> void:
 			wanted = at + (_focus - at).normalized() * balance.camera_collision_margin
 	global_position = wanted
 	look_at(_focus)
+	var sway: float = wobble if not Settings.persistent or Settings.get_bool(&"screen_wobble") else 0.0
+	if sway > 0.0 and balance != null:
+		_wobble_time += get_process_delta_time()
+		var t: float = _wobble_time * balance.camera_wobble_speed * TAU
+		rotate_object_local(Vector3.FORWARD, deg_to_rad(balance.camera_wobble_degrees) * sway * sin(t))
+		rotate_object_local(Vector3.RIGHT, deg_to_rad(balance.camera_wobble_degrees) * 0.4 * sway * sin(t * 0.63))
 	_update_see_through()
 
 

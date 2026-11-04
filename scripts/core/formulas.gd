@@ -66,6 +66,13 @@ static func weapon_cooldown(weapon: WeaponData, mods: PackedFloat32Array, cooldo
 
 
 ## Size factor for reach, radius and orbit: its area mod and the area stat.
+## Watschn-Baum: what a hit of `taken` HP sends back to each enemy in reach.
+static func reflect_damage(taken: float, weapon: WeaponData, mods: PackedFloat32Array, damage_stat: float) -> float:
+	if weapon.reflect_share <= 0.0 or weapon.damage <= 0.0:
+		return 0.0
+	return taken * weapon.reflect_share * weapon_damage(weapon, mods, damage_stat) / weapon.damage
+
+
 static func weapon_area(weapon: WeaponData, mods: PackedFloat32Array, area_stat: float) -> float:
 	return (1.0 + mods[2]) * (1.0 + area_stat)
 

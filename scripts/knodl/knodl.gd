@@ -57,6 +57,10 @@ var _wobble: float = 0.0
 var _stuck_timer: float = 0.0
 var _reel_timer: float = 0.0
 var _shed_pending: float = 0.0
+## Riesenknödl der Apokalypse: the radius times this (past the usual cap), and no mass is ever lost
+## (a cash-in still empties it: set_size_rule clears keeps_mass for that moment).
+var size_mult: float = 1.0
+var keeps_mass: bool = false
 var _remote_position: Vector3 = Vector3.ZERO
 var _remote_rotation: Quaternion = Quaternion.IDENTITY
 var _speed: float = 0.0
@@ -122,8 +126,10 @@ func place_at(where: Vector3) -> void:
 
 
 func set_knodl_mass(value: float) -> void:
+	if keeps_mass and value < knodl_mass:
+		value = knodl_mass
 	knodl_mass = maxf(value, 0.0)
-	radius = Formulas.knodl_radius(knodl_mass, balance)
+	radius = Formulas.knodl_radius(knodl_mass, balance) * size_mult
 	# Resizing the Jolt shape for every crumb would be wasted work; a few millimetres do not show.
 	if absf(radius - _applied_radius) < 0.002:
 		return
@@ -133,6 +139,22 @@ func set_knodl_mass(value: float) -> void:
 	# Crumbs keep their real size as the Knödl grows.
 	_material.set_shader_parameter(&"crumb_scale", CRUMBS_PER_METRE * radius)
 	mass = 1.0 + knodl_mass * 0.02
+
+
+## The Riesenknödl rule (every role, from the build): twice the size, never shrinks.
+func set_size_rule(mult: float, keep: bool) -> void:
+	keeps_mass = keep
+	if mult != size_mult:
+		size_mult = mult
+		set_knodl_mass(knodl_mass)
+
+
+## Starts over at `value` (a cash-in, a respawn): the only way a Riesenknödl gets smaller.
+func reset_knodl_mass(value: float) -> void:
+	var keep: bool = keeps_mass
+	keeps_mass = false
+	set_knodl_mass(value)
+	keeps_mass = keep
 
 
 ## Host: Brösel eaten; makes it wobble.
@@ -154,7 +176,7 @@ func max_length() -> float:
 ## Host: Bröselfresser ate `amount` mass. `spill` of it falls off as loose Brösel (take_shed()),
 ## the rest is gone.
 func bite(amount: float, spill: float) -> void:
-	if amount <= 0.0:
+	if amount <= 0.0 or keeps_mass:
 		return
 	amount = minf(amount, knodl_mass)
 	set_knodl_mass(knodl_mass - amount * (1.0 - spill))
@@ -322,7 +344,8 @@ func _physics_process(delta: float) -> void:
 	var moving: float = linear_velocity.length()
 	match state:
 		State.THROWN:
-			_shed_pending += knodl_mass * balance.knodl_shed_per_second * delta
+			if not keeps_mass:
+				_shed_pending += knodl_mass * balance.knodl_shed_per_second * delta
 			_stuck_timer = _stuck_timer + delta if moving < balance.knodl_stuck_speed else 0.0
 			if _stuck_timer >= balance.knodl_stuck_seconds or distance > balance.knodl_max_throw_distance:
 				auto_returns += 1
