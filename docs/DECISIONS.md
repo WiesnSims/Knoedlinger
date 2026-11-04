@@ -849,3 +849,9 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   per client, everything in sync; the full `ui_shots` set (80 shots) under 150 draw calls, no console errors.
 - **Note for parallel sessions:** test servers on the same port serve the other worktree's build (seen
   on 8061/8071 today); pass a free `-Port` when two sessions test at once.
+
+## 2026-11-04 – M5 approved
+
+- **Owner: M5 approved** on the first preview; merged into `main`, branch `m5-polish` deleted.
+- **Owner: first production deploy** – `main` with M5 is deployed to https://knoedlinger.pages.dev (with the
+  real Ehrentafel database `knoedlinger-board`). Next: M6 (co-op).
