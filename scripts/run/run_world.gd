@@ -666,7 +666,11 @@ func _on_run_ended() -> void:
 		return
 	var local_state: PlayerState = states.get(NetworkManager.local_id())
 	_record_profile(Result.keys()[result])
-	end_screen.show_result(_run_summary(), not NetworkManager.is_online(),
+	# Co-op from the room: the host takes everyone back to the Stammtisch, the others may leave.
+	var room: bool = Lobby.is_active()
+	if room:
+		end_screen.set_button_labels("END_AGAIN_COOP", "COOP_LEAVE")
+	end_screen.show_result(_run_summary(), not NetworkManager.is_online() or (room and NetworkManager.is_host()),
 			local_state.build if local_state != null else null, balance, _reward)
 
 
@@ -711,13 +715,19 @@ func _quit_to_menu() -> void:
 		_record_profile("QUIT")
 	_finished = true
 	get_tree().paused = false
-	if NetworkManager.is_online():
+	if Lobby.is_active():
+		Lobby.leave()
+	elif NetworkManager.is_online():
 		NetworkManager.leave()
 	get_tree().change_scene_to_file.call_deferred("res://scenes/menu/main_menu.tscn")
 
 
 func _restart() -> void:
 	get_tree().paused = false
+	if Lobby.is_active():
+		# Co-op: everyone back to the room (the Lobby changes the scene).
+		Lobby.back_to_room()
+		return
 	get_tree().reload_current_scene()
 
 
@@ -1564,8 +1574,20 @@ func _on_join_failed(reason: String) -> void:
 func _on_session_ended(reason: String) -> void:
 	_ended_reason = reason
 	print("[NET] session ended: %s" % reason)
-	if not _finished:
+	if _finished:
+		return
+	if _seconds > 0.0 or _autoplay or DisplayServer.get_name() == "headless":
 		_finish()
+		return
+	# A player in the browser: say why, keep what the run made so far (like leaving), back to the menu.
+	hud.toast(CoopScreen.error_text(reason), 3.0)
+	_finished = true
+	if phase != Phase.ENDED:
+		result = Result.LOST
+		_record_profile("QUIT")
+	get_tree().paused = false
+	get_tree().create_timer(3.0).timeout.connect(func() -> void:
+		get_tree().change_scene_to_file("res://scenes/menu/main_menu.tscn"))
 
 
 func _spawn_player(peer_id: int, local: bool) -> Player:

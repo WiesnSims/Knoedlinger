@@ -42,7 +42,8 @@ func _ready() -> void:
 	NetworkManager.session_ended.connect(_on_failed)
 	if LaunchArgs.has("lobby"):
 		_automated = true
-		_auto_clients = LaunchArgs.get_int("lobby", 1) if NetworkManager.is_host() else -1
+		# Only the host acts on it (over the relay it only learns it is the host from the welcome).
+		_auto_clients = LaunchArgs.get_int("lobby", 1)
 		if NetworkManager.is_online():
 			state = State.LOBBY if NetworkManager.is_host() else State.CONNECTING
 			NetworkManager.send_profile(my_profile(RunSetup.character_id()))
@@ -183,8 +184,8 @@ func _on_room_opened(_code: String) -> void:
 		# The host starts with its last map and Grant level.
 		var last: Dictionary = Profile.last_choice()
 		var profile: Dictionary = NetworkManager.local_profile.duplicate(true)
-		profile["map"] = str(last.get("map", RunSetup.map))
-		profile["grant"] = clampi(int(last.get("grant", RunSetup.grant)), 0, Profile.grant_unlocked())
+		profile["map"] = RunSetup.map_id() if _automated else str(last.get("map", RunSetup.map))
+		profile["grant"] = RunSetup.grant_index() if _automated 				else clampi(int(last.get("grant", RunSetup.grant)), 0, Profile.grant_unlocked())
 		NetworkManager.send_profile(profile)
 		_set_state(State.LOBBY)
 
@@ -220,7 +221,7 @@ func _on_roster_changed() -> void:
 				character = free
 			if character != "":
 				used[character] = true
-		if _auto_clients >= 0 and NetworkManager.room_ids().size() >= _auto_clients and can_start():
+		if _automated and NetworkManager.room_ids().size() >= _auto_clients and can_start():
 			start.call_deferred()
 	changed.emit()
 

@@ -744,3 +744,27 @@ TOAST_RIESENKNODL,Riesenknödl der Apokalypse!
 SET_ANTIALIASING,Kantenglättung
 MENU_HINT_PAD,Steuerkreuz für Details · A nehmen
 MENU_HINT_TOUCH,Antippen zum Nehmen
+COOP_LINE,"Bis zu vier Knödlinger spielen zam. Wer aufmacht, kriegt an Code für die andern."
+COOP_OPEN,Aufmachen
+COOP_JOIN_TITLE,Oder zu an Tisch dazuasetzen
+COOP_JOIN,Dazuasetzen
+COOP_CONNECTING,Verbinde mit'm Wirtshaus …
+COOP_ROOM,Tischcode
+COOP_COPY,Link kopieren
+COOP_COPIED,Kopiert!
+COOP_HOST,Wirt
+COOP_FREE,Platz frei
+COOP_PICK,Wer bist du?
+COOP_TAKEN,scho vergeben
+COOP_ONLY_ONE,Es gibt nur eine Oma! Such da wen anders aus.
+COOP_WAIT_HOST,"Da Wirt fangt an, wenn olle passen."
+COOP_WAIT_PLAYERS,Zu zweit wird's erst lustig: wart auf die Familie.
+COOP_LEAVE,Gehen
+COOP_ERR_FULL,Da Tisch is scho voll.
+COOP_ERR_STARTED,De san scho beim Essen. Wart auf die nächste Runde.
+COOP_ERR_NO_ROOM,Den Tisch gibt's ned.
+COOP_ERR_HOST_LEFT,Da Wirt is hoamgangen.
+COOP_ERR_KICKED,Du bist aussegschmissn wordn.
+COOP_ERR_GAME,Des is a anders Spü.
+COOP_ERR_LOST,Koa Verbindung zum Wirtshaus.
+END_AGAIN_COOP,Zurück an'n Stammtisch

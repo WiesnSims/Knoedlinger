@@ -139,6 +139,12 @@ func show_result(summary: Dictionary, can_restart: bool, build: PlayerBuild = nu
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
+## Co-op: "again" takes everyone back to the room (host), the other button leaves it.
+func set_button_labels(again_key: String, menu_key: String) -> void:
+	_again.set_label(tr(again_key))
+	_menu.set_label(tr(menu_key))
+
+
 func show_rank(rank: int, week_rank: int) -> void:
 	if _rank_label != null and is_instance_valid(_rank_label):
 		_rank_label.text = tr("END_BOARD_RANK") % [rank, week_rank]

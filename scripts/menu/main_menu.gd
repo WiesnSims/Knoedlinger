@@ -2,7 +2,7 @@ extends Node3D
 ## The title screen (docs/DECISIONS.md, M4 plan): the Kirtag of Unterhinterkogl slowly turning
 ## behind the menu, the logo and the entries on the left, the chosen screen on the right. Entries:
 ## Spielen, Stammtisch, Aufträge, Rekorde, Almanach, Einstellungen and "Stammtisch aufmachen"
-## (co-op, greyed out until M6). On the very first start it asks for the player's name.
+## (co-op: the CoopScreen room). On the very first start it asks for the player's name.
 
 const BACKDROP_MAP: String = "res://data/maps/kirtag.tres"
 const RUN_SCENE: String = "res://scenes/run/run_world.tscn"
@@ -12,7 +12,7 @@ const ORBIT_HEIGHT: float = 9.0
 const ORBIT_SPEED: float = 0.05
 const LEFT_WIDTH: float = 320.0
 const MARGIN: float = 64.0
-## [label key, screen id, enabled]. Screens that come later in M4 are listed but greyed out.
+## [label key, screen id, enabled].
 const ENTRIES: Array = [
 	["MENU_PLAY", &"play", true],
 	["MENU_STAMMTISCH", &"stammtisch", true],
@@ -20,7 +20,7 @@ const ENTRIES: Array = [
 	["MENU_RECORDS", &"records", true],
 	["MENU_ALMANACH", &"almanach", true],
 	["MENU_SETTINGS", &"settings", true],
-	["MENU_COOP", &"coop", false],
+	["MENU_COOP", &"coop", true],
 ]
 
 var content: GameContent
@@ -51,6 +51,9 @@ func _ready() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if Settings.needs_name():
 		_show_name_prompt()
+	elif Lobby.is_active() or LaunchArgs.has("room"):
+		# Back from a co-op run, or opened with an invite link: straight to the room.
+		_open(&"coop")
 	else:
 		_entries[0].grab_focus()
 	print("[MENU] ready")
@@ -151,6 +154,9 @@ func _build_ui() -> void:
 	var settings := SettingsPanel.new()
 	settings.closed.connect(_close_screen)
 	_screens[&"settings"] = settings
+	var coop := CoopScreen.new(content)
+	coop.closed.connect(_close_screen)
+	_screens[&"coop"] = coop
 	for id: StringName in [&"stammtisch", &"quests", &"records", &"almanach"]:
 		var screen: Control
 		match id:
@@ -211,6 +217,9 @@ func _start_run(character: StringName, map: StringName, grant: int) -> void:
 	if _starting:
 		return
 	_starting = true
+	# A solo run leaves any co-op room.
+	if Lobby.is_active():
+		Lobby.leave()
 	RunSetup.character = String(character)
 	RunSetup.map = String(map)
 	RunSetup.grant = grant
@@ -263,7 +272,10 @@ func _confirm_name() -> void:
 	Settings.set_value(&"player_name", chosen if chosen != "" else Settings.NAME_FALLBACK)
 	(_name_prompt.get_meta(&"shade") as Control).visible = false
 	GameAudio.play(&"card")
-	_entries[0].grab_focus()
+	if LaunchArgs.has("room"):
+		_open(&"coop")
+	else:
+		_entries[0].grab_focus()
 
 
 func _unhandled_input(event: InputEvent) -> void:

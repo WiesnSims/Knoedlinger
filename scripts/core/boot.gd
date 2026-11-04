@@ -10,7 +10,8 @@ const SCENES: Dictionary[String, String] = {
 	"stress": "res://scenes/stress/stress_arena.tscn",
 }
 ## Options that change nothing about what to start.
-const NEUTRAL: Array[String] = ["mute", "debug", "log_slow"]
+## `room` is an invite link (?room=KNDL): the menu opens and joins that room.
+const NEUTRAL: Array[String] = ["mute", "debug", "log_slow", "room"]
 
 
 func _ready() -> void:
