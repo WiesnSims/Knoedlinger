@@ -627,3 +627,45 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Claude: the local test server** (`tools/browser/serve.mjs`) answers `/api/*` with an "offline" reply, so the
   board shows its offline line there instead of a 404 console error. Board tests: `node --test
   board/test/board.test.mjs` (local D1 via `wrangler pages dev`, 8 tests).
+
+### Part 5: content (the family, weapons, stats, items, Knödl sorts, enemies, quests)
+
+- **Claude: all 8 Knödlinger**, traits as data (`CharacterData`: `trait_stats`, `extra_cards`, `slope_speed`,
+  `knodl_start`, named `trait_effects`): Onkel Ferdl (Grant: +1 % damage per hit taken, at most 30 %), Oma Resi
+  (Kochlöffel, Marillenknödl, Knödl starts 50 % bigger), Cousin Toni (Skistöcke, Germknödl, +25 % speed on slopes,
+  double jump), Herr Poldi (Tablett-Wurf, one more Speisekarte card), Tante Vroni (Kuhglocke, Speckknödl, +20 max HP
+  and 0.3 HP/s regen; **the design's "regen near cows" became plain regen**, there are no cows on the maps yet),
+  Sepp (Obstler-Flammenwerfer, Grammelknödl, +15 % area; burn immunity waits for something that burns players),
+  Kommerzialrat Gustl (Stempel, Kaspressknödl, a free banish every 60 s, every 12 s up to six enemies near him stop
+  for a 3 s coffee), Kevin (Watschn-Aura, Germknödl, every 5th jump a shockwave). Ferdl, Resi and Toni are open from
+  the start, the other five unlock through quests. InputMessage v3 counts jumps (Kevin's waves are host-side).
+  Remote co-op players still play the host's character until the M6 lobby.
+- **Claude: all 16 weapons.** New patterns: DROP (impacts on enemies near the player: Stempel stuns, Hagelkanone,
+  Schneekugel freezes), MINE (blasts where the player stood: Sachertorte-Mine), CHAIN (jumps from enemy to enemy,
+  -15 % per jump: Wiener Würstel, Krampusrute), boomerang shots (Tablett-Wurf), cones as narrow arcs (Obstler sets
+  on fire, Alphorn pushes hard), Zither as a wide fan of piercing waves. Enemies got status effects (slow/freeze/
+  stun and burn as packed arrays; bosses feel a third of a slow and never stop). The host draws the real impacts;
+  clients draw the same kind of picture from the fire counter (cosmetic), so no new network traffic.
+- **Claude: all 8 evolutions**: Omas Nudelwalker and Kugel-Karussell (M2), Jodel-Apokalypse (Alphorn + Gamsbart-Hut,
+  big knockback ring), Jahrhundert-Unwetter (Hagelkanone + Strickpullover, hail over 30 m), Amtsweg (Stempel +
+  Pensionistenausweis, 3 s stamps), Schnapsbrennerei (Obstler + Jagatee, a burning trail of small blasts),
+  Watschn-Baum (Watschn-Aura + Lederhosn, bigger aura with knockback; **the reflected damage is not built yet**),
+  and the Riesenknödl stays a Knödl item for later (see below).
+- **Claude: all 14 stat upgrades**: new Bergkas (max HP), Jagatee (damage; the screen wobble is left out), Hufeisen
+  (luck), Krügerl (attack speed, a new `rate` stat), Kaffeehaus-Zeitung (`duration`: shots fly longer, burns and
+  slows last longer), Bausparvertrag (gold).
+- **Claude: 30 items**: 13 more stat items, and with effects Bröselbutter (whatever touches the Knödl takes damage
+  every second), Powidl-Füllung (a blast when a Schupfn ends, costs 10 % mass), Bergab-Gesetz (+100 % Knödl damage
+  rolling downhill), Schweizerkracher (8 % per copy that a kill blows up), Kirchenglocke (a ring every 10 s).
+  **Not built: Doppelportion (a second Knödl) and the Riesenknödl der Apokalypse evolution**; both need a second
+  Knödl body or a size rule across the network and are left for M5/M6.
+- **Claude: all 6 Knödl sorts**: Speck, Marillen, Germ (as in the design), Kaspressknödl (a flat disc that cuts
+  through enemies instead of pushing them aside), Grammelknödl (its greasy trail slows enemies to 50 %).
+- **Claude: 6 new enemies (17 in all incl. Formular and the bosses)**: Wühlmaus (pops up 4-7 m from a player),
+  Rasenmäher-Roboter (circles at 7 m, cuts a marked circle around itself), Schneemann (keeps 9 m away, lobs
+  snowballs; on the ski map), Gartenzwerg (explodes where it falls, marked), Kontrolleur (from 4:00 one stands at
+  every open Wirtshaus, which serves nobody until he is beaten: "Kontrolle!"), Hungriger Tourist (Bröselfresser
+  elite, 20 mass/s). Each wave may list 16 types (4 bits in snapshots), now checked per wave.
+- **Claude: 101 quests** (the design's target of 100); everything new that is not a start pick is unlocked by one.
+- **Claude: `?weapons=a,b` / `--weapons=`** gives extra weapons at the start (testing; ignores locks and slots).
+- **Measured (local, RTX 3080, run, 500 enemies, bot, 60 s, Edge):** 157 fps avg, p95 7.8 ms, at most 128 draw calls.

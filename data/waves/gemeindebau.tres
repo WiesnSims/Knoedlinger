@@ -1,0 +1,132 @@
+[gd_resource type="Resource" script_class="WaveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/wave_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="2_enemy"]
+[ext_resource type="Script" path="res://scripts/data/wave_entry.gd" id="3_entry"]
+[ext_resource type="Script" path="res://scripts/data/wave_boss.gd" id="4_boss"]
+[ext_resource type="Resource" path="res://data/enemies/tourist.tres" id="e_tourist"]
+[ext_resource type="Resource" path="res://data/enemies/gelse.tres" id="e_gelse"]
+[ext_resource type="Resource" path="res://data/enemies/dackel.tres" id="e_dackel"]
+[ext_resource type="Resource" path="res://data/enemies/taube.tres" id="e_taube"]
+[ext_resource type="Resource" path="res://data/enemies/wildschwein.tres" id="e_wildschwein"]
+[ext_resource type="Resource" path="res://data/enemies/rasenmaeher.tres" id="e_rasenmaeher"]
+[ext_resource type="Resource" path="res://data/enemies/perchte.tres" id="e_perchte"]
+[ext_resource type="Resource" path="res://data/enemies/radler.tres" id="e_radler"]
+[ext_resource type="Resource" path="res://data/enemies/akten_geist.tres" id="e_akten_geist"]
+[ext_resource type="Resource" path="res://data/enemies/formular.tres" id="e_formular"]
+[ext_resource type="Resource" path="res://data/enemies/oberkrampus.tres" id="e_oberkrampus"]
+[ext_resource type="Resource" path="res://data/enemies/hofrat.tres" id="e_hofrat"]
+[ext_resource type="Resource" path="res://data/enemies/kontrolleur.tres" id="e_kontrolleur"]
+[ext_resource type="Resource" path="res://data/enemies/hungriger_tourist.tres" id="e_hungriger_tourist"]
+[ext_resource type="Resource" path="res://data/enemies/gartenzwerg.tres" id="e_gartenzwerg"]
+[ext_resource type="Resource" path="res://data/enemies/wuehlmaus.tres" id="e_wuehlmaus"]
+[ext_resource type="Resource" path="res://data/bosses/oberkrampus.tres" id="b_oberkrampus"]
+[ext_resource type="Resource" path="res://data/bosses/oberkrampus_2.tres" id="b_oberkrampus_2"]
+[ext_resource type="Resource" path="res://data/bosses/hofrat.tres" id="b_hofrat"]
+
+[sub_resource type="Resource" id="entry_0"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_tourist")
+from_minute = 0.0
+to_minute = 15.0
+weight = 2.5
+
+[sub_resource type="Resource" id="entry_1"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_gelse")
+from_minute = 0.0
+to_minute = 15.0
+weight = 1.5
+
+[sub_resource type="Resource" id="entry_2"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_dackel")
+from_minute = 0.5
+to_minute = 15.0
+weight = 2.0
+
+[sub_resource type="Resource" id="entry_3"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_taube")
+from_minute = 2.0
+to_minute = 15.0
+weight = 1.0
+
+[sub_resource type="Resource" id="entry_4"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_gartenzwerg")
+from_minute = 2.0
+to_minute = 15.0
+weight = 0.8
+
+[sub_resource type="Resource" id="entry_5"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_wuehlmaus")
+from_minute = 3.0
+to_minute = 15.0
+weight = 0.5
+
+[sub_resource type="Resource" id="entry_6"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_rasenmaeher")
+from_minute = 5.0
+to_minute = 15.0
+weight = 0.15
+
+[sub_resource type="Resource" id="entry_7"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_wildschwein")
+from_minute = 5.0
+to_minute = 15.0
+weight = 0.4
+
+[sub_resource type="Resource" id="entry_8"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_perchte")
+from_minute = 5.0
+to_minute = 15.0
+weight = 0.18
+
+[sub_resource type="Resource" id="entry_9"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_radler")
+from_minute = 6.0
+to_minute = 15.0
+weight = 0.25
+
+[sub_resource type="Resource" id="entry_10"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_hungriger_tourist")
+from_minute = 9.0
+to_minute = 15.0
+weight = 0.12
+
+[sub_resource type="Resource" id="entry_11"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_tourist")
+from_minute = 8.0
+to_minute = 8.75
+weight = 6.0
+
+[sub_resource type="Resource" id="boss_0"]
+script = ExtResource("4_boss")
+minute = 5.0
+boss = ExtResource("b_oberkrampus")
+
+[sub_resource type="Resource" id="boss_1"]
+script = ExtResource("4_boss")
+minute = 10.0
+boss = ExtResource("b_oberkrampus_2")
+
+[resource]
+script = ExtResource("1_script")
+id = &"gemeindebau"
+enemies = Array[ExtResource("2_enemy")]([ExtResource("e_tourist"), ExtResource("e_gelse"), ExtResource("e_dackel"), ExtResource("e_taube"), ExtResource("e_wildschwein"), ExtResource("e_rasenmaeher"), ExtResource("e_perchte"), ExtResource("e_radler"), ExtResource("e_akten_geist"), ExtResource("e_formular"), ExtResource("e_oberkrampus"), ExtResource("e_hofrat"), ExtResource("e_kontrolleur"), ExtResource("e_hungriger_tourist"), ExtResource("e_gartenzwerg"), ExtResource("e_wuehlmaus")])
+entries = Array[ExtResource("3_entry")]([SubResource("entry_0"), SubResource("entry_1"), SubResource("entry_2"), SubResource("entry_3"), SubResource("entry_4"), SubResource("entry_5"), SubResource("entry_6"), SubResource("entry_7"), SubResource("entry_8"), SubResource("entry_9"), SubResource("entry_10"), SubResource("entry_11")])
+bosses = Array[ExtResource("4_boss")]([SubResource("boss_0"), SubResource("boss_1")])
+final_boss = ExtResource("b_hofrat")
+formular_minute = 10.0
+final_boss_minute = 12.0
+bus_minute = 8.0
+bus_seconds = 45.0
+bus_extra = 80

@@ -306,6 +306,16 @@ static func _special_look(type: EnemyTypeData) -> Array[Dictionary]:
 			parts.append(_part(_cylinder(0.32, 0.26, 0.5, 8), _at(Vector3(0.0, 1.05, -0.5)), Color(0.55, 0.4, 0.25)))
 			for side: float in [-1.0, 1.0]:
 				parts.append(_part(_box(Vector3(0.2, 0.4, 0.25)), _at(Vector3(side * 0.2, 0.12, 0.05)), dark))
+		&"lawine":
+			# A tumbling heap of snow lumps with a few rocks and a broken fir in it.
+			for k: int in 9:
+				var angle: float = TAU * k / 9.0
+				var r: float = 0.35 + 0.08 * (k % 3)
+				parts.append(_part(_sphere(r, 10), _at(Vector3(cos(angle) * 0.45, 0.45 + 0.25 * (k % 2), sin(angle) * 0.4)), body if k % 2 == 0 else head))
+			parts.append(_part(_sphere(0.6, 12), _at(Vector3(0.0, 0.85, 0.0)), body))
+			parts.append(_part(_sphere(0.16, 6), _at(Vector3(0.4, 0.95, 0.35)), Color(0.5, 0.5, 0.52)))
+			parts.append(_part(_sphere(0.12, 6), _at(Vector3(-0.45, 0.6, 0.4)), Color(0.45, 0.45, 0.48)))
+			parts.append(_part(_cylinder(0.0, 0.2, 0.8, 6), _at(Vector3(-0.2, 1.3, -0.2), Vector3(0.6, 0.0, 0.4)), StructureKit.FIR_GREEN))
 		&"wuehlmaus":
 			# A plump vole half out of its molehill.
 			parts.append(_part(_cylinder(0.55, 0.75, 0.35, 10), _at(Vector3(0.0, 0.17, 0.0)), Color(0.36, 0.26, 0.18)))

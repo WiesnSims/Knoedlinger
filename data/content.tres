@@ -156,10 +156,24 @@ name_key = "MAP_KIRTAG"
 desc_key = "MAP_KIRTAG_DESC"
 swatch = Color(0.47, 0.62, 0.33, 1)
 
+[sub_resource type="Resource" id="Map_gamskogl"]
+script = ExtResource("2_map_info")
+id = &"gamskogl"
+name_key = "MAP_GAMSKOGL"
+desc_key = "MAP_GAMSKOGL_DESC"
+swatch = Color(0.88, 0.92, 0.98, 1)
+
+[sub_resource type="Resource" id="Map_gemeindebau"]
+script = ExtResource("2_map_info")
+id = &"gemeindebau"
+name_key = "MAP_GEMEINDEBAU"
+desc_key = "MAP_GEMEINDEBAU_DESC"
+swatch = Color(0.78, 0.5, 0.38, 1)
+
 [resource]
 script = ExtResource("1_content")
 characters = Array[Resource]([ExtResource("3_ferdl"), ExtResource("c_resi"), ExtResource("c_toni"), ExtResource("c_poldi"), ExtResource("c_vroni"), ExtResource("c_sepp"), ExtResource("c_gustl"), ExtResource("c_kevin")])
-maps = Array[Resource]([SubResource("Map_kirtag")])
+maps = Array[Resource]([SubResource("Map_kirtag"), SubResource("Map_gamskogl"), SubResource("Map_gemeindebau")])
 upgrades = Array[ExtResource("4_upgrade")]([ExtResource("u_bergkas_abo"), ExtResource("u_wetzstein"), ExtResource("u_wanderschuhe"), ExtResource("u_grosser_teig"), ExtResource("u_nochmal_zetterl"), ExtResource("u_beschwerdeformular"), ExtResource("u_hufeisen_ueberm_tor"), ExtResource("u_hosensack"), ExtResource("u_nachschlag"), ExtResource("u_wanderstecken")])
 quests = Array[ExtResource("5_quest")]([ExtResource("q_gelsenplage"), ExtResource("q_reisegruppe"), ExtResource("q_dackelschau"), ExtResource("q_taubenfuettern"), ExtResource("q_wildsau"), ExtResource("q_zehntausend"), ExtResource("q_erste_einkehr"), ExtResource("q_stammgast"), ExtResource("q_riesenportion"), ExtResource("q_lehrling"), ExtResource("q_geselle"), ExtResource("q_ferdl_meister"), ExtResource("q_fuenf_kirtage"), ExtResource("q_durchghalten"), ExtResource("q_krampus_weg"), ExtResource("q_krampus_nochmal"), ExtResource("q_hofrat_abgelehnt"), ExtResource("q_ohne_schupfn"), ExtResource("q_erster_sieg"), ExtResource("q_kirtagskoenig"), ExtResource("q_amtsweg"), ExtResource("q_riesenknoedl"), ExtResource("q_sparefroh"), ExtResource("q_sammler"), ExtResource("q_grantscherbn"), ExtResource("q_omas_kochbuch"), ExtResource("q_pistengaudi"), ExtResource("q_herr_ober"), ExtResource("q_almauftrieb"), ExtResource("q_feuerwehrfest"), ExtResource("q_titelverleihung"), ExtResource("q_plattlerkurs"), ExtResource("q_tablettschupfer"), ExtResource("q_brandschutz"), ExtResource("q_beamtenlaufbahn"), ExtResource("q_echo"), ExtResource("q_gewitterfront"), ExtResource("q_winterzauber"), ExtResource("q_wuerstelstand"), ExtResource("q_stubnmusi"), ExtResource("q_krampuslauf"), ExtResource("q_konditorei"), ExtResource("q_kraftkas"), ExtResource("q_huettenzauber"), ExtResource("q_schiessbude"), ExtResource("q_stammtischrunde"), ExtResource("q_zeitunglesen"), ExtResource("q_bauherr"), ExtResource("q_kaesekeller"), ExtResource("q_zwetschkenernte"), ExtResource("q_steilhang"), ExtResource("q_silvester"), ExtResource("q_mesner"), ExtResource("q_gipfelsieg"), ExtResource("q_aktenberg"), ExtResource("q_papierkram"), ExtResource("q_radlweg"), ExtResource("q_perchtenlauf"), ExtResource("q_gelsenkoenig"), ExtResource("q_massentourismus"), ExtResource("q_hundert_tausend"), ExtResource("q_fuenfzigtausend"), ExtResource("q_vielfrass"), ExtResource("q_xl_meister"), ExtResource("q_level_40"), ExtResource("q_level_50"), ExtResource("q_resi_40"), ExtResource("q_toni_40"), ExtResource("q_poldi_40"), ExtResource("q_vroni_40"), ExtResource("q_sepp_40"), ExtResource("q_gustl_40"), ExtResource("q_kevin_40"), ExtResource("q_ferdl_sieg"), ExtResource("q_resi_sieg"), ExtResource("q_toni_sieg"), ExtResource("q_poldi_sieg"), ExtResource("q_vroni_sieg"), ExtResource("q_sepp_sieg"), ExtResource("q_gustl_sieg"), ExtResource("q_kevin_sieg"), ExtResource("q_zehn_kirtage"), ExtResource("q_fuenfzig_kirtage"), ExtResource("q_hofrat_drei"), ExtResource("q_hofrat_zehn"), ExtResource("q_krampus_zehn"), ExtResource("q_stempelsammler"), ExtResource("q_mega_knoedl"), ExtResource("q_schillingkoenig"), ExtResource("q_alles_gfundn"), ExtResource("q_hofratsgrant_sieg"), ExtResource("q_weltuntergang_sieg"), ExtResource("q_ohne_schupfn_krampus"), ExtResource("q_gemuetlich_sieg"), ExtResource("q_zehn_siege"), ExtResource("q_ein_jahr"), ExtResource("q_wuehlerei"), ExtResource("q_rasenpflege"), ExtResource("q_gartenschau"), ExtResource("q_fahrscheinkontrolle"), ExtResource("q_nimmersatt")])
 grants = Array[ExtResource("6_grant")]([ExtResource("g_gemuetlich"), ExtResource("g_normal"), ExtResource("g_grantig"), ExtResource("g_hofratsgrant"), ExtResource("g_weltuntergang")])

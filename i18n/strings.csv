@@ -690,3 +690,12 @@ DESC_ENEMY_KONTROLLEUR,Steht vorm Wirtshaus. Ohne Fahrschein ka Knödl.
 ENEMY_HUNGRIGER_TOURIST,Hungriger Tourist
 DESC_ENEMY_HUNGRIGER_TOURIST,Frisst dir den Knödl unterm Hintern weg.
 STAT_DURATION,Dauer
+BOSS_LAWINE,Die Lawine
+BOSS_LAWINE_INTRO,Lawine! Lauf!
+BOSS_LAWINE_DEFEAT,Die Lawine is gschmolzn.
+BOSS_LAWINE_SLIDE,Sie rutscht!
+DESC_ENEMY_LAWINE,Kummt immer von oben. Und immer schneller.
+MAP_GAMSKOGL,Gamskogl-Piste
+MAP_GAMSKOGL_DESC,"Steil, rutschig, voller Schneemänner. Bergab is da Knödl a Waffn."
+MAP_GEMEINDEBAU,Gemeindebau-Hof
+MAP_GEMEINDEBAU_DESC,"Stiegen, Dächer, Wäscheleinen. Oben is ma sicherer, aber ned lang."

@@ -8,14 +8,17 @@ extends PanelContainer
 signal start_pressed(character: StringName, map: StringName, grant: int)
 signal closed
 
-const CARD := Vector2(136.0, 176.0)
+const CARD := Vector2(136.0, 136.0)
 const COLUMNS: int = 4
 
 var content: GameContent
 var _character: StringName = &""
 var _map: StringName = &""
 var _character_cards: Dictionary[StringName, Button] = {}
-var _map_cards: Dictionary[StringName, Button] = {}
+## The chosen map: swatch and name between the ‹ › pills.
+var _map_card: PanelContainer
+var _map_swatch: ColorRect
+var _map_name: Label
 var _weapon_icon: TextureRect
 var _weapon_name: Label
 var _knodl_name: Label
@@ -32,7 +35,7 @@ var _grant_up: ActionPill
 func _init(p_content: GameContent) -> void:
 	content = p_content
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var column := UiStyle.vbox(&"Gap24")
+	var column := UiStyle.vbox(&"Gap16")
 	add_child(column)
 	var header: PanelContainer = UiStyle.panel(&"PanelHeader")
 	column.add_child(header)
@@ -62,21 +65,32 @@ func _init(p_content: GameContent) -> void:
 	_trait.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_trait.custom_minimum_size = Vector2(CARD.x * COLUMNS + 8.0 * (COLUMNS - 1), 0.0)
 	detail.add_child(_trait)
-	# Maps.
+	# Map and Grant level side by side.
+	var choices := UiStyle.hbox(&"Row32")
+	column.add_child(choices)
 	var maps := UiStyle.vbox()
-	column.add_child(maps)
+	choices.add_child(maps)
 	maps.add_child(UiStyle.label(&"LabelAccent", tr("PLAY_MAP")))
-	var map_row := UiStyle.hbox()
+	var map_row := UiStyle.hbox(&"Row16")
 	maps.add_child(map_row)
-	for info: MapInfo in content.maps:
-		var card := _map_card(info)
-		map_row.add_child(card)
-		_map_cards[info.id] = card
+	var map_down := ActionPill.new("←")
+	map_down.set_label("‹")
+	map_down.pressed.connect(func() -> void: _step_map(-1))
+	map_row.add_child(map_down)
+	_map_card = _make_map_card()
+	map_row.add_child(_map_card)
+	var map_up := ActionPill.new("→")
+	map_up.set_label("›")
+	map_up.pressed.connect(func() -> void: _step_map(1))
+	map_row.add_child(map_up)
 	_map_desc = UiStyle.label(&"LabelMuted")
+	_map_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_map_desc.custom_minimum_size = Vector2(CARD.x * 2.0 + 8.0, 0.0)
 	maps.add_child(_map_desc)
 	# Grant level: the hardest one unlocked so far at most.
 	var grants := UiStyle.vbox()
-	column.add_child(grants)
+	grants.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	choices.add_child(grants)
 	grants.add_child(UiStyle.label(&"LabelAccent", tr("PLAY_GRANT")))
 	var grant_row := UiStyle.hbox(&"Row16")
 	grants.add_child(grant_row)
@@ -85,7 +99,7 @@ func _init(p_content: GameContent) -> void:
 	_grant_down.pressed.connect(func() -> void: _select_grant(_grant - 1))
 	grant_row.add_child(_grant_down)
 	_grant_name = UiStyle.label(&"LabelSmall")
-	_grant_name.custom_minimum_size = Vector2(136.0, 0.0)
+	_grant_name.custom_minimum_size = Vector2(112.0, 0.0)
 	_grant_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_grant_name.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	grant_row.add_child(_grant_name)
@@ -94,8 +108,9 @@ func _init(p_content: GameContent) -> void:
 	_grant_up.pressed.connect(func() -> void: _select_grant(_grant + 1))
 	grant_row.add_child(_grant_up)
 	_grant_desc = UiStyle.label(&"LabelMuted")
-	_grant_desc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	grant_row.add_child(_grant_desc)
+	_grant_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_grant_desc.custom_minimum_size = Vector2(256.0, 0.0)
+	grants.add_child(_grant_desc)
 	var buttons := UiStyle.hbox(&"Row16")
 	column.add_child(buttons)
 	_start = ActionPill.new("Enter")
@@ -122,7 +137,7 @@ func refresh() -> void:
 	var first: StringName = StringName(str(last.get("character", RunSetup.character)))
 	_select_character(first if _character_cards.has(first) else content.characters[0].id)
 	var first_map: StringName = StringName(str(last.get("map", RunSetup.map)))
-	_select_map(first_map if _map_cards.has(first_map) else content.maps[0].id)
+	_select_map(first_map if content.map_info(first_map) != null else content.maps[0].id)
 	_select_grant(int(last.get("grant", RunSetup.grant)))
 
 
@@ -142,10 +157,10 @@ func _character_card(character: CharacterData) -> Button:
 	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	column.offset_left = 8.0
 	column.offset_right = -8.0
-	column.offset_top = 16.0
+	column.offset_top = 8.0
 	column.offset_bottom = -8.0
 	card.add_child(column)
-	var portrait := FamilyPortrait.new(character, 80.0)
+	var portrait := FamilyPortrait.new(character, 64.0)
 	portrait.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	column.add_child(portrait)
 	var name: Label = UiStyle.label(&"LabelSmall", tr(character.name_key))
@@ -162,29 +177,30 @@ func _character_card(character: CharacterData) -> Button:
 	return card
 
 
-func _map_card(info: MapInfo) -> Button:
-	var card := Button.new()
-	card.custom_minimum_size = Vector2(CARD.x * 2.0 + 8.0, 48.0)
-	card.theme_type_variation = &"CardRarity0"
-	card.pressed.connect(func() -> void: _select_map(info.id))
-	card.focus_entered.connect(func() -> void: _select_map(info.id))
+func _make_map_card() -> PanelContainer:
+	var card: PanelContainer = UiStyle.panel(&"TileRarity0")
+	card.custom_minimum_size = Vector2(168.0, 40.0)
 	var row := UiStyle.hbox()
-	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	row.offset_left = 8.0
-	row.offset_right = -8.0
 	card.add_child(row)
-	var swatch := ColorRect.new()
-	swatch.color = info.swatch
-	swatch.custom_minimum_size = Vector2(24.0, 24.0)
-	swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	swatch.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(swatch)
-	var name: Label = UiStyle.label(&"LabelSmall", tr(info.name_key))
-	name.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(name)
+	_map_swatch = ColorRect.new()
+	_map_swatch.custom_minimum_size = Vector2(16.0, 16.0)
+	_map_swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_map_swatch.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(_map_swatch)
+	_map_name = UiStyle.label(&"LabelSmall")
+	_map_name.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_map_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_map_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(_map_name)
 	return card
+
+
+func _step_map(step: int) -> void:
+	var at: int = 0
+	for k: int in content.maps.size():
+		if content.maps[k].id == _map:
+			at = k
+	_select_map(content.maps[posmod(at + step, content.maps.size())].id)
 
 
 func _select_character(id: StringName) -> void:
@@ -211,10 +227,11 @@ func _select_character(id: StringName) -> void:
 
 func _select_map(id: StringName) -> void:
 	_map = id
-	for key: StringName in _map_cards:
-		_map_cards[key].theme_type_variation = &"CardEvolution" if key == id else &"CardRarity0"
 	var info: MapInfo = content.map_info(id)
 	var quest: QuestData = Profile.unlocking_quest(&"map", id)
+	_map_name.text = tr(info.name_key) if quest == null else tr("ALM_UNKNOWN")
+	_map_swatch.color = info.swatch if quest == null else UiStyle.color("panel_raised")
+	_map_card.theme_type_variation = &"TileEvolution" if quest == null else &"TileRarity0"
 	if quest != null:
 		_map_desc.text = tr("PLAY_LOCKED") % tr(quest.title_key)
 	else:
@@ -254,6 +271,9 @@ func _input(event: InputEvent) -> void:
 	if key.physical_keycode == KEY_ENTER or key.physical_keycode == KEY_KP_ENTER:
 		get_viewport().set_input_as_handled()
 		_on_start()
+	elif key.physical_keycode == KEY_LEFT or key.physical_keycode == KEY_RIGHT:
+		get_viewport().set_input_as_handled()
+		_step_map(1 if key.physical_keycode == KEY_RIGHT else -1)
 	elif key.physical_keycode == KEY_Q or key.physical_keycode == KEY_E:
 		get_viewport().set_input_as_handled()
 		_select_grant(_grant + (1 if key.physical_keycode == KEY_E else -1))

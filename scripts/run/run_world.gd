@@ -218,7 +218,7 @@ func _ready() -> void:
 	_respawn = LaunchArgs.get_flag("respawn", false) or _autoplay
 	balance = load("res://data/balance.tres")
 	map = _load_map(RunSetup.map_id())
-	wave = load(WAVE_PATH)
+	wave = map.wave if map.wave != null else load(WAVE_PATH)
 	catalog = load(CATALOG_PATH)
 	UiStyle.build_icon_atlas(catalog)
 	character = _load_character(RunSetup.character_id())
