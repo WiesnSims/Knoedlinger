@@ -95,6 +95,7 @@ var end_screen: RunEndScreen
 var inventory: InventoryScreen
 var pause: PauseMenu
 var stats := FrameStats.new()
+var quality: QualityScaler
 var run_time: float = 0.0
 var phase: Phase = Phase.RUNNING
 
@@ -239,6 +240,10 @@ func _ready() -> void:
 	ground = Heightfield.bake_ground(map, terrain)
 	var props_material: ShaderMaterial = MapBuilder.build(map, terrain, self)
 	_bake_ms = Time.get_ticks_msec() - t0
+	quality = QualityScaler.new()
+	quality.name = "QualityScaler"
+	add_child(quality)
+	quality.setup(balance, get_node_or_null(^"Sun") as DirectionalLight3D)
 	var host: bool = NetworkManager.is_host()
 	var slots: int = CLIENT_SLOTS
 	if host:
@@ -411,6 +416,9 @@ func _host_frame(delta: float) -> void:
 		if _bus_left > 0.0:
 			ramp += wave.bus_extra
 			cap += wave.bus_extra
+		var thin: float = quality.enemy_factor(players.size() == 1)
+		ramp *= thin
+		cap = ceili(cap * thin)
 		enemies.target_count = mini(int(ramp), mini(cap, enemies.capacity - balance.spawn_extra_slots))
 	var peers: Array[int] = []
 	var targets := PackedVector3Array()
@@ -1106,9 +1114,9 @@ func _report(delta: float) -> void:
 
 func _overlay_text() -> String:
 	var lines: PackedStringArray = []
-	lines.append("%s | %.0f fps | %d draw calls | players %d | %s" % [_role(), stats.last_fps(),
+	lines.append("%s | %.0f fps | %d draw calls | players %d | quality %s%s | %s" % [_role(), stats.last_fps(),
 			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), players.size(),
-			tr("HUD_BOT_HINT") if _bot else ""])
+			QualityScaler.NAMES[quality.level], " (auto)" if quality.auto else "", tr("HUD_BOT_HINT") if _bot else ""])
 	if enemies != null:
 		lines.append("enemies %d / %d (hp x%.2f) | kills %d | contacts %d | shots %d | brosel %d (merges %d)" % [
 				enemies.alive_count, enemies.target_count, enemies.hp_mult, enemies.kills, enemies.contacts,

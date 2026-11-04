@@ -343,3 +343,27 @@ extends Resource
 @export var interpolation_snap_distance: float = 5.0
 ## Budget per client at 500 enemies (CLAUDE.md).
 @export var client_bandwidth_budget_kbps: float = 60.0
+
+@export_group("Quality")
+## QualityScaler (GAME-DESIGN.md, performance item 6), per level Hoch / Mittel / Niedrig.
+## Render resolution factor: in the browser times the screen's pixel ratio (the whole canvas, UI
+## included, docs/DECISIONS.md M5), natively Godot's 3D scale.
+@export var quality_render_scale: PackedFloat32Array = PackedFloat32Array([1.0, 0.8, 0.65])
+## Browser pixel ratio at most (a phone screen is about 2.6x; more than 2x is not worth its cost).
+@export var quality_max_pixel_ratio: PackedFloat32Array = PackedFloat32Array([2.0, 1.5, 1.0])
+## Metres of sun shadow on Hoch and Mittel (Niedrig has none).
+@export var quality_shadow_distance: PackedFloat32Array = PackedFloat32Array([45.0, 28.0])
+## Niedrig in a solo game keeps this share of the enemy crowd.
+@export var quality_low_enemy_factor: float = 0.7
+## "Automatisch": frames per second it keeps (desktop budget 60, phones 30), checked once a second.
+@export var quality_target_fps: float = 50.0
+@export var quality_target_fps_mobile: float = 27.0
+## Seconds in a row below the target before one step down (the design's 3 s).
+@export var quality_drop_seconds: int = 3
+## Seconds in a row above target x margin before one step up again, and never sooner than the
+## cooldown after a step down.
+@export var quality_raise_seconds: int = 20
+@export var quality_raise_margin: float = 1.5
+@export var quality_raise_cooldown: float = 60.0
+## Seconds after the start before it measures (shader compiles, the first spawns).
+@export var quality_warmup_seconds: float = 5.0

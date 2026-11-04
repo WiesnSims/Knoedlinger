@@ -99,6 +99,44 @@ func test_every_setting_has_a_row() -> void:
 	assert_eq(panel._pages.size(), SettingsPanel.TABS.size())
 
 
+func test_auto_quality_steps_down_after_three_slow_seconds() -> void:
+	var balance: BalanceData = load("res://data/balance.tres")
+	var scaler := QualityScaler.new()
+	add_child_autofree(scaler)
+	scaler.setup(balance, null)
+	scaler.auto = true
+	assert_eq(scaler.level, QualityScaler.Level.HIGH, "automated runs start on Hoch")
+	_frames(scaler, balance.quality_warmup_seconds + 0.5, 10.0)
+	assert_eq(scaler.level, QualityScaler.Level.HIGH, "the warm-up is not measured")
+	_frames(scaler, balance.quality_drop_seconds - 1.0, 10.0)
+	assert_eq(scaler.level, QualityScaler.Level.HIGH)
+	_frames(scaler, 1.2, 10.0)
+	assert_eq(scaler.level, QualityScaler.Level.MEDIUM, "one step after 3 s below the target")
+	_frames(scaler, balance.quality_raise_seconds + 2.0, 200.0)
+	assert_eq(scaler.level, QualityScaler.Level.MEDIUM, "no step up during the cooldown")
+	_frames(scaler, balance.quality_raise_cooldown, 200.0)
+	assert_eq(scaler.level, QualityScaler.Level.HIGH)
+	assert_eq(get_viewport().scaling_3d_scale, balance.quality_render_scale[0])
+
+
+func test_low_quality_thins_only_a_solo_crowd() -> void:
+	var balance: BalanceData = load("res://data/balance.tres")
+	var scaler := QualityScaler.new()
+	add_child_autofree(scaler)
+	scaler.setup(balance, null)
+	assert_eq(scaler.enemy_factor(true), 1.0)
+	scaler.set_level(QualityScaler.Level.LOW)
+	assert_lt(scaler.enemy_factor(true), 1.0)
+	assert_eq(scaler.enemy_factor(false), 1.0, "co-op keeps the host's crowd for everyone")
+	scaler.set_level(QualityScaler.Level.HIGH)
+
+
+## Feeds `seconds` of frames at `fps` to the scaler.
+func _frames(scaler: QualityScaler, seconds: float, fps: float) -> void:
+	for k: int in ceili(seconds * fps):
+		scaler._process(1.0 / fps)
+
+
 func _pad_button(button: JoyButton) -> InputEventJoypadButton:
 	var event := InputEventJoypadButton.new()
 	event.button_index = button

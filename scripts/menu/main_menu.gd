@@ -66,6 +66,10 @@ func _build_backdrop() -> void:
 	var map: MapData = load(BACKDROP_MAP)
 	var terrain: Heightfield = Heightfield.bake_terrain(map)
 	MapBuilder.build(map, terrain, self)
+	# The chosen quality already shows on the title screen (Automatisch measures here too).
+	var quality := QualityScaler.new()
+	add_child(quality)
+	quality.setup(load("res://data/balance.tres"), get_node_or_null(^"Sun") as DirectionalLight3D)
 	_centre = map.spawn_point
 	_centre.y = terrain.height_at(_centre.x, _centre.z)
 	_camera = Camera3D.new()

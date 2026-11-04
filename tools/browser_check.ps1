@@ -2,7 +2,7 @@
 # bot play a run for 60 s, fail on any console error or fps below budget, save a screenshot to
 # build/shots/. The run holds -Enemies enemies (budget: 60 fps with 500), the bot throws its Knödl.
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/browser_check.ps1 [-Browser msedge] [-Url <preview url>]
-#        [-Scene run|stress]
+#        [-Scene run|stress] [-Query quality=low&touch=1]   (extra URL options for the run)
 param(
     [string]$Browser = 'msedge',
     [int]$Seconds = 60,
@@ -14,6 +14,7 @@ param(
     [double]$MaxP95 = 16.7,
     [int]$MaxDrawCalls = 150,
     [int]$Port = 8061,
+    [string]$Query = '',
     [switch]$Headed
 )
 . "$PSScriptRoot\common.ps1"
@@ -25,6 +26,9 @@ $server = $null
 if ($Url -eq '') {
     $server = Start-WebServer -Port $Port -Log $log
     $Url = "http://127.0.0.1:$Port/"
+}
+if ($Query -ne '') {
+    $Url += $(if ($Url.Contains('?')) { '&' } else { '?' }) + $Query
 }
 try {
     $out = Join-Path $BuildDir "perf\browser_check-$Browser-$stamp.json"
