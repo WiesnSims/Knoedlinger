@@ -18,6 +18,8 @@ extends Resource
 ##   schilling      Schilling earned over all runs
 ##   items          different items found
 ##   grant_win      a run won at this Grant level or higher (target = level index)
+##   coop           co-op deeds over all runs (filter: runs, revives, passes, streit, merge_cash_xl,
+##                  family_win, knodl_revive_<character id>)
 
 @export var id: StringName = &""
 @export var title_key: String = ""

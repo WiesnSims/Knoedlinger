@@ -72,7 +72,8 @@ function Get-Result([string]$Path) {
 
 $hostSeconds = if ($HostLeavesFirst) { [math]::Max([int]($Seconds / 2), 5) } else { $Seconds + 10 }
 $crowd = if ($StartTime -ge 0) { "--start_time=$StartTime" } else { "--enemies=$Enemies" }
-$respawn = if ($Coop) { @('--coop_drill=1', '--streit_at=30') } else { @('--respawn=1') }
+# Everyone gets the Doppelportion in -Coop: the second Knoedl must reach every client too.
+$respawn = if ($Coop) { @('--coop_drill=1', '--streit_at=30', '--items=doppelportion') } else { @('--respawn=1') }
 $hostRun = Start-Godot 'host' (@('--net=ws', '--host', "--port=$Port", $crowd, "--projectiles=$Projectiles", "--seconds=$hostSeconds", '--bot=1', '--character=ferdl', '--name=Host') + $respawn + $room)
 $deadline = (Get-Date).AddSeconds(30)
 while ((Get-Date) -lt $deadline -and -not (Select-String -Path $hostRun.Log -Pattern 'LISTENING' -Quiet -ErrorAction SilentlyContinue)) {
@@ -149,6 +150,7 @@ foreach ($run in $runs) {
             $failures += "${n}: shows $($rep.brosel_shown) Brosel, host has $($rep.brosel_host)"
         }
         if (-not $HostLeavesFirst -and $rep.knodls_shown -lt $Clients + 1) { $failures += "${n}: shows $($rep.knodls_shown) Knoedl for $($Clients + 1) players" }
+        if ($Coop -and $rep.seconds_shown -lt $Clients + 1) { $failures += "${n}: shows $($rep.seconds_shown) Doppelportion Knoedl for $($Clients + 1) players" }
         Write-Host ("{0}: level {1}, {2} Speisekarte messages, weapons {3}" -f $n, $r.run.level, $rep.offers_received, ($r.run.weapons -join ', '))
         Write-Host ("{0}: {1} run events, {2} attack marks, {3} loot shown" -f $n, $rep.run_events, $rep.hazards_seen, $rep.loot_shown)
         if ($rep.loot_shown -lt 1) { $failures += "${n}: no loot shown (the map chests come with the join)" }

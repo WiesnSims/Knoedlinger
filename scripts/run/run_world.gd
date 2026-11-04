@@ -10,6 +10,7 @@ extends Node3D
 ##   --seconds=60               measure for this long after warm-up, print [RESULT], quit (desktop)
 ##   --bot=0                    no bot; the player stands still until WASD
 ##   --god=1                    players take no damage
+##   --weapons=a,b --items=c,d  extra start weapons and items (testing; locks and slots aside)
 ##   --knodl_mass=500           start every Knödl this heavy (tuning)
 ##   --start_time=880           start the clock here (test Sperrstund' or late waves)
 ##   --autoplay=1 --runs=3      balance log: the bot plays whole runs, stats go to build/balance/
@@ -76,6 +77,9 @@ var projectiles: ProjectilePool
 var players: Dictionary[int, Player] = {}
 var states: Dictionary[int, PlayerState] = {}
 var knodls: Dictionary[int, Knodl] = {}
+## Doppelportion: each holder's second, smaller Knödl (it eats and crushes for its player; the mass
+## goes to the main Knödl, Bröselfresser leave it alone).
+var seconds: Dictionary[int, Knodl] = {}
 var weapon_vfx: Dictionary[int, WeaponVfx] = {}
 var wirtshaeuser: Array[Wirtshaus] = []
 var hazards: HazardField
@@ -134,6 +138,8 @@ var _host_brosel: int = 0
 var _alive_held: int = 0
 ## Most Knödl a client showed at once (players come and go; the end count says little).
 var _knodls_max: int = 0
+## Most Doppelportion Knödl a client showed at once.
+var _seconds_max: int = 0
 var _bytes_sent_start: int = -1
 var _bytes_received_start: int = -1
 var _clients_at_measure: int = 0
@@ -538,6 +544,8 @@ func _host_frame(delta: float) -> void:
 			WeaponSystem.update(state.build, player, enemies, projectiles, run_time, delta, _weapon_rng, balance)
 		if not knodl.merged_away:
 			knodl.crush(enemies, delta)
+		if seconds.has(peer):
+			seconds[peer].crush(enemies, delta)
 	projectiles.update(delta, enemies)
 	hazards.update(delta)
 	_resolve_hazards()
@@ -904,6 +912,8 @@ func _feed_knodls(delta: float) -> void:
 		# Half of a Riesenknödl eats nothing itself: the merged one does, for both.
 		if not knodl.merged_away:
 			brosel.absorb(at, knodl.radius, peer)
+		if seconds.has(peer):
+			brosel.absorb(seconds[peer].global_position, seconds[peer].radius, peer)
 	brosel.update(delta, positions)
 	var credits: Dictionary[int, Vector2] = brosel.take_credits()
 	for peer: int in credits:
@@ -1005,6 +1015,16 @@ func _world_frame() -> WorldStateCodec.Frame:
 		e.revive = state.revive_progress
 		e.down_left = state.downed_timer if state.downed and state.bleeds_out and not state.out else -1.0
 		e.merge_partner = coop.merge_partner(peer)
+		e.revives_given = state.revives_given
+		e.passes = state.passes
+		e.catches = state.catches
+		e.merges = state.merges
+		e.streit_catches = state.streit_catches
+		e.merged_tier = state.merged_cash_in_tier
+		for id: String in state.knodl_revives:
+			for c: int in content.characters.size():
+				if String(content.characters[c].id) == id:
+					e.knodl_revive_mask |= 1 << c
 		e.life = state.life
 		e.pending_levels = state.pending_levels
 		e.knodl_state = knodl.state
@@ -1013,6 +1033,12 @@ func _world_frame() -> WorldStateCodec.Frame:
 		e.knodl_mass = 0.0 if knodl.merged_away else knodl.knodl_mass
 		e.knodl_position = knodl.global_position
 		e.knodl_rotation = knodl.quaternion
+		var second: Knodl = seconds.get(peer)
+		if second != null:
+			e.has_second = true
+			e.second_position = second.global_position
+			e.second_rotation = second.quaternion
+			e.second_radius = second.radius
 		e.gold = state.build.gold
 		e.rerolls = state.build.rerolls
 		e.banishes = state.build.banishes
@@ -1339,6 +1365,7 @@ func _finish() -> void:
 		replica_stats["brosel_shown"] = brosel.active_count
 		replica_stats["brosel_host"] = _host_brosel
 		replica_stats["knodls_shown"] = _knodls_max
+		replica_stats["seconds_shown"] = _seconds_max
 		replica_stats["offers_received"] = _offers_received
 		replica_stats["run_events"] = _run_events_received
 		replica_stats["hazards_seen"] = _hazards_seen
@@ -1389,6 +1416,15 @@ func _run_summary() -> Dictionary:
 		for t: float in state.level_times:
 			times.append(snappedf(t, 0.1))
 		summary["level_times"] = times
+		# Co-op deeds for the Gemeindeamt quests (Profile.record_run, kind "coop").
+		if players.size() > 1:
+			var coop_deeds: Dictionary = {"runs": 1, "revives": state.revives_given, "passes": state.passes,
+				"streit": state.streit_catches, "merges": state.merges,
+				"merge_cash_xl": 1 if state.merged_cash_in_tier >= 3 else 0,
+				"family_win": 1 if result == Result.WON and players.size() >= MAX_PLAYERS else 0}
+			for revived: String in state.knodl_revives:
+				coop_deeds["knodl_revive_" + revived] = int(coop_deeds.get("knodl_revive_" + revived, 0)) + 1
+			summary["coop"] = coop_deeds
 		var downs: Array = []
 		for t: float in state.downed_times:
 			downs.append(snappedf(t, 0.1))
@@ -1503,6 +1539,16 @@ func _on_world_state(data: PackedByteArray) -> void:
 		state.revive_progress = e.revive
 		state.downed_timer = e.down_left
 		state.merge_partner = e.merge_partner
+		state.revives_given = e.revives_given
+		state.passes = e.passes
+		state.catches = e.catches
+		state.merges = e.merges
+		state.streit_catches = e.streit_catches
+		state.merged_cash_in_tier = e.merged_tier
+		state.knodl_revives.clear()
+		for c: int in content.characters.size():
+			if e.knodl_revive_mask & (1 << c):
+				state.knodl_revives.append(String(content.characters[c].id))
 		state.life = e.life
 		state.pending_levels = e.pending_levels
 		state.chests_opened = e.chests_opened
@@ -1521,11 +1567,15 @@ func _on_world_state(data: PackedByteArray) -> void:
 		else:
 			knodl.apply_remote(e.knodl_position, e.knodl_rotation, knodl.knodl_mass, e.knodl_state as Knodl.State, e.knodl_cooldown)
 		knodl.co_holder = players.get(e.merge_partner) if e.merge_partner != 0 and not away else null
+		var second: Knodl = _update_second_knodl(e.peer_id, e.has_second, e.second_position)
+		if second != null:
+			second.apply_remote(e.second_position, e.second_rotation, knodl.knodl_mass, Knodl.State.ATTACHED, 0.0)
 	# The host picked for us (co-op time ran out) and nothing else is waiting: close the menu.
 	var local: PlayerState = states.get(NetworkManager.local_id())
 	if local != null and not local.choosing and speisekarte.is_open() and speisekarte.open_seconds() > 1.0:
 		speisekarte.close()
 	_knodls_max = maxi(_knodls_max, knodls.size())
+	_seconds_max = maxi(_seconds_max, seconds.size())
 
 
 func _on_brosel(data: PackedByteArray) -> void:
@@ -1615,7 +1665,7 @@ func _on_peer_joined(peer_id: int) -> void:
 
 
 func _on_peer_left(peer_id: int) -> void:
-	for nodes: Dictionary in [players, knodls, weapon_vfx]:
+	for nodes: Dictionary in [players, knodls, weapon_vfx, seconds]:
 		var node: Node = nodes.get(peer_id)
 		if node != null:
 			nodes.erase(peer_id)
@@ -1633,7 +1683,7 @@ func _on_joined_host() -> void:
 	var id: int = NetworkManager.local_id()
 	if id == _local_key:
 		return
-	for nodes: Dictionary in [players, states, knodls, weapon_vfx, _characters]:
+	for nodes: Dictionary in [players, states, knodls, weapon_vfx, _characters, seconds]:
 		if nodes.has(_local_key):
 			nodes[id] = nodes[_local_key]
 			nodes.erase(_local_key)
@@ -1708,6 +1758,11 @@ func _spawn_player(peer_id: int, local: bool) -> Player:
 				if String(weapon.id) == id:
 					build.weapon_slots = maxi(build.weapon_slots, build.weapons.size() + 1)
 					build.add_start_weapon(weapon)
+		# Testing: --items=doppelportion,powidl gives these items at the start.
+		for item_id: String in LaunchArgs.get_string("items", "").split(",", false):
+			for k: int in catalog.items.size():
+				if String(catalog.items[k].id) == item_id:
+					build.add_item(k)
 		states[peer_id] = PlayerState.new(peer_id, balance.player_max_hp, build)
 		states[peer_id].refresh_max_hp(balance.player_max_hp)
 		states[peer_id].hp = states[peer_id].max_hp
@@ -1896,6 +1951,7 @@ func _update_item_effects(delta: float) -> void:
 		for index: int in build.item_evolutions_ready():
 			build.add_item(index)
 			print("[RUN] item evolution peer=%d %s t=%.1f" % [peer, build.catalog.items[index].id, run_time])
+		_update_second_knodl(peer, build.effect(&"second_knodl") > 0.0)
 		if knodl != null:
 			var riesen: bool = build.effect(&"riesenknodl") > 0.0
 			knodl.set_size_rule(balance.riesenknodl_size if riesen else 1.0, riesen)
@@ -1920,6 +1976,32 @@ func _update_item_effects(delta: float) -> void:
 				_ring_damage(at, balance.bell_radius * (1.0 + build.stat(&"area")), balance.bell_damage * (1.0 + build.stat(&"damage")), 12.0)
 				events.cue(RunEventCodec.Cue.SHOCKWAVE, at.x, at.z)
 				GameAudio.play(&"gate_open", at)
+
+
+## Every role: Doppelportion's second Knödl appears with the item and follows the main one's mass
+## at second_knodl_scale (host: simulated; client: placed from the world state).
+func _update_second_knodl(peer: int, wanted: bool, where: Vector3 = Vector3.INF) -> Knodl:
+	var second: Knodl = seconds.get(peer)
+	var main: Knodl = knodls.get(peer)
+	if not wanted or main == null or not players.has(peer):
+		if second != null:
+			seconds.erase(peer)
+			second.queue_free()
+		return null
+	if second == null:
+		second = Knodl.new()
+		var simulated: bool = NetworkManager.is_host()
+		second.setup(peer, balance, character_of(peer).knodl_sort, players[peer], simulated)
+		second.name = "Knodl2_%d" % peer
+		second.rest_mult = balance.second_knodl_rest / maxf(balance.knodl_rest_length, 0.01)
+		add_child(second)
+		second.set_size_rule(balance.second_knodl_scale, false)
+		second.place_at(where if where.is_finite() else main.global_position + Vector3(0.6, 0.0, 0.0))
+		seconds[peer] = second
+	second.string_mult = main.string_mult
+	if NetworkManager.is_host():
+		second.reset_knodl_mass(main.knodl_mass)
+	return second
 
 
 ## Host: Schweizerkracher blasts at a few of this frame's kills.

@@ -786,3 +786,21 @@ TEAM_DOWN,umgfoin · %d s
 TEAM_REVIVING,wird aufgweckt · %d %%
 TEAM_OUT,draußen bis zum Einkehren
 HUD_WAKE_MARKER,%s aufwecken · %d m
+ITEM_DOPPELPORTION,Doppelportion
+DESC_ITEM_DOPPELPORTION,"A zweiter, kleinerer Knödl am eigenen Spagat. Weil oana nia gnua is."
+QUEST_NACHSCHLAG,Nachschlag bitte
+DESC_QUEST_NACHSCHLAG,"Kehr 25-mal in an Wirtshaus ein."
+QUEST_FAMILIENAUSFLUG,Familienausflug
+DESC_QUEST_FAMILIENAUSFLUG,"Spiel a Runde mit da Familie."
+QUEST_AUFGWECKT,Aufgweckt!
+DESC_QUEST_AUFGWECKT,"Weck an Onkel Ferdl mit an Knödl auf."
+QUEST_ERSTE_HILFE,Erste Hilfe
+DESC_QUEST_ERSTE_HILFE,"Weck zehnmal wen aus da Familie auf."
+QUEST_KNODL_PASS,Knödl-Pass
+DESC_QUEST_KNODL_PASS,"Spü 25-mal an Knödl an wen aus da Familie, der'n a fangt."
+QUEST_GEMEINSAM_EINKEHREN,Gemeinsam einkehren
+DESC_QUEST_GEMEINSAM_EINKEHREN,"Kehr mit an zamgrollten Riesenknödl in XL-Größe ein."
+QUEST_STREITSCHLICHTER,Streitschlichter
+DESC_QUEST_STREITSCHLICHTER,"Fang beim Familienstreit an davonrollenden Knödl ein."
+QUEST_GANZE_FAMILIE,Die ganze Familie
+DESC_QUEST_GANZE_FAMILIE,"Gwinn a Runde zu viert."
