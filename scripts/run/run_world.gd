@@ -87,6 +87,7 @@ var camera: ChaseCamera
 var hud: Hud
 var speisekarte: Speisekarte
 var end_screen: RunEndScreen
+var inventory: InventoryScreen
 var stats := FrameStats.new()
 var run_time: float = 0.0
 var phase: Phase = Phase.RUNNING
@@ -134,6 +135,8 @@ var _weapon_rng := RandomNumberGenerator.new()
 var _riesen_wirt: Node3D
 ## The first frame after a solo pause carries the paused time; it is left out of the frame stats.
 var _resumed: bool = false
+## The Tab screen holds the solo pause (not the Speisekarte).
+var _inventory_paused: bool = false
 var _log_slow: bool = false
 ## The key the local player is stored under; a client only learns its real peer id once joined.
 var _local_key: int = 1
@@ -263,6 +266,11 @@ func _ready() -> void:
 	end_screen.name = "RunEnd"
 	add_child(end_screen)
 	end_screen.again_pressed.connect(_restart)
+	inventory = InventoryScreen.new()
+	inventory.name = "Inventory"
+	add_child(inventory)
+	inventory.toggled.connect(_on_inventory_toggled)
+	hud.covered = func() -> bool: return speisekarte.is_open() or inventory.is_open() or end_screen.visible
 	if host:
 		enemies = EnemyManager.new(balance, types, slots, seed_value, ground, map.half_size)
 		enemies.ring_min = balance.spawn_first_ring_min
@@ -530,7 +538,23 @@ func _on_run_ended() -> void:
 		return
 	if _seconds > 0.0:
 		return
-	end_screen.show_result(_run_summary(), not NetworkManager.is_online())
+	var local_state: PlayerState = states.get(NetworkManager.local_id())
+	end_screen.show_result(_run_summary(), not NetworkManager.is_online(),
+			local_state.build if local_state != null else null, balance)
+
+
+## Solo: the Tab screen pauses the game like the Speisekarte does; co-op runs on.
+func _on_inventory_toggled(open: bool) -> void:
+	if open:
+		inventory.show_player(states.get(NetworkManager.local_id()), knodls.get(NetworkManager.local_id()), balance)
+		if NetworkManager.is_host() and NetworkManager.client_ids().is_empty() and not get_tree().paused:
+			get_tree().paused = true
+			_inventory_paused = true
+	elif _inventory_paused:
+		_inventory_paused = false
+		if not speisekarte.is_open():
+			get_tree().paused = false
+			_resumed = true
 
 
 func _restart() -> void:
@@ -801,6 +825,13 @@ func _local_frame(delta: float) -> void:
 	_show_run_state(local, state, delta)
 	if state != null:
 		hud.show_state(state, knodl, run_time, balance)
+		if speisekarte.is_open():
+			speisekarte.show_player(state, knodl)
+		if inventory.is_open():
+			inventory.show_player(state, knodl, balance)
+	inventory.allowed = not speisekarte.is_open() and phase != Phase.ENDED
+	if not inventory.allowed and inventory.is_open():
+		inventory.set_open(false)
 	hud.show_mouse_hint(camera.mouse_capture_allowed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED
 			and not speisekarte.is_open() and phase != Phase.ENDED)
 
@@ -1162,6 +1193,8 @@ func _on_offer(data: PackedByteArray) -> void:
 	match offer.type:
 		OfferCodec.Type.OFFER:
 			speisekarte.show_offer(offer, state.build)
+			speisekarte.show_player(state, knodls.get(NetworkManager.local_id()))
+			inventory.set_open(false)
 			# Solo is the only time the game stops (GAME-DESIGN.md); co-op runs on.
 			if NetworkManager.is_host() and NetworkManager.client_ids().is_empty():
 				get_tree().paused = true
@@ -1698,19 +1731,20 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 		for slot: int in loot.capacity:
 			if loot.alive[slot] != 0 and loot.kinds[slot] == LootField.Kind.STEMPEL:
 				var at: Vector3 = loot.position_of(slot)
-				hud.marker(camera, at + Vector3(0.0, 3.0, 0.0), tr("HUD_STEMPEL_MARKER") % roundi(from.distance_to(at)), Color(1.0, 0.86, 0.45))
+				hud.marker(camera, at + Vector3(0.0, 3.0, 0.0), tr("HUD_STEMPEL_MARKER") % roundi(from.distance_to(at)), "accent")
 		if gate_flags & WorldStateCodec.GATE_OPEN and not gate_flags & WorldStateCodec.GATE_BOSS_OUT:
 			var mouth: Vector3 = gate.mouth()
-			hud.marker(camera, mouth + Vector3(0.0, 6.0, 0.0), tr("HUD_GATE_MARKER") % roundi(from.distance_to(mouth)), Color(0.6, 1.0, 0.65))
+			hud.marker(camera, mouth + Vector3(0.0, 6.0, 0.0), tr("HUD_GATE_MARKER") % roundi(from.distance_to(mouth)), "rarity_1")
 		if boss_alive:
 			var boss_at: Vector3 = _boss_position()
 			if boss_at.is_finite() and from.distance_to(boss_at) > 18.0:
-				hud.marker(camera, boss_at + Vector3(0.0, 5.0, 0.0), "%s · %d m" % [tr(_boss_list[_focus_boss].name_key), roundi(from.distance_to(boss_at))], Color(0.8, 0.65, 1.0))
+				hud.marker(camera, boss_at + Vector3(0.0, 5.0, 0.0), "%s · %d m" % [tr(_boss_list[_focus_boss].name_key), roundi(from.distance_to(boss_at))], "danger")
 	hud.end_markers()
 	var hint: String = ""
 	var chest: int = loot.nearest(LootField.Kind.CHEST, from.x, from.z)
 	if chest >= 0 and Vector2(loot.xs[chest] - from.x, loot.zs[chest] - from.z).length() < 7.0:
-		hint = tr("HINT_CHEST") % (loot.values[chest] + balance.map_chest_price_step * (state.chests_opened if state != null else 0))
+		var price: int = loot.values[chest] + balance.map_chest_price_step * (state.chests_opened if state != null else 0)
+		hint = tr("HINT_CHEST") % [price, state.build.gold if state != null and state.build != null else 0]
 	hud.show_hint(hint)
 	if state != null:
 		hud.downed_key = "TOAST_DOWNED" if _respawn or players.size() > 1 else "TOAST_DOWNED_SOLO"

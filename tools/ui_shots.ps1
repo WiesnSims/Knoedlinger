@@ -27,7 +27,7 @@ $common = 'bot=1&respawn=1&debug=0&mute=1&seed=3'
 $scenes = @(
     @{ Id = 'hud'; Query = "$common&knodl_mass=160"; At = '30' },
     @{ Id = 'busy'; Query = "$common&start_time=598&god=1"; At = '34' },
-    @{ Id = 'menu'; Query = "$common&pick_delay=90"; At = '16,18'; Move = 'center,card' },
+    @{ Id = 'menu'; Query = "$common&pick_delay=90"; At = '22,24'; Move = 'center,card' },
     @{ Id = 'inventory'; Query = "$common&knodl_mass=160"; At = '40'; Press = 'Tab' },
     @{ Id = 'end'; Query = "$common&start_time=891"; At = '32' }
 )

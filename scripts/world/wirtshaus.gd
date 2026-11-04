@@ -75,6 +75,7 @@ func setup(map: MapData, p_spot: int, ground: Heightfield) -> void:
 	add_child(_mat)
 	_mat.global_position = _mat_centre + Vector3(0.0, 0.08, 0.0)
 	_sign = Label3D.new()
+	_sign.font = UiStyle.font("number")
 	_sign.name = "Sign"
 	_sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_sign.position = Vector3(0.0, HOUSE_SIZE.y + ROOF_HEIGHT * 1.8 + 1.0, HOUSE_SIZE.z * 0.5)

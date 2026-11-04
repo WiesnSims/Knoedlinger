@@ -39,6 +39,7 @@ func setup(where: Vector3, yaw: float, ground: Heightfield) -> void:
 	mesh.material_override = MapBuilder.vertex_color_material()
 	add_child(mesh)
 	var sign := Label3D.new()
+	sign.font = UiStyle.font("number")
 	sign.text = tr("BUS_SIGN")
 	sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	sign.position = Vector3(0.0, 4.4, 0.0)

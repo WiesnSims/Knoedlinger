@@ -5,14 +5,6 @@ ENEMY_TOURIST,Touristen-Zombie
 ENEMY_DACKEL,Kampf-Dackel
 NET_VERSION_MISMATCH,Eicha Version is ned de gleiche.
 HUD_LEVEL,Level %d
-HUD_KNODL,"Knödl: %d Brösel, Ø %.1f m · Größe %s"
-HUD_SCHUPFN_READY,Schupfn bereit (Shift / Rechtsklick)
-HUD_SCHUPFN_COOLDOWN,Schupfn in %.1f s
-HUD_SCHUPFN_REEL,Nochmal drücken: Knödl zruckholn
-HUD_SCHUPFN_REELING,Knödl kummt zruck …
-HUD_CONTROLS,"WASD: gehn · Leertaste: hupfn · Shift/Rechtsklick: Schupfn
-Maus: schaun · Mausradl: zoomen · Q/E: drehn · F3: Statistik
-Knödl in a Wirtshaustür rolln: einkehrn!"
 HUD_BOT_HINT,"Bot spielt, WASD übernimmt"
 TOAST_LEVEL_UP,Level %d!
 TOAST_DOWNED,Umgfoin! Glei geht's weiter …
@@ -21,7 +13,7 @@ WEAPON_SCHNEESCHAUFEL,Schneeschaufel
 KNODL_SEMMEL,Semmelknödl
 MAP_TESTFELD,Testfeld
 MAP_KIRTAG,Kirtag in Unterhinterkogl
-HUD_MOUSE_HINT,Klick ins Spiel zum Umschaun mit der Maus (Esc lasst aus)
+HUD_MOUSE_HINT,Klick ins Spiel: mit da Maus umschaun
 ENEMY_TAUBE,Taube
 ENEMY_WILDSCHWEIN,Wildschwein
 DESC_WEAPON_SCHNEESCHAUFEL,Räumt den Gehsteig. Und alles drauf.
@@ -87,12 +79,11 @@ CARD_GOLD_DESC,+%d Gold. Da Ober bedankt si.
 CARD_HEAL,Gulasch
 CARD_HEAL_DESC,+%d HP. A Gulasch geht immer.
 MENU_TITLE,Was darf's sein?
-MENU_SUBTITLE,"Herr Poldi, Ober im Gasthaus Zum Goldenen Knödl"
-MENU_TITLE_MORE,Was darf's sein? · no %d offen
-MENU_REROLL,R · Nochmal bitte (%d)
-MENU_BANISH,B · Des mog i ned (%d)
+MENU_SUBTITLE,Herr Poldi empfiehlt
+MENU_REROLL,Nochmal bitte
+MENU_BANISH,Des mog i ned
 MENU_BANISH_HINT,Welche Speis soll von da Kartn?
-MENU_SKIP,"N · Danke, passt eh (+%d Gold)"
+MENU_SKIP,"Danke, passt eh"
 CHEST_TITLE,Mahlzeit! Knödl Größe %s
 CHEST_GOLD,+%d Gold
 TIER_0,S
@@ -113,18 +104,10 @@ TOAST_MAHLZEIT,Mahlzeit!
 TOAST_SPERRSTUND,Sperrstund'! Ab nach Haus!
 NOTICE_0,Des is ja nur a Bröserl! (Knödl z'klein)
 NOTICE_1,Do hamma heut scho gessn.
-HUD_GOLD,Gold: %d
 HUD_SPERRSTUND,Sperrstund'!
 HUD_WIRT_MARKER,Wirtshaus · %d m
 SIGN_BACK_SOON,Bin glei wieder da
-END_TITLE,Sperrstund'! Es habt's überlebt.
 END_AGAIN,Nochmal!
-END_LEVEL,Level %d
-END_KILLS,%d Gegner erledigt
-END_GOLD,%d Gold
-END_KNODL,Größter Knödl: %d Brösel
-END_CASH_INS,%d× eingekehrt
-END_DOWNED,%d× umgfoin
 ENEMY_PERCHTE,Perchte
 ENEMY_RADLER,Radlfahrer
 ENEMY_AKTEN_GEIST,Akten-Geist
@@ -161,13 +144,49 @@ HUD_GATE_OPEN,Formular komplett! Ab zum Tor beim Gemeindeamt
 HUD_HOFRAT_BEATEN,Hofrat erledigt – jetzt no bis zur Sperrstund'!
 HUD_STEMPEL_MARKER,Stempel · %d m
 HUD_GATE_MARKER,Amt der Unterwelt · %d m
-HINT_CHEST,Kistl: %d Gold – drüberlaufn zum Aufmachen
+HINT_CHEST,Kistl: %d Gold (du host %d) – drüberlaufn
 CHEST_TITLE_4,A Kistl!
 CHEST_TITLE_5,A Kistl vom Boss!
 NOTICE_2,Z'wenig Gold fürs Kistl!
 END_WON,Sperrstund'! Gwonnen – da Hofrat is erledigt.
 END_CLOSED,Sperrstund' – oba da Hofrat sitzt no in seim Amt.
 END_LOST,Umgfoin. Für heit is aus.
-END_TIME,%d:%02d gspielt
-END_BOSSES,%d Bosse erledigt
-END_STEMPEL,%d Stempel gsammelt
+HUD_KNODL_TIER,Größe %s
+HUD_KNODL_SMALL,Brösel
+KEY_SPACE,Leertaste
+HELP_MOVE,gehn
+HELP_JUMP,hupfn
+HELP_SCHUPFN,Schupfn
+HELP_INVENTORY,Inventar
+MENU_PENDING,no %d offen
+MENU_HINT,Mit da Maus drüber für Details · 1–3 nehmen
+CARD_MORE_PIECES,+1 Stück
+CARD_LEVEL_OF,Stufe %d/%d
+INV_TITLE,Inventar
+INV_WEAPONS,Waffen
+INV_PASSIVES,Passiv
+INV_KNODL,Knödl-Rezepte
+INV_GOLD,Gold
+INV_REROLLS,Nochmal
+INV_BANISHES,Wegschicken
+INV_CLOSE,zuamachen
+STATS_TITLE,Werte
+STATS_SURVIVE,Überleben
+STATS_ATTACK,Angriff
+STATS_MOVE,Bewegung
+STATS_KNODL,Knödl
+STATS_LUCK,Glück & Gold
+STATS_KNODL_MASS,Masse
+STATS_KNODL_SIZE,Durchmesser
+END_TITLE_WON,Gwonnen!
+END_TITLE_CLOSED,Sperrstund'
+END_TITLE_LOST,Umgfoin
+END_STAT_TIME,Gspielt
+END_STAT_LEVEL,Level
+END_STAT_KILLS,Gegner erledigt
+END_STAT_GOLD,Gold
+END_STAT_KNODL,Größter Knödl
+END_STAT_CASH_INS,Eingekehrt
+END_STAT_BOSSES,Bosse erledigt
+END_STAT_STEMPEL,Stempel gsammelt
+END_STAT_DOWNED,Umgfoin

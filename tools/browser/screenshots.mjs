@@ -42,7 +42,9 @@ for (const at of args.at.split(',').map(Number)) {
 		// One mouse position per moment (x:y, joined by commas), e.g. to hover a card.
 		const point = args.move.split(',')[Math.min(args.at.split(',').indexOf(String(at)), args.move.split(',').length - 1)];
 		const [x, y] = point.split(':').map(Number);
-		await page.mouse.move(x, y);
+		// In steps: Godot only updates hover from real motion across the canvas.
+		await page.mouse.move(x, y + 40, { steps: 2 });
+		await page.mouse.move(x, y, { steps: 4 });
 		await page.waitForTimeout(300);
 	}
 	if (args.keys) {

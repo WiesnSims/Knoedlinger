@@ -69,6 +69,7 @@ func setup(p_peer_id: int, local: bool, p_balance: BalanceData, p_character: Cha
 	_look = _build_look(local)
 	add_child(_look)
 	_sign = Label3D.new()
+	_sign.font = UiStyle.font("number")
 	_sign.name = "BinGleiWiederDa"
 	_sign.text = tr("SIGN_BACK_SOON")
 	_sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
