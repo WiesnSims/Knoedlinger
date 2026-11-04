@@ -339,3 +339,11 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Preview deployed** to https://m3-kirtag.knoedlinger.pages.dev (build 6478e4a). From the preview (headless, RTX 3080,
   500 enemies, bot, 60 s): Edge 192 fps / p95 6.4 ms, Firefox 200 fps / p95 7 ms, at most 120 draw calls; no console
   errors.
+
+## 2026-11-04 – M3 approved
+
+- **Owner: M3 approved** on the first preview; merged into `main`, branch `m3-kirtag` deleted. The open M3
+  questions (early-game harshness now that solo death ends the run, boss HP 700 / 2,200 / 6,000, movement speed
+  7 m/s, real voice barks instead of the TTS placeholders) stay as they are and are revisited in the M5 balance
+  pass or when the owner raises them. Next: M4 (Stammtisch hub, Schilling, save/load with export code, all 8
+  Knödlinger, all weapons/passives/evolutions, quests, Grant levels, maps 2 and 3).
