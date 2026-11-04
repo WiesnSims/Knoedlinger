@@ -131,6 +131,57 @@ func test_low_quality_thins_only_a_solo_crowd() -> void:
 	scaler.set_level(QualityScaler.Level.HIGH)
 
 
+func test_touch_stick_and_buttons_feed_the_actions() -> void:
+	Settings.set_value(&"touch_controls", "on")
+	var touch := TouchControls.new()
+	add_child_autofree(touch)
+	assert_true(touch.is_active())
+	var view: Vector2 = touch._view.get_viewport_rect().size
+	# Left thumb lands, then drags right: the player walks right.
+	touch._input(_touch(0, Vector2(200.0, view.y - 150.0), true))
+	var drag := InputEventScreenDrag.new()
+	drag.index = 0
+	drag.position = Vector2(200.0 + TouchControls.STICK_RADIUS, view.y - 150.0)
+	touch._input(drag)
+	assert_almost_eq(Input.get_action_strength(&"move_right"), 1.0, 0.01)
+	# Right thumb on Hupfn.
+	var jump: Vector2 = touch._view.buttons()[TouchControls.Kind.JUMP][0]
+	touch._input(_touch(1, jump, true))
+	assert_true(Input.is_action_pressed(&"jump"))
+	touch._input(_touch(1, jump, false))
+	assert_false(Input.is_action_pressed(&"jump"))
+	touch._input(_touch(0, Vector2.ZERO, false))
+	assert_eq(Input.get_action_strength(&"move_right"), 0.0, "lifting the thumb stops the player")
+	# A full-screen panel hides the controls and lets go of everything.
+	touch._input(_touch(0, Vector2(200.0, view.y - 150.0), true))
+	touch._input(drag)
+	touch.covered = func() -> bool: return true
+	touch._process(0.016)
+	assert_false(touch.is_active())
+	assert_eq(Input.get_action_strength(&"move_right"), 0.0)
+	Settings.set_value(&"touch_controls", "auto")
+
+
+func test_touch_controls_follow_the_setting() -> void:
+	var touch := TouchControls.new()
+	add_child_autofree(touch)
+	assert_false(touch.is_active(), "Automatisch waits for a touch")
+	InputDevice.kind = InputDevice.Kind.TOUCH
+	InputDevice.changed.emit(InputDevice.kind)
+	assert_true(touch.is_active())
+	Settings.set_value(&"touch_controls", "off")
+	assert_false(touch.is_active())
+	Settings.set_value(&"touch_controls", "auto")
+
+
+func _touch(index: int, at: Vector2, pressed: bool) -> InputEventScreenTouch:
+	var event := InputEventScreenTouch.new()
+	event.index = index
+	event.position = at
+	event.pressed = pressed
+	return event
+
+
 ## Feeds `seconds` of frames at `fps` to the scaler.
 func _frames(scaler: QualityScaler, seconds: float, fps: float) -> void:
 	for k: int in ceili(seconds * fps):

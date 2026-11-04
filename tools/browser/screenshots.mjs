@@ -3,7 +3,10 @@
 //        [--move=10:10,640:360,10:10]   (mouse position before each shot)
 //        [--size=1920x1080]              (viewport, default 1280x720)
 //        [--keys=,Tab,]                   (key pressed before each shot, empty = none; "Escape+Enter" =
-//                                          several in a row, "type:Resi" types text)
+//                                          several in a row, "type:Resi" types text, "tap:x:y" taps the
+//                                          touch screen, "drag:x1:y1:x2:y2:ms" holds a finger and drags,
+//                                          staying down until the shot)
+//        [--touch=1]                      (a touch screen; the page sees real touch events)
 //        [--max-draws=150]                (fail when a moment needs this many draw calls or more)
 // Saves <out>-<seconds>s.png per moment (and prints the draw calls of that moment) and exits 1 on any console error. --echo prints every console
 // line that starts with the given text.
@@ -21,7 +24,15 @@ const browser = await chromium.launch({
 	args: ['--enable-gpu', '--ignore-gpu-blocklist', '--use-angle=d3d11', '--mute-audio'],
 });
 const [width, height] = (args.size || '1280x720').split('x').map(Number);
-const page = await (await browser.newContext({ viewport: { width, height } })).newPage();
+const touchScreen = args.touch === '1';
+const page = await (await browser.newContext({ viewport: { width, height }, hasTouch: touchScreen })).newPage();
+const cdp = touchScreen ? await page.context().newCDPSession(page) : null;
+// A finger left down by a "drag:" step, lifted after the shot.
+let heldFinger = null;
+const touch = (type, points) => cdp.send('Input.dispatchTouchEvent', {
+	type,
+	touchPoints: points.map(([x, y]) => ({ x, y, id: 1 })),
+});
 const errors = [];
 page.on('console', (message) => {
 	if (args.echo && message.text().startsWith(args.echo)) {
@@ -55,6 +66,19 @@ for (const at of args.at.split(',').map(Number)) {
 		for (const step of key ? key.split('+') : []) {
 			if (step.startsWith('type:')) {
 				await page.keyboard.type(step.slice(5), { delay: 60 });
+			} else if (step.startsWith('tap:')) {
+				const [x, y] = step.slice(4).split(':').map(Number);
+				await touch('touchStart', [[x, y]]);
+				await page.waitForTimeout(80);
+				await touch('touchEnd', []);
+			} else if (step.startsWith('drag:')) {
+				const [x1, y1, x2, y2, ms] = step.slice(5).split(':').map(Number);
+				await touch('touchStart', [[x1, y1]]);
+				for (let k = 1; k <= 10; k++) {
+					await page.waitForTimeout((ms || 500) / 10);
+					await touch('touchMove', [[x1 + (x2 - x1) * k / 10, y1 + (y2 - y1) * k / 10]]);
+				}
+				heldFinger = [x2, y2];
 			} else {
 				await page.keyboard.press(step);
 			}
@@ -65,6 +89,10 @@ for (const at of args.at.split(',').map(Number)) {
 		}
 	}
 	await page.screenshot({ path: `${args.out}-${at}s.png` });
+	if (heldFinger) {
+		await touch('touchEnd', []);
+		heldFinger = null;
+	}
 	await page.waitForTimeout(300);
 	const draws = await page.evaluate(() => window.knoedlDraws ?? -1);
 	console.log(`shot ${args.out}-${at}s.png draws=${draws}`);

@@ -37,6 +37,8 @@ extends Resource
 ## Radians per second at full right-stick tilt, sideways and up/down (times the Gamepad setting).
 @export var camera_pad_yaw_speed: float = 3.2
 @export var camera_pad_pitch_speed: float = 1.6
+## Radians per UI pixel a finger drags on the touch screen (times the Maus-Tempo setting).
+@export var camera_touch_sensitivity: float = 0.008
 ## Radians per pixel of mouse movement.
 @export var camera_mouse_sensitivity: float = 0.0035
 ## The camera stays this far in front of terrain it would otherwise clip into.

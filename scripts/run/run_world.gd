@@ -96,6 +96,7 @@ var inventory: InventoryScreen
 var pause: PauseMenu
 var stats := FrameStats.new()
 var quality: QualityScaler
+var touch: TouchControls
 var run_time: float = 0.0
 var phase: Phase = Phase.RUNNING
 
@@ -319,6 +320,12 @@ func _ready() -> void:
 	pause.quit_pressed.connect(_quit_to_menu)
 	hud.covered = func() -> bool:
 		return speisekarte.is_shown() or inventory.is_open() or end_screen.visible or pause.is_open()
+	touch = TouchControls.new()
+	touch.name = "TouchControls"
+	touch.camera = camera
+	touch.covered = hud.covered
+	touch.layout_changed.connect(hud.set_touch_layout)
+	add_child(touch)
 	if host:
 		enemies = EnemyManager.new(balance, types, slots, seed_value, ground, map.half_size)
 		enemies.ring_min = balance.spawn_first_ring_min

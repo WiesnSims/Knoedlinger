@@ -6,8 +6,10 @@ extends PanelContainer
 
 signal closed
 
-const COLUMN_WIDTH: float = 352.0
-const LABEL_WIDTH: float = 136.0
+const COLUMN_WIDTH: float = 368.0
+const LABEL_WIDTH: float = 160.0
+## Every tab is at least this tall, so the panel keeps its size when the tab changes.
+const PAGE_HEIGHT: float = 248.0
 const VALUE_WIDTH: float = 56.0
 ## Tabs: [tab title key, left column, right column]; a column is groups of [group title key, rows],
 ## a row is [setting, label key, how to show the value].
@@ -75,10 +77,12 @@ func _init() -> void:
 	var tabs := UiStyle.hbox()
 	tabs.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	header_row.add_child(tabs)
+	# [Q]  Ton & Bild  Steuerung  Spiel  [E]: the keys step through the tabs.
+	var prev := KeycapLabel.new(&"shoulder_left", "Q")
+	prev.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	tabs.add_child(prev)
 	for t: int in TABS.size():
-		var keys: String = "Q" if t == 0 else ("E" if t == TABS.size() - 1 else "")
-		var action: StringName = &"shoulder_left" if t == 0 else (&"shoulder_right" if t == TABS.size() - 1 else &"")
-		var pill := ActionPill.new(keys, action)
+		var pill := ActionPill.new()
 		pill.toggle_mode = true
 		pill.set_label(tr(TABS[t][0]))
 		pill.pressed.connect(_show_tab.bind(t))
@@ -86,6 +90,7 @@ func _init() -> void:
 		_tab_pills.append(pill)
 		var page := UiStyle.hbox(&"Row32")
 		column.add_child(page)
+		page.custom_minimum_size = Vector2(0.0, PAGE_HEIGHT)
 		_pages.append(page)
 		_firsts.append(null)
 		for groups: Array in [TABS[t][1], TABS[t][2]]:
@@ -98,6 +103,9 @@ func _init() -> void:
 				block.add_child(UiStyle.label(&"LabelAccent", tr(group[0])))
 				for def: Array in group[1]:
 					block.add_child(_row(def[0], def[1], def[2], t))
+	var next := KeycapLabel.new(&"shoulder_right", "E")
+	next.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	tabs.add_child(next)
 	var buttons := UiStyle.hbox(&"Row16")
 	column.add_child(buttons)
 	var back := ActionPill.new("Esc", &"ui_cancel")
@@ -241,7 +249,8 @@ func _row(key: StringName, label_key: String, format: String, tab: int) -> Contr
 			if _firsts[tab] == null:
 				_firsts[tab] = slider
 			return row
-	if _firsts[tab] == null and control.focus_mode != Control.FOCUS_NONE:
+	# Not the name field: Q / E would type into it instead of switching the tab.
+	if _firsts[tab] == null and control.focus_mode != Control.FOCUS_NONE and not control is LineEdit:
 		_firsts[tab] = control
 	row.add_child(control)
 	return row

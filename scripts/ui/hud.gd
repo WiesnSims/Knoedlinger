@@ -49,6 +49,9 @@ var _last_level: int = 1
 ## True while a full-screen panel (Speisekarte, Tab screen, end screen) covers the game; the HUD
 ## steps back then (RunWorld sets it).
 var covered: Callable = func() -> bool: return false
+var _knodl_corner: PanelContainer
+## How far up the touch buttons reach (markers keep clear of them).
+var _touch_clearance: float = 0.0
 var _root: Control
 
 
@@ -92,8 +95,9 @@ func _ready() -> void:
 	_time_label.custom_minimum_size = Vector2(80.0, 0.0)
 	_time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	clock_row.add_child(_time_label)
-	# Bottom right: the Knödl.
+	# Bottom right: the Knödl (lifted above the touch buttons while they show).
 	var bottom_right: PanelContainer = _corner(root, Control.PRESET_BOTTOM_RIGHT, &"HudPanel")
+	_knodl_corner = bottom_right
 	var knodl_row := UiStyle.hbox()
 	bottom_right.add_child(knodl_row)
 	var knodl_text := UiStyle.vbox(&"Tight")
@@ -261,6 +265,14 @@ func end_markers() -> void:
 		_markers[k].visible = false
 
 
+## Touch buttons sit in the bottom-right corner: the Knödl panel moves up above them (`clearance`
+## = how far up from the bottom edge the buttons reach, 0 = no buttons).
+func set_touch_layout(clearance: float) -> void:
+	_touch_clearance = clearance
+	_knodl_corner.offset_bottom = -EDGE - clearance
+	_knodl_corner.offset_top = _knodl_corner.offset_bottom - _knodl_corner.get_combined_minimum_size().y
+
+
 ## "Click into the game to look around with the mouse", while the pointer is free.
 func show_mouse_hint(on: bool) -> void:
 	_mouse_hint.visible = on and _intro_timer <= 0.0 and InputDevice.kind == InputDevice.Kind.KEYS
@@ -305,7 +317,7 @@ func _place(pill: WorldMarker, camera: Camera3D, point: Vector3, text: String, t
 	pill.text = text
 	pill.tone = tone
 	# Kept clear of the corner widgets.
-	pill.place(screen, Rect2(Vector2(EDGE, 96.0), view - Vector2(2.0 * EDGE, 192.0)))
+	pill.place(screen, Rect2(Vector2(EDGE, 96.0), view - Vector2(2.0 * EDGE, 192.0 + _touch_clearance)))
 	pill.visible = true
 
 

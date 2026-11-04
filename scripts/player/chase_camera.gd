@@ -30,6 +30,7 @@ var see_through_radius: float = 1.9
 
 var _sensitivity: float = 0.0
 var _pad_speed: float = 1.0
+var _touch_speed: float = 1.0
 var _invert: float = 1.0
 var _smoothing: float = 0.0
 var _yaw_target: float = 0.0
@@ -67,8 +68,16 @@ func _apply_settings(key: StringName) -> void:
 	_invert = -1.0 if Settings.get_bool(&"invert_y") else 1.0
 	_smoothing = Settings.get_float(&"look_smoothing")
 	_pad_speed = Settings.get_float(&"pad_look_speed")
+	_touch_speed = Settings.get_float(&"mouse_sensitivity")
 	if key == &"camera_distance":
 		zoom = clampf(Settings.get_float(&"camera_distance"), balance.camera_min_distance, balance.camera_max_distance)
+
+
+## A finger dragging on the touch screen (TouchControls), in UI pixels.
+func touch_look(relative: Vector2) -> void:
+	_yaw_target -= relative.x * balance.camera_touch_sensitivity * _touch_speed
+	_pitch_target = clampf(_pitch_target + relative.y * balance.camera_touch_sensitivity * _touch_speed * _invert,
+			deg_to_rad(balance.camera_min_pitch_degrees), deg_to_rad(balance.camera_max_pitch_degrees))
 
 
 ## Points the camera without smoothing (start of a run, the stress view).
@@ -109,7 +118,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			MOUSE_BUTTON_WHEEL_DOWN:
 				zoom = minf(zoom + balance.camera_zoom_step, balance.camera_max_distance)
 			MOUSE_BUTTON_LEFT:
-				if mouse_capture_allowed:
+				# A tap on a touch screen also arrives as a click: never capture the pointer for it.
+				if mouse_capture_allowed and click.device != InputEvent.DEVICE_ID_EMULATION:
 					Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 

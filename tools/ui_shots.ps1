@@ -1,7 +1,7 @@
 # UI screenshots for checking the look against docs/UI-STYLE.md: serves build/web (or uses -Url) and
 # takes a fixed set of moments in headless Edge at every size: the HUD in play, the HUD with the
 # Formular / boss / markers (from 10:00), the Speisekarte with a hovered card, the Inventory/Stats
-# screen (Tab) and the end screen. PNGs go to build/shots/ui/<Name>/<scene>-<size>-<s>s.png.
+# screen (Tab), the end screen, the touch controls and the settings tabs. PNGs go to build/shots/ui/<Name>/<scene>-<size>-<s>s.png.
 # Fails on console errors and on any moment at 150 draw calls or more (the web budget, UI included).
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/ui_shots.ps1 [-Name after] [-Url <preview url>]
 #        [-Sizes 1920x1080,1280x720] [-Only hud,menu]
@@ -39,6 +39,9 @@ $scenes = @(
     # A minute into a run with quick picks: weapon level cards with their rolled gain, then the build.
     @{ Id = 'late'; Query = "$common&pick_delay=1.5&god=1"; At = '70,71,72,73,74,110'; Press = ',,,,,Tab' },
     @{ Id = 'pause'; Query = "$common&knodl_mass=160"; At = '24,27'; Press = 'Escape,ArrowDown+Enter' },
+    # M5: the touch controls (a real finger holds the stick and walks), then the three settings tabs.
+    @{ Id = 'touch'; Query = "$common&knodl_mass=160&touch=1"; At = '24,30'; Touch = $true; Press = ',drag:{sx}:{sy}:{sx2}:{sy}:600' },
+    @{ Id = 'settings'; Query = 'mute=1&debug=0'; At = '12,15,17,19'; Press = 'type:Resi+Enter,ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+Enter,KeyE,KeyE' },
     # A plain start (fresh browser profile): the name prompt, the menu, Spielen, Einstellungen.
     # Then back, Spielen, "Auf geht's!": the run started from the menu.
     # The meta screens of a fresh profile: Stammtisch, Aufträge, Rekorde, Almanach, then Spielen.
@@ -60,7 +63,12 @@ try {
                 }
                 $arguments += "--move=$($points -join ',')"
             }
-            if ($scene.Press) { $arguments += "--keys=$($scene.Press)" }
+            if ($scene.Press) {
+                # {sx} {sy} {sx2}: a point in the stick area (left, low) and one a stick's width right of it.
+                $keys = $scene.Press.Replace('{sx}', [string][int]($w * 0.15)).Replace('{sy}', [string][int]($h * 0.75)).Replace('{sx2}', [string][int]($w * 0.15 + 120))
+                $arguments += "--keys=$keys"
+            }
+            if ($scene.Touch) { $arguments += '--touch=1' }
             $code = Invoke-Logged -Exe $Node -Arguments $arguments -Log $log -WorkingDirectory (Join-Path $Root 'tools\browser')
             if ($code -ne 0) { $failures += "$($scene.Id) at $size failed (console errors or draw calls, see log)" }
         }
