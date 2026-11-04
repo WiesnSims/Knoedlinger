@@ -768,3 +768,21 @@ COOP_ERR_KICKED,Du bist aussegschmissn wordn.
 COOP_ERR_GAME,Des is a anders Spü.
 COOP_ERR_LOST,Koa Verbindung zum Wirtshaus.
 END_AGAIN_COOP,Zurück an'n Stammtisch
+TOAST_AUFGWECKT,Aufgweckt!
+TOAST_WIEDER_AUF,Wieder auf de Fiaß!
+TOAST_WIRT_WECKT,Da Wirt weckt olle auf!
+TOAST_PASS,Knödl-Pass!
+TOAST_MERGE,Riesenknödl!
+TOAST_FAMILIENSTREIT,Familienstreit! A Knödl haut ab!
+TOAST_STREIT_CAUGHT,Erwischt! Da Knödl is wieder dahoam.
+TOAST_STREIT_OVER,Da Knödl hat se beruhigt.
+TOAST_DOWNED_COOP,Umgfoin! Wart auf die Familie … %d s
+TOAST_BEING_WOKEN,Wirst aufgweckt … %d %%
+TOAST_OUT,Draußen bis zum nächsten Einkehren.
+SIGN_DOWNED,Umgfoin! %d
+SIGN_WAKING,Aufwecken … %d %%
+SIGN_OUT,Draußen
+TEAM_DOWN,umgfoin · %d s
+TEAM_REVIVING,wird aufgweckt · %d %%
+TEAM_OUT,draußen bis zum Einkehren
+HUD_WAKE_MARKER,%s aufwecken · %d m

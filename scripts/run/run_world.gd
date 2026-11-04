@@ -1,3 +1,4 @@
+class_name RunWorld
 extends Node3D
 ## One run (M3: the Kirtag map with bosses, the gate and loot). Solo, host or client, from LaunchArgs:
 ##   --character=ferdl          who plays (data/characters/<id>.tres)
@@ -82,6 +83,8 @@ var loot: LootField
 var gate: PortalGate
 ## Host: the bosses of the run.
 var bosses: BossDirector
+## Host: revives, shared XP, Knödl-Pass, Riesenknödl, Familienstreit (CoopRules).
+var coop: CoopRules
 ## Host: run events of this frame (attack marks, loot, toasts ...).
 var events := RunEventCodec.Queue.new()
 var result: Result = Result.NONE
@@ -349,6 +352,7 @@ func _ready() -> void:
 		_open_wirtshaeuser(balance.wirtshaus_count - (1 if grant.modifier == &"streik" else 0), seed_value)
 		_scatter_start_brosel(seed_value)
 		bosses = BossDirector.new(balance, enemies, hazards, wave)
+		coop = CoopRules.new(self, balance, seed_value)
 		_place_map_chests()
 	else:
 		replica = EnemyReplica.new(balance, types, slots)
@@ -477,7 +481,7 @@ func _host_frame(delta: float) -> void:
 	var knodl_peers: Array[int] = []
 	var knodl_targets := PackedVector4Array()
 	for peer: int in knodls:
-		if states[peer].build.stat(&"knodl_guard") <= 0.0:
+		if states[peer].build.stat(&"knodl_guard") <= 0.0 and not knodls[peer].merged_away:
 			var at: Vector3 = knodls[peer].global_position
 			knodl_peers.append(peer)
 			knodl_targets.append(Vector4(at.x, at.y, at.z, knodls[peer].radius))
@@ -503,7 +507,7 @@ func _host_frame(delta: float) -> void:
 		var hit: float = Formulas.hit_damage(enemies.touch_damage[t] * damage_mult, state.build.stat(&"armor"), balance)
 		var hp_before: float = state.hp
 		if not _god and phase == Phase.RUNNING and state.hurt(hit, balance):
-			_on_downed(peers[t])
+			on_downed(peers[t])
 		if state.hp < hp_before:
 			_on_hurt(peers[t])
 			_reflect_hit(peers[t], hp_before - state.hp)
@@ -522,12 +526,18 @@ func _host_frame(delta: float) -> void:
 		var presses: int = player.last_input.schupfn_presses
 		if presses != state.schupfn_seen:
 			state.schupfn_seen = presses
-			if not state.downed and not state.choosing:
+			# Co-op: Schupfn in a Riesenknödl lets go; a throw toward a teammate is a pass.
+			if not state.downed and not state.choosing and not coop.schupfn_splits(peer) and not knodl.merged_away:
 				var move: Vector2 = player.last_input.move
-				knodl.schupfn(Vector3(move.x, 0.0, move.y))
+				var aim: Array = coop.pass_aim(peer, Vector3(move.x, 0.0, move.y))
+				if knodl.schupfn(aim[0]) and knodl.state == Knodl.State.THROWN:
+					knodl.pass_target = aim[1]
+					if aim[1] != 0:
+						print("[RUN] pass-throw peer=%d to=%d t=%.1f" % [peer, aim[1], run_time])
 		if not state.downed and not state.choosing:
 			WeaponSystem.update(state.build, player, enemies, projectiles, run_time, delta, _weapon_rng, balance)
-		knodl.crush(enemies, delta)
+		if not knodl.merged_away:
+			knodl.crush(enemies, delta)
 	projectiles.update(delta, enemies)
 	hazards.update(delta)
 	_resolve_hazards()
@@ -547,6 +557,9 @@ func _host_frame(delta: float) -> void:
 	_check_wirtshaeuser(delta)
 	_collect_loot(delta)
 	level_flow.update(states, delta, NetworkManager.is_coop())
+	coop.update(delta)
+	for peer: int in states:
+		states[peer].merge_partner = coop.merge_partner(peer)
 	_update_timeline(delta)
 	_update_phase(delta)
 	_flush_events()
@@ -765,7 +778,7 @@ func _check_wirtshaeuser(delta: float) -> void:
 	for peer: int in knodls:
 		var state: PlayerState = states[peer]
 		var knodl: Knodl = knodls[peer]
-		if state.downed:
+		if state.downed or knodl.merged_away:
 			continue
 		for wirt: Wirtshaus in wirtshaeuser:
 			if not wirt.open or wirt.served or not wirt.touches(knodl.global_position, knodl.radius, balance.wirtshaus_door_radius):
@@ -795,8 +808,24 @@ func _cash_in(peer: int, wirt: Wirtshaus, tier: int) -> void:
 		state.build.rerolls += balance.wirtshaus_l_rerolls
 	var items: int = balance.wirtshaus_chest_items[tier] if tier < balance.wirtshaus_chest_items.size() else 0
 	level_flow.give_chest(peer, state, tier, items, tier == 3, gold, -1, balance.boss_chest_min_rarity if tier == 3 else 0)
-	knodl.reset_knodl_mass(_knodl_start_mass(knodl))
-	print("[RUN] cash-in peer=%d tier=%d t=%.1f" % [peer, tier, run_time])
+	# Gemeinsam einkehren: a merged Riesenknödl pays every player in it.
+	var merge: CoopRules.Merge = coop.merge_of(peer)
+	if merge != null:
+		var partner: int = merge.partner if merge.primary == peer else merge.primary
+		var other: PlayerState = states.get(partner)
+		if other != null:
+			other.cash_ins[tier] += 1
+			if tier == 2:
+				other.build.rerolls += balance.wirtshaus_l_rerolls
+			level_flow.give_chest(partner, other, tier, items, tier == 3, gold, -1, balance.boss_chest_min_rarity if tier == 3 else 0)
+			for s: PlayerState in [state, other]:
+				s.merged_cash_in_tier = maxi(s.merged_cash_in_tier, tier)
+		coop.split(merge, true)
+	else:
+		knodl.reset_knodl_mass(knodl_start_mass(knodl))
+	# A cash-in wakes everyone who is down (co-op).
+	coop.wake_everyone()
+	print("[RUN] cash-in peer=%d tier=%d merged=%s t=%.1f" % [peer, tier, merge != null, run_time])
 
 
 ## Host: from kontrolleur_minute on, a Kontrolleur stands at every open Wirtshaus that still serves.
@@ -872,7 +901,9 @@ func _feed_knodls(delta: float) -> void:
 			var player: Vector3 = players[peer].global_position
 			var reach: float = balance.player_pickup_range * (1.0 + states[peer].build.stat(&"pickup"))
 			brosel.attract(player.x, player.z, reach, peer)
-		brosel.absorb(at, knodl.radius, peer)
+		# Half of a Riesenknödl eats nothing itself: the merged one does, for both.
+		if not knodl.merged_away:
+			brosel.absorb(at, knodl.radius, peer)
 	brosel.update(delta, positions)
 	var credits: Dictionary[int, Vector2] = brosel.take_credits()
 	for peer: int in credits:
@@ -882,13 +913,14 @@ func _feed_knodls(delta: float) -> void:
 		var state: PlayerState = states[peer]
 		var knodl: Knodl = knodls[peer]
 		state.add_xp(credit.x, balance, run_time)
+		coop.share_xp(peer, credit.x)
 		knodl.add_knodl_mass(credit.y * balance.knodl_mass_per_xp)
 		state.best_knodl_mass = maxf(state.best_knodl_mass, knodl.knodl_mass)
 		if knodl.sort.heal_per_mass > 0.0:
 			state.heal(credit.y / knodl.sort.heal_per_mass)
 
 
-func _on_downed(peer: int) -> void:
+func on_downed(peer: int) -> void:
 	var state: PlayerState = states[peer]
 	# Marterl-Kerze (per copy) and the Stammtisch's Nachschlag: back up at once with half the HP.
 	if state.revives_used < roundi(state.build.effect(&"revive") + state.build.meta.get(&"revives", 0.0)):
@@ -902,8 +934,9 @@ func _on_downed(peer: int) -> void:
 	state.downed_times.append(run_time)
 	if _respawn:
 		return
-	# Solo: the run is over. Co-op: down until the M6 revives exist (coop_down_seconds); the run
-	# is lost when everyone is down at once.
+	# Solo: the run is over. Co-op: down for coop_down_seconds (teammates can wake them, CoopRules),
+	# then out until the next cash-in; the run is lost when everyone is down at once.
+	state.bleeds_out = players.size() > 1
 	state.downed_timer = INF if players.size() <= 1 else balance.coop_down_seconds
 	for other: int in states:
 		if not states[other].downed:
@@ -913,7 +946,7 @@ func _on_downed(peer: int) -> void:
 
 func _on_respawned(peer: int) -> void:
 	var knodl: Knodl = knodls[peer]
-	knodl.reset_knodl_mass(_knodl_start_mass(knodl))
+	knodl.reset_knodl_mass(knodl_start_mass(knodl))
 	knodl.place_at(_spawn_position(peer) + Vector3(0.0, 0.6, knodl.rest_length()))
 	_respawn_grace[peer] = RESPAWN_GRACE
 
@@ -968,11 +1001,16 @@ func _world_frame() -> WorldStateCodec.Frame:
 		e.level = state.level
 		e.downed = state.downed
 		e.choosing = state.choosing
+		e.out = state.out
+		e.revive = state.revive_progress
+		e.down_left = state.downed_timer if state.downed and state.bleeds_out and not state.out else -1.0
+		e.merge_partner = coop.merge_partner(peer)
 		e.life = state.life
 		e.pending_levels = state.pending_levels
 		e.knodl_state = knodl.state
 		e.knodl_cooldown = knodl.cooldown
-		e.knodl_mass = knodl.knodl_mass
+		# Half of a Riesenknödl is hidden inside the other: mass 0 tells clients.
+		e.knodl_mass = 0.0 if knodl.merged_away else knodl.knodl_mass
 		e.knodl_position = knodl.global_position
 		e.knodl_rotation = knodl.quaternion
 		e.gold = state.build.gold
@@ -1053,8 +1091,9 @@ func _local_frame(delta: float) -> void:
 	_move_riesen_wirt(delta)
 	_move_shockwave(delta)
 	_show_run_state(local, state, delta)
+	_show_team(local, state)
 	if state != null:
-		hud.show_state(state, knodl, run_time, balance)
+		hud.show_state(state, shown_knodl(id), run_time, balance)
 		if speisekarte.is_open():
 			speisekarte.show_player(state, knodl)
 		if inventory.is_open():
@@ -1119,6 +1158,37 @@ func _bot_goal(local: Player, knodl: Knodl) -> Vector2:
 				return here + side * signf(rel.dot(side) + 0.001) * (h.radius + 2.5)
 			var away := Vector2(at.x - h.x, at.z - h.z)
 			return Vector2(h.x, h.z) + (away.normalized() if away.length() > 0.1 else Vector2.RIGHT) * (h.radius + 2.5)
+	# Co-op: wake a knocked-down teammate first (stand by them).
+	if players.size() > 1 and not _respawn:
+		var nearest: float = 60.0
+		var downed_at := Vector2.INF
+		for peer: int in players:
+			var mate: PlayerState = states.get(peer)
+			if peer != local.peer_id and mate != null and mate.downed and not mate.out:
+				var p: Vector3 = players[peer].global_position
+				var d: float = here.distance_to(Vector2(p.x, p.z))
+				if d < nearest:
+					nearest = d
+					downed_at = Vector2(p.x, p.z)
+		if downed_at.is_finite():
+			return downed_at
+	# Co-op: now and then the family closes ranks (the bot then throws toward a teammate: a pass,
+	# and two Knödl meeting may merge).
+	if players.size() > 1 and fmod(run_time, 12.0) < 3.0:
+		var mate_at := Vector2.INF
+		var mate_d: float = 40.0
+		for peer: int in players:
+			if peer != local.peer_id and states.has(peer) and not states[peer].downed:
+				var p: Vector3 = players[peer].global_position
+				var d: float = here.distance_to(Vector2(p.x, p.z))
+				if d < mate_d:
+					mate_d = d
+					mate_at = Vector2(p.x, p.z)
+		if mate_at.is_finite():
+			# Close enough to pass, not so close the Knödl lands on their feet: throw it over.
+			if mate_d > 8.0 and mate_d < 22.0 and local.bot != null:
+				local.bot.throw_now()
+			return mate_at
 	# The Formular quest: Stempel, then the gate.
 	var stempel: int = loot.nearest(LootField.Kind.STEMPEL, at.x, at.z)
 	if stempel >= 0:
@@ -1429,6 +1499,10 @@ func _on_world_state(data: PackedByteArray) -> void:
 		state.level = e.level
 		state.downed = e.downed
 		state.choosing = e.choosing
+		state.out = e.out
+		state.revive_progress = e.revive
+		state.downed_timer = e.down_left
+		state.merge_partner = e.merge_partner
 		state.life = e.life
 		state.pending_levels = e.pending_levels
 		state.chests_opened = e.chests_opened
@@ -1439,7 +1513,14 @@ func _on_world_state(data: PackedByteArray) -> void:
 		if knodl == null:
 			knodl = _spawn_knodl(e.peer_id, players[e.peer_id], false)
 			knodl.place_at(e.knodl_position)
-		knodl.apply_remote(e.knodl_position, e.knodl_rotation, e.knodl_mass, e.knodl_state as Knodl.State, e.knodl_cooldown)
+		# Half of a Riesenknödl (mass 0) hides inside the other half, which hangs on both strings.
+		var away: bool = e.merge_partner != 0 and e.knodl_mass <= 0.0
+		knodl.visible = not away
+		if not away:
+			knodl.apply_remote(e.knodl_position, e.knodl_rotation, e.knodl_mass, e.knodl_state as Knodl.State, e.knodl_cooldown)
+		else:
+			knodl.apply_remote(e.knodl_position, e.knodl_rotation, knodl.knodl_mass, e.knodl_state as Knodl.State, e.knodl_cooldown)
+		knodl.co_holder = players.get(e.merge_partner) if e.merge_partner != 0 and not away else null
 	# The host picked for us (co-op time ran out) and nothing else is waiting: close the menu.
 	var local: PlayerState = states.get(NetworkManager.local_id())
 	if local != null and not local.choosing and speisekarte.is_open() and speisekarte.open_seconds() > 1.0:
@@ -1598,7 +1679,7 @@ func _spawn_player(peer_id: int, local: bool) -> Player:
 		bot.set_waypoints(map.bot_waypoints, peer_id % maxi(map.bot_waypoints.size(), 1))
 		bot.jump_every = 3.5
 		bot.schupfn_every = 6.0
-	var who: CharacterData = _character_of(peer_id)
+	var who: CharacterData = character_of(peer_id)
 	player.setup(peer_id, local, balance, who, bot)
 	player.ground = ground
 	player.bounds = map.half_size
@@ -1646,10 +1727,10 @@ func _spawn_player(peer_id: int, local: bool) -> Player:
 
 func _spawn_knodl(peer_id: int, holder: Player, simulated: bool) -> Knodl:
 	var knodl := Knodl.new()
-	knodl.setup(peer_id, balance, _character_of(peer_id).knodl_sort, holder, simulated)
+	knodl.setup(peer_id, balance, character_of(peer_id).knodl_sort, holder, simulated)
 	add_child(knodl)
 	if simulated:
-		knodl.set_knodl_mass(_knodl_start_mass(knodl))
+		knodl.set_knodl_mass(knodl_start_mass(knodl))
 	knodls[peer_id] = knodl
 	return knodl
 
@@ -1679,7 +1760,7 @@ func _meta_of(peer_id: int, local: bool) -> Dictionary:
 
 
 ## Each player's Knödlinger: the local one from RunSetup (flags win), the others from the room.
-func _character_of(peer_id: int) -> CharacterData:
+func character_of(peer_id: int) -> CharacterData:
 	if _characters.has(peer_id):
 		return _characters[peer_id]
 	var who: CharacterData = character
@@ -1694,7 +1775,7 @@ func _character_of(peer_id: int) -> CharacterData:
 ## Host: the character traits that are rules, not stats (CharacterData.trait_effects).
 func _update_traits(delta: float) -> void:
 	for peer: int in players:
-		var effects: Dictionary[StringName, float] = _character_of(peer).trait_effects
+		var effects: Dictionary[StringName, float] = character_of(peer).trait_effects
 		if effects.is_empty():
 			continue
 		var state: PlayerState = states[peer]
@@ -1731,7 +1812,7 @@ func _update_traits(delta: float) -> void:
 
 ## Host: Onkel Ferdl's Grant, one hit at a time.
 func _on_hurt(peer: int) -> void:
-	var per_hit: float = _character_of(peer).trait_effects.get(&"grant", 0.0)
+	var per_hit: float = character_of(peer).trait_effects.get(&"grant", 0.0)
 	if per_hit > 0.0:
 		var build: PlayerBuild = states[peer].build
 		build.grant_damage = minf(build.grant_damage + per_hit, balance.grant_cap)
@@ -1920,7 +2001,7 @@ func _board_names() -> Array:
 func _board_characters() -> Array:
 	var ids: Array = []
 	for peer: int in _board_order():
-		ids.append(String(_character_of(peer).id))
+		ids.append(String(character_of(peer).id))
 	return ids
 
 
@@ -1932,7 +2013,7 @@ func _board_order() -> Array[int]:
 	return order
 
 
-func _knodl_start_mass(knodl: Knodl) -> float:
+func knodl_start_mass(knodl: Knodl) -> float:
 	if _start_mass >= 0.0:
 		return _start_mass
 	var meta: Dictionary = _meta.get(knodl.owner_peer, {})
@@ -2009,7 +2090,7 @@ func _resolve_hazards() -> void:
 					continue
 				if HazardField.contains(h, at.x, at.z, balance.player_radius):
 					if state.hurt(Formulas.hit_damage(attack.damage * grant.enemy_damage, state.build.stat(&"armor"), balance), balance):
-						_on_downed(peer)
+						on_downed(peer)
 		if attack.dash and h.source >= 0:
 			if bosses.is_boss_slot(h.source):
 				bosses.on_hit(h)
@@ -2342,6 +2423,18 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 			var boss_at: Vector3 = _boss_position()
 			if boss_at.is_finite() and from.distance_to(boss_at) > 18.0:
 				hud.marker(camera, boss_at + Vector3(0.0, 5.0, 0.0), "%s · %d m" % [tr(_boss_list[_focus_boss].name_key), roundi(from.distance_to(boss_at))], "danger")
+		# Teammates: a knocked-down one always (go wake them), the others once far or off screen.
+		for peer: int in players:
+			var mate: PlayerState = states.get(peer)
+			if peer == NetworkManager.local_id() or mate == null or mate.out:
+				continue
+			var at: Vector3 = players[peer].global_position + Vector3(0.0, 2.4, 0.0)
+			var far: float = from.distance_to(at)
+			var off_screen: bool = camera.is_position_behind(at) or not get_viewport().get_visible_rect().has_point(camera.unproject_position(at))
+			if mate.downed:
+				hud.marker(camera, at, tr("HUD_WAKE_MARKER") % [_mate_name(peer), roundi(far)], "accent")
+			elif far > 25.0 or off_screen:
+				hud.marker(camera, at, "%s · %d m" % [_mate_name(peer), roundi(far)], "rarity_1")
 	hud.end_markers()
 	var hint: String = ""
 	var chest: int = loot.nearest(LootField.Kind.CHEST, from.x, from.z)
@@ -2351,6 +2444,14 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 	hud.show_hint(hint)
 	if state != null:
 		hud.downed_key = "TOAST_DOWNED" if _respawn or players.size() > 1 else "TOAST_DOWNED_SOLO"
+		hud.downed_text = ""
+		if state.downed and not _respawn and players.size() > 1:
+			if state.out:
+				hud.downed_text = tr("TOAST_OUT")
+			elif state.revive_progress > 0.01:
+				hud.downed_text = tr("TOAST_BEING_WOKEN") % roundi(state.revive_progress * 100.0)
+			else:
+				hud.downed_text = tr("TOAST_DOWNED_COOP") % maxi(ceili(state.downed_timer), 0)
 	# Sounds of the local player, from the state the host keeps.
 	if state != null:
 		if state.hp < _last_hp - 0.01 and not state.downed:
@@ -2386,6 +2487,71 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 		GameAudio.music(&"boss" if boss_alive else &"kirtag")
 		if not boss_alive:
 			GameAudio.set_music_speed(1.0 + 0.12 * clampf(run_time / balance.run_seconds, 0.0, 1.0))
+
+
+## Co-op: the family panel, the signs over knocked-down teammates, and once out the camera
+## follows someone still standing.
+func _show_team(local: Player, state: PlayerState) -> void:
+	var rows: Array[TeamPanel.Row] = []
+	var me: int = NetworkManager.local_id()
+	var order: Array[int] = []
+	for peer: int in players:
+		order.append(peer)
+	order.sort()
+	for peer: int in order:
+		var mate: PlayerState = states.get(peer)
+		var player: Player = players[peer]
+		player.note = ""
+		if mate == null or players.size() < 2 or _respawn:
+			continue
+		if mate.downed:
+			if mate.out:
+				player.note = tr("SIGN_OUT")
+			elif mate.revive_progress > 0.01:
+				player.note = tr("SIGN_WAKING") % roundi(mate.revive_progress * 100.0)
+			else:
+				player.note = tr("SIGN_DOWNED") % maxi(ceili(mate.downed_timer), 0)
+		if peer == me:
+			continue
+		var row := TeamPanel.Row.new()
+		row.name = _mate_name(peer)
+		row.color = character_of(peer).coat_color
+		row.level = mate.level
+		row.hp = mate.hp / maxf(mate.max_hp, 1.0)
+		row.downed = mate.downed
+		row.out = mate.out
+		row.down_left = mate.downed_timer
+		row.revive = mate.revive_progress
+		rows.append(row)
+	hud.show_team(rows)
+	# Out: watch the nearest teammate still standing.
+	var target: Node3D = local
+	if state != null and state.out and local != null:
+		var best: float = INF
+		for peer: int in players:
+			var mate: PlayerState = states.get(peer)
+			if peer != me and mate != null and not mate.downed:
+				var d: float = players[peer].global_position.distance_to(local.global_position)
+				if d < best:
+					best = d
+					target = players[peer]
+	if target != null and camera.target != target:
+		camera.target = target
+
+
+## A teammate's name for markers and the panel (their character's when the room has none).
+func _mate_name(peer: int) -> String:
+	var name: String = NetworkManager.player_name(peer)
+	return name if name != "" else tr(character_of(peer).name_key)
+
+
+## The Knödl a player rolls right now: their own, or the merged Riesenknödl they hold with a partner.
+func shown_knodl(peer: int) -> Knodl:
+	var knodl: Knodl = knodls.get(peer)
+	var partner: int = states[peer].merge_partner if states.has(peer) else 0
+	if knodl != null and partner != 0 and not knodl.visible and knodls.has(partner):
+		return knodls[partner]
+	return knodl
 
 
 ## Where the boss in the HUD bar stands (host: its slot; client: its replica), or INF.

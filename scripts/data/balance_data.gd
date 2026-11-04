@@ -327,11 +327,46 @@ extends Resource
 @export_group("Death")
 ## Solo: knocked down = the run is over, the end screen comes after this pause.
 @export var death_screen_delay: float = 2.5
-## Co-op until the M6 revives: a knocked-down player is back at the spawn after this; the run is
-## lost when everyone is down at once.
+## Co-op: a knocked-down player ("umgfoin") waits this long for a teammate, then is out until the
+## next Wirtshaus cash-in (which wakes everyone). The run is lost when everyone is down at once.
 @export var coop_down_seconds: float = 30.0
 ## Share of the Knödl's mass paid out as Schilling when a run is lost (GAME-DESIGN.md: 25 %).
 @export var death_schilling_share: float = 0.25
+
+@export_group("Co-op (Familienausflug)")
+## Standing this close to a knocked-down teammate for revive_seconds wakes them; a teammate's Knödl
+## rolling over them wakes them at once ("Aufgweckt!"). They come back with this share of their HP
+## and a moment without hits.
+@export var revive_radius: float = 2.2
+@export var revive_seconds: float = 3.0
+@export var revive_hp: float = 0.5
+@export var revive_grace: float = 2.0
+## Progress a revive loses per second when nobody stands by.
+@export var revive_decay: float = 0.5
+## Shared XP: every other player within this many metres gets this share of the XP (no mass).
+@export var shared_xp_radius: float = 25.0
+@export var shared_xp_share: float = 0.5
+## Knödl-Pass: a Schupfn aims at a teammate within this cone (degrees either side) and range; a
+## teammate it reaches within the catch radius takes its mass into their own Knödl. A throw only
+## counts as a pass after pass_min_seconds in the air (no catching it out of your own hands).
+@export var pass_cone_degrees: float = 30.0
+@export var pass_range: float = 30.0
+@export var pass_catch_radius: float = 1.2
+@export var pass_min_seconds: float = 0.25
+## Riesenknödl: two Knödl that meet this fast (relative m/s) merge, held by both strings, for
+## merge_seconds (or until one of the two presses Schupfn). The same pair waits merge_cooldown
+## before it can merge again.
+@export var merge_min_speed: float = 4.5
+@export var merge_seconds: float = 30.0
+@export var merge_cooldown: float = 8.0
+## Familienstreit (co-op event): at this minute one random player's Knödl tears loose and rolls
+## off on its own for streit_seconds (this fast); a teammate touching it brings it back.
+@export var streit_minute: float = 7.0
+@export var streit_seconds: float = 10.0
+@export var streit_speed: float = 9.0
+## Doppelportion: the second Knödl is this big next to the first and hangs on a string this long.
+@export var second_knodl_scale: float = 0.6
+@export var second_knodl_rest: float = 2.2
 
 @export_group("Bot")
 ## The bot walks its Knödl to a Wirtshaus once it is this heavy.

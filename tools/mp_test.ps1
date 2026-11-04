@@ -32,8 +32,14 @@ param(
 . "$PSScriptRoot\common.ps1"
 
 $log = New-LogFile 'mp_test'
+# -Coop: the co-op rules (M6) through the room, no respawn: the host's drill (--coop_drill) knocks a
+# client down at 0:10 (the bots must wake it) and rolls two Knoedl together at 0:25 (a merge), the
+# Familienstreit comes at 0:30 (--streit_at), the bots throw to each other (Knoedl-Pass).
 if ($Coop) {
-    Complete-Script -Name 'mp_test -Coop' -Log $log -Failures @('the co-op scenario (revive, Knoedl-Pass, merge, shared XP) comes with M6')
+    $Lobby = $true
+    if ($Seconds -lt 40) { $Seconds = 40 }
+    # Level-1 bots without respawn: a crowd they can live with for a while.
+    if (-not $PSBoundParameters.ContainsKey('Enemies')) { $Enemies = 150 }
 }
 $failures = @()
 $runDir = Join-Path $LogDir ('mp_test-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
@@ -66,7 +72,8 @@ function Get-Result([string]$Path) {
 
 $hostSeconds = if ($HostLeavesFirst) { [math]::Max([int]($Seconds / 2), 5) } else { $Seconds + 10 }
 $crowd = if ($StartTime -ge 0) { "--start_time=$StartTime" } else { "--enemies=$Enemies" }
-$hostRun = Start-Godot 'host' (@('--net=ws', '--host', "--port=$Port", $crowd, "--projectiles=$Projectiles", "--seconds=$hostSeconds", '--bot=1', '--respawn=1', '--character=ferdl', '--name=Host') + $room)
+$respawn = if ($Coop) { @('--coop_drill=1', '--streit_at=30') } else { @('--respawn=1') }
+$hostRun = Start-Godot 'host' (@('--net=ws', '--host', "--port=$Port", $crowd, "--projectiles=$Projectiles", "--seconds=$hostSeconds", '--bot=1', '--character=ferdl', '--name=Host') + $respawn + $room)
 $deadline = (Get-Date).AddSeconds(30)
 while ((Get-Date) -lt $deadline -and -not (Select-String -Path $hostRun.Log -Pattern 'LISTENING' -Quiet -ErrorAction SilentlyContinue)) {
     Start-Sleep -Milliseconds 200
@@ -165,6 +172,21 @@ if ($rejectRun) {
     if (-not $r -or $r.rejected -ne 'version') { $failures += 'the client with a wrong version was not refused' }
     else { Write-Host 'client_old_version: refused as expected (version)' }
 }
+if ($Coop) {
+    # The host logs every co-op deed ([RUN] revive / pass / merge / split / familienstreit).
+    $hostLog = Get-Content -Path $hostRun.Log -Encoding UTF8
+    $revives = @($hostLog | Where-Object { $_ -like '[[]RUN] revive *' }).Count
+    $passes = @($hostLog | Where-Object { $_ -like '[[]RUN] pass *' }).Count
+    $merges = @($hostLog | Where-Object { $_ -like '[[]RUN] merge *' }).Count
+    $streit = @($hostLog | Where-Object { $_ -like '[[]RUN] familienstreit *' }).Count
+    $downs = 0
+    foreach ($run in @($hostRun) + $runs) { $r = Get-Result $run.Log; if ($r -and $r.run) { $downs += @($r.run.downed_times).Count } }
+    Write-Host ("co-op: {0} knock-downs, {1} revives, {2} passes, {3} merges, Familienstreit {4}" -f $downs, $revives, $passes, $merges, $streit)
+    if ($streit -lt 1) { $failures += 'co-op: the Familienstreit did not come' }
+    if ($passes -lt 1) { $failures += 'co-op: no Knoedl-Pass' }
+    if ($revives -lt 1) { $failures += 'co-op: nobody was woken' }
+    if ($merges -lt 1) { $failures += 'co-op: no Riesenknoedl merge' }
+}
 if ($Lobby -and $hostResult) {
     # The room hands every player a different Knoedlinger.
     $chars = @($hostResult.run.character) + @($runs | ForEach-Object { $r = Get-Result $_.Log; if ($r -and $r.run) { $r.run.character } })
@@ -178,4 +200,4 @@ if ($hostResult -and $hostResult.net) {
         $hostResult.net.kib_per_s_out, $hostResult.snapshot_bytes_avg, $hostResult.frame.frame_ms_p95)
 }
 Write-Host "process logs: $runDir"
-Complete-Script -Name "mp_test -Clients $Clients$(if ($Lobby) { ' -Lobby' })$(if ($HostLeavesFirst) { ' -HostLeavesFirst' })$(if ($StartTime -ge 0) { " -StartTime $StartTime" })" -Log $log -Failures $failures
+Complete-Script -Name "mp_test -Clients $Clients$(if ($Coop) { ' -Coop' } elseif ($Lobby) { ' -Lobby' })$(if ($HostLeavesFirst) { ' -HostLeavesFirst' })$(if ($StartTime -ge 0) { " -StartTime $StartTime" })" -Log $log -Failures $failures

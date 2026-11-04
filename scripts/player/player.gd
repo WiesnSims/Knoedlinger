@@ -52,6 +52,8 @@ var _schupfn_presses: int = 0
 var _last_position: Vector3 = Vector3.ZERO
 var _look: Node3D
 var _sign: Label3D
+## Co-op: a line over the player while knocked down ("Umgfoin! 23"); empty = none.
+var note: String = ""
 
 
 func setup(p_peer_id: int, local: bool, p_balance: BalanceData, p_character: CharacterData, p_bot: BotInput) -> void:
@@ -138,7 +140,12 @@ func _process(_delta: float) -> void:
 	var lying: float = PI * 0.5 if downed else 0.0
 	_look.rotation.x = lerpf(_look.rotation.x, lying, 0.2)
 	# Solo pauses for the Speisekarte; the sign is for teammates (co-op runs on).
-	_sign.visible = choosing and NetworkManager.is_online()
+	if note != "":
+		_sign.text = note
+		_sign.visible = true
+	else:
+		_sign.text = tr("SIGN_BACK_SOON")
+		_sign.visible = choosing and NetworkManager.is_online()
 
 
 func _physics_process(delta: float) -> void:
