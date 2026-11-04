@@ -409,3 +409,23 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   the rest of its "options" item: gamepad, auto-quality and touch settings.
 - **Claude: automated checks keep skipping the menu**: any run URL flag or command-line option (`bot=1`,
   `scene=stress`, `autoplay=1`, `--net=...`) still starts the run directly; a plain URL opens the main menu.
+
+## 2026-11-04 – Plan for M4: global highscores and player name (not started)
+
+- **Owner: the Rekorde page shows everyone's highscores online plus your own.** This replaces "highscores are
+  local only" from the entry above (the own records stay, local and in the export code).
+- **Owner: the player name is asked once on the first start**, saved in `user://`, changeable in Einstellungen;
+  the same name is used on the board and later in the co-op lobby.
+- **Claude: reuse Berghittn's Gipfelbuch** (`X:\Code\Projects\GeilesGame`, `board/board.js`,
+  `functions/api/board/[action].js`, `board/migrations`) as the *Ehrentafel vom Goldenen Knödl*: a Cloudflare D1
+  database bound as `BOARD` in the `knoedlinger` Pages project, free tier, no paid service. Preview deployments get
+  their own database (`knoedlinger-board-preview`), so play-tests never land on the real board; headless and
+  desktop test runs never send results. Its run tickets (asked at run start, used at the end, rate-limited) make
+  faked results harder; a browser game cannot stop cheating completely. Names: at most 16 characters, swear words
+  folded and filtered (Berghittn's list), fallback name "Knödlinger".
+- **Claude: boards** per map and per mode (solo, co-op with all names), all-time and this week, top 50 plus your
+  own place. Order: result first (gewonnen > Sperrstund' erlebt > umgfoin), then Grant level, then time, then
+  kills. Each entry shows name, character(s), level, kills, biggest Knödl and date. Columns and order can still
+  be adjusted in M4.
+- **Needs from the owner in M4:** nothing new expected (the Cloudflare login used for deploys can create the D1
+  databases); if wrangler lacks the D1 permission, Claude asks.
