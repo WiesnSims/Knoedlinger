@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PassiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/passive_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/kaffeehaus_zeitung.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"kaffeehaus_zeitung"
+name_key = "PASSIVE_ZEITUNG"
+desc_key = "DESC_PASSIVE_ZEITUNG"
+max_level = 0
+stats = Dictionary[StringName, float]({&"duration": 0.1})
+color = Color(0.9, 0.88, 0.8, 1)
+icon = ExtResource("9_icon")

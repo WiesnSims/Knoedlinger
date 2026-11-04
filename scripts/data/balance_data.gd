@@ -183,9 +183,18 @@ extends Resource
 @export var riesen_wirt_speed: float = 5.0
 
 @export_group("Build")
-## Six weapon and six passive slots (GAME-DESIGN.md pillar 4); Knödl upgrades take no slot.
-@export var weapon_slots: int = 6
-@export var passive_slots: int = 6
+## Two weapon and four stat slots (GAME-DESIGN.md pillar 4); weapon slots 3 and 4 come from the meta.
+## Items take no slot.
+@export var weapon_slots: int = 2
+@export var passive_slots: int = 4
+## A weapon this many levels up, with its partner stat held, can evolve.
+@export var evolution_level: int = 8
+## Which mod a weapon level card rolls (among the weapon's level_mods), by weight.
+@export var weapon_mod_weights: Dictionary[StringName, float] = {
+	&"damage": 3.0, &"rate": 2.0, &"area": 2.0, &"crit": 1.5, &"amount": 1.0,
+}
+## Hard floor for any weapon's seconds between attacks, however fast it got.
+@export var weapon_min_cooldown: float = 0.08
 ## Cards on the Speisekarte, and the per-run reroll ("Nochmal bitte") and banish ("Des mog i ned").
 @export var card_count: int = 3
 @export var rerolls_per_run: int = 3
@@ -195,21 +204,69 @@ extends Resource
 ## Fallback cards when nothing is left to offer: HP healed, gold given.
 @export var fallback_heal: float = 30.0
 @export var fallback_gold: int = 25
-## Weights in the card pool: new weapon, weapon level, new passive, passive level, Knödl upgrade.
+## Weights in the card pool: new weapon, weapon level, new stat upgrade, stat level.
 @export var card_weight_new_weapon: float = 1.0
 @export var card_weight_weapon_level: float = 1.6
 @export var card_weight_new_passive: float = 0.9
 @export var card_weight_passive_level: float = 1.2
-@export var card_weight_knodl: float = 0.5
-## Rarity: Gewöhnlich, Fein, Edel, Hofratswürdig. A card's level counts this many times (passives),
-## and adds (bonus - 1) * weapon_rarity_damage to a weapon's damage.
+## Rarity: Gewöhnlich, Fein, Edel, Hofratswürdig. Multiplies what a level gives (a stat level, a
+## weapon mod's roll; one more piece becomes two only at Hofratswürdig).
 @export var rarity_bonus: PackedFloat32Array = PackedFloat32Array([1.0, 1.25, 1.5, 2.0])
 @export var rarity_weights: PackedFloat32Array = PackedFloat32Array([70.0, 20.0, 8.0, 2.0])
-@export var weapon_rarity_damage: float = 0.3
+## A chest's rarity (it decides which items it can hold), by weight; luck raises it like card rarity.
+@export var chest_rarity_weights: PackedFloat32Array = PackedFloat32Array([55.0, 30.0, 12.0, 3.0])
+## Boss chests and XL cash-ins roll at least this rarity.
+@export var boss_chest_min_rarity: int = 1
 ## Co-op: the game runs on while someone chooses; after this a random card is picked for them.
 @export var card_seconds_coop: float = 8.0
 ## A hit always does at least this much, whatever the armor.
 @export var min_hit_damage: float = 1.0
+## A revive from an item (Marterl-Kerze) brings the player back with this share of their max HP.
+@export var item_revive_hp: float = 0.5
+
+@export_group("Meta")
+## Schilling a run pays (GAME-DESIGN.md: gold, cash-ins, 25 % of the Knödl when knocked out):
+## per gold picked up, per cash-in by tier S..XL, the Knödl share, a win bonus, +10 % per extra player.
+@export var schilling_per_gold: float = 0.5
+@export var schilling_per_cash_in: PackedFloat32Array = PackedFloat32Array([5.0, 15.0, 40.0, 100.0])
+@export var schilling_knodl_share: float = 0.25
+@export var schilling_win_bonus: float = 100.0
+@export var coop_schilling_per_player: float = 0.1
+## Grant modifiers: Föhn pushes every Knödl this hard (m/s^2, in gusts), Kontrolle multiplies elites.
+@export var foehn_force: float = 3.0
+@export var kontrolle_elite_mult: float = 2.0
+
+@export_group("Character traits")
+## Onkel Ferdl's Grant stops at this much extra damage.
+@export var grant_cap: float = 0.3
+## Kommerzialrat Gustl's coffee break: enemies this close to him pause for this long.
+@export var coffee_range: float = 15.0
+@export var coffee_seconds: float = 3.0
+@export var coffee_enemies: int = 6
+## Kevin's shockwave: radius, damage (times the damage stat), knockback.
+@export var jump_wave_radius: float = 4.5
+@export var jump_wave_damage: float = 6.0
+@export var jump_wave_knockback: float = 14.0
+
+@export_group("Kontrolleur")
+## From this minute on, a Kontrolleur stands at every open Wirtshaus that has not served yet; it
+## blocks the door while it stands within guard_radius of the door mat.
+@export var kontrolleur_minute: float = 4.0
+@export var guard_radius: float = 4.5
+
+@export_group("Item effects")
+## Powidl-Füllung: when a Schupfn ends, a blast (radius = Knödl radius + this, damage per metre of
+## Knödl radius) that costs this share of the Knödl's mass.
+@export var powidl_radius: float = 2.5
+@export var powidl_damage: float = 18.0
+@export var powidl_cost: float = 0.1
+## Schweizerkracher: a kill blows up with this chance per copy (radius, damage).
+@export var kracher_radius: float = 2.5
+@export var kracher_damage: float = 12.0
+## Kirchenglocke: a ring around the player every this many seconds (fewer with more copies).
+@export var bell_seconds: float = 10.0
+@export var bell_radius: float = 5.0
+@export var bell_damage: float = 10.0
 
 @export_group("Wirtshaus")
 ## Open Wirtshäuser per run (each serves once) out of the map's spots; +1 per extra player.

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/character_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/weapons/obstler.tres" id="2_weapon"]
+[ext_resource type="Resource" path="res://data/knodl/grammelknoedl.tres" id="3_sort"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"sepp"
+name_key = "CHARACTER_SEPP"
+role_key = "ROLE_SEPP"
+trait_key = "TRAIT_SEPP"
+start_weapon = ExtResource("2_weapon")
+knodl_sort = ExtResource("3_sort")
+trait_stats = Dictionary[StringName, float]({&"area": 0.15})
+coat_color = Color(0.18, 0.22, 0.3, 1)
+trouser_color = Color(0.18, 0.22, 0.3, 1)
+hat_color = Color(0.85, 0.15, 0.15, 1)

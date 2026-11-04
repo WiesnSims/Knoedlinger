@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"gustl_sieg"
+title_key = "QUEST_GUSTL_SIEG"
+desc_key = "DESC_QUEST_GUSTL_SIEG"
+kind = &"wins"
+filter = &"gustl"
+target = 1.0
+reward_schilling = 200

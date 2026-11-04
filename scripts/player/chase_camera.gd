@@ -28,6 +28,9 @@ var see_through: Array[ShaderMaterial] = []
 ## The see-through circle around the player, in metres.
 var see_through_radius: float = 1.9
 
+var _sensitivity: float = 0.0
+var _invert: float = 1.0
+var _smoothing: float = 0.0
 var _yaw_target: float = 0.0
 var _pitch_target: float = 0.0
 var _focus: Vector3 = Vector3.ZERO
@@ -42,7 +45,27 @@ func setup(p_balance: BalanceData, p_target: Node3D) -> void:
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	fov = balance.camera_fov
 	zoom = balance.camera_distance
+	_apply_settings(&"")
+	if Settings.persistent:
+		zoom = clampf(Settings.get_float(&"camera_distance"), balance.camera_min_distance, balance.camera_max_distance)
+	if not Settings.changed.is_connected(_apply_settings):
+		Settings.changed.connect(_apply_settings)
 	set_view(yaw, deg_to_rad(balance.camera_pitch_degrees))
+
+
+## The player's camera settings (Einstellungen); automated runs keep the balance numbers.
+func _apply_settings(key: StringName) -> void:
+	_sensitivity = balance.camera_mouse_sensitivity
+	_invert = 1.0
+	_smoothing = balance.camera_look_smoothing
+	if not Settings.persistent:
+		return
+	fov = Settings.get_float(&"camera_fov")
+	_sensitivity *= Settings.get_float(&"mouse_sensitivity")
+	_invert = -1.0 if Settings.get_bool(&"invert_y") else 1.0
+	_smoothing = Settings.get_float(&"look_smoothing")
+	if key == &"camera_distance":
+		zoom = clampf(Settings.get_float(&"camera_distance"), balance.camera_min_distance, balance.camera_max_distance)
 
 
 ## Points the camera without smoothing (start of a run, the stress view).
@@ -71,9 +94,8 @@ func forward() -> Vector3:
 func _unhandled_input(event: InputEvent) -> void:
 	var motion: InputEventMouseMotion = event as InputEventMouseMotion
 	if motion != null and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		var sensitivity: float = balance.camera_mouse_sensitivity
-		_yaw_target -= motion.relative.x * sensitivity
-		_pitch_target = clampf(_pitch_target + motion.relative.y * sensitivity,
+		_yaw_target -= motion.relative.x * _sensitivity
+		_pitch_target = clampf(_pitch_target + motion.relative.y * _sensitivity * _invert,
 				deg_to_rad(balance.camera_min_pitch_degrees), deg_to_rad(balance.camera_max_pitch_degrees))
 		return
 	var click: InputEventMouseButton = event as InputEventMouseButton
@@ -86,8 +108,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			MOUSE_BUTTON_LEFT:
 				if mouse_capture_allowed:
 					Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	elif event.is_action_pressed(&"pause") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
 func _process(delta: float) -> void:
@@ -108,7 +128,7 @@ func _process(delta: float) -> void:
 			_yaw_target += sin(difference) * balance.camera_auto_turn_speed * delta
 	_yaw_target = wrapf(_yaw_target, -PI, PI)
 	# A touch of look smoothing, so mouse steps do not jerk the view.
-	var look: float = 1.0 if balance.camera_look_smoothing <= 0.0 else 1.0 - exp(-delta / balance.camera_look_smoothing)
+	var look: float = 1.0 if _smoothing <= 0.0 else 1.0 - exp(-delta / _smoothing)
 	yaw = lerp_angle(yaw, _yaw_target, look)
 	pitch = lerpf(pitch, _pitch_target, look)
 	_focus = _focus.lerp(_focus_point(), 1.0 - exp(-balance.camera_follow_speed * delta))

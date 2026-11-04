@@ -6,6 +6,7 @@
 script = ExtResource("1_script")
 id = &"hofrat"
 name_key = "BOSS_HOFRAT"
+desc_key = "DESC_ENEMY_HOFRAT"
 max_hp = 9000.0
 speed = 2.6
 radius = 1.5

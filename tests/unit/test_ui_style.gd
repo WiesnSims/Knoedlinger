@@ -1,7 +1,7 @@
 extends GutTest
 ## docs/UI-STYLE.md: one theme for every screen, no per-node overrides, three font sizes.
 
-const UI_DIRS: Array[String] = ["res://scripts/ui", "res://scripts/systems"]
+const UI_DIRS: Array[String] = ["res://scripts/ui", "res://scripts/systems", "res://scripts/menu"]
 
 
 func _scripts() -> Dictionary[String, String]:
@@ -36,7 +36,7 @@ func test_three_font_sizes() -> void:
 
 func test_variations_used_in_code_exist() -> void:
 	var theme: Theme = UiStyle.theme()
-	var pattern := RegEx.create_from_string("&\"((?:Label|Hud|Card|Tile|Bar|Panel|Gap|Row|Keycap|Tight)[A-Za-z0-9]*)\"")
+	var pattern := RegEx.create_from_string("&\"((?:Label|Hud|Card|Tile|Bar|Panel|Gap|Row|Keycap|Tight|Menu)[A-Za-z0-9]*)\"")
 	for path: String in _scripts():
 		for found: RegExMatch in pattern.search_all(_scripts()[path]):
 			var name: String = found.get_string(1)
@@ -62,7 +62,12 @@ func test_change_line_names_the_gain() -> void:
 	card.kind = Card.Kind.WEAPON
 	card.index = 0
 	card.level = 2
+	card.mod = PlayerBuild.WEAPON_MODS.find(&"damage")
+	card.value = 0.3
 	var text: String = Speisekarte.change_text(card, catalog, balance, null)
-	assert_true(text.begins_with("+"), "weapon level line: %s" % text)
+	assert_eq(text, "+30 %% %s" % TranslationServer.translate("STAT_DAMAGE"), "weapon level line")
+	card.mod = PlayerBuild.MOD_AMOUNT
+	card.value = 1.0
+	assert_eq(Speisekarte.change_text(card, catalog, balance, null), "+1 %s" % TranslationServer.translate("STAT_AMOUNT"))
 	card.level = 1
 	assert_eq(Speisekarte.change_text(card, catalog, balance, null), TranslationServer.translate("CARD_NEW"))

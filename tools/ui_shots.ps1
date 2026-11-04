@@ -30,7 +30,20 @@ $scenes = @(
     @{ Id = 'busy'; Query = "$common&start_time=598&god=1"; At = '34' },
     @{ Id = 'menu'; Query = "$common&pick_delay=90"; At = '22,24'; Move = 'center,card' },
     @{ Id = 'inventory'; Query = "$common&knodl_mass=160"; At = '40'; Press = 'Tab' },
-    @{ Id = 'end'; Query = "$common&start_time=891"; At = '32' }
+    @{ Id = 'end'; Query = "$common&start_time=891"; At = '32' },
+    # The new weapon effects (impacts, chain bolts, mines, the boomerang tray) in a held crowd.
+    @{ Id = 'weapons'; Query = "$common&weapons=hagelkanone,krampusrute,sachertorte,tablett&enemies=250&god=1"; At = '22,23' },
+    # The maps of M4 (the bot plays on them).
+    @{ Id = 'gamskogl'; Query = "$common&map=gamskogl&knodl_mass=160"; At = '24,34' },
+    @{ Id = 'gemeindebau'; Query = "$common&map=gemeindebau&knodl_mass=160"; At = '24,34' },
+    # A minute into a run with quick picks: weapon level cards with their rolled gain, then the build.
+    @{ Id = 'late'; Query = "$common&pick_delay=1.5&god=1"; At = '70,71,72,73,74,110'; Press = ',,,,,Tab' },
+    @{ Id = 'pause'; Query = "$common&knodl_mass=160"; At = '24,27'; Press = 'Escape,ArrowDown+Enter' },
+    # A plain start (fresh browser profile): the name prompt, the menu, Spielen, Einstellungen.
+    # Then back, Spielen, "Auf geht's!": the run started from the menu.
+    # The meta screens of a fresh profile: Stammtisch, Aufträge, Rekorde, Almanach, then Spielen.
+    @{ Id = 'meta'; Query = 'mute=1&debug=0'; At = '12,15,18,21,23,26,29'; Press = 'type:Resi+Enter,ArrowDown+Enter,Escape+ArrowDown+Enter,Escape+ArrowDown+Enter,ArrowRight,Escape+ArrowDown+Enter,Escape+ArrowUp+ArrowUp+ArrowUp+ArrowUp+Enter' },
+    @{ Id = 'title'; Query = 'mute=1&debug=0'; At = '12,15,18,21,26,34,44'; Press = ',type:Resi+Enter,Enter,Escape+ArrowDown+Enter,Escape+ArrowUp+Enter+Enter,,' }
 )
 try {
     foreach ($size in $Sizes.Split(',')) {

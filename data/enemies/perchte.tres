@@ -18,6 +18,7 @@ range = 3.2
 script = ExtResource("1_script")
 id = &"perchte"
 name_key = "ENEMY_PERCHTE"
+desc_key = "DESC_ENEMY_PERCHTE"
 max_hp = 22.0
 speed = 2.5
 radius = 0.75

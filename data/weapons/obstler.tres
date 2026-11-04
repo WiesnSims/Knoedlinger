@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/obstler.svg" id="9_icon"]
+[ext_resource type="Resource" path="res://data/passives/jagatee.tres" id="2_evolves_with"]
+[ext_resource type="Resource" path="res://data/weapons/schnapsbrennerei.tres" id="2_evolution"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"obstler"
+name_key = "WEAPON_OBSTLER"
+desc_key = "DESC_WEAPON_OBSTLER"
+pattern = 0
+cooldown = 0.35
+damage = 1.3
+knockback = 1.0
+reach = 4.6
+arc_degrees = 50.0
+burn_share = 1.0
+burn_seconds = 2.5
+evolves_with = ExtResource("2_evolves_with")
+evolution = ExtResource("2_evolution")
+color = Color(1, 0.75, 0.3, 1)
+icon = ExtResource("9_icon")
+level_mods = Dictionary[StringName, float]({&"damage": 0.3, &"rate": 0.1, &"area": 0.1})
+max_amount = 1

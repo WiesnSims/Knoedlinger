@@ -20,6 +20,7 @@ dash = true
 script = ExtResource("1_script")
 id = &"radler"
 name_key = "ENEMY_RADLER"
+desc_key = "DESC_ENEMY_RADLER"
 max_hp = 14.0
 speed = 3.4
 radius = 0.55

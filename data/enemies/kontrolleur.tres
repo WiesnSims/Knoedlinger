@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"kontrolleur"
+name_key = "ENEMY_KONTROLLEUR"
+desc_key = "DESC_ENEMY_KONTROLLEUR"
+max_hp = 120.0
+speed = 0.0
+radius = 0.5
+contact_damage = 10.0
+brosel_xp = 25
+gold_drop = 3
+knockback_factor = 0.1
+spawn_weight = 0.0
+guards_wirtshaus = true
+body_color = Color(0.2, 0.25, 0.4, 1)
+head_color = Color(0.93, 0.78, 0.66, 1)
+look = &"kontrolleur"

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/wuerstel.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wuerstel"
+name_key = "WEAPON_WUERSTEL"
+desc_key = "DESC_WEAPON_WUERSTEL"
+pattern = 7
+cooldown = 1.3
+damage = 6.0
+knockback = 3.0
+reach = 8.0
+chain_range = 5.0
+amount = 3
+color = Color(0.95, 0.65, 0.45, 1)
+icon = ExtResource("9_icon")
+level_mods = Dictionary[StringName, float]({&"damage": 0.3, &"rate": 0.12, &"area": 0.1, &"amount": 1.0})
+max_amount = 8

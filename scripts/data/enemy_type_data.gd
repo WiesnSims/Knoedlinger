@@ -5,6 +5,8 @@ extends Resource
 @export var id: StringName = &""
 ## Translation key of the player-facing name.
 @export var name_key: String = ""
+## Translation key of its deadpan line in the Almanach.
+@export var desc_key: String = ""
 @export var max_hp: float = 3.0
 @export var speed: float = 3.0
 @export var radius: float = 0.4
@@ -37,3 +39,15 @@ extends Resource
 ## Which model MeshFactory builds: "" = the plain fodder figure, or perchte, radler, akten,
 ## formular, krampus, hofrat.
 @export var look: StringName = &""
+
+@export_group("Behaviour")
+## Pops up this close to a player instead of on the far ring (Wühlmaus); 0 = the normal ring.
+@export var spawn_near: float = 0.0
+## Circles its target at this distance instead of walking into it (Rasenmäher-Roboter); 0 = no.
+@export var orbit_distance: float = 0.0
+## Stops coming closer than this and attacks from there (Schneemann); 0 = walks right up.
+@export var keep_distance: float = 0.0
+## A mark it leaves where it dies (Gartenzwerg: it explodes).
+@export var death_attack: AttackData
+## Stands at the door of an open Wirtshaus, and the Wirt serves nobody until it is beaten (Kontrolleur).
+@export var guards_wirtshaus: bool = false

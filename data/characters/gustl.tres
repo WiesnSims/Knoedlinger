@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/character_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/weapons/stempel.tres" id="2_weapon"]
+[ext_resource type="Resource" path="res://data/knodl/kaspressknoedl.tres" id="3_sort"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"gustl"
+name_key = "CHARACTER_GUSTL"
+role_key = "ROLE_GUSTL"
+trait_key = "TRAIT_GUSTL"
+start_weapon = ExtResource("2_weapon")
+knodl_sort = ExtResource("3_sort")
+trait_effects = Dictionary[StringName, float]({&"free_banish": 60.0, &"coffee_break": 12.0})
+coat_color = Color(0.3, 0.3, 0.33, 1)
+trouser_color = Color(0.25, 0.25, 0.28, 1)
+hat_color = Color(0.15, 0.15, 0.17, 1)

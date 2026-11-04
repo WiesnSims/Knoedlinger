@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"rasenmaeher_cut"
+aim = 1
+radius = 2.2
+telegraph = 0.9
+damage = 10.0
+cooldown = 4.0
+range = 9.0

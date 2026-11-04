@@ -31,6 +31,15 @@ extends Resource
 ## Mountains at the border, rising from rim_start (distance from the centre, square) to the edge.
 @export var rim_start: float = 86.0
 @export var rim_height: float = 22.0
+## The whole map leans: height += x * tilt.x + z * tilt.y (a ski slope), on top of everything else.
+@export var tilt: Vector2 = Vector2.ZERO
+## Plateaus with steep edges (x, z, radius, height): flat on top, a drop of `height` over mesa_edge
+## metres at the rim. Stacked ones make several levels (Megabonk-style climbs and drops).
+@export var mesas: PackedVector4Array = PackedVector4Array()
+@export var mesa_edge: float = 3.0
+
+## The run's timeline on this map (enemies, bosses, the Formular); null = the Kirtag's.
+@export var wave: WaveData
 
 @export_group("Places")
 @export var spawn_point: Vector3 = Vector3(0.0, 0.0, 4.0)
@@ -129,6 +138,11 @@ func terrain_height(x: float, z: float) -> float:
 		var d: float = p.distance_to(a + ab * t)
 		if d < shape.x:
 			h += shape.y * 0.5 * (1.0 + cos(PI * d / shape.x))
+	for mesa: Vector4 in mesas:
+		var d: float = Vector2(x - mesa.x, z - mesa.y).length()
+		if d < mesa.z + mesa_edge:
+			h += mesa.w * smoothstep(mesa.z + mesa_edge, mesa.z, d)
+	h += x * tilt.x + z * tilt.y
 	var edge: float = maxf(absf(x), absf(z))
 	var rim: float = smoothstep(rim_start, half_size, edge)
 	h += rim * rim * rim_height

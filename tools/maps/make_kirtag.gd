@@ -48,6 +48,11 @@ func _init() -> void:
 	_map.hills = PackedVector4Array([
 		Vector4(-92.0, 88.0, 34.0, 13.0), Vector4(98.0, -94.0, 30.0, 10.0), Vector4(-70.0, -100.0, 24.0, 7.0),
 		Vector4(96.0, 70.0, 30.0, 2.5), Vector4(36.0, 84.0, 16.0, -3.0), Vector4(-104.0, -12.0, 18.0, 4.0)])
+	# M4 verticality, a light touch (it stays the tutorial map): the Alm behind the Gemeindeamt, a
+	# lookout in two steps west, a crag east; a chest waits on each.
+	_map.mesa_edge = 3.0
+	_map.mesas = PackedVector4Array([Vector4(0.0, -124.0, 13.0, 7.0), Vector4(-118.0, -64.0, 9.0, 5.0),
+		Vector4(-118.0, -64.0, 4.0, 4.0), Vector4(116.0, -70.0, 8.0, 6.0)])
 	_map.ridge_starts = PackedVector4Array([Vector4(60.0, -120.0, 120.0, -60.0), Vector4(-120.0, 40.0, -60.0, 118.0)])
 	_map.ridge_shapes = PackedVector2Array([Vector2(12.0, 6.0), Vector2(10.0, 5.0)])
 	_map.paths = PackedVector4Array([
@@ -178,7 +183,8 @@ func _spots() -> void:
 		Vector2(-70.0, -100.0)])
 	_map.chest_spots = PackedVector2Array([Vector2(-36.0, -4.0), Vector2(36.0, -4.0), Vector2(56.0, 8.0), Vector2(-56.0, -8.0),
 		Vector2(8.0, 56.0), Vector2(-8.0, -54.0), Vector2(80.0, 62.0), Vector2(-60.0, 60.0), Vector2(60.0, -66.0),
-		Vector2(-80.0, -60.0), Vector2(100.0, -40.0), Vector2(-100.0, 40.0), Vector2(20.0, 92.0), Vector2(-30.0, -86.0)])
+		Vector2(-80.0, -60.0), Vector2(100.0, -40.0), Vector2(-100.0, 40.0), Vector2(20.0, 92.0), Vector2(-30.0, -86.0),
+		Vector2(0.0, -124.0), Vector2(-118.0, -64.0), Vector2(116.0, -70.0)])
 	for at: Vector2 in _map.stempel_spots:
 		_check_free(at, "stempel")
 	for at: Vector2 in _map.chest_spots:

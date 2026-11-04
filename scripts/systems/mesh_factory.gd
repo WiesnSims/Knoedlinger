@@ -306,6 +306,62 @@ static func _special_look(type: EnemyTypeData) -> Array[Dictionary]:
 			parts.append(_part(_cylinder(0.32, 0.26, 0.5, 8), _at(Vector3(0.0, 1.05, -0.5)), Color(0.55, 0.4, 0.25)))
 			for side: float in [-1.0, 1.0]:
 				parts.append(_part(_box(Vector3(0.2, 0.4, 0.25)), _at(Vector3(side * 0.2, 0.12, 0.05)), dark))
+		&"lawine":
+			# A tumbling heap of snow lumps with a few rocks and a broken fir in it.
+			for k: int in 9:
+				var angle: float = TAU * k / 9.0
+				var r: float = 0.35 + 0.08 * (k % 3)
+				parts.append(_part(_sphere(r, 10), _at(Vector3(cos(angle) * 0.45, 0.45 + 0.25 * (k % 2), sin(angle) * 0.4)), body if k % 2 == 0 else head))
+			parts.append(_part(_sphere(0.6, 12), _at(Vector3(0.0, 0.85, 0.0)), body))
+			parts.append(_part(_sphere(0.16, 6), _at(Vector3(0.4, 0.95, 0.35)), Color(0.5, 0.5, 0.52)))
+			parts.append(_part(_sphere(0.12, 6), _at(Vector3(-0.45, 0.6, 0.4)), Color(0.45, 0.45, 0.48)))
+			parts.append(_part(_cylinder(0.0, 0.2, 0.8, 6), _at(Vector3(-0.2, 1.3, -0.2), Vector3(0.6, 0.0, 0.4)), StructureKit.FIR_GREEN))
+		&"wuehlmaus":
+			# A plump vole half out of its molehill.
+			parts.append(_part(_cylinder(0.55, 0.75, 0.35, 10), _at(Vector3(0.0, 0.17, 0.0)), Color(0.36, 0.26, 0.18)))
+			parts.append(_part(_sphere(0.42, 10), _at(Vector3(0.0, 0.55, 0.0)), body))
+			parts.append(_part(_sphere(0.28, 8), _at(Vector3(0.0, 0.8, 0.3)), head))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_sphere(0.1, 6), _at(Vector3(side * 0.2, 1.02, 0.2)), head.darkened(0.2)))
+				parts.append(_part(_sphere(0.05, 6), _at(Vector3(side * 0.1, 0.86, 0.54)), dark))
+			parts.append(_part(_sphere(0.07, 6), _at(Vector3(0.0, 0.78, 0.58)), Color(0.85, 0.55, 0.55)))
+		&"rasenmaeher":
+			# A round robot mower with a blade housing and a little antenna.
+			parts.append(_part(_cylinder(0.62, 0.7, 0.3, 14), _at(Vector3(0.0, 0.25, 0.0)), body))
+			parts.append(_part(_cylinder(0.4, 0.5, 0.18, 12), _at(Vector3(0.0, 0.48, -0.05)), head))
+			parts.append(_part(_box(Vector3(0.36, 0.08, 0.1)), _at(Vector3(0.0, 0.5, 0.42)), dark))
+			parts.append(_part(_cylinder(0.02, 0.02, 0.4, 4), _at(Vector3(0.2, 0.75, -0.2)), dark))
+			parts.append(_part(_sphere(0.06, 6), _at(Vector3(0.2, 0.96, -0.2)), Color(0.4, 0.85, 1.0)))
+			for x: float in [-0.62, 0.62]:
+				parts.append(_part(_cylinder(0.2, 0.2, 0.1, 10), _at(Vector3(x, 0.2, -0.25), Vector3(0.0, 0.0, PI / 2.0)), dark))
+		&"schneemann":
+			# Three snowballs, a carrot nose, coal eyes, a pot for a hat and twig arms.
+			parts.append(_part(_sphere(0.55, 12), _at(Vector3(0.0, 0.5, 0.0)), body))
+			parts.append(_part(_sphere(0.42, 12), _at(Vector3(0.0, 1.2, 0.0)), body))
+			parts.append(_part(_sphere(0.3, 10), _at(Vector3(0.0, 1.75, 0.0)), head))
+			parts.append(_part(_cylinder(0.0, 0.07, 0.35, 6), _at(Vector3(0.0, 1.75, 0.42), Vector3(PI / 2.0, 0.0, 0.0)), Color(0.95, 0.55, 0.2)))
+			parts.append(_part(_cylinder(0.24, 0.26, 0.3, 10), _at(Vector3(0.0, 2.08, 0.0)), Color(0.35, 0.36, 0.4)))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_sphere(0.05, 6), _at(Vector3(side * 0.1, 1.85, 0.27)), dark))
+				parts.append(_part(_box(Vector3(0.05, 0.05, 0.7)), _at(Vector3(side * 0.6, 1.3, 0.0), Vector3(0.0, side * 1.4, 0.4)), Color(0.4, 0.28, 0.18)))
+		&"gartenzwerg":
+			# Red cap? No: a blue coat and a gold-yellow pointed cap (red is for danger only), white beard.
+			parts.append(_part(_cylinder(0.3, 0.42, 0.7, 10), _at(Vector3(0.0, 0.45, 0.0)), body))
+			parts.append(_part(_sphere(0.3, 10), _at(Vector3(0.0, 1.0, 0.0)), head))
+			parts.append(_part(_cylinder(0.0, 0.3, 0.7, 10), _at(Vector3(0.0, 1.52, -0.05)), Color(0.95, 0.75, 0.2)))
+			parts.append(_part(_cylinder(0.26, 0.12, 0.4, 8), _at(Vector3(0.0, 0.8, 0.2)), Color(0.96, 0.96, 0.94)))
+			parts.append(_part(_sphere(0.08, 6), _at(Vector3(0.0, 1.0, 0.3)), head.darkened(0.2)))
+			parts.append(_part(_box(Vector3(0.5, 0.18, 0.4)), _at(Vector3(0.0, 0.09, 0.05)), dark))
+		&"kontrolleur":
+			# A ticket inspector in a dark uniform with a peaked cap and a clipboard.
+			parts.append(_part(_cylinder(0.4, 0.46, 1.0, 12), _at(Vector3(0.0, 0.8, 0.0)), body))
+			parts.append(_part(_sphere(0.3, 10), _at(Vector3(0.0, 1.5, 0.0)), head))
+			parts.append(_part(_cylinder(0.32, 0.3, 0.14, 12), _at(Vector3(0.0, 1.76, 0.0)), body.darkened(0.2)))
+			parts.append(_part(_box(Vector3(0.4, 0.04, 0.2)), _at(Vector3(0.0, 1.7, 0.3)), dark))
+			parts.append(_part(_box(Vector3(0.36, 0.46, 0.04)), _at(Vector3(0.35, 1.0, 0.38), Vector3(0.3, -0.4, 0.0)), Color(0.9, 0.86, 0.75)))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_box(Vector3(0.18, 0.5, 0.2)), _at(Vector3(side * 0.13, 0.25, 0.0)), body.darkened(0.3)))
+				parts.append(_part(_sphere(0.04, 6), _at(Vector3(side * 0.1, 1.55, 0.28)), dark))
 		&"hofrat":
 			# Grey suit, white shirt, tie, glasses, a briefcase and the giant ABGELEHNT stamp.
 			parts.append(_part(_cylinder(0.42, 0.48, 1.0, 12), _at(Vector3(0.0, 0.8, 0.0)), body))

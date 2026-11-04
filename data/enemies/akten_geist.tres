@@ -7,6 +7,7 @@
 script = ExtResource("1_script")
 id = &"akten_geist"
 name_key = "ENEMY_AKTEN_GEIST"
+desc_key = "DESC_ENEMY_AKTEN_GEIST"
 max_hp = 8.0
 speed = 1.8
 radius = 0.5

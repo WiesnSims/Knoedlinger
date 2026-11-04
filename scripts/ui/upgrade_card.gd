@@ -48,6 +48,11 @@ func setup(card: Card, key: int, change: String, owned_level: int, catalog: Upgr
 	_pips.adds = card.level - owned_level if _pips.levels > 0 else 0
 	_pips.tone = UiStyle.rarity_color(card.rarity) if card.kind != Card.Kind.EVOLUTION else UiStyle.color("evolution")
 	side.add_child(_pips)
+	# Open-ended levels: the level it reaches, as a number.
+	if _pips.levels == 0 and card.level > 1 and (card.kind == Card.Kind.WEAPON or card.kind == Card.Kind.PASSIVE):
+		var level: Label = UiStyle.label(&"LabelMuted", TranslationServer.translate("CARD_LEVEL") % card.level)
+		level.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		side.add_child(level)
 	mouse_entered.connect(grab_focus)
 	mouse_exited.connect(release_focus)
 	focus_entered.connect(_open.bind(true))

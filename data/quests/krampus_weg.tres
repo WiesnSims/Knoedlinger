@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"krampus_weg"
+title_key = "QUEST_KRAMPUS_WEG"
+desc_key = "DESC_QUEST_KRAMPUS_WEG"
+kind = &"bosses"
+filter = &"oberkrampus"
+target = 1.0
+reward_schilling = 150
+unlock_kind = &"weapon"
+unlock_id = &"mozartkugel_orbit"

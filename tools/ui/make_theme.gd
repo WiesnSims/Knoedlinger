@@ -109,6 +109,37 @@ func _init() -> void:
 	theme.set_font_size("font_size", "Button", BODY)
 	theme.set_constant("h_separation", "Button", 8)
 
+	# Main menu entries: quiet rows that get a gold bar on the left when hovered or focused.
+	theme.set_type_variation("MenuEntry", "Button")
+	var entry := _box(Color.TRANSPARENT, 6, Color.TRANSPARENT, 0, 8)
+	entry.content_margin_left = 16
+	entry.content_margin_right = 16
+	theme.set_stylebox("normal", "MenuEntry", entry)
+	var entry_lit := _box(PANEL_HOVER, 2, ACCENT, 0, 8)
+	entry_lit.border_width_left = 4
+	entry_lit.content_margin_left = 16
+	entry_lit.content_margin_right = 16
+	for state: String in ["hover", "pressed", "hover_pressed"]:
+		theme.set_stylebox(state, "MenuEntry", entry_lit)
+	var entry_focus := entry_lit.duplicate() as StyleBoxFlat
+	entry_focus.bg_color = Color.TRANSPARENT
+	theme.set_stylebox("focus", "MenuEntry", entry_focus)
+	theme.set_stylebox("disabled", "MenuEntry", entry)
+	theme.set_color("font_hover_color", "MenuEntry", ACCENT)
+	theme.set_color("font_focus_color", "MenuEntry", ACCENT)
+	theme.set_color("font_disabled_color", "MenuEntry", Color(MUTED, 0.45))
+
+	# Text fields (the player name).
+	theme.set_stylebox("normal", "LineEdit", _box(PANEL_RAISED, 6, LINE, 1, 8))
+	theme.set_stylebox("focus", "LineEdit", _box(Color.TRANSPARENT, 6, ACCENT, 2, 8))
+	theme.set_stylebox("read_only", "LineEdit", _box(Color(PANEL_RAISED, 0.5), 6, LINE, 1, 8))
+	theme.set_font("font", "LineEdit", extra)
+	theme.set_font_size("font_size", "LineEdit", BODY)
+	theme.set_color("font_color", "LineEdit", TEXT)
+	theme.set_color("font_placeholder_color", "LineEdit", Color(MUTED, 0.7))
+	theme.set_color("caret_color", "LineEdit", ACCENT)
+	theme.set_color("selection_color", "LineEdit", Color(ACCENT, 0.3))
+
 	# Speisekarte rows and item tiles: the border is the rarity.
 	var accents: Dictionary[String, Color] = {"Evolution": ACCENT}
 	for k: int in RARITY.size():
@@ -161,6 +192,12 @@ func _init() -> void:
 	theme.set_constant("separation", "Tight", 0)
 	theme.set_type_variation("Row4", "HBoxContainer")
 	theme.set_constant("separation", "Row4", 4)
+	theme.set_type_variation("Row24", "HBoxContainer")
+	theme.set_constant("separation", "Row24", 24)
+	theme.set_type_variation("Gap32", "VBoxContainer")
+	theme.set_constant("separation", "Gap32", 32)
+	theme.set_type_variation("Gap4", "VBoxContainer")
+	theme.set_constant("separation", "Gap4", 4)
 
 	var error: int = ResourceSaver.save(theme, OUT)
 	if error != OK:

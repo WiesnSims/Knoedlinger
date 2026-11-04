@@ -65,15 +65,20 @@ func on_choice(peer: int, data: PackedByteArray, state: PlayerState, coop: bool)
 			_finish_one(peer, state, coop)
 
 
-## Host: a Wirtshaus chest for this player: its cards are taken right away and shown to them.
-func give_chest(peer: int, state: PlayerState, tier: int, items: int, evolution_first: bool, gold: int) -> void:
+## Host: a chest for this player (Wirtshaus cash-in, map chest, boss chest): its items are taken
+## right away and shown to them. `rarity` < 0 rolls one (luck, at least `min_rarity`).
+func give_chest(peer: int, state: PlayerState, tier: int, items: int, evolution_first: bool, gold: int,
+		rarity: int = -1, min_rarity: int = 0) -> void:
 	var offer := OfferCodec.Offer.new()
 	offer.type = OfferCodec.Type.CHEST
 	offer.tier = tier
 	offer.value = gold
 	state.build.add_gold(gold)
 	if items > 0:
-		offer.cards = CardDealer.open_chest(state.build, balance, rng, items, evolution_first)
+		if rarity < 0:
+			rarity = CardDealer.roll_chest_rarity(balance, rng, state.build.stat(&"luck"), min_rarity)
+		offer.rarity = rarity
+		offer.cards = CardDealer.open_chest(state.build, balance, rng, items, evolution_first, rarity)
 		state.refresh_max_hp(balance.player_max_hp)
 	NetworkManager.send_offer(peer, OfferCodec.encode_offer(offer))
 
@@ -97,7 +102,7 @@ func is_open(peer: int) -> bool:
 
 
 func _deal(peer: int, state: PlayerState, coop: bool) -> void:
-	var count: int = balance.card_count
+	var count: int = balance.card_count + state.build.extra_cards
 	var cards: Array[Card] = CardDealer.deal(state.build, balance, rng, count)
 	_seq = (_seq + 1) & 0xFFFF
 	_cards[peer] = cards

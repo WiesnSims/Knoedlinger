@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PassiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/passive_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/hufeisen.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hufeisen"
+name_key = "PASSIVE_HUFEISEN"
+desc_key = "DESC_PASSIVE_HUFEISEN"
+max_level = 0
+stats = Dictionary[StringName, float]({&"luck": 0.06})
+color = Color(0.66, 0.69, 0.72, 1)
+icon = ExtResource("9_icon")

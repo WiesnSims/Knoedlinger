@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"durchghalten"
+title_key = "QUEST_DURCHGHALTEN"
+desc_key = "DESC_QUEST_DURCHGHALTEN"
+kind = &"survive"
+target = 10.0
+reward_schilling = 100
+unlock_kind = &"map"
+unlock_id = &"gamskogl"

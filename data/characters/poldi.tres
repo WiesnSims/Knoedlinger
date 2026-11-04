@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/character_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/weapons/tablett.tres" id="2_weapon"]
+[ext_resource type="Resource" path="res://data/knodl/semmelknoedl.tres" id="3_sort"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"poldi"
+name_key = "CHARACTER_POLDI"
+role_key = "ROLE_POLDI"
+trait_key = "TRAIT_POLDI"
+start_weapon = ExtResource("2_weapon")
+knodl_sort = ExtResource("3_sort")
+extra_cards = 1
+coat_color = Color(0.12, 0.12, 0.14, 1)
+trouser_color = Color(0.12, 0.12, 0.14, 1)
+hat_color = Color(0.95, 0.95, 0.93, 1)

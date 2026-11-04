@@ -17,8 +17,10 @@ var target_count: int = 0
 var respawn_delay: float = 0.0
 ## Spawn mix per type (WaveData.weights_at); empty = EnemyTypeData.spawn_weight.
 var type_weights: PackedFloat32Array = PackedFloat32Array()
-## New enemies get their type's max HP times this (time and co-op scaling).
+## New enemies get their type's max HP times this (time and co-op scaling), and their speed times
+## speed_mult (the Grant level).
 var hp_mult: float = 1.0
+var speed_mult: float = 1.0
 ## New enemies appear on a ring this far from a random player.
 var ring_min: float = 0.0
 var ring_max: float = 0.0
@@ -59,6 +61,12 @@ var dash_z: PackedFloat32Array = PackedFloat32Array()
 var dash_time: PackedFloat32Array = PackedFloat32Array()
 ## 1 = moved by someone else (BossDirector), not by the crowd logic.
 var controlled: PackedByteArray = PackedByteArray()
+## Status effects: walking speed times slow_mult while slow_timer runs (0 = frozen or stunned: no
+## walking, no attacks), and burn_dps damage per second while burn_timer runs.
+var slow_timer: PackedFloat32Array = PackedFloat32Array()
+var slow_mult: PackedFloat32Array = PackedFloat32Array()
+var burn_timer: PackedFloat32Array = PackedFloat32Array()
+var burn_dps: PackedFloat32Array = PackedFloat32Array()
 
 ## Attacks elites started this update (slot and the target point), for the HazardField; the
 ## caller empties them.
@@ -112,7 +120,8 @@ func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: in
 	alive.fill(0)
 	type.fill(0)
 	for name: String in ["pos_x", "pos_z", "yaw", "hp", "max_hp", "speed", "radius", "flash", "phase",
-			"respawn_timer", "kb_x", "kb_z", "knodl_timer", "attack_timer", "busy", "dash_x", "dash_z", "dash_time"]:
+			"respawn_timer", "kb_x", "kb_z", "knodl_timer", "attack_timer", "busy", "dash_x", "dash_z", "dash_time",
+			"slow_timer", "slow_mult", "burn_timer", "burn_dps"]:
 		var array := PackedFloat32Array()
 		array.resize(capacity)
 		array.fill(0.0)
@@ -179,6 +188,16 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 			flash[i] = maxf(flash[i] - delta * 6.0, 0.0)
 		if knodl_timer[i] > 0.0:
 			knodl_timer[i] -= delta
+		if burn_timer[i] > 0.0:
+			burn_timer[i] -= delta
+			hp[i] -= burn_dps[i] * delta
+			if hp[i] <= 0.0:
+				damage(i, 0.0)
+				continue
+		var slowed: float = 1.0
+		if slow_timer[i] > 0.0:
+			slow_timer[i] -= delta
+			slowed = slow_mult[i]
 		if controlled[i] != 0:
 			continue
 		var x: float = pos_x[i]
@@ -219,7 +238,7 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 		# Elites start their attack when the target is in range, then stand still while the mark
 		# on the ground fills up (or dash along their line once it hits).
 		var attack: AttackData = _attacks[type[i]]
-		if attack != null and not eater:
+		if attack != null and not eater and slowed > 0.0:
 			attack_timer[i] -= step
 			if attack_timer[i] <= 0.0 and busy[i] <= 0.0 and dash_time[i] <= 0.0 and distance < attack.range:
 				attack_timer[i] = attack.cooldown * _rng.randf_range(0.85, 1.15)
@@ -235,8 +254,18 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 			busy[i] -= step
 			yaw[i] = atan2(tx - x, tz - z)
 		elif distance > 0.001:
-			vx = (tx - x) / distance * speed[i]
-			vz = (tz - z) / distance * speed[i]
+			vx = (tx - x) / distance * speed[i] * slowed
+			vz = (tz - z) / distance * speed[i] * slowed
+			var orbit: float = types[type[i]].orbit_distance
+			var keep: float = types[type[i]].keep_distance
+			if orbit > 0.0 and distance < orbit * 1.6:
+				# Round and round the target, drifting back onto the circle.
+				var pull: float = clampf((distance - orbit) / orbit, -1.0, 1.0)
+				vx = (-(tz - z) / distance + (tx - x) / distance * pull) * speed[i] * slowed
+				vz = ((tx - x) / distance + (tz - z) / distance * pull) * speed[i] * slowed
+			elif keep > 0.0 and distance < keep:
+				vx = -vx * 0.5
+				vz = -vz * 0.5
 		# Keep out of the player's body instead of walking into it, and hurt them on touch. A player
 		# standing well above or below (a ledge, a jump) is out of reach. Bröselfresser stop at the
 		# Knödl and eat.
@@ -374,6 +403,25 @@ func spawn_at(t: int, x: float, z: float, is_controlled: bool = false, hp_scale:
 	return slot
 
 
+## Slows an enemy to `mult` of its speed for `seconds` (0 = frozen or stunned). The stronger slow
+## and the longer time win. Bosses only feel a third of it and are never stopped.
+func slow(slot: int, mult: float, seconds: float) -> void:
+	if alive[slot] == 0:
+		return
+	if types[type[slot]].boss:
+		mult = maxf(lerpf(1.0, mult, 0.33), 0.5)
+	slow_mult[slot] = mult if slow_timer[slot] <= 0.0 else minf(slow_mult[slot], mult)
+	slow_timer[slot] = maxf(slow_timer[slot], seconds)
+
+
+## Sets an enemy on fire: `dps` per second for `seconds` (the hotter fire wins).
+func burn(slot: int, dps: float, seconds: float) -> void:
+	if alive[slot] == 0:
+		return
+	burn_dps[slot] = maxf(burn_dps[slot] if burn_timer[slot] > 0.0 else 0.0, dps)
+	burn_timer[slot] = maxf(burn_timer[slot], seconds)
+
+
 ## Sends an enemy along (dx, dz) at `dash_speed` for `seconds` (an attack line's dash).
 func start_dash(slot: int, dx: float, dz: float, dash_speed: float, seconds: float) -> void:
 	var length: float = sqrt(dx * dx + dz * dz)
@@ -441,6 +489,8 @@ func _spawn(slot: int, targets: PackedVector3Array) -> void:
 	if spawn_sector_width > 0.0:
 		angle = spawn_sector_angle + _rng.randf_range(-0.5, 0.5) * spawn_sector_width
 	var distance: float = _rng.randf_range(ring_min, ring_max)
+	if types[t].spawn_near > 0.0:
+		distance = _rng.randf_range(types[t].spawn_near * 0.6, types[t].spawn_near)
 	var half: float = bounds - 0.5
 	_reset(slot, t)
 	pos_x[slot] = clampf(center.x + cos(angle) * distance, -half, half)
@@ -455,10 +505,12 @@ func _reset(slot: int, t: int) -> void:
 	controlled[slot] = 0
 	busy[slot] = 0.0
 	dash_time[slot] = 0.0
+	slow_timer[slot] = 0.0
+	burn_timer[slot] = 0.0
 	attack_timer[slot] = _rng.randf_range(1.0, data.attack.cooldown) if data.attack != null else 0.0
 	hp[slot] = data.max_hp * hp_mult
 	max_hp[slot] = data.max_hp * hp_mult
-	speed[slot] = data.speed * _rng.randf_range(0.85, 1.15)
+	speed[slot] = data.speed * speed_mult * _rng.randf_range(0.85, 1.15)
 	radius[slot] = data.radius
 	flash[slot] = 0.0
 	phase[slot] = _rng.randf() * TAU

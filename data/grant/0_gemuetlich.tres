@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GrantData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/grant_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+name_key = "GRANT_GEMUETLICH"
+desc_key = "DESC_GRANT_GEMUETLICH"
+enemy_hp = 0.7
+enemy_speed = 0.9
+enemy_damage = 0.7
+schilling = 0.7

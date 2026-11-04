@@ -35,6 +35,12 @@ var radius: float = 0.5
 var state: State = State.ATTACHED
 ## The Spagat's length factor (Spagat aus Hanf); also reels in faster by the same factor.
 var string_mult: float = 1.0
+## Host: a push on the Knödl in m/s^2 (Grant modifier Föhn).
+var wind: Vector3 = Vector3.ZERO
+## Host, from its player's items: damage per second to everything stuck to it (Bröselbutter), and
+## extra contact damage rolling downhill (Bergab-Gesetz, +100 % per copy).
+var spikes: float = 0.0
+var slope_bonus: float = 0.0
 ## Seconds until Schupfn works again.
 var cooldown: float = 0.0
 ## Stats for tests and the balance log.
@@ -123,7 +129,7 @@ func set_knodl_mass(value: float) -> void:
 		return
 	_applied_radius = radius
 	_shape.radius = radius
-	_visual.scale = Vector3.ONE * radius
+	_visual.scale = Vector3(radius, radius * sort.flatness, radius)
 	# Crumbs keep their real size as the Knödl grows.
 	_material.set_shader_parameter(&"crumb_scale", CRUMBS_PER_METRE * radius)
 	mass = 1.0 + knodl_mass * 0.02
@@ -193,11 +199,17 @@ func take_shed() -> int:
 	return whole
 
 
-## Host: hurts and pushes every enemy it touches. Returns how many it killed.
-func crush(enemies: EnemyManager) -> int:
+## Host: hurts and pushes every enemy it touches (a Kaspressknödl cuts through them, a
+## Grammelknödl's trail slows them). Returns how many it killed.
+func crush(enemies: EnemyManager, delta: float = 0.0) -> int:
 	var centre: Vector3 = global_position
 	var speed: float = linear_velocity.length()
 	var damage: float = Formulas.knodl_contact_damage(speed, radius, balance, sort.contact_damage_mult)
+	# Bergab-Gesetz: rolling downhill hits harder.
+	if slope_bonus > 0.0 and speed > 1.0:
+		var ahead: Vector3 = centre + linear_velocity / speed
+		if enemies.ground_at(centre.x, centre.z) - enemies.ground_at(ahead.x, ahead.z) > 0.12:
+			damage *= 1.0 + slope_bonus
 	var grid: SpatialHash = enemies.grid
 	var found: int = grid.query(centre.x, centre.z, radius + 0.8)
 	var kills: int = 0
@@ -223,8 +235,14 @@ func crush(enemies: EnemyManager) -> int:
 			continue
 		var d: float = sqrt(d_sq)
 		var away := Vector2(dx, dz) / d if d > 0.001 else push_dir
-		# The Knödl is solid: nobody stands inside it.
-		enemies.shove(j, centre.x + away.x * reach, centre.z + away.y * reach)
+		# The Knödl is solid: nobody stands inside it (a fast Kaspressknödl goes right through).
+		if not (sort.pierce and speed > 3.0):
+			enemies.shove(j, centre.x + away.x * reach, centre.z + away.y * reach)
+		if sort.trail_slow > 0.0 and speed > 1.0:
+			enemies.slow(j, 1.0 - sort.trail_slow, 1.5)
+		if spikes > 0.0 and delta > 0.0 and enemies.damage(j, spikes * delta):
+			kills += 1
+			continue
 		if damage > 0.0 and enemies.knodl_timer[j] <= 0.0:
 			enemies.knodl_timer[j] = balance.knodl_hit_cooldown
 			var kick: Vector2 = (away + push_dir).normalized() * knock
@@ -357,6 +375,8 @@ func _integrate_forces(body: PhysicsDirectBodyState3D) -> void:
 			var remaining: float = maxf(_reel_timer, 0.2)
 			var wanted: Vector3 = to_holder / remaining
 			v = v.lerp(wanted, minf(10.0 * dt, 1.0))
+	if state != State.REELING:
+		v += wind * dt
 	var max_speed: float = balance.knodl_max_speed * sort.roll_speed_mult
 	if v.length() > max_speed:
 		v = v.normalized() * max_speed

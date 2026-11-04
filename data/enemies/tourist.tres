@@ -6,6 +6,7 @@
 script = ExtResource("1_script")
 id = &"tourist"
 name_key = "ENEMY_TOURIST"
+desc_key = "DESC_ENEMY_TOURIST"
 max_hp = 3.0
 speed = 2.6
 radius = 0.45

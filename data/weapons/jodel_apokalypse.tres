@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/jodel_apokalypse.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"jodel_apokalypse"
+name_key = "WEAPON_JODEL_APOKALYPSE"
+desc_key = "DESC_WEAPON_JODEL_APOKALYPSE"
+pattern = 2
+cooldown = 1.6
+damage = 14.0
+knockback = 26.0
+reach = 9.0
+is_evolution = true
+color = Color(1, 0.88, 0.5, 1)
+icon = ExtResource("9_icon")
+level_mods = Dictionary[StringName, float]({&"damage": 0.3, &"rate": 0.1, &"area": 0.1})
+max_amount = 1

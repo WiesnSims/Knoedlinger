@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hungriger_tourist"
+name_key = "ENEMY_HUNGRIGER_TOURIST"
+desc_key = "DESC_ENEMY_HUNGRIGER_TOURIST"
+max_hp = 60.0
+speed = 3.4
+radius = 0.55
+model_scale = 1.35
+contact_damage = 8.0
+brosel_xp = 25
+gold_drop = 1
+eats_knodl = true
+bite_per_second = 20.0
+body_color = Color(0.95, 0.55, 0.75, 1)
+head_color = Color(0.95, 0.78, 0.62, 1)

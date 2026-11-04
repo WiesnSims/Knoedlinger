@@ -7,6 +7,7 @@ extends CanvasLayer
 ## Schilling and the 25 % Knödl payout are saved from M4 on.
 
 signal again_pressed
+signal menu_pressed
 
 const WIDTH: float = 400.0
 ## Summary key, label key, how to show it.
@@ -21,8 +22,13 @@ var _shown: Control
 var _title: Label
 var _line: Label
 var _grid: GridContainer
+## What the Profile paid: Schilling, quests stamped, a new Grant level.
+var _reward_box: VBoxContainer
+## "Ehrentafel: Platz 12 · diese Woche 3", once the board answered.
+var _rank_label: Label
 var _inventory: InventoryPanel
 var _again: ActionPill
+var _menu: ActionPill
 
 
 func _ready() -> void:
@@ -56,17 +62,46 @@ func _ready() -> void:
 	_grid.columns = 2
 	_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(_grid)
+	_reward_box = UiStyle.vbox(&"Tight")
+	column.add_child(_reward_box)
 	_again = ActionPill.new("Enter")
 	_again.set_label(tr("END_AGAIN"))
 	_again.pressed.connect(func() -> void: again_pressed.emit())
-	column.add_child(_again)
+	var buttons := UiStyle.hbox(&"Row16")
+	column.add_child(buttons)
+	buttons.add_child(_again)
+	_menu = ActionPill.new("Esc")
+	_menu.set_label(tr("END_MENU"))
+	_menu.pressed.connect(func() -> void: menu_pressed.emit())
+	buttons.add_child(_menu)
 	_inventory = InventoryPanel.new()
 	row.add_child(_inventory)
 	visible = false
 
 
 ## `summary` is RunWorld's run summary of the local player; `build` and `balance` show the build.
-func show_result(summary: Dictionary, can_restart: bool, build: PlayerBuild = null, balance: BalanceData = null) -> void:
+func show_result(summary: Dictionary, can_restart: bool, build: PlayerBuild = null, balance: BalanceData = null,
+		reward: Dictionary = {}) -> void:
+	for child: Node in _reward_box.get_children():
+		child.queue_free()
+	_reward_box.visible = not reward.is_empty()
+	if not reward.is_empty():
+		var schilling := UiStyle.hbox()
+		_reward_box.add_child(schilling)
+		var label: Label = UiStyle.label(&"LabelAccent", tr("END_SCHILLING"))
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		schilling.add_child(label)
+		schilling.add_child(UiStyle.label(&"LabelAccent", "+%d" % int(reward.get("schilling", 0))))
+		for quest: QuestData in reward.get("quests", []):
+			var line: String = tr("END_QUEST_DONE") % tr(quest.title_key)
+			if quest.unlock_kind != &"":
+				line += " · " + tr("END_UNLOCKED")
+			_reward_box.add_child(UiStyle.label(&"LabelSmall", line))
+		if reward.get("grant_unlocked", false):
+			_reward_box.add_child(UiStyle.label(&"LabelSmall", tr("END_GRANT_UP")))
+		_rank_label = UiStyle.label(&"LabelChange", "")
+		_rank_label.visible = false
+		_reward_box.add_child(_rank_label)
 	var outcome: String = str(summary.get("result", "WON"))
 	_title.text = tr("END_TITLE_%s" % outcome)
 	_line.text = tr("END_%s" % outcome)
@@ -100,9 +135,19 @@ func show_result(summary: Dictionary, can_restart: bool, build: PlayerBuild = nu
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
+func show_rank(rank: int, week_rank: int) -> void:
+	if _rank_label != null and is_instance_valid(_rank_label):
+		_rank_label.text = tr("END_BOARD_RANK") % [rank, week_rank]
+		_rank_label.visible = true
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	var key: InputEventKey = event as InputEventKey
-	if visible and _again.visible and key != null and key.pressed and not key.echo \
-			and (key.physical_keycode == KEY_ENTER or key.physical_keycode == KEY_KP_ENTER):
+	if not visible or key == null or not key.pressed or key.echo:
+		return
+	if _again.visible and (key.physical_keycode == KEY_ENTER or key.physical_keycode == KEY_KP_ENTER):
 		get_viewport().set_input_as_handled()
 		again_pressed.emit()
+	elif key.physical_keycode == KEY_ESCAPE:
+		get_viewport().set_input_as_handled()
+		menu_pressed.emit()

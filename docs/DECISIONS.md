@@ -496,3 +496,207 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   `window.knoedlDraws`, which the debug overlay keeps current even while a menu pauses the game), and
   `docs/UI-STYLE.md` got a "Draw calls" section. Open for M6: re-measure a 4-player crowd with a Speisekarte
   open; the rows (about 20 draw calls) can use the same drawn-in-passes trick if needed.
+
+## 2026-11-04 – M4 build (branch m4-meta)
+
+### Part 1: main menu, settings, pause menu
+
+- **Claude: a plain start opens the title screen**, any run option (`bot`, `autoplay`, `net`, `enemies`,
+  `character`, `scene` ...; only `mute`, `debug`, `log_slow` are neutral) starts that scene directly as before
+  (`boot.gd`), so every automated check is unchanged.
+- **Claude: the title screen** shows the Kirtag map slowly turning behind the menu (the same map data and
+  builder as the run, no extra assets), the logo and the entries on the left, the chosen screen on the right.
+  Entries: Spielen, Stammtisch, Aufträge, Rekorde, Almanach, Einstellungen, Stammtisch aufmachen. The ones
+  whose systems come later in M4 (and co-op in M6) are greyed out ("Kummt bald.") until they exist.
+- **Claude: Spielen** = character cards with a small drawn portrait (every Knödlinger has the round family
+  nose), the chosen one's start weapon, Knödl sort and trait, then the map. What the menus list comes from
+  `data/content.tres` (`GameContent`: characters and `MapInfo` entries), so new characters and maps are data.
+  The choice goes through `RunSetup`; URL/command-line flags still win.
+- **Claude: the logo is drawn** (`TitleLogo`, the title font at 88 px): the one exception to "three font
+  sizes", written into docs/UI-STYLE.md, because a title screen with a 32 px logo looks like a dialog.
+- **Claude: settings** live in `user://settings.cfg` (`Settings` autoload): volume for everything, music,
+  effects and barks (own audio buses) plus mute; fullscreen; camera distance, FOV, mouse speed, look smoothing,
+  invert; "Weniger Blitzen" (enemy hit flashes at 35 %); dialect help (stored now, used by the glossary);
+  language (German only). Automated runs (headless, `bot`, `autoplay`, `net`) never read or write the file,
+  so a player's settings never change a measurement. Sliders and switches are drawn widgets in the palette
+  (`UiSlider`, `UiToggle`); the theme got `MenuEntry` and `LineEdit` styles.
+- **Claude: the name is asked once** on the first start ("Wia hoaßt'n du?"), at most 16 characters, no
+  markup characters, fallback "Knödlinger"; changeable in Einstellungen.
+- **Claude: pause menu** on Esc in a run (Weiter, Einstellungen, Zum Menü); solo pauses, co-op runs on.
+  The camera no longer frees the mouse on Esc itself: Esc is the pause menu, which frees it. The browser
+  swallows the Esc that ends pointer lock, so losing the pointer lock also opens the pause menu. The end screen
+  got "Zum Menü" (Esc) next to "Nochmal!" (Enter).
+- **Claude: `tools/ui_shots.ps1`** got the `title` set (name prompt, menu, Spielen, Einstellungen, then a run
+  started from the menu) and the `pause` set; key steps can be chained (`Escape+Enter`) and text typed
+  (`type:Resi`).
+
+### Part 2: the build rework (2 weapons + 4 stat upgrades, open-ended levels, items from chests)
+
+- **Claude: weapon levels are open-ended and every level card rolls one mod** of the weapon's own list
+  (`WeaponData.level_mods`): damage, attack rate, area, crit (fractions) or one more piece, drawn by
+  `balance.weapon_mod_weights` (damage 3, rate 2, area 2, crit 1.5, piece 1; no piece past `max_amount`). The
+  rarity multiplies the roll (x1 / 1.25 / 1.5 / 2; a piece stays one piece below Hofratswürdig). The card says
+  what it rolled ("+30 % Schaden", "+1 Stück", "+18 % Angriffstempo"). Formulas: damage x (1 + damage mod) x
+  (1 + damage stat); seconds between attacks / (1 + rate mod) x (1 - cooldown stat, at most 60 % off), never
+  below 0.08 s; area x (1 + area mod) x (1 + area stat). The old per-level growth and `amount_levels` are gone.
+- **Claude: evolution** at `balance.evolution_level` (8) with the partner stat held; the evolution keeps the
+  weapon's level and mods and keeps levelling.
+- **Claude: stat upgrades** (the passives) have no level cap (`max_level` 0) unless a counted stat needs one;
+  4 slots, 2 weapon slots (`PlayerBuild.weapon_slots` / `passive_slots`, so the meta can raise them).
+- **Claude: items (Kirtagsware)** are `ItemData` in `data/items/` (listed in the catalog): stats per copy, a
+  named effect, a rarity, an optional stack cap, an icon. First 12: Omas Rezept (Knödl, now an item), Haferlschuhe
+  (the double jump, now an item, 2 at most), Glücksschwein (luck), Zweitschlüssel vom Gemeindeamt (10 % chance per
+  copy that a map chest is free), Sparbuch (+3 % damage per chest opened), Marterl-Kerze (one revive at half HP per
+  copy, 2 at most), Lebkuchenherz (max HP), Kirtagsbrezn (regen), Zuckerwatte (speed), Schießbudenrose (crit),
+  Goldhaube (gold), Doppler (damage). The Knödl upgrades with their own mechanics (Bröselbutter, Powidl-Füllung,
+  Doppelportion, Bergab-Gesetz) and items with visible effects come with the content part of M4.
+- **Claude: chests roll a rarity** when they are placed (`chest_rarity_weights` 55/30/12/3, luck raises it like
+  card rarity; boss chests and XL cash-ins at least Fein) and give items of that rarity, falling back when the
+  player holds every copy there is. A short light column over each chest shows its rarity colour (same colours
+  as the UI borders). Map chest 1 item, Wirtshaus M 1, L 3 + rerolls, XL ready evolution first then items, boss
+  chests as before.
+- **Claude: wire formats** – offers v2 (each card carries its mod and value; chests their rarity), world state
+  v4 (weapon rows with level, fire counter and mods, item rows), so clients compute the same stats and show the
+  same inventory.
+- **Claude: UI** – the Speisekarte rows show the rolled gain and "Stufe n" instead of level pips (pips stay for
+  capped stats); the inventory has weapon slots, stat slots ("Verbesserungen") and the Kirtagsware with copies
+  in the corner and rarity frames. A chest reveal no longer shows through a Tab screen or pause menu.
+- **Claude (tuning): per-level rolls raised 1.5x for damage and rate, 1.2x for area** after the first balance
+  log: with 2 weapons instead of 6 the bot only reached 9-12k kills (M3: 29-32k).
+- **Measured (balance log, 2 bot runs, Onkel Ferdl, after the tuning):** level 40-45, 9.7k-18k kills, first
+  Oberkrampus beaten at 6:50-8:28, Oberkrampus II and the Hofrat not beaten (CLOSED), 22-35 knock-downs (the bot
+  never dodges the crowd), builds like Schneeschaufel 17 + Kuhglocke 14, 3-4 stat upgrades, 3-6 items. **Open:**
+  the run is clearly harder than in M3; the Stammtisch upgrades and weapon slots 3/4 (next part) are meant to
+  close that gap, and the numbers get a proper pass in M5.
+
+### Part 3: meta (Profile, Schilling, Stammtisch, quests, Grant levels, records, Almanach)
+
+- **Claude: the `Profile` autoload** keeps the progress in `user://profile.json` (IndexedDB in the browser):
+  Schilling, Stammtisch ranks, stamped quests, lifetime counters, records per character and map, the Grant level
+  reached, the last choice in Spielen and what the Almanach has seen. Einstellungen → "Spielstand" copies it as a
+  code (`KNDL1.<gzip+base64url>.<check>`) and loads one back (refuses foreign or damaged codes), or starts over
+  (asks twice). Automated runs keep it in memory only. An older save is merged onto a fresh one, so new keys
+  never break old saves.
+- **Claude: Schilling per run** = 0.5 per gold picked up + per cash-in 5 / 15 / 40 / 100 (S..XL) + 100 for a win,
+  or 25 % of the Knödl's mass when knocked out (GAME-DESIGN.md), times the Grant level's factor and +10 % per
+  extra player. "Zum Menü" from the pause menu pays like being knocked out. The host computes it per player
+  (world state v4 carries it to clients for their end screen).
+- **Claude: Stammtisch** (10 upgrades, `data/stammtisch/`, `MetaUpgradeData`): Bergkas-Abo (+10 max HP, 10
+  ranks), Wetzstein (+5 % damage, 10), Wanderschuhe (+3 % speed, 5), Großer Teig (+25 % start Knödl, 5),
+  Nochmal-Zetterl (+1 reroll, 5), Beschwerdeformular (+1 banish, 5), Hufeisen überm Tor (+5 % luck, 5),
+  Zweiter Hosensack (weapon slots 3 and 4, 500 / 1,500 S), Nachschlag (a revive per run, 2), Wanderstecken (+10 %
+  pickup reach, 5). Prices grow per rank (`cost_base * cost_growth^rank`). Icons reuse the item/stat icons for now.
+  **Decided: weapon slots 3 and 4 are a Stammtisch upgrade**, not a quest.
+- **Claude: quests** (25 for now, `data/quests/`, `QuestData`): kills per enemy or in total, cash-ins (any, XL),
+  level in one run, runs, survive, bosses (Oberkrampus, his second visit, the Hofrat, the Hofrat without a single
+  Schupfn), wins, Stempel, biggest Knödl, Schilling earned, items found, a win on Grantig. **Whatever a quest
+  unlocks is locked until it is done** (no separate flags): Mozartkugel-Orbit (beat the Oberkrampus),
+  Watschn-Aura (level 30), Marterl-Kerze (first win), Sparbuch (10 cash-ins), Zweitschlüssel (9 Stempel),
+  Doppler (10,000 kills), Goldhaube (1,000 Schilling). Locked things stay off the Speisekarte and out of chests.
+  The count grows to 100 with the content part.
+- **Claude: Grant levels** (`data/grant/`, `GrantData`): Gemütlich (HP / damage x0.7, Schilling x0.7), Normal,
+  Grantig (HP x1.4, speed x1.1, damage x1.2, Schilling x1.4, Föhn: wind gusts push every Knödl), Hofratsgrant
+  (x2 / 1.2 / 1.4 / 2, Streik: one Wirtshaus fewer), Weltuntergang (x3 / 1.3 / 1.7 / 3, Kontrolle: elites twice as
+  often until the Kontrolleur enemy exists). Gemütlich and Normal are open; a win unlocks the next level.
+  Chosen in Spielen (Q/E); `?grant=<index>` for tests.
+- **Claude: co-op and the meta** – each player's Stammtisch bonus is applied per player on the host; the
+  local player's comes from the Profile, remote players get none until the M6 lobby sends each player's loadout
+  (character and ranks). Unlocks for the shared card pool are the host's.
+- **Claude: new menu screens** – Stammtisch (rows with rank and price, Schilling top right), Aufträge
+  (forms with a progress ring or the stamp, open ones closest to done first), Rekorde (own records per map and
+  character; the online board joins it in the next part), Almanach (Familie, Waffen, Verbesserungen, Kirtagsware,
+  Viecher; unknown entries are "???", locked ones name their quest; enemies got a deadpan line each). The end
+  screen shows the Schilling and the quests stamped. The menu footer shows the Schilling.
+
+### Part 4: die Ehrentafel (online highscores)
+
+- **Claude: Berghittn's Gipfelbuch reused** as `board/board.js` + `functions/api/board/[action].js` on the
+  `knoedlinger` Pages project, D1 databases **`knoedlinger-board`** (production) and **`knoedlinger-board-preview`**
+  (previews, `[env.preview]` in the new `wrangler.toml`), created with the deploy login (free tier) and migrated.
+  Tickets (asked at run start, used once, 30 per hour per address, 3 h life) and plausibility checks (a run cannot
+  be longer than its ticket is old, at most 2,000 + 120 kills per second played per player, a win or a survived
+  Sperrstund' means at least 14:50 played).
+- **Claude: boards** per map and mode (solo, co-op), all time and this week, top 50. Order: result (gewonnen >
+  Sperrstund' erlebt > umgfoin), Grant level, time, kills. Rows: place, name(s), Knödlinger, result and Grant,
+  time, level, kills, biggest Knödl; own entries (ids kept in the Profile) in gold. Names: 16 characters,
+  Berghittn's swear filter, fallback "Knödlinger".
+- **Claude: only real runs count** – started from the main menu, no URL/command-line run options, the Settings
+  switch "Ehrentafel mitmachen" on (default on), in the browser (the page's own origin, so previews write to the
+  preview database). Headless, desktop and every automated check never send anything (`--board=<url>` for a
+  manual test). "Zum Menü" mid-run is not sent. The end screen shows "Ehrentafel: Platz n · diese Woche m".
+- **Claude: the local test server** (`tools/browser/serve.mjs`) answers `/api/*` with an "offline" reply, so the
+  board shows its offline line there instead of a 404 console error. Board tests: `node --test
+  board/test/board.test.mjs` (local D1 via `wrangler pages dev`, 8 tests).
+
+### Part 5: content (the family, weapons, stats, items, Knödl sorts, enemies, quests)
+
+- **Claude: all 8 Knödlinger**, traits as data (`CharacterData`: `trait_stats`, `extra_cards`, `slope_speed`,
+  `knodl_start`, named `trait_effects`): Onkel Ferdl (Grant: +1 % damage per hit taken, at most 30 %), Oma Resi
+  (Kochlöffel, Marillenknödl, Knödl starts 50 % bigger), Cousin Toni (Skistöcke, Germknödl, +25 % speed on slopes,
+  double jump), Herr Poldi (Tablett-Wurf, one more Speisekarte card), Tante Vroni (Kuhglocke, Speckknödl, +20 max HP
+  and 0.3 HP/s regen; **the design's "regen near cows" became plain regen**, there are no cows on the maps yet),
+  Sepp (Obstler-Flammenwerfer, Grammelknödl, +15 % area; burn immunity waits for something that burns players),
+  Kommerzialrat Gustl (Stempel, Kaspressknödl, a free banish every 60 s, every 12 s up to six enemies near him stop
+  for a 3 s coffee), Kevin (Watschn-Aura, Germknödl, every 5th jump a shockwave). Ferdl, Resi and Toni are open from
+  the start, the other five unlock through quests. InputMessage v3 counts jumps (Kevin's waves are host-side).
+  Remote co-op players still play the host's character until the M6 lobby.
+- **Claude: all 16 weapons.** New patterns: DROP (impacts on enemies near the player: Stempel stuns, Hagelkanone,
+  Schneekugel freezes), MINE (blasts where the player stood: Sachertorte-Mine), CHAIN (jumps from enemy to enemy,
+  -15 % per jump: Wiener Würstel, Krampusrute), boomerang shots (Tablett-Wurf), cones as narrow arcs (Obstler sets
+  on fire, Alphorn pushes hard), Zither as a wide fan of piercing waves. Enemies got status effects (slow/freeze/
+  stun and burn as packed arrays; bosses feel a third of a slow and never stop). The host draws the real impacts;
+  clients draw the same kind of picture from the fire counter (cosmetic), so no new network traffic.
+- **Claude: all 8 evolutions**: Omas Nudelwalker and Kugel-Karussell (M2), Jodel-Apokalypse (Alphorn + Gamsbart-Hut,
+  big knockback ring), Jahrhundert-Unwetter (Hagelkanone + Strickpullover, hail over 30 m), Amtsweg (Stempel +
+  Pensionistenausweis, 3 s stamps), Schnapsbrennerei (Obstler + Jagatee, a burning trail of small blasts),
+  Watschn-Baum (Watschn-Aura + Lederhosn, bigger aura with knockback; **the reflected damage is not built yet**),
+  and the Riesenknödl stays a Knödl item for later (see below).
+- **Claude: all 14 stat upgrades**: new Bergkas (max HP), Jagatee (damage; the screen wobble is left out), Hufeisen
+  (luck), Krügerl (attack speed, a new `rate` stat), Kaffeehaus-Zeitung (`duration`: shots fly longer, burns and
+  slows last longer), Bausparvertrag (gold).
+- **Claude: 30 items**: 13 more stat items, and with effects Bröselbutter (whatever touches the Knödl takes damage
+  every second), Powidl-Füllung (a blast when a Schupfn ends, costs 10 % mass), Bergab-Gesetz (+100 % Knödl damage
+  rolling downhill), Schweizerkracher (8 % per copy that a kill blows up), Kirchenglocke (a ring every 10 s).
+  **Not built: Doppelportion (a second Knödl) and the Riesenknödl der Apokalypse evolution**; both need a second
+  Knödl body or a size rule across the network and are left for M5/M6.
+- **Claude: all 6 Knödl sorts**: Speck, Marillen, Germ (as in the design), Kaspressknödl (a flat disc that cuts
+  through enemies instead of pushing them aside), Grammelknödl (its greasy trail slows enemies to 50 %).
+- **Claude: 6 new enemies (17 in all incl. Formular and the bosses)**: Wühlmaus (pops up 4-7 m from a player),
+  Rasenmäher-Roboter (circles at 7 m, cuts a marked circle around itself), Schneemann (keeps 9 m away, lobs
+  snowballs; on the ski map), Gartenzwerg (explodes where it falls, marked), Kontrolleur (from 4:00 one stands at
+  every open Wirtshaus, which serves nobody until he is beaten: "Kontrolle!"), Hungriger Tourist (Bröselfresser
+  elite, 20 mass/s). Each wave may list 16 types (4 bits in snapshots), now checked per wave.
+- **Claude: 101 quests** (the design's target of 100); everything new that is not a start pick is unlocked by one.
+- **Claude: `?weapons=a,b` / `--weapons=`** gives extra weapons at the start (testing; ignores locks and slots).
+- **Measured (local, RTX 3080, run, 500 enemies, bot, 60 s, Edge):** 157 fps avg, p95 7.8 ms, at most 128 draw calls.
+
+### Part 6: maps (Gamskogl-Piste, Gemeindebau-Hof, Kirtag verticality)
+
+- **Claude: terrain for tall maps** – `MapData.tilt` (the whole map leans: a ski slope) and `mesas` (plateaus with
+  a steep edge of `mesa_edge` metres; stacked ones make several levels and real drops). Each map names its own
+  `wave` (enemies, bosses, the Formular); the Kirtag keeps its wave. Map generators share `tools/maps/map_kit.gd`.
+- **Claude: Gamskogl-Piste** (`tools/maps/make_gamskogl.gd`, 300 x 300 m): leans uphill to the north (17 %),
+  snow colours. The Talstation with the Knödl stand is the spawn at the bottom; groomed pistes zig-zag up past
+  the Mittelstation (a plateau with a ledge on it), the Schneebar (three levels with a lookout) and two hut shelves
+  to the Bergstation with the boss gate at the top. Moguls, a ridge, three kickers, a lift line, ski huts as
+  Wirtshäuser, firs round the edge. Stempel lie on the high ground. Its wave adds the Schneemann, more Radlfahrer
+  ("skiers"), the Wühlmaus. **The Lawine** is its 10:00 mini-boss (2,600 HP, a huge heap of snow): long marked
+  slides it dashes along, a ring of falling snow, a Schneemann escort. The Hofrat stays the final boss on every map.
+- **Claude: Gemeindebau-Hof** (`tools/maps/make_gemeindebau.gd`): a big courtyard ringed by four flat-roofed
+  council blocks (14 m, windows on both faces, a gate gap in every side). A long ramp inside each block leads onto
+  the roofs, which run all the way round (the high route); stairs from outside at two corners; the courtyard has a
+  raised garden in two tiers with stairs, laundry lines, a fountain; lower blocks with stairs onto some roofs in
+  the quarters outside; the Hausverwaltung with the gate in the north; Beisln as Wirtshäuser. Its wave adds
+  Gartenzwerge and Rasenmäher-Roboter early; the second Oberkrampus comes at 10:00.
+- **Claude: Kirtag verticality, a light touch** – an Alm (7 m) behind the Gemeindeamt, a lookout in two steps in the
+  west, a crag in the east, each with a chest spot on top.
+- **Claude: unlocks** – the Gamskogl-Piste opens with "Durchghalten" (survive 10 minutes), the Gemeindebau-Hof with
+  "Fünf Kirtage" (5 runs). Spielen chooses the map like the Grant level (‹ › or Left/Right).
+- **Measured (local, RTX 3080, run, 500 enemies, bot, 60 s):** Edge 157 fps / p95 7.8 ms / at most 128 draw calls,
+  Firefox 131 fps / p95 10 ms / at most 117. New maps in the browser: about 100 draw calls. Map bakes about 450 ms.
+- **Measured (balance log, 2 bot runs, Onkel Ferdl, Kirtag, Normal, after all of M4):** both WON (Hofrat beaten at
+  14:32 and 14:52, Oberkrampus at 5:21-6:17, Oberkrampus II at 10:31-13:02), level 60-66, 25.7k-30.8k kills, 15-27
+  knock-downs, 2-3 Stempel. The gap after the build rework (part 2) is closed again; tuning stays an M5 job.
+- **Preview deployed** to https://m4-meta.knoedlinger.pages.dev (with the Ehrentafel's preview database). From the
+  preview (headless Edge, RTX 3080, 500 enemies, bot, 60 s): 153 fps avg, p95 8.4 ms, at most 127 draw calls, no
+  console errors.

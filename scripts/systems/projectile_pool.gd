@@ -29,6 +29,9 @@ var _knockback: PackedFloat32Array = PackedFloat32Array()
 var _pierce: PackedInt32Array = PackedInt32Array()
 ## The enemy slot hit last, so a piercing shot does not hit the same one on the next frame.
 var _last_hit: PackedInt32Array = PackedInt32Array()
+## Boomerangs: the lifetime left at which they turn (-1 = never); the weapon whose statuses apply.
+var _turn_at: PackedFloat32Array = PackedFloat32Array()
+var _weapons: Array[WeaponData] = []
 ## Stack of free slots; _free_top is how many are on it.
 var _free: PackedInt32Array = PackedInt32Array()
 var _free_top: int = 0
@@ -46,12 +49,13 @@ func setup(p_balance: BalanceData, p_capacity: int, p_ground: Heightfield = null
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_alive.resize(capacity)
 	_alive.fill(0)
-	for array_name: String in ["_x", "_z", "_vx", "_vz", "_life", "_damage", "_radius", "_knockback"]:
+	for array_name: String in ["_x", "_z", "_vx", "_vz", "_life", "_damage", "_radius", "_knockback", "_turn_at"]:
 		var array := PackedFloat32Array()
 		array.resize(capacity)
 		array.fill(0.0)
 		set(array_name, array)
 	_pierce.resize(capacity)
+	_weapons.resize(capacity)
 	_last_hit.resize(capacity)
 	_free.resize(capacity)
 	for i: int in capacity:
@@ -85,8 +89,9 @@ func fire(x: float, z: float, dir_x: float, dir_z: float) -> bool:
 
 
 ## Fires one shot from (x, z) with velocity (vx, vz). False when the pool is full.
+## A boomerang turns round after half its lifetime; `weapon` adds its on-hit statuses (burn, slow).
 func fire_shot(x: float, z: float, vx: float, vz: float, lifetime: float, damage: float, radius: float,
-		pierce: int, knockback: float) -> bool:
+		pierce: int, knockback: float, boomerang: bool = false, weapon: WeaponData = null) -> bool:
 	if _free_top == 0:
 		return false
 	_free_top -= 1
@@ -102,6 +107,8 @@ func fire_shot(x: float, z: float, vx: float, vz: float, lifetime: float, damage
 	_pierce[slot] = pierce
 	_knockback[slot] = knockback
 	_last_hit[slot] = -1
+	_turn_at[slot] = lifetime * 0.5 if boomerang else -1.0
+	_weapons[slot] = weapon
 	active_count += 1
 	return true
 
@@ -117,6 +124,12 @@ func update(delta: float, enemies: EnemyManager) -> void:
 		if _life[i] <= 0.0:
 			_release(i)
 			continue
+		if _turn_at[i] >= 0.0 and _life[i] <= _turn_at[i]:
+			# The tray comes back the way it went, and may hit everything again.
+			_turn_at[i] = -1.0
+			_vx[i] = -_vx[i]
+			_vz[i] = -_vz[i]
+			_last_hit[i] = -1
 		var x: float = _x[i] + _vx[i] * delta
 		var z: float = _z[i] + _vz[i] * delta
 		_x[i] = x
@@ -135,7 +148,10 @@ func update(delta: float, enemies: EnemyManager) -> void:
 			if dx * dx + dz * dz >= rr * rr:
 				continue
 			var kick: float = _knockback[i] / maxf(sqrt(_vx[i] * _vx[i] + _vz[i] * _vz[i]), 0.001)
-			enemies.damage(j, _damage[i], _vx[i] * kick, _vz[i] * kick)
+			if _weapons[i] != null:
+				WeaponSystem.apply_hit(_weapons[i], enemies, j, _damage[i], _vx[i] * kick, _vz[i] * kick)
+			else:
+				enemies.damage(j, _damage[i], _vx[i] * kick, _vz[i] * kick)
 			hits += 1
 			_last_hit[i] = j
 			if _pierce[i] <= 0:

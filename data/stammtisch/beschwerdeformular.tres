@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MetaUpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/meta_upgrade_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/pensionistenausweis.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"beschwerdeformular"
+name_key = "META_BESCHWERDEFORMULAR"
+desc_key = "DESC_META_BESCHWERDEFORMULAR"
+icon = ExtResource("2_icon")
+stat = &"banishes"
+per_rank = 1.0
+max_rank = 5
+cost_base = 80
+cost_growth = 1.5

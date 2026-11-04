@@ -1,0 +1,3482 @@
+[gd_resource type="Resource" script_class="MapData" format=4]
+
+[ext_resource type="Script" path="res://scripts/data/map_prop.gd" id="1_shimg"]
+[ext_resource type="Script" path="res://scripts/data/map_data.gd" id="2_dnelu"]
+[ext_resource type="Script" path="res://scripts/data/map_structure.gd" id="3_7742q"]
+[ext_resource type="Resource" path="res://data/waves/gemeindebau.tres" id="4_qmhxh"]
+
+[sub_resource type="Resource" id="Resource_qr0mp"]
+script = ExtResource("1_shimg")
+position = Vector3(-30.5, 0, 50)
+size = Vector3(51, 14, 12)
+color = Color(0.86, 0.78, 0.62, 1)
+
+[sub_resource type="Resource" id="Resource_5uq24"]
+script = ExtResource("1_shimg")
+position = Vector3(-52, 2.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_27ue3"]
+script = ExtResource("1_shimg")
+position = Vector3(-52, 2.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_edf84"]
+script = ExtResource("1_shimg")
+position = Vector3(-44, 2.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_mkfyp"]
+script = ExtResource("1_shimg")
+position = Vector3(-44, 2.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_mif1l"]
+script = ExtResource("1_shimg")
+position = Vector3(-36, 2.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_tatfc"]
+script = ExtResource("1_shimg")
+position = Vector3(-36, 2.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_gm2l4"]
+script = ExtResource("1_shimg")
+position = Vector3(-28, 2.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_sgde3"]
+script = ExtResource("1_shimg")
+position = Vector3(-28, 2.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_6y4gb"]
+script = ExtResource("1_shimg")
+position = Vector3(-20, 2.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ad51v"]
+script = ExtResource("1_shimg")
+position = Vector3(-20, 2.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_hdbbj"]
+script = ExtResource("1_shimg")
+position = Vector3(-12, 2.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_0qvme"]
+script = ExtResource("1_shimg")
+position = Vector3(-12, 2.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_vpj5v"]
+script = ExtResource("1_shimg")
+position = Vector3(-52, 6.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_0cg3p"]
+script = ExtResource("1_shimg")
+position = Vector3(-52, 6.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_kvcek"]
+script = ExtResource("1_shimg")
+position = Vector3(-44, 6.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_wr1ga"]
+script = ExtResource("1_shimg")
+position = Vector3(-44, 6.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_xt68t"]
+script = ExtResource("1_shimg")
+position = Vector3(-36, 6.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_3b83d"]
+script = ExtResource("1_shimg")
+position = Vector3(-36, 6.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_0ro45"]
+script = ExtResource("1_shimg")
+position = Vector3(-28, 6.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ia4tr"]
+script = ExtResource("1_shimg")
+position = Vector3(-28, 6.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ne33r"]
+script = ExtResource("1_shimg")
+position = Vector3(-20, 6.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_wvbt1"]
+script = ExtResource("1_shimg")
+position = Vector3(-20, 6.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_pfpqu"]
+script = ExtResource("1_shimg")
+position = Vector3(-12, 6.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_s2ls2"]
+script = ExtResource("1_shimg")
+position = Vector3(-12, 6.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_nearj"]
+script = ExtResource("1_shimg")
+position = Vector3(-52, 10.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_4domf"]
+script = ExtResource("1_shimg")
+position = Vector3(-52, 10.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_e1dks"]
+script = ExtResource("1_shimg")
+position = Vector3(-44, 10.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_6oqh7"]
+script = ExtResource("1_shimg")
+position = Vector3(-44, 10.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_qet4o"]
+script = ExtResource("1_shimg")
+position = Vector3(-36, 10.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_6q237"]
+script = ExtResource("1_shimg")
+position = Vector3(-36, 10.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_a6m2m"]
+script = ExtResource("1_shimg")
+position = Vector3(-28, 10.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_obngf"]
+script = ExtResource("1_shimg")
+position = Vector3(-28, 10.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_1c7w8"]
+script = ExtResource("1_shimg")
+position = Vector3(-20, 10.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_vjjox"]
+script = ExtResource("1_shimg")
+position = Vector3(-20, 10.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_6ob7k"]
+script = ExtResource("1_shimg")
+position = Vector3(-12, 10.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ny1ug"]
+script = ExtResource("1_shimg")
+position = Vector3(-12, 10.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_nwygh"]
+script = ExtResource("1_shimg")
+position = Vector3(30.5, 0, 50)
+size = Vector3(51, 14, 12)
+color = Color(0.86, 0.78, 0.62, 1)
+
+[sub_resource type="Resource" id="Resource_aacbd"]
+script = ExtResource("1_shimg")
+position = Vector3(9, 2.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_6gv0r"]
+script = ExtResource("1_shimg")
+position = Vector3(9, 2.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_qjm36"]
+script = ExtResource("1_shimg")
+position = Vector3(17, 2.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_kcshp"]
+script = ExtResource("1_shimg")
+position = Vector3(17, 2.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_dewuy"]
+script = ExtResource("1_shimg")
+position = Vector3(25, 2.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_r06fb"]
+script = ExtResource("1_shimg")
+position = Vector3(25, 2.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_gokmn"]
+script = ExtResource("1_shimg")
+position = Vector3(33, 2.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_7xyrt"]
+script = ExtResource("1_shimg")
+position = Vector3(33, 2.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_xi8ha"]
+script = ExtResource("1_shimg")
+position = Vector3(41, 2.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_v7vda"]
+script = ExtResource("1_shimg")
+position = Vector3(41, 2.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_hb6km"]
+script = ExtResource("1_shimg")
+position = Vector3(49, 2.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_g5oui"]
+script = ExtResource("1_shimg")
+position = Vector3(49, 2.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_0e5na"]
+script = ExtResource("1_shimg")
+position = Vector3(9, 6.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_j88d1"]
+script = ExtResource("1_shimg")
+position = Vector3(9, 6.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ocwby"]
+script = ExtResource("1_shimg")
+position = Vector3(17, 6.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_g5tf1"]
+script = ExtResource("1_shimg")
+position = Vector3(17, 6.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_qj6dc"]
+script = ExtResource("1_shimg")
+position = Vector3(25, 6.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_xa3fw"]
+script = ExtResource("1_shimg")
+position = Vector3(25, 6.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_gmsml"]
+script = ExtResource("1_shimg")
+position = Vector3(33, 6.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_q4a5d"]
+script = ExtResource("1_shimg")
+position = Vector3(33, 6.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_2yxiu"]
+script = ExtResource("1_shimg")
+position = Vector3(41, 6.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_yhjfq"]
+script = ExtResource("1_shimg")
+position = Vector3(41, 6.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_yyurb"]
+script = ExtResource("1_shimg")
+position = Vector3(49, 6.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_gjwmr"]
+script = ExtResource("1_shimg")
+position = Vector3(49, 6.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_n4u3c"]
+script = ExtResource("1_shimg")
+position = Vector3(9, 10.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_rf516"]
+script = ExtResource("1_shimg")
+position = Vector3(9, 10.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_4xl3y"]
+script = ExtResource("1_shimg")
+position = Vector3(17, 10.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_tp3ml"]
+script = ExtResource("1_shimg")
+position = Vector3(17, 10.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_l0bhj"]
+script = ExtResource("1_shimg")
+position = Vector3(25, 10.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_utcga"]
+script = ExtResource("1_shimg")
+position = Vector3(25, 10.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_g1rg7"]
+script = ExtResource("1_shimg")
+position = Vector3(33, 10.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_mpiut"]
+script = ExtResource("1_shimg")
+position = Vector3(33, 10.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_3cdbe"]
+script = ExtResource("1_shimg")
+position = Vector3(41, 10.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_djsv4"]
+script = ExtResource("1_shimg")
+position = Vector3(41, 10.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_rwji3"]
+script = ExtResource("1_shimg")
+position = Vector3(49, 10.5, 43.95)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_wq02s"]
+script = ExtResource("1_shimg")
+position = Vector3(49, 10.5, 56.05)
+size = Vector3(1.6, 1.8, 0.1)
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_g57g3"]
+script = ExtResource("1_shimg")
+kind = 1
+position = Vector3(22, 0, 40)
+size = Vector3(5, 14, 34)
+yaw_degrees = 90.0
+color = Color(0.7, 0.68, 0.64, 1)
+
+[sub_resource type="Resource" id="Resource_dcuc2"]
+script = ExtResource("1_shimg")
+position = Vector3(50, 0, 30.5)
+size = Vector3(51, 14, 12)
+yaw_degrees = 90.0
+color = Color(0.78, 0.5, 0.38, 1)
+
+[sub_resource type="Resource" id="Resource_am7h1"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 2.5, 52)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_dlnvb"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 2.5, 52)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_707ax"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 2.5, 44)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_uhwih"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 2.5, 44)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_nt5vm"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 2.5, 36)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_2pkhe"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 2.5, 36)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_dorq2"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 2.5, 28)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_8jyhi"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 2.5, 28)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_pp6s2"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 2.5, 20)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_h510n"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 2.5, 20)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_1xgcj"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 2.5, 12)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ifpys"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 2.5, 12)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_bw2jj"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 6.5, 52)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_t35ju"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 6.5, 52)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_103js"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 6.5, 44)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_aybti"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 6.5, 44)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_eww7l"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 6.5, 36)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_yqxac"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 6.5, 36)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_30inn"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 6.5, 28)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_8g4ea"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 6.5, 28)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_4ijse"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 6.5, 20)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ub72w"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 6.5, 20)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_q3726"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 6.5, 12)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_5sk6q"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 6.5, 12)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_1r1ya"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 10.5, 52)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_p4j5m"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 10.5, 52)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_g672w"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 10.5, 44)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_8fu5f"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 10.5, 44)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_tdy7k"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 10.5, 36)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_p3qoo"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 10.5, 36)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_dfisn"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 10.5, 28)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_kpoxn"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 10.5, 28)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_7n5fv"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 10.5, 20)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_w82ue"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 10.5, 20)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_mt62d"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 10.5, 12)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_1wsns"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 10.5, 12)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_brg3y"]
+script = ExtResource("1_shimg")
+position = Vector3(50, 0, -30.5)
+size = Vector3(51, 14, 12)
+yaw_degrees = 90.0
+color = Color(0.78, 0.5, 0.38, 1)
+
+[sub_resource type="Resource" id="Resource_wyf3l"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 2.5, -9)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_w66k8"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 2.5, -9)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_coxw4"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 2.5, -17)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_yl6vp"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 2.5, -17)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_loga5"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 2.5, -25)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_4lrj6"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 2.5, -25)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_gp5eg"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 2.5, -33)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ta3i4"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 2.5, -33)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_vnmfv"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 2.5, -41)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_nvfwc"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 2.5, -41)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_lipha"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 2.5, -49)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_c4sbu"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 2.5, -49)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_wy4rr"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 6.5, -9)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_4wbo6"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 6.5, -9)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_csabf"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 6.5, -17)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_nly53"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 6.5, -17)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_oo8dg"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 6.5, -25)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_fa0nm"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 6.5, -25)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_g21x0"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 6.5, -33)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_adhd0"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 6.5, -33)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_6u04v"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 6.5, -41)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ft176"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 6.5, -41)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_64pfh"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 6.5, -49)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ir08m"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 6.5, -49)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_qs8rf"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 10.5, -9)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_5kto1"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 10.5, -9)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ojdit"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 10.5, -17)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_08k8l"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 10.5, -17)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_8c4ab"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 10.5, -25)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_e6uph"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 10.5, -25)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_1jsvb"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 10.5, -33)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_sddgg"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 10.5, -33)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_aj8fu"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 10.5, -41)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_2o8j8"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 10.5, -41)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_a7lxo"]
+script = ExtResource("1_shimg")
+position = Vector3(43.95, 10.5, -49)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_kh7ac"]
+script = ExtResource("1_shimg")
+position = Vector3(56.05, 10.5, -49)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 90.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_fhjr6"]
+script = ExtResource("1_shimg")
+kind = 1
+position = Vector3(40, 0, -22)
+size = Vector3(5, 14, 34)
+yaw_degrees = 180.0
+color = Color(0.7, 0.68, 0.64, 1)
+
+[sub_resource type="Resource" id="Resource_5f783"]
+script = ExtResource("1_shimg")
+position = Vector3(30.5, 0, -50)
+size = Vector3(51, 14, 12)
+yaw_degrees = 180.0
+color = Color(0.86, 0.78, 0.62, 1)
+
+[sub_resource type="Resource" id="Resource_1ei6a"]
+script = ExtResource("1_shimg")
+position = Vector3(52, 2.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_m0pxt"]
+script = ExtResource("1_shimg")
+position = Vector3(52, 2.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_xxovq"]
+script = ExtResource("1_shimg")
+position = Vector3(44, 2.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_i0fgh"]
+script = ExtResource("1_shimg")
+position = Vector3(44, 2.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_cjy47"]
+script = ExtResource("1_shimg")
+position = Vector3(36, 2.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_36vrf"]
+script = ExtResource("1_shimg")
+position = Vector3(36, 2.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_dbsor"]
+script = ExtResource("1_shimg")
+position = Vector3(28, 2.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_lxps4"]
+script = ExtResource("1_shimg")
+position = Vector3(28, 2.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_pcg47"]
+script = ExtResource("1_shimg")
+position = Vector3(20, 2.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_nw5jc"]
+script = ExtResource("1_shimg")
+position = Vector3(20, 2.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_7ntm2"]
+script = ExtResource("1_shimg")
+position = Vector3(12, 2.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_3mo6b"]
+script = ExtResource("1_shimg")
+position = Vector3(12, 2.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_8cftf"]
+script = ExtResource("1_shimg")
+position = Vector3(52, 6.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_wx005"]
+script = ExtResource("1_shimg")
+position = Vector3(52, 6.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ow2k3"]
+script = ExtResource("1_shimg")
+position = Vector3(44, 6.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_8cyfy"]
+script = ExtResource("1_shimg")
+position = Vector3(44, 6.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ayuk1"]
+script = ExtResource("1_shimg")
+position = Vector3(36, 6.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ftac8"]
+script = ExtResource("1_shimg")
+position = Vector3(36, 6.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_8migb"]
+script = ExtResource("1_shimg")
+position = Vector3(28, 6.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_8qo7s"]
+script = ExtResource("1_shimg")
+position = Vector3(28, 6.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ande5"]
+script = ExtResource("1_shimg")
+position = Vector3(20, 6.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_n5cyt"]
+script = ExtResource("1_shimg")
+position = Vector3(20, 6.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_1sb4c"]
+script = ExtResource("1_shimg")
+position = Vector3(12, 6.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_3rifh"]
+script = ExtResource("1_shimg")
+position = Vector3(12, 6.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_kssdp"]
+script = ExtResource("1_shimg")
+position = Vector3(52, 10.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_r8ty1"]
+script = ExtResource("1_shimg")
+position = Vector3(52, 10.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_i51hb"]
+script = ExtResource("1_shimg")
+position = Vector3(44, 10.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_1vifo"]
+script = ExtResource("1_shimg")
+position = Vector3(44, 10.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_jc5pr"]
+script = ExtResource("1_shimg")
+position = Vector3(36, 10.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_yig7s"]
+script = ExtResource("1_shimg")
+position = Vector3(36, 10.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_y1845"]
+script = ExtResource("1_shimg")
+position = Vector3(28, 10.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_j7ilh"]
+script = ExtResource("1_shimg")
+position = Vector3(28, 10.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_i1fki"]
+script = ExtResource("1_shimg")
+position = Vector3(20, 10.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_6yfg2"]
+script = ExtResource("1_shimg")
+position = Vector3(20, 10.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_o1sog"]
+script = ExtResource("1_shimg")
+position = Vector3(12, 10.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_wcoyg"]
+script = ExtResource("1_shimg")
+position = Vector3(12, 10.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_8xcbg"]
+script = ExtResource("1_shimg")
+position = Vector3(-30.5, 0, -50)
+size = Vector3(51, 14, 12)
+yaw_degrees = 180.0
+color = Color(0.86, 0.78, 0.62, 1)
+
+[sub_resource type="Resource" id="Resource_wy2d7"]
+script = ExtResource("1_shimg")
+position = Vector3(-9, 2.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_noin7"]
+script = ExtResource("1_shimg")
+position = Vector3(-9, 2.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_t248w"]
+script = ExtResource("1_shimg")
+position = Vector3(-17, 2.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_y2rv7"]
+script = ExtResource("1_shimg")
+position = Vector3(-17, 2.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_vgdi6"]
+script = ExtResource("1_shimg")
+position = Vector3(-25, 2.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ptj0r"]
+script = ExtResource("1_shimg")
+position = Vector3(-25, 2.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_nn0m7"]
+script = ExtResource("1_shimg")
+position = Vector3(-33, 2.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_a1rtt"]
+script = ExtResource("1_shimg")
+position = Vector3(-33, 2.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_l2yvw"]
+script = ExtResource("1_shimg")
+position = Vector3(-41, 2.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_b33sk"]
+script = ExtResource("1_shimg")
+position = Vector3(-41, 2.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_2ucdb"]
+script = ExtResource("1_shimg")
+position = Vector3(-49, 2.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_c5pqw"]
+script = ExtResource("1_shimg")
+position = Vector3(-49, 2.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_k7i1f"]
+script = ExtResource("1_shimg")
+position = Vector3(-9, 6.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_wwe5x"]
+script = ExtResource("1_shimg")
+position = Vector3(-9, 6.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_mnrbd"]
+script = ExtResource("1_shimg")
+position = Vector3(-17, 6.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_xsmut"]
+script = ExtResource("1_shimg")
+position = Vector3(-17, 6.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_og3ba"]
+script = ExtResource("1_shimg")
+position = Vector3(-25, 6.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_0g0wd"]
+script = ExtResource("1_shimg")
+position = Vector3(-25, 6.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_64oeh"]
+script = ExtResource("1_shimg")
+position = Vector3(-33, 6.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_j44vg"]
+script = ExtResource("1_shimg")
+position = Vector3(-33, 6.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_j24s5"]
+script = ExtResource("1_shimg")
+position = Vector3(-41, 6.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_bvd8u"]
+script = ExtResource("1_shimg")
+position = Vector3(-41, 6.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_aweai"]
+script = ExtResource("1_shimg")
+position = Vector3(-49, 6.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_tthda"]
+script = ExtResource("1_shimg")
+position = Vector3(-49, 6.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ewmdi"]
+script = ExtResource("1_shimg")
+position = Vector3(-9, 10.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_2cbek"]
+script = ExtResource("1_shimg")
+position = Vector3(-9, 10.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_x54qr"]
+script = ExtResource("1_shimg")
+position = Vector3(-17, 10.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_t63jc"]
+script = ExtResource("1_shimg")
+position = Vector3(-17, 10.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_3dnjl"]
+script = ExtResource("1_shimg")
+position = Vector3(-25, 10.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_sr2gb"]
+script = ExtResource("1_shimg")
+position = Vector3(-25, 10.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_qq08j"]
+script = ExtResource("1_shimg")
+position = Vector3(-33, 10.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_dmnrk"]
+script = ExtResource("1_shimg")
+position = Vector3(-33, 10.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_0a405"]
+script = ExtResource("1_shimg")
+position = Vector3(-41, 10.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_5nudm"]
+script = ExtResource("1_shimg")
+position = Vector3(-41, 10.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_vvdyf"]
+script = ExtResource("1_shimg")
+position = Vector3(-49, 10.5, -43.95)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_kil8e"]
+script = ExtResource("1_shimg")
+position = Vector3(-49, 10.5, -56.05)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 180.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_m5e82"]
+script = ExtResource("1_shimg")
+kind = 1
+position = Vector3(-22, 0, -40)
+size = Vector3(5, 14, 34)
+yaw_degrees = 270.0
+color = Color(0.7, 0.68, 0.64, 1)
+
+[sub_resource type="Resource" id="Resource_ujyij"]
+script = ExtResource("1_shimg")
+position = Vector3(-50, 0, -30.5)
+size = Vector3(51, 14, 12)
+yaw_degrees = 270.0
+color = Color(0.78, 0.5, 0.38, 1)
+
+[sub_resource type="Resource" id="Resource_t8f78"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 2.5, -52)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_omuyv"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 2.5, -52)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_i4658"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 2.5, -44)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_dtdnj"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 2.5, -44)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_88uus"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 2.5, -36)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_q862t"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 2.5, -36)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_5jiok"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 2.5, -28)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ydqbi"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 2.5, -28)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_7yhni"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 2.5, -20)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_if4nu"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 2.5, -20)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_1frm2"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 2.5, -12)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_u6gg8"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 2.5, -12)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_skaah"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 6.5, -52)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_cor0r"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 6.5, -52)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_jajyl"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 6.5, -44)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_sg71a"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 6.5, -44)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ckl7t"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 6.5, -36)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_4wnfg"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 6.5, -36)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_p6hpr"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 6.5, -28)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_bkthg"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 6.5, -28)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_gajfq"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 6.5, -20)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_5fnm2"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 6.5, -20)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_xiojv"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 6.5, -12)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_cjkn6"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 6.5, -12)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_iy41d"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 10.5, -52)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ryf0u"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 10.5, -52)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_hsrn0"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 10.5, -44)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_rg3tb"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 10.5, -44)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_s5al1"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 10.5, -36)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_hhug2"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 10.5, -36)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_65wv3"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 10.5, -28)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_sf51p"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 10.5, -28)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_q17ln"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 10.5, -20)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_8w2x5"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 10.5, -20)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_82yhc"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 10.5, -12)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ti4jj"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 10.5, -12)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_15r5k"]
+script = ExtResource("1_shimg")
+position = Vector3(-50, 0, 30.5)
+size = Vector3(51, 14, 12)
+yaw_degrees = 270.0
+color = Color(0.78, 0.5, 0.38, 1)
+
+[sub_resource type="Resource" id="Resource_hbu4i"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 2.5, 9)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_40ri1"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 2.5, 9)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_txme0"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 2.5, 17)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_liecp"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 2.5, 17)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_c73hd"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 2.5, 25)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ymqcp"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 2.5, 25)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_rl5g3"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 2.5, 33)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_s55ta"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 2.5, 33)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_nqnbe"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 2.5, 41)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_nwmjj"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 2.5, 41)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_nd48l"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 2.5, 49)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ni8yb"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 2.5, 49)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_xqcqk"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 6.5, 9)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_qch7a"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 6.5, 9)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_ql7k3"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 6.5, 17)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_7yk5m"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 6.5, 17)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_obujl"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 6.5, 25)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_lfh74"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 6.5, 25)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_s206a"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 6.5, 33)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_mo8a2"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 6.5, 33)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_nddno"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 6.5, 41)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_43tdi"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 6.5, 41)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_u5fbg"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 6.5, 49)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_l0l03"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 6.5, 49)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_nmd3c"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 10.5, 9)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_gmmxh"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 10.5, 9)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_0lusm"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 10.5, 17)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_cu70v"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 10.5, 17)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_21xgw"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 10.5, 25)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_np6oq"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 10.5, 25)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_t2ctg"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 10.5, 33)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_wn13x"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 10.5, 33)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_mxcha"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 10.5, 41)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_3r5ls"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 10.5, 41)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_vbinm"]
+script = ExtResource("1_shimg")
+position = Vector3(-43.95, 10.5, 49)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_vo4yc"]
+script = ExtResource("1_shimg")
+position = Vector3(-56.05, 10.5, 49)
+size = Vector3(1.6, 1.8, 0.1)
+yaw_degrees = 270.0
+color = Color(0.35, 0.42, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_e4vog"]
+script = ExtResource("1_shimg")
+kind = 1
+position = Vector3(-40, 0, 22)
+size = Vector3(5, 14, 34)
+yaw_degrees = 360.0
+color = Color(0.7, 0.68, 0.64, 1)
+
+[sub_resource type="Resource" id="Resource_5d1nt"]
+script = ExtResource("1_shimg")
+kind = 2
+position = Vector3(-60, 0, -60)
+size = Vector3(4, 14, 26)
+yaw_degrees = 90.0
+steps = 20
+color = Color(0.7, 0.68, 0.64, 1)
+
+[sub_resource type="Resource" id="Resource_fdx5a"]
+script = ExtResource("1_shimg")
+kind = 2
+position = Vector3(60, 0, 60)
+size = Vector3(4, 14, 26)
+yaw_degrees = -90.0
+steps = 20
+color = Color(0.7, 0.68, 0.64, 1)
+
+[sub_resource type="Resource" id="Resource_eyf3v"]
+script = ExtResource("1_shimg")
+kind = 2
+position = Vector3(0, 0, 13.5)
+size = Vector3(4, 3, 5)
+yaw_degrees = 180.0
+steps = 5
+color = Color(0.7, 0.68, 0.64, 1)
+
+[sub_resource type="Resource" id="Resource_s87o0"]
+script = ExtResource("1_shimg")
+kind = 2
+position = Vector3(0, 6, 4.5)
+size = Vector3(3, 3, 5)
+yaw_degrees = 180.0
+steps = 5
+color = Color(0.7, 0.68, 0.64, 1)
+
+[sub_resource type="Resource" id="Resource_qng11"]
+script = ExtResource("1_shimg")
+kind = 3
+position = Vector3(24, 0, -30)
+size = Vector3(0.2, 3, 0.2)
+color = Color(0.55, 0.38, 0.22, 1)
+walkable = false
+
+[sub_resource type="Resource" id="Resource_dusoh"]
+script = ExtResource("1_shimg")
+kind = 3
+position = Vector3(36, 0, -30)
+size = Vector3(0.2, 3, 0.2)
+color = Color(0.55, 0.38, 0.22, 1)
+walkable = false
+
+[sub_resource type="Resource" id="Resource_8cvbg"]
+script = ExtResource("1_shimg")
+position = Vector3(30, 2.2, -30)
+size = Vector3(12, 0.9, 0.05)
+color = Color(0.95, 0.95, 0.93, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_7kist"]
+script = ExtResource("1_shimg")
+kind = 3
+position = Vector3(24, 0, -23)
+size = Vector3(0.2, 3, 0.2)
+color = Color(0.55, 0.38, 0.22, 1)
+walkable = false
+
+[sub_resource type="Resource" id="Resource_x8vw4"]
+script = ExtResource("1_shimg")
+kind = 3
+position = Vector3(36, 0, -23)
+size = Vector3(0.2, 3, 0.2)
+color = Color(0.55, 0.38, 0.22, 1)
+walkable = false
+
+[sub_resource type="Resource" id="Resource_8t66w"]
+script = ExtResource("1_shimg")
+position = Vector3(30, 2.2, -23)
+size = Vector3(12, 0.9, 0.05)
+color = Color(0.55, 0.7, 0.9, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_h0ea1"]
+script = ExtResource("1_shimg")
+kind = 3
+position = Vector3(24, 0, -16)
+size = Vector3(0.2, 3, 0.2)
+color = Color(0.55, 0.38, 0.22, 1)
+walkable = false
+
+[sub_resource type="Resource" id="Resource_mkejm"]
+script = ExtResource("1_shimg")
+kind = 3
+position = Vector3(36, 0, -16)
+size = Vector3(0.2, 3, 0.2)
+color = Color(0.55, 0.38, 0.22, 1)
+walkable = false
+
+[sub_resource type="Resource" id="Resource_eilej"]
+script = ExtResource("1_shimg")
+position = Vector3(30, 2.2, -16)
+size = Vector3(12, 0.9, 0.05)
+color = Color(0.95, 0.85, 0.5, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_eq00c"]
+script = ExtResource("1_shimg")
+kind = 3
+position = Vector3(24, 0, -9)
+size = Vector3(0.2, 3, 0.2)
+color = Color(0.55, 0.38, 0.22, 1)
+walkable = false
+
+[sub_resource type="Resource" id="Resource_guhqq"]
+script = ExtResource("1_shimg")
+kind = 3
+position = Vector3(36, 0, -9)
+size = Vector3(0.2, 3, 0.2)
+color = Color(0.55, 0.38, 0.22, 1)
+walkable = false
+
+[sub_resource type="Resource" id="Resource_firsj"]
+script = ExtResource("1_shimg")
+position = Vector3(30, 2.2, -9)
+size = Vector3(12, 0.9, 0.05)
+color = Color(0.6, 0.85, 0.6, 1)
+walkable = false
+solid = false
+
+[sub_resource type="Resource" id="Resource_cfknx"]
+script = ExtResource("1_shimg")
+position = Vector3(96, 0.046202235, -96)
+size = Vector3(16, 6, 14)
+color = Color(0.78, 0.5, 0.38, 1)
+
+[sub_resource type="Resource" id="Resource_d1sfl"]
+script = ExtResource("1_shimg")
+kind = 2
+position = Vector3(106, 0.042943783, -96)
+size = Vector3(4, 6, 12)
+yaw_degrees = 180.0
+steps = 10
+color = Color(0.7, 0.68, 0.64, 1)
+
+[sub_resource type="Resource" id="Resource_mlhwu"]
+script = ExtResource("1_shimg")
+position = Vector3(-96, -0.04891499, 96)
+size = Vector3(16, 8, 14)
+color = Color(0.86, 0.78, 0.62, 1)
+
+[sub_resource type="Resource" id="Resource_kdxp0"]
+script = ExtResource("1_shimg")
+position = Vector3(96, 0.12077415, 96)
+size = Vector3(16, 10, 14)
+color = Color(0.78, 0.5, 0.38, 1)
+
+[sub_resource type="Resource" id="Resource_xyrtv"]
+script = ExtResource("1_shimg")
+kind = 2
+position = Vector3(106, -0.0068233004, 96)
+size = Vector3(4, 10, 12)
+yaw_degrees = 180.0
+steps = 10
+color = Color(0.7, 0.68, 0.64, 1)
+
+[sub_resource type="Resource" id="Resource_0uptc"]
+script = ExtResource("1_shimg")
+position = Vector3(-96, -0.120587245, -96)
+size = Vector3(16, 6, 14)
+color = Color(0.86, 0.78, 0.62, 1)
+
+[sub_resource type="Resource" id="Resource_5fdsl"]
+script = ExtResource("1_shimg")
+position = Vector3(96, -0.057626244, -40)
+size = Vector3(16, 8, 14)
+color = Color(0.78, 0.5, 0.38, 1)
+
+[sub_resource type="Resource" id="Resource_2e06c"]
+script = ExtResource("1_shimg")
+kind = 2
+position = Vector3(106, 0.112235844, -40)
+size = Vector3(4, 8, 12)
+yaw_degrees = 180.0
+steps = 10
+color = Color(0.7, 0.68, 0.64, 1)
+
+[sub_resource type="Resource" id="Resource_sqvt0"]
+script = ExtResource("1_shimg")
+position = Vector3(-96, -0.035379186, 40)
+size = Vector3(16, 10, 14)
+color = Color(0.86, 0.78, 0.62, 1)
+
+[sub_resource type="Resource" id="Resource_hnc5p"]
+script = ExtResource("1_shimg")
+position = Vector3(40, -0.04794749, 96)
+size = Vector3(16, 6, 14)
+color = Color(0.78, 0.5, 0.38, 1)
+
+[sub_resource type="Resource" id="Resource_qb8lv"]
+script = ExtResource("1_shimg")
+kind = 2
+position = Vector3(50, 0.030671738, 96)
+size = Vector3(4, 6, 12)
+yaw_degrees = 180.0
+steps = 10
+color = Color(0.7, 0.68, 0.64, 1)
+
+[sub_resource type="Resource" id="Resource_c0mtq"]
+script = ExtResource("1_shimg")
+position = Vector3(-40, -0.08893662, -96)
+size = Vector3(16, 8, 14)
+color = Color(0.86, 0.78, 0.62, 1)
+
+[sub_resource type="Resource" id="Resource_rgh5i"]
+script = ExtResource("3_7742q")
+kind = 9
+position = Vector2(0, 20)
+size = Vector3(5, 2.8, 3)
+color = Color(0.62, 0.44, 0.27, 1)
+accent = Color(0.95, 0.8, 0.35, 1)
+
+[sub_resource type="Resource" id="Resource_p8jsl"]
+script = ExtResource("3_7742q")
+kind = 11
+position = Vector2(-26, 26)
+size = Vector3(4.2, 0, 4.2)
+color = Color(0.7, 0.68, 0.64, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_qkgxa"]
+script = ExtResource("3_7742q")
+kind = 7
+position = Vector2(-10, -10)
+size = Vector3(1, 6, 1)
+color = Color(0.36, 0.58, 0.26, 1)
+accent = Color(0.85, 0.85, 0.35, 1)
+
+[sub_resource type="Resource" id="Resource_w07u2"]
+script = ExtResource("3_7742q")
+kind = 7
+position = Vector2(10, -2)
+size = Vector3(1, 6, 1)
+color = Color(0.36, 0.58, 0.26, 1)
+accent = Color(0.85, 0.85, 0.35, 1)
+
+[sub_resource type="Resource" id="Resource_abhvv"]
+script = ExtResource("3_7742q")
+kind = 7
+position = Vector2(6, -14)
+size = Vector3(1, 6, 1)
+color = Color(0.36, 0.58, 0.26, 1)
+accent = Color(0.85, 0.85, 0.35, 1)
+
+[sub_resource type="Resource" id="Resource_tcihb"]
+script = ExtResource("3_7742q")
+kind = 14
+position = Vector2(-30, -24)
+yaw_degrees = 15.0
+size = Vector3(1, 1, 1)
+color = Color(0.55, 0.38, 0.22, 1)
+accent = Color(0.55, 0.38, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_0x4lk"]
+script = ExtResource("3_7742q")
+kind = 15
+position = Vector2(-20, 34)
+size = Vector3(2.4, 0.45, 0.5)
+color = Color(0.55, 0.38, 0.22, 1)
+accent = Color(0.55, 0.38, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_0yr2j"]
+script = ExtResource("3_7742q")
+kind = 15
+position = Vector2(-17, 34)
+size = Vector3(2.4, 0.45, 0.5)
+color = Color(0.55, 0.38, 0.22, 1)
+accent = Color(0.55, 0.38, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_rtre5"]
+script = ExtResource("3_7742q")
+kind = 15
+position = Vector2(-14, 34)
+size = Vector3(2.4, 0.45, 0.5)
+color = Color(0.55, 0.38, 0.22, 1)
+accent = Color(0.55, 0.38, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_gn84n"]
+script = ExtResource("3_7742q")
+kind = 4
+position = Vector2(0, -104)
+size = Vector3(26, 8, 12)
+color = Color(0.88, 0.84, 0.74, 1)
+accent = Color(0.32, 0.27, 0.25, 1)
+
+[sub_resource type="Resource" id="Resource_cbovs"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-121.99763, -28.844704)
+yaw_degrees = 46.18801
+size = Vector3(1, 10.157601, 1)
+color = Color(0.16556504, 0.36908576, 0.20626917, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_4nmv4"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-21.251236, -119.07321)
+yaw_degrees = 77.04585
+size = Vector3(1, 12.489379, 1)
+color = Color(0.19321424, 0.38999125, 0.23256963, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_rse7e"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-36.371468, -112.14933)
+yaw_degrees = 89.25145
+size = Vector3(1, 10.545727, 1)
+color = Color(0.16981952, 0.37230256, 0.21031612, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_ga4mn"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(125.11853, 75.15779)
+yaw_degrees = 88.80985
+size = Vector3(1, 9.671171, 1)
+color = Color(0.20036834, 0.39540043, 0.23937476, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_k3u4v"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(81.640335, 124.61035)
+yaw_degrees = 67.62131
+size = Vector3(1, 11.368813, 1)
+color = Color(0.21231087, 0.40443015, 0.25073472, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_ynomy"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-130.2825, -81.498314)
+yaw_degrees = 46.14607
+size = Vector3(1, 10.876856, 1)
+color = Color(0.15125129, 0.35826316, 0.19265366, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_elijx"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-128.33907, -120.83667)
+yaw_degrees = 64.29204
+size = Vector3(1, 12.223106, 1)
+color = Color(0.18848313, 0.38641408, 0.22806932, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_0fj44"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-117.186455, -38.30867)
+yaw_degrees = 72.63404
+size = Vector3(1, 8.665243, 1)
+color = Color(0.18398513, 0.38301313, 0.22379074, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_6ukmj"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-130.56784, -14.354797)
+yaw_degrees = 5.214357
+size = Vector3(1, 10.879105, 1)
+color = Color(0.24157229, 0.42655465, 0.27856874, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_c28tp"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-130.31483, -98.07399)
+yaw_degrees = 73.561295
+size = Vector3(1, 12.304592, 1)
+color = Color(0.14715026, 0.35516238, 0.18875268, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_uug44"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(57.062454, -130.02585)
+yaw_degrees = 28.279919
+size = Vector3(1, 12.740992, 1)
+color = Color(0.1474534, 0.3553916, 0.18904102, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_jceka"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(7.30307, 126.26694)
+yaw_degrees = 51.44271
+size = Vector3(1, 11.821778, 1)
+color = Color(0.25936407, 0.44000697, 0.29549262, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_dq7h2"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-123.57083, -109.76755)
+yaw_degrees = 5.2931647
+size = Vector3(1, 12.687043, 1)
+color = Color(0.19250545, 0.38945532, 0.23189542, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_14ev1"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(123.5621, -74.524445)
+yaw_degrees = 59.673138
+size = Vector3(1, 10.396229, 1)
+color = Color(0.22210011, 0.4118318, 0.26004642, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_u2pc6"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(71.08885, -116.83752)
+yaw_degrees = 30.948687
+size = Vector3(1, 12.3728895, 1)
+color = Color(0.2628828, 0.44266748, 0.29883975, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_vf61l"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-35.799286, 112.311646)
+yaw_degrees = 46.811386
+size = Vector3(1, 9.501233, 1)
+color = Color(0.17018993, 0.3725826, 0.21066846, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_31anr"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-47.817795, -127.56303)
+yaw_degrees = 52.3472
+size = Vector3(1, 10.557389, 1)
+color = Color(0.14927967, 0.35677242, 0.19077823, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_re2h5"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-128.012, 114.92836)
+yaw_degrees = 54.958286
+size = Vector3(1, 8.462334, 1)
+color = Color(0.20591886, 0.39959717, 0.2446545, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_n48py"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(18.529144, -121.86864)
+yaw_degrees = 77.7597
+size = Vector3(1, 12.713083, 1)
+color = Color(0.18342042, 0.38258615, 0.22325355, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_seb8q"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-105.37884, -119.668724)
+yaw_degrees = 22.147501
+size = Vector3(1, 10.662806, 1)
+color = Color(0.26683244, 0.4456538, 0.30259672, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_p0b5i"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(131.41327, 12.892883)
+yaw_degrees = 1.0370373
+size = Vector3(1, 9.553805, 1)
+color = Color(0.20062834, 0.395597, 0.23962206, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_1jkl2"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-21.459488, 129.54288)
+yaw_degrees = 62.714546
+size = Vector3(1, 10.904333, 1)
+color = Color(0.25183073, 0.43431103, 0.28832677, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_3p50p"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-19.94252, 113.941666)
+yaw_degrees = 40.045303
+size = Vector3(1, 10.003321, 1)
+color = Color(0.1720231, 0.37396866, 0.21241221, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_ygu6o"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-43.691277, 117.29224)
+yaw_degrees = 17.844746
+size = Vector3(1, 10.98306, 1)
+color = Color(0.18357426, 0.38270247, 0.2233999, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_pguka"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-114.77554, -93.10347)
+yaw_degrees = 26.619244
+size = Vector3(1, 12.363121, 1)
+color = Color(0.25309083, 0.43526378, 0.28952542, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_ke6h3"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(39.458344, 128.81519)
+yaw_degrees = 5.3909583
+size = Vector3(1, 10.575278, 1)
+color = Color(0.2356055, 0.42204317, 0.272893, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_oh71w"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(112.79733, -27.652695)
+yaw_degrees = 40.444637
+size = Vector3(1, 12.32655, 1)
+color = Color(0.21725373, 0.40816745, 0.25543645, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_1f64d"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-115.682106, 21.667847)
+yaw_degrees = 28.351252
+size = Vector3(1, 8.230487, 1)
+color = Color(0.21626388, 0.40741903, 0.2544949, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_35m0u"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-128.69356, 90.541916)
+yaw_degrees = 47.521194
+size = Vector3(1, 12.89417, 1)
+color = Color(0.16674912, 0.36998105, 0.2073955, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_u0f5a"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-131.06999, 130.1705)
+yaw_degrees = 56.381714
+size = Vector3(1, 9.043365, 1)
+color = Color(0.26007983, 0.44054815, 0.29617348, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_jsquc"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(128.17758, -23.75409)
+yaw_degrees = 21.636055
+size = Vector3(1, 12.35233, 1)
+color = Color(0.21385436, 0.40559718, 0.25220293, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_qichf"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(118.45026, -36.643257)
+yaw_degrees = 77.22154
+size = Vector3(1, 8.243965, 1)
+color = Color(0.2277247, 0.41608453, 0.26539665, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_jy7od"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(118.0497, 78.0376)
+yaw_degrees = 57.480576
+size = Vector3(1, 8.1175, 1)
+color = Color(0.20550497, 0.39928424, 0.24426082, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_2r55u"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(124.74475, -12.631912)
+yaw_degrees = 50.068153
+size = Vector3(1, 9.856545, 1)
+color = Color(0.2665903, 0.4454707, 0.30236635, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_o88ot"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(94.79086, -131.42021)
+yaw_degrees = 39.08823
+size = Vector3(1, 10.298174, 1)
+color = Color(0.22773024, 0.4160887, 0.26540193, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_jp824"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(19.326462, -116.66674)
+yaw_degrees = 11.412013
+size = Vector3(1, 10.533539, 1)
+color = Color(0.20904222, 0.40195873, 0.24762551, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_6dpu8"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-18.528664, 123.46391)
+yaw_degrees = 45.84457
+size = Vector3(1, 12.09384, 1)
+color = Color(0.1762409, 0.37715775, 0.21642427, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_1k73q"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-61.089066, 129.82944)
+yaw_degrees = 62.210335
+size = Vector3(1, 10.427929, 1)
+color = Color(0.25638372, 0.43775356, 0.29265767, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_wlud6"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-123.0135, 60.647736)
+yaw_degrees = 70.103714
+size = Vector3(1, 12.585522, 1)
+color = Color(0.27770948, 0.45387787, 0.31294316, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_y4yih"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(26.900253, -116.85333)
+yaw_degrees = 74.70737
+size = Vector3(1, 8.265217, 1)
+color = Color(0.23687811, 0.4230054, 0.27410358, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_ygqql"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(125.14627, -65.45283)
+yaw_degrees = 46.815395
+size = Vector3(1, 11.489947, 1)
+color = Color(0.23714453, 0.42320684, 0.274357, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_ccqik"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(123.07173, 90.85341)
+yaw_degrees = 41.030724
+size = Vector3(1, 12.569426, 1)
+color = Color(0.27728918, 0.4535601, 0.31254336, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_8sso6"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(118.955, -72.17345)
+yaw_degrees = 18.123636
+size = Vector3(1, 9.897361, 1)
+color = Color(0.23802263, 0.42387074, 0.27519223, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_f422q"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(78.896545, 130.81552)
+yaw_degrees = 5.063476
+size = Vector3(1, 9.477531, 1)
+color = Color(0.17491801, 0.37615752, 0.2151659, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_1p84m"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-124.98415, -11.6405945)
+yaw_degrees = 52.625874
+size = Vector3(1, 10.311944, 1)
+color = Color(0.24967043, 0.43267763, 0.28627187, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_dvgtk"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(126.645966, 120.54799)
+yaw_degrees = 34.049477
+size = Vector3(1, 10.845698, 1)
+color = Color(0.1689174, 0.37162045, 0.20945801, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_24c3d"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-118.31098, -20.913506)
+yaw_degrees = 6.029682
+size = Vector3(1, 9.889172, 1)
+color = Color(0.27537927, 0.452116, 0.3107266, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_h4i8i"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(20.412659, -130.63506)
+yaw_degrees = 71.8489
+size = Vector3(1, 9.623515, 1)
+color = Color(0.25793257, 0.4389246, 0.29413098, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_4460j"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(106.39134, -112.72782)
+yaw_degrees = 33.94891
+size = Vector3(1, 9.919369, 1)
+color = Color(0.1657809, 0.36924896, 0.20647451, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_hqawi"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-117.15151, -120.13703)
+yaw_degrees = 68.97373
+size = Vector3(1, 12.788475, 1)
+color = Color(0.15296023, 0.35955527, 0.19427922, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_byrbk"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-73.94733, 117.80679)
+yaw_degrees = 2.5956612
+size = Vector3(1, 10.295285, 1)
+color = Color(0.22240826, 0.4120648, 0.26033956, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_q5f7h"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-129.75206, 79.30769)
+yaw_degrees = 80.83322
+size = Vector3(1, 9.765343, 1)
+color = Color(0.22844133, 0.41662636, 0.26607832, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_5yjau"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(117.19301, 112.637695)
+yaw_degrees = 47.742146
+size = Vector3(1, 9.587804, 1)
+color = Color(0.20161392, 0.39634222, 0.24055956, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_2rq1r"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(14.246841, -118.07311)
+yaw_degrees = 7.551685
+size = Vector3(1, 10.252365, 1)
+color = Color(0.27208698, 0.4496267, 0.3075949, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_3kl20"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(53.00403, -112.46006)
+yaw_degrees = 16.06776
+size = Vector3(1, 8.644493, 1)
+color = Color(0.20129907, 0.39610416, 0.24026008, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_75t6x"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(81.62125, -119.28552)
+yaw_degrees = 21.299835
+size = Vector3(1, 10.958845, 1)
+color = Color(0.19277722, 0.3896608, 0.23215394, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_55h5l"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-89.63193, 131.13159)
+yaw_degrees = 68.796074
+size = Vector3(1, 11.700049, 1)
+color = Color(0.25104243, 0.433715, 0.2875769, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_4447r"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(48.131287, -127.359695)
+yaw_degrees = 67.77763
+size = Vector3(1, 11.857642, 1)
+color = Color(0.21352565, 0.40534866, 0.25189024, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_1bev8"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-15.795258, 118.52141)
+yaw_degrees = 73.763
+size = Vector3(1, 12.082352, 1)
+color = Color(0.24960072, 0.43262494, 0.28620556, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_pkvbj"]
+script = ExtResource("3_7742q")
+kind = 6
+position = Vector2(-114.906906, -82.21304)
+yaw_degrees = 53.360645
+size = Vector3(1, 11.088101, 1)
+color = Color(0.27200794, 0.44956696, 0.30751973, 1)
+accent = Color(1, 1, 1, 1)
+
+[resource]
+script = ExtResource("2_dnelu")
+id = &"gemeindebau"
+name_key = "MAP_GEMEINDEBAU"
+half_size = 150.0
+noise_seed = 31
+noise_amplitude = 0.3
+noise_frequency = 0.02
+flat_radius = 90.0
+flat_blend = 20.0
+hills = PackedVector4Array()
+ridge_starts = PackedVector4Array()
+ridge_shapes = PackedVector2Array()
+rim_start = 128.0
+rim_height = 24.0
+mesas = PackedVector4Array(0, -6, 17, 3, 0, -6, 8, 3)
+mesa_edge = 2.5
+wave = ExtResource("4_qmhxh")
+spawn_point = Vector3(0, 0, 26)
+bot_waypoints = PackedVector2Array(0, 26, 0, 50, 60, 66, 66, 0, 60, -66, 0, -66, -60, -66, -66, 0, -60, 66, 0, 40, -20, 0, 20, -20)
+props = Array[ExtResource("1_shimg")]([SubResource("Resource_qr0mp"), SubResource("Resource_5uq24"), SubResource("Resource_27ue3"), SubResource("Resource_edf84"), SubResource("Resource_mkfyp"), SubResource("Resource_mif1l"), SubResource("Resource_tatfc"), SubResource("Resource_gm2l4"), SubResource("Resource_sgde3"), SubResource("Resource_6y4gb"), SubResource("Resource_ad51v"), SubResource("Resource_hdbbj"), SubResource("Resource_0qvme"), SubResource("Resource_vpj5v"), SubResource("Resource_0cg3p"), SubResource("Resource_kvcek"), SubResource("Resource_wr1ga"), SubResource("Resource_xt68t"), SubResource("Resource_3b83d"), SubResource("Resource_0ro45"), SubResource("Resource_ia4tr"), SubResource("Resource_ne33r"), SubResource("Resource_wvbt1"), SubResource("Resource_pfpqu"), SubResource("Resource_s2ls2"), SubResource("Resource_nearj"), SubResource("Resource_4domf"), SubResource("Resource_e1dks"), SubResource("Resource_6oqh7"), SubResource("Resource_qet4o"), SubResource("Resource_6q237"), SubResource("Resource_a6m2m"), SubResource("Resource_obngf"), SubResource("Resource_1c7w8"), SubResource("Resource_vjjox"), SubResource("Resource_6ob7k"), SubResource("Resource_ny1ug"), SubResource("Resource_nwygh"), SubResource("Resource_aacbd"), SubResource("Resource_6gv0r"), SubResource("Resource_qjm36"), SubResource("Resource_kcshp"), SubResource("Resource_dewuy"), SubResource("Resource_r06fb"), SubResource("Resource_gokmn"), SubResource("Resource_7xyrt"), SubResource("Resource_xi8ha"), SubResource("Resource_v7vda"), SubResource("Resource_hb6km"), SubResource("Resource_g5oui"), SubResource("Resource_0e5na"), SubResource("Resource_j88d1"), SubResource("Resource_ocwby"), SubResource("Resource_g5tf1"), SubResource("Resource_qj6dc"), SubResource("Resource_xa3fw"), SubResource("Resource_gmsml"), SubResource("Resource_q4a5d"), SubResource("Resource_2yxiu"), SubResource("Resource_yhjfq"), SubResource("Resource_yyurb"), SubResource("Resource_gjwmr"), SubResource("Resource_n4u3c"), SubResource("Resource_rf516"), SubResource("Resource_4xl3y"), SubResource("Resource_tp3ml"), SubResource("Resource_l0bhj"), SubResource("Resource_utcga"), SubResource("Resource_g1rg7"), SubResource("Resource_mpiut"), SubResource("Resource_3cdbe"), SubResource("Resource_djsv4"), SubResource("Resource_rwji3"), SubResource("Resource_wq02s"), SubResource("Resource_g57g3"), SubResource("Resource_dcuc2"), SubResource("Resource_am7h1"), SubResource("Resource_dlnvb"), SubResource("Resource_707ax"), SubResource("Resource_uhwih"), SubResource("Resource_nt5vm"), SubResource("Resource_2pkhe"), SubResource("Resource_dorq2"), SubResource("Resource_8jyhi"), SubResource("Resource_pp6s2"), SubResource("Resource_h510n"), SubResource("Resource_1xgcj"), SubResource("Resource_ifpys"), SubResource("Resource_bw2jj"), SubResource("Resource_t35ju"), SubResource("Resource_103js"), SubResource("Resource_aybti"), SubResource("Resource_eww7l"), SubResource("Resource_yqxac"), SubResource("Resource_30inn"), SubResource("Resource_8g4ea"), SubResource("Resource_4ijse"), SubResource("Resource_ub72w"), SubResource("Resource_q3726"), SubResource("Resource_5sk6q"), SubResource("Resource_1r1ya"), SubResource("Resource_p4j5m"), SubResource("Resource_g672w"), SubResource("Resource_8fu5f"), SubResource("Resource_tdy7k"), SubResource("Resource_p3qoo"), SubResource("Resource_dfisn"), SubResource("Resource_kpoxn"), SubResource("Resource_7n5fv"), SubResource("Resource_w82ue"), SubResource("Resource_mt62d"), SubResource("Resource_1wsns"), SubResource("Resource_brg3y"), SubResource("Resource_wyf3l"), SubResource("Resource_w66k8"), SubResource("Resource_coxw4"), SubResource("Resource_yl6vp"), SubResource("Resource_loga5"), SubResource("Resource_4lrj6"), SubResource("Resource_gp5eg"), SubResource("Resource_ta3i4"), SubResource("Resource_vnmfv"), SubResource("Resource_nvfwc"), SubResource("Resource_lipha"), SubResource("Resource_c4sbu"), SubResource("Resource_wy4rr"), SubResource("Resource_4wbo6"), SubResource("Resource_csabf"), SubResource("Resource_nly53"), SubResource("Resource_oo8dg"), SubResource("Resource_fa0nm"), SubResource("Resource_g21x0"), SubResource("Resource_adhd0"), SubResource("Resource_6u04v"), SubResource("Resource_ft176"), SubResource("Resource_64pfh"), SubResource("Resource_ir08m"), SubResource("Resource_qs8rf"), SubResource("Resource_5kto1"), SubResource("Resource_ojdit"), SubResource("Resource_08k8l"), SubResource("Resource_8c4ab"), SubResource("Resource_e6uph"), SubResource("Resource_1jsvb"), SubResource("Resource_sddgg"), SubResource("Resource_aj8fu"), SubResource("Resource_2o8j8"), SubResource("Resource_a7lxo"), SubResource("Resource_kh7ac"), SubResource("Resource_fhjr6"), SubResource("Resource_5f783"), SubResource("Resource_1ei6a"), SubResource("Resource_m0pxt"), SubResource("Resource_xxovq"), SubResource("Resource_i0fgh"), SubResource("Resource_cjy47"), SubResource("Resource_36vrf"), SubResource("Resource_dbsor"), SubResource("Resource_lxps4"), SubResource("Resource_pcg47"), SubResource("Resource_nw5jc"), SubResource("Resource_7ntm2"), SubResource("Resource_3mo6b"), SubResource("Resource_8cftf"), SubResource("Resource_wx005"), SubResource("Resource_ow2k3"), SubResource("Resource_8cyfy"), SubResource("Resource_ayuk1"), SubResource("Resource_ftac8"), SubResource("Resource_8migb"), SubResource("Resource_8qo7s"), SubResource("Resource_ande5"), SubResource("Resource_n5cyt"), SubResource("Resource_1sb4c"), SubResource("Resource_3rifh"), SubResource("Resource_kssdp"), SubResource("Resource_r8ty1"), SubResource("Resource_i51hb"), SubResource("Resource_1vifo"), SubResource("Resource_jc5pr"), SubResource("Resource_yig7s"), SubResource("Resource_y1845"), SubResource("Resource_j7ilh"), SubResource("Resource_i1fki"), SubResource("Resource_6yfg2"), SubResource("Resource_o1sog"), SubResource("Resource_wcoyg"), SubResource("Resource_8xcbg"), SubResource("Resource_wy2d7"), SubResource("Resource_noin7"), SubResource("Resource_t248w"), SubResource("Resource_y2rv7"), SubResource("Resource_vgdi6"), SubResource("Resource_ptj0r"), SubResource("Resource_nn0m7"), SubResource("Resource_a1rtt"), SubResource("Resource_l2yvw"), SubResource("Resource_b33sk"), SubResource("Resource_2ucdb"), SubResource("Resource_c5pqw"), SubResource("Resource_k7i1f"), SubResource("Resource_wwe5x"), SubResource("Resource_mnrbd"), SubResource("Resource_xsmut"), SubResource("Resource_og3ba"), SubResource("Resource_0g0wd"), SubResource("Resource_64oeh"), SubResource("Resource_j44vg"), SubResource("Resource_j24s5"), SubResource("Resource_bvd8u"), SubResource("Resource_aweai"), SubResource("Resource_tthda"), SubResource("Resource_ewmdi"), SubResource("Resource_2cbek"), SubResource("Resource_x54qr"), SubResource("Resource_t63jc"), SubResource("Resource_3dnjl"), SubResource("Resource_sr2gb"), SubResource("Resource_qq08j"), SubResource("Resource_dmnrk"), SubResource("Resource_0a405"), SubResource("Resource_5nudm"), SubResource("Resource_vvdyf"), SubResource("Resource_kil8e"), SubResource("Resource_m5e82"), SubResource("Resource_ujyij"), SubResource("Resource_t8f78"), SubResource("Resource_omuyv"), SubResource("Resource_i4658"), SubResource("Resource_dtdnj"), SubResource("Resource_88uus"), SubResource("Resource_q862t"), SubResource("Resource_5jiok"), SubResource("Resource_ydqbi"), SubResource("Resource_7yhni"), SubResource("Resource_if4nu"), SubResource("Resource_1frm2"), SubResource("Resource_u6gg8"), SubResource("Resource_skaah"), SubResource("Resource_cor0r"), SubResource("Resource_jajyl"), SubResource("Resource_sg71a"), SubResource("Resource_ckl7t"), SubResource("Resource_4wnfg"), SubResource("Resource_p6hpr"), SubResource("Resource_bkthg"), SubResource("Resource_gajfq"), SubResource("Resource_5fnm2"), SubResource("Resource_xiojv"), SubResource("Resource_cjkn6"), SubResource("Resource_iy41d"), SubResource("Resource_ryf0u"), SubResource("Resource_hsrn0"), SubResource("Resource_rg3tb"), SubResource("Resource_s5al1"), SubResource("Resource_hhug2"), SubResource("Resource_65wv3"), SubResource("Resource_sf51p"), SubResource("Resource_q17ln"), SubResource("Resource_8w2x5"), SubResource("Resource_82yhc"), SubResource("Resource_ti4jj"), SubResource("Resource_15r5k"), SubResource("Resource_hbu4i"), SubResource("Resource_40ri1"), SubResource("Resource_txme0"), SubResource("Resource_liecp"), SubResource("Resource_c73hd"), SubResource("Resource_ymqcp"), SubResource("Resource_rl5g3"), SubResource("Resource_s55ta"), SubResource("Resource_nqnbe"), SubResource("Resource_nwmjj"), SubResource("Resource_nd48l"), SubResource("Resource_ni8yb"), SubResource("Resource_xqcqk"), SubResource("Resource_qch7a"), SubResource("Resource_ql7k3"), SubResource("Resource_7yk5m"), SubResource("Resource_obujl"), SubResource("Resource_lfh74"), SubResource("Resource_s206a"), SubResource("Resource_mo8a2"), SubResource("Resource_nddno"), SubResource("Resource_43tdi"), SubResource("Resource_u5fbg"), SubResource("Resource_l0l03"), SubResource("Resource_nmd3c"), SubResource("Resource_gmmxh"), SubResource("Resource_0lusm"), SubResource("Resource_cu70v"), SubResource("Resource_21xgw"), SubResource("Resource_np6oq"), SubResource("Resource_t2ctg"), SubResource("Resource_wn13x"), SubResource("Resource_mxcha"), SubResource("Resource_3r5ls"), SubResource("Resource_vbinm"), SubResource("Resource_vo4yc"), SubResource("Resource_e4vog"), SubResource("Resource_5d1nt"), SubResource("Resource_fdx5a"), SubResource("Resource_eyf3v"), SubResource("Resource_s87o0"), SubResource("Resource_qng11"), SubResource("Resource_dusoh"), SubResource("Resource_8cvbg"), SubResource("Resource_7kist"), SubResource("Resource_x8vw4"), SubResource("Resource_8t66w"), SubResource("Resource_h0ea1"), SubResource("Resource_mkejm"), SubResource("Resource_eilej"), SubResource("Resource_eq00c"), SubResource("Resource_guhqq"), SubResource("Resource_firsj"), SubResource("Resource_cfknx"), SubResource("Resource_d1sfl"), SubResource("Resource_mlhwu"), SubResource("Resource_kdxp0"), SubResource("Resource_xyrtv"), SubResource("Resource_0uptc"), SubResource("Resource_5fdsl"), SubResource("Resource_2e06c"), SubResource("Resource_sqvt0"), SubResource("Resource_hnc5p"), SubResource("Resource_qb8lv"), SubResource("Resource_c0mtq")])
+wirtshaus_spots = PackedVector2Array(80, 20, -80, -20, 20, 82, -24, -82, 80, 66, -80, 66, 70, -76)
+structures = Array[ExtResource("3_7742q")]([SubResource("Resource_rgh5i"), SubResource("Resource_p8jsl"), SubResource("Resource_qkgxa"), SubResource("Resource_w07u2"), SubResource("Resource_abhvv"), SubResource("Resource_tcihb"), SubResource("Resource_0x4lk"), SubResource("Resource_0yr2j"), SubResource("Resource_rtre5"), SubResource("Resource_gn84n"), SubResource("Resource_cbovs"), SubResource("Resource_4nmv4"), SubResource("Resource_rse7e"), SubResource("Resource_ga4mn"), SubResource("Resource_k3u4v"), SubResource("Resource_ynomy"), SubResource("Resource_elijx"), SubResource("Resource_0fj44"), SubResource("Resource_6ukmj"), SubResource("Resource_c28tp"), SubResource("Resource_uug44"), SubResource("Resource_jceka"), SubResource("Resource_dq7h2"), SubResource("Resource_14ev1"), SubResource("Resource_u2pc6"), SubResource("Resource_vf61l"), SubResource("Resource_31anr"), SubResource("Resource_re2h5"), SubResource("Resource_n48py"), SubResource("Resource_seb8q"), SubResource("Resource_p0b5i"), SubResource("Resource_1jkl2"), SubResource("Resource_3p50p"), SubResource("Resource_ygu6o"), SubResource("Resource_pguka"), SubResource("Resource_ke6h3"), SubResource("Resource_oh71w"), SubResource("Resource_1f64d"), SubResource("Resource_35m0u"), SubResource("Resource_u0f5a"), SubResource("Resource_jsquc"), SubResource("Resource_qichf"), SubResource("Resource_jy7od"), SubResource("Resource_2r55u"), SubResource("Resource_o88ot"), SubResource("Resource_jp824"), SubResource("Resource_6dpu8"), SubResource("Resource_1k73q"), SubResource("Resource_wlud6"), SubResource("Resource_y4yih"), SubResource("Resource_ygqql"), SubResource("Resource_ccqik"), SubResource("Resource_8sso6"), SubResource("Resource_f422q"), SubResource("Resource_1p84m"), SubResource("Resource_dvgtk"), SubResource("Resource_24c3d"), SubResource("Resource_h4i8i"), SubResource("Resource_4460j"), SubResource("Resource_hqawi"), SubResource("Resource_byrbk"), SubResource("Resource_q5f7h"), SubResource("Resource_5yjau"), SubResource("Resource_2rq1r"), SubResource("Resource_3kl20"), SubResource("Resource_75t6x"), SubResource("Resource_55h5l"), SubResource("Resource_4447r"), SubResource("Resource_1bev8"), SubResource("Resource_pkvbj")])
+stempel_spots = PackedVector2Array(0, -6, 50, -30, -50, 30, 30, 50, -30, -50, 96, 96, -96, -96, 110, 0, -110, 0)
+chest_spots = PackedVector2Array(-20, -30, 20, 30, 50, 20, -50, -20, -20, 50, 20, -50, 96, -96, -96, 96, 60, 0, -60, 0, 0, 60, 0, -64, 110, 50, -110, -50)
+portal_point = Vector2(0, -88)
+grass_color = Color(0.42, 0.6, 0.32, 1)
+meadow_color = Color(0.5, 0.66, 0.36, 1)
+dirt_color = Color(0.58, 0.56, 0.52, 1)
+paths = PackedVector4Array(-66, -66, 66, -66, 66, -66, 66, 66, 66, 66, -66, 66, -66, 66, -66, -66, 0, -66, 0, -120, 0, 66, 0, 120, 66, 0, 120, 0, -66, 0, -120, 0, 0, 44, 0, 66, 0, -44, 0, -66, 44, 0, 66, 0, -44, 0, -66, 0)
+path_width = 10.0
+path_color = Color(0.5, 0.5, 0.52, 1)

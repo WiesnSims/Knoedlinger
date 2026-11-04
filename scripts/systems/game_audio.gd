@@ -5,7 +5,8 @@ extends Node
 ## so 500 enemies dying at once stay one crunchy pop instead of 500. Barks (short dialect lines)
 ## come at most once per BARK_GAP seconds (GAME-DESIGN.md: max one per 8 s). Music crossfades
 ## between tracks and can speed up with the run clock.
-## `?mute=1` / `--mute=1` silences everything (automated runs).
+## `?mute=1` / `--mute=1` silences everything (automated runs). Music, effects and barks play on
+## their own buses (Music, Sfx, Voice), whose volumes the Settings set.
 
 const SFX_DIR: String = "res://assets/audio/sfx"
 const MUSIC_DIR: String = "res://assets/audio/music"
@@ -68,16 +69,25 @@ var _time: float = 0.0
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	muted = LaunchArgs.get_flag("mute", false) or DisplayServer.get_name() == "headless"
+	for bus: StringName in [&"Music", &"Sfx", &"Voice"]:
+		if AudioServer.get_bus_index(bus) < 0:
+			AudioServer.add_bus()
+			var index: int = AudioServer.bus_count - 1
+			AudioServer.set_bus_name(index, bus)
+			AudioServer.set_bus_send(index, &"Master")
 	for k: int in VOICES:
 		var player := AudioStreamPlayer.new()
 		player.name = "Voice%d" % k
+		player.bus = &"Sfx"
 		add_child(player)
 		_voices.append(player)
 	_music_a = AudioStreamPlayer.new()
 	_music_a.name = "MusicA"
+	_music_a.bus = &"Music"
 	add_child(_music_a)
 	_music_b = AudioStreamPlayer.new()
 	_music_b.name = "MusicB"
+	_music_b.bus = &"Music"
 	add_child(_music_b)
 
 
@@ -110,6 +120,7 @@ func play(id: StringName, at: Vector3 = Vector3.INF, pitch_jitter: float = 0.08)
 		return
 	_last_played[id] = _time
 	player.stream = stream
+	player.bus = &"Sfx"
 	player.volume_db = volume
 	player.pitch_scale = 1.0 + randf_range(-pitch_jitter, pitch_jitter)
 	player.set_meta(&"id", id)
@@ -128,6 +139,7 @@ func bark(id: StringName) -> void:
 		return
 	_last_bark = _time
 	player.stream = stream
+	player.bus = &"Voice"
 	player.volume_db = -1.0
 	player.pitch_scale = 1.0
 	player.set_meta(&"id", &"bark")

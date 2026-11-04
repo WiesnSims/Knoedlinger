@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PassiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/passive_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/bausparvertrag.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"bausparvertrag"
+name_key = "PASSIVE_BAUSPAR"
+desc_key = "DESC_PASSIVE_BAUSPAR"
+max_level = 0
+stats = Dictionary[StringName, float]({&"gold": 0.15})
+color = Color(0.3, 0.6, 0.95, 1)
+icon = ExtResource("9_icon")

@@ -19,7 +19,7 @@ const FOOTER_HEIGHT: float = 64.0
 ## The bot reads the menu this long before it picks (`?pick_delay=3` for screenshots).
 const BOT_DELAY: float = 0.35
 ## Stats shown as flat numbers; the rest are percentages.
-const FLAT_STATS: Array[StringName] = [&"max_hp", &"regen", &"armor", &"extra_jumps", &"knodl_guard"]
+const FLAT_STATS: Array[StringName] = [&"max_hp", &"regen", &"armor", &"extra_jumps", &"knodl_guard", &"amount"]
 
 var catalog: UpgradeCatalog
 var balance: BalanceData
@@ -237,6 +237,12 @@ func close() -> void:
 	_offer = null
 
 
+## A full-screen panel opened (Tab screen, pause menu): the chest reveal goes at once.
+func hide_chest() -> void:
+	_chest_timer = 0.0
+	_chest_panel.visible = false
+
+
 ## The one line under a card's name: what it changes ("+18 % Schaden", "Neu!", "+25 Gold").
 static func change_text(card: Card, p_catalog: UpgradeCatalog, p_balance: BalanceData, build: PlayerBuild) -> String:
 	var bonus: float = p_balance.rarity_bonus[clampi(card.rarity, 0, p_balance.rarity_bonus.size() - 1)]
@@ -246,15 +252,10 @@ static func change_text(card: Card, p_catalog: UpgradeCatalog, p_balance: Balanc
 		Card.Kind.WEAPON:
 			if card.level <= 1:
 				return TranslationServer.translate("CARD_NEW")
-			var weapon: WeaponData = p_catalog.weapons[card.index]
-			var owned: PlayerBuild.OwnedWeapon = build.owned_weapon(card.index) if build != null else null
-			var old_bonus: float = owned.bonus if owned != null else float(card.level - 1)
-			var before: float = Formulas.weapon_damage(weapon, card.level - 1, old_bonus, 0.0, p_balance)
-			var after: float = Formulas.weapon_damage(weapon, card.level, old_bonus + bonus, 0.0, p_balance)
-			var parts: PackedStringArray = [stat_text(&"damage", after / maxf(before, 0.001) - 1.0)]
-			if Formulas.weapon_amount(weapon, card.level) > Formulas.weapon_amount(weapon, card.level - 1):
-				parts.append(TranslationServer.translate("CARD_MORE_PIECES"))
-			return " · ".join(parts)
+			# The gain this level card rolled (rarity included).
+			return stat_text(PlayerBuild.WEAPON_MODS[clampi(card.mod, 0, PlayerBuild.WEAPON_MODS.size() - 1)], card.value)
+		Card.Kind.ITEM:
+			return TranslationServer.translate("CARD_NEW") if card.level <= 1 else "×%d" % card.level
 		Card.Kind.PASSIVE:
 			if card.level <= 1:
 				return TranslationServer.translate("CARD_NEW")
@@ -283,12 +284,17 @@ static func card_details(card: Card, p_catalog: UpgradeCatalog, p_balance: Balan
 			var weapon: WeaponData = p_catalog.weapons[card.index]
 			line = TranslationServer.translate(weapon.desc_key)
 			if card.kind == Card.Kind.WEAPON and card.level > 1:
-				meta.append(TranslationServer.translate("CARD_WEAPON_LEVEL"))
+				meta.append(change_text(card, p_catalog, p_balance, null))
 		Card.Kind.PASSIVE:
 			var passive: PassiveData = p_catalog.passives[card.index]
 			line = TranslationServer.translate(passive.desc_key)
 			for key: StringName in card_stats(card, p_catalog, p_balance):
 				meta.append(stat_text(key, card_stats(card, p_catalog, p_balance)[key]))
+		Card.Kind.ITEM:
+			var item: ItemData = p_catalog.items[card.index]
+			line = TranslationServer.translate(item.desc_key)
+			for key: StringName in item.stats:
+				meta.append(stat_text(key, item.stats[key]))
 		Card.Kind.GOLD:
 			line = TranslationServer.translate("CARD_GOLD_DESC") % p_balance.fallback_gold
 		Card.Kind.HEAL:
@@ -315,6 +321,8 @@ static func card_name(card: Card, p_catalog: UpgradeCatalog) -> String:
 			return TranslationServer.translate(p_catalog.weapons[card.index].name_key)
 		Card.Kind.PASSIVE:
 			return TranslationServer.translate(p_catalog.passives[card.index].name_key)
+		Card.Kind.ITEM:
+			return TranslationServer.translate(p_catalog.items[card.index].name_key)
 		Card.Kind.GOLD:
 			return TranslationServer.translate("CARD_GOLD")
 	return TranslationServer.translate("CARD_HEAL")
@@ -327,6 +335,8 @@ static func level_text(card: Card) -> String:
 		Card.Kind.WEAPON, Card.Kind.PASSIVE:
 			return TranslationServer.translate("CARD_NEW") if card.level <= 1 \
 					else TranslationServer.translate("CARD_LEVEL") % card.level
+		Card.Kind.ITEM:
+			return TranslationServer.translate("RARITY_%d" % card.rarity) if card.level <= 1 else "×%d" % card.level
 	return ""
 
 

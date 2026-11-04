@@ -58,8 +58,9 @@ func test_world_state_round_trip() -> void:
 	e.gold = 1234
 	e.rerolls = 3
 	e.banishes = 1
-	e.weapons = PackedInt32Array([0, 8, 1025, 200, 5, 1, 100, 7])
+	e.weapons = PackedInt32Array([0, 8, 200, 1250, 500, 300, 50, 1000, 5, 1, 7, 0, 0, 0, 0, 0])
 	e.passives = PackedInt32Array([9, 1, 150])
+	e.items = PackedInt32Array([3, 2, 0, 1])
 	e.knodl_state = Knodl.State.REELING
 	e.knodl_cooldown = 2.35
 	e.knodl_mass = 812.25
@@ -68,7 +69,7 @@ func test_world_state_round_trip() -> void:
 	frame.entries.append(e)
 	var data: PackedByteArray = WorldStateCodec.encode(frame)
 	assert_eq(data.size(), WorldStateCodec.HEADER_SIZE + 2 * WorldStateCodec.WIRT_SIZE + 1 + WorldStateCodec.PLAYER_SIZE
-			+ 2 * WorldStateCodec.WEAPON_SIZE + WorldStateCodec.PASSIVE_SIZE)
+			+ 2 * WorldStateCodec.WEAPON_SIZE + WorldStateCodec.PASSIVE_SIZE + 2 * WorldStateCodec.ITEM_SIZE)
 	var back: WorldStateCodec.Frame = WorldStateCodec.decode(data)
 	assert_not_null(back)
 	assert_eq(back.seq, 513)
@@ -89,6 +90,7 @@ func test_world_state_round_trip() -> void:
 	assert_eq(b.banishes, 1)
 	assert_eq(b.weapons, e.weapons)
 	assert_eq(b.passives, e.passives)
+	assert_eq(b.items, e.items)
 	assert_eq(b.knodl_state, Knodl.State.REELING)
 	assert_almost_eq(b.knodl_cooldown, 2.35, 0.05)
 	assert_almost_eq(b.knodl_mass, 812.25, 0.001)

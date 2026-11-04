@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"tablettschupfer"
+title_key = "QUEST_TABLETTSCHUPFER"
+desc_key = "DESC_QUEST_TABLETTSCHUPFER"
+kind = &"level"
+filter = &"poldi"
+target = 15.0
+reward_schilling = 100
+unlock_kind = &"weapon"
+unlock_id = &"tablett"

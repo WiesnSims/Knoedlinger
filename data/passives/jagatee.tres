@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PassiveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/passive_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/jagatee.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"jagatee"
+name_key = "PASSIVE_JAGATEE"
+desc_key = "DESC_PASSIVE_JAGATEE"
+max_level = 0
+stats = Dictionary[StringName, float]({&"damage": 0.08})
+color = Color(0.71, 0.44, 0.23, 1)
+icon = ExtResource("9_icon")

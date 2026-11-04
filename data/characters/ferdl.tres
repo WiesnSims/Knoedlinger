@@ -8,8 +8,11 @@
 script = ExtResource("1_character")
 id = &"ferdl"
 name_key = "CHARACTER_FERDL"
+role_key = "ROLE_FERDL"
+trait_key = "TRAIT_FERDL"
 start_weapon = ExtResource("2_weapon")
 knodl_sort = ExtResource("3_sort")
 coat_color = Color(0.2, 0.32, 0.55, 1)
 trouser_color = Color(0.3, 0.24, 0.18, 1)
 hat_color = Color(0.22, 0.35, 0.2, 1)
+trait_effects = Dictionary[StringName, float]({&"grant": 0.01})

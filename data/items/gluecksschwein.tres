@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/gluecksschwein.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"gluecksschwein"
+name_key = "ITEM_GLUECKSSCHWEIN"
+desc_key = "DESC_ITEM_GLUECKSSCHWEIN"
+rarity = 0
+stats = Dictionary[StringName, float]({&"luck": 0.08})
+icon = ExtResource("2_icon")
+color = Color(0.96, 0.65, 0.73, 1)
