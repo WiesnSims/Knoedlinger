@@ -404,7 +404,10 @@ const SFX = {
 		bell(o, 0, freq('G6'), 0.05, 0.6);
 		return o;
 	},
-	card: () => { const o = new Sfx(0.08); noiseBurst(o, 0, 0.05, 0.4, 2500, 2, 70); sweep(o, 0, 900, 1200, 0.04, 0.15); return o; },
+	// Picking a dish: a click and a small plate clink.
+	card: () => { const o = new Sfx(0.4); noiseBurst(o, 0, 0.05, 0.4, 2500, 2, 70); sweep(o, 0, 900, 1200, 0.04, 0.15); bell(o, 0.02, freq('A6'), 0.1, 0.25); return o; },
+	// Hovering a row: a very short, soft tick.
+	ui_hover: () => { const o = new Sfx(0.05); sweep(o, 0, 1800, 2300, 0.025, 0.08); return o; },
 	menu_open: () => { const o = new Sfx(0.6); whoosh(o, 0, 0.2, 0.25, 800, 3000); bell(o, 0.12, freq('E6'), 0.12, 0.4); bell(o, 0.2, freq('B6'), 0.08, 0.4); return o; },
 	cash_in: () => {
 		// Ka-ching: the drawer, the bell, the coins.

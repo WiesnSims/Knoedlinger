@@ -29,6 +29,7 @@ const SOUNDS: Dictionary[StringName, Array] = {
 	&"downed": [1.0, -2.0, 1],
 	&"level_up": [0.5, -4.0, 1],
 	&"card": [0.08, -8.0, 1],
+	&"ui_hover": [0.04, -16.0, 1],
 	&"menu_open": [0.3, -8.0, 1],
 	&"cash_in": [0.5, -3.0, 1],
 	&"mahlzeit": [1.0, 0.0, 1],

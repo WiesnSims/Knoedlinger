@@ -1,147 +1,166 @@
 class_name Hud
 extends CanvasLayer
-## The HUD: HP, gold, level and XP, the run clock up to Sperrstund', the build, the Knödl's size
-## and Wirtshaus tier, whether Schupfn is ready, a marker toward the nearest open Wirtshaus, and
-## short toasts. Plain shapes for now; the Lebkuchenherzen, Krügerl and wall clock come with the
-## art pass.
-## Every player-facing word goes through tr() (i18n/strings.csv).
+## The HUD (docs/UI-STYLE.md: only the corners are permanent). Top left: health (Lebkuchenherz,
+## bar, number) and the XP Krügerl with the level. Top right: the wall clock up to Sperrstund'.
+## Bottom right: the Knödl (its size, mass, Wirtshaus tier and the Schupfn cooldown ring).
+## Everything else only shows while it matters: the boss bar and the Formular line at the top, toasts,
+## the chest hint and the mouse hint at the bottom, the controls for the first seconds of a run, and
+## small markers over places (the Wirtshaus one only once the Knödl is worth cashing in).
+## The build, gold and stats live in the Inventory screen (Tab). Every word goes through tr().
 
 const TOAST_SECONDS: float = 1.6
+const INTRO_SECONDS: float = 10.0
 const MARKERS: int = 6
-## Markers stay this far above the bottom edge (the build bar and the Knödl line live there).
-const MARKER_BOTTOM: float = 130.0
-## Boss HP bar colour: deep violet (red is only for enemy attacks).
-const BOSS_COLOR := Color(0.55, 0.3, 0.75)
+const EDGE: float = 16.0
+const HP_BAR := Vector2(176.0, 16.0)
 
 var _hp_bar: ProgressBar
 var _hp_label: Label
-var _xp_bar: ProgressBar
+var _heart: HudGlyph
+var _kruegerl: HudGlyph
 var _level_label: Label
+var _clock: HudGlyph
 var _time_label: Label
-var _knodl_label: Label
-var _schupfn_label: Label
+var _knodl: HudGlyph
+var _knodl_mass: Label
+var _knodl_tier: Label
 var _toast: Label
-var _hint: Label
-var _mouse_hint: Label
-var _gold_label: Label
-var _build_bar: BuildBar
-var _wirt_marker: Label
+var _intro: PanelContainer
+var _mouse_hint: PanelContainer
+var _hint_panel: PanelContainer
+var _hint_line: Label
+var _boss_box: VBoxContainer
 var _boss_name: Label
 var _boss_bar: ProgressBar
+var _formular_panel: PanelContainer
 var _formular: Label
-var _hint_line: Label
-var _markers: Array[Label] = []
+var _wirt_marker: WorldMarker
+var _markers: Array[WorldMarker] = []
 var _markers_used: int = 0
 var _toast_timer: float = 0.0
+var _toast_tween: Tween
+var _intro_timer: float = INTRO_SECONDS
+var _hp_target: float = 0.0
+var _boss_target: float = 0.0
+var _knodl_tier_index: int = -1
 ## What the toast says while the local player is down (solo: the run is over).
 var downed_key: String = "TOAST_DOWNED"
 var _last_level: int = 1
+## True while a full-screen panel (Speisekarte, Tab screen, end screen) covers the game; the HUD
+## steps back then (RunWorld sets it).
+var covered: Callable = func() -> bool: return false
+var _root: Control
 
 
 func _ready() -> void:
 	layer = 10
-	var root := Control.new()
-	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(root)
-	_hp_bar = _bar(Color(0.86, 0.36, 0.42), Vector2(220.0, 18.0))
-	_hp_bar.position = Vector2(16.0, 16.0)
-	root.add_child(_hp_bar)
-	_hp_label = _label(15)
-	_hp_label.position = Vector2(244.0, 13.0)
-	root.add_child(_hp_label)
-	_gold_label = _label(17)
-	_gold_label.position = Vector2(16.0, 38.0)
-	root.add_child(_gold_label)
-	_build_bar = BuildBar.new()
-	_build_bar.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	_build_bar.position = Vector2(16.0, -150.0)
-	root.add_child(_build_bar)
-	_wirt_marker = _label(17)
-	_wirt_marker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_wirt_marker.size = Vector2(220.0, 26.0)
-	_wirt_marker.add_theme_color_override("font_color", Color(1.0, 0.86, 0.45))
+	# Runs while paused, so it can step back behind a solo Speisekarte.
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Last in the frame, so a panel opened this frame already hides it (no frame with both drawn).
+	process_priority = 100
+	var root: Control = UiStyle.root(self)
+	_root = root
+	# Top left: health and the Krügerl.
+	var top_left: PanelContainer = _corner(root, Control.PRESET_TOP_LEFT, &"HudPanel")
+	var left := UiStyle.vbox()
+	top_left.add_child(left)
+	var hp_row := UiStyle.hbox()
+	left.add_child(hp_row)
+	_heart = HudGlyph.new(HudGlyph.Kind.HEART, 24.0)
+	hp_row.add_child(_heart)
+	_hp_bar = UiStyle.bar(&"BarHp")
+	_hp_bar.custom_minimum_size = HP_BAR
+	_hp_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hp_row.add_child(_hp_bar)
+	_hp_label = UiStyle.label(&"HudSmall")
+	_hp_label.custom_minimum_size = Vector2(64.0, 0.0)
+	hp_row.add_child(_hp_label)
+	var level_row := UiStyle.hbox()
+	left.add_child(level_row)
+	_kruegerl = HudGlyph.new(HudGlyph.Kind.KRUEGERL, 24.0)
+	level_row.add_child(_kruegerl)
+	_level_label = UiStyle.label(&"HudLabel")
+	level_row.add_child(_level_label)
+	# Top right: the clock.
+	var top_right: PanelContainer = _corner(root, Control.PRESET_TOP_RIGHT, &"HudPanel")
+	var clock_row := UiStyle.hbox()
+	top_right.add_child(clock_row)
+	_clock = HudGlyph.new(HudGlyph.Kind.CLOCK, 32.0)
+	_clock.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	clock_row.add_child(_clock)
+	_time_label = UiStyle.label(&"HudNumber")
+	_time_label.custom_minimum_size = Vector2(80.0, 0.0)
+	_time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	clock_row.add_child(_time_label)
+	# Bottom right: the Knödl.
+	var bottom_right: PanelContainer = _corner(root, Control.PRESET_BOTTOM_RIGHT, &"HudPanel")
+	var knodl_row := UiStyle.hbox()
+	bottom_right.add_child(knodl_row)
+	var knodl_text := UiStyle.vbox(&"Tight")
+	knodl_text.alignment = BoxContainer.ALIGNMENT_CENTER
+	knodl_row.add_child(knodl_text)
+	_knodl_mass = UiStyle.label(&"HudNumber")
+	_knodl_mass.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_knodl_mass.custom_minimum_size = Vector2(72.0, 0.0)
+	knodl_text.add_child(_knodl_mass)
+	_knodl_tier = UiStyle.label(&"HudSmall")
+	_knodl_tier.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	knodl_text.add_child(_knodl_tier)
+	_knodl = HudGlyph.new(HudGlyph.Kind.KNODL, 56.0)
+	knodl_row.add_child(_knodl)
+	# Top centre, only while it matters: the boss bar and the Formular line.
+	var top := UiStyle.vbox()
+	top.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	top.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	top.offset_top = EDGE
+	top.alignment = BoxContainer.ALIGNMENT_BEGIN
+	root.add_child(top)
+	_boss_box = UiStyle.vbox()
+	_boss_box.visible = false
+	top.add_child(_boss_box)
+	_boss_name = UiStyle.label(&"HudLabel")
+	_boss_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_boss_box.add_child(_boss_name)
+	_boss_bar = UiStyle.bar(&"BarBoss")
+	_boss_bar.custom_minimum_size = Vector2(400.0, 12.0)
+	_boss_box.add_child(_boss_bar)
+	_formular_panel = UiStyle.panel(&"HudPanel")
+	_formular_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_formular_panel.visible = false
+	top.add_child(_formular_panel)
+	_formular = UiStyle.label(&"HudSmall")
+	_formular_panel.add_child(_formular)
+	# The toast, in the upper middle.
+	_toast = UiStyle.label(&"HudNumber")
+	_toast.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_toast.position = Vector2(-320.0, -168.0)
+	_toast.size = Vector2(640.0, 48.0)
+	_toast.pivot_offset = _toast.size * 0.5
+	_toast.modulate.a = 0.0
+	root.add_child(_toast)
+	# Bottom centre: the controls (first seconds only), the mouse hint and the chest hint.
+	var bottom := UiStyle.vbox()
+	bottom.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	bottom.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	bottom.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	bottom.offset_bottom = -EDGE
+	bottom.alignment = BoxContainer.ALIGNMENT_END
+	root.add_child(bottom)
+	_hint_panel = UiStyle.panel(&"HudPanel")
+	_hint_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_hint_panel.visible = false
+	bottom.add_child(_hint_panel)
+	_hint_line = UiStyle.label(&"HudSmall")
+	_hint_panel.add_child(_hint_line)
+	_mouse_hint = _key_hint(bottom, [["", "HUD_MOUSE_HINT"]])
+	_mouse_hint.visible = false
+	_intro = _key_hint(bottom, [["WASD", "HELP_MOVE"], [tr("KEY_SPACE"), "HELP_JUMP"], ["Shift", "HELP_SCHUPFN"], ["Tab", "HELP_INVENTORY"]])
+	_wirt_marker = WorldMarker.new()
 	_wirt_marker.visible = false
 	root.add_child(_wirt_marker)
-	_time_label = _label(28)
-	_time_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_time_label.position = Vector2(-60.0, 8.0)
-	_time_label.size = Vector2(120.0, 36.0)
-	root.add_child(_time_label)
-	_xp_bar = _bar(Color(0.95, 0.78, 0.3), Vector2(0.0, 12.0))
-	_xp_bar.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	_xp_bar.offset_top = -14.0
-	_xp_bar.offset_bottom = -2.0
-	root.add_child(_xp_bar)
-	_level_label = _label(18)
-	_level_label.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	_level_label.position = Vector2(16.0, -44.0)
-	root.add_child(_level_label)
-	_knodl_label = _label(18)
-	_knodl_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	_knodl_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_knodl_label.position = Vector2(-376.0, -70.0)
-	_knodl_label.size = Vector2(360.0, 26.0)
-	root.add_child(_knodl_label)
-	_schupfn_label = _label(16)
-	_schupfn_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	_schupfn_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_schupfn_label.position = Vector2(-376.0, -44.0)
-	_schupfn_label.size = Vector2(360.0, 24.0)
-	root.add_child(_schupfn_label)
-	_toast = _label(34)
-	_toast.set_anchors_preset(Control.PRESET_CENTER)
-	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_toast.position = Vector2(-300.0, -140.0)
-	_toast.size = Vector2(600.0, 48.0)
-	root.add_child(_toast)
-	_hint = _label(14)
-	_hint.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_hint.position = Vector2(-536.0, 12.0)
-	_hint.size = Vector2(520.0, 60.0)
-	_hint.text = tr("HUD_CONTROLS")
-	root.add_child(_hint)
-	_mouse_hint = _label(22)
-	_mouse_hint.set_anchors_preset(Control.PRESET_CENTER)
-	_mouse_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_mouse_hint.position = Vector2(-300.0, 90.0)
-	_mouse_hint.size = Vector2(600.0, 36.0)
-	_mouse_hint.text = tr("HUD_MOUSE_HINT")
-	_mouse_hint.visible = false
-	root.add_child(_mouse_hint)
-	_boss_name = _label(20)
-	_boss_name.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_boss_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_boss_name.position = Vector2(-260.0, 46.0)
-	_boss_name.size = Vector2(520.0, 26.0)
-	_boss_name.visible = false
-	root.add_child(_boss_name)
-	_boss_bar = _bar(BOSS_COLOR, Vector2(460.0, 16.0))
-	_boss_bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_boss_bar.position = Vector2(-230.0, 74.0)
-	_boss_bar.visible = false
-	root.add_child(_boss_bar)
-	_formular = _label(18)
-	_formular.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_formular.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_formular.position = Vector2(-260.0, 96.0)
-	_formular.size = Vector2(520.0, 26.0)
-	_formular.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))
-	_formular.visible = false
-	root.add_child(_formular)
-	_hint_line = _label(18)
-	_hint_line.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_hint_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hint_line.position = Vector2(-300.0, -72.0)
-	_hint_line.size = Vector2(600.0, 26.0)
-	_hint_line.visible = false
-	root.add_child(_hint_line)
 	for k: int in MARKERS:
-		var marker: Label = _label(17)
-		marker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		marker.size = Vector2(220.0, 26.0)
+		var marker := WorldMarker.new()
 		marker.visible = false
 		root.add_child(marker)
 		_markers.append(marker)
@@ -149,38 +168,33 @@ func _ready() -> void:
 
 func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: BalanceData) -> void:
 	_hp_bar.max_value = state.max_hp
-	_hp_bar.value = state.hp
-	_hp_label.text = "%d / %d" % [ceili(state.hp), roundi(state.max_hp)]
-	_xp_bar.value = Formulas.level_progress(state.xp, balance) * 100.0
+	_hp_target = state.hp
+	_hp_label.text = "%d/%d" % [ceili(state.hp), roundi(state.max_hp)]
+	_heart.warn = state.hp < state.max_hp * 0.3
+	_hp_bar.theme_type_variation = &"BarBoss" if _heart.warn else &"BarHp"
+	_kruegerl.fill = Formulas.level_progress(state.xp, balance)
 	_level_label.text = tr("HUD_LEVEL") % state.level
 	var clock: float = minf(run_time, balance.run_seconds)
+	_clock.fill = clock / balance.run_seconds
 	_time_label.text = "%d:%02d" % [floori(clock / 60.0), int(clock) % 60]
 	if run_time >= balance.run_seconds:
 		_time_label.text = tr("HUD_SPERRSTUND")
 	if state.level > _last_level:
 		toast(tr("TOAST_LEVEL_UP") % state.level)
 	_last_level = state.level
-	if state.build != null:
-		_gold_label.text = tr("HUD_GOLD") % state.build.gold
-		_build_bar.show_build(state.build, balance)
 	if knodl != null:
-		var tier: int = Formulas.wirtshaus_tier(knodl.knodl_mass, balance)
-		var size: String = tr("TIER_%d" % tier) if tier >= 0 else tr("TIER_NONE")
-		_knodl_label.text = tr("HUD_KNODL") % [roundi(knodl.knodl_mass), knodl.radius * 2.0, size]
-		match knodl.state:
-			Knodl.State.THROWN:
-				_schupfn_label.text = tr("HUD_SCHUPFN_REEL")
-			Knodl.State.REELING:
-				_schupfn_label.text = tr("HUD_SCHUPFN_REELING")
-			_:
-				_schupfn_label.text = tr("HUD_SCHUPFN_READY") if knodl.cooldown <= 0.0 \
-						else tr("HUD_SCHUPFN_COOLDOWN") % knodl.cooldown
+		_knodl_tier_index = Formulas.wirtshaus_tier(knodl.knodl_mass, balance)
+		_knodl_mass.text = str(roundi(knodl.knodl_mass))
+		_knodl_tier.text = tr("HUD_KNODL_TIER") % tr("TIER_%d" % _knodl_tier_index) if _knodl_tier_index >= 0 else tr("HUD_KNODL_SMALL")
+		# Most runs stay below 4x the start radius; the disc fills its ring there.
+		_knodl.knodl_size = inverse_lerp(balance.knodl_base_radius, balance.knodl_base_radius * 4.0, knodl.radius)
+		_knodl.hollow = knodl.state != Knodl.State.ATTACHED
+		_knodl.ring = knodl.cooldown / maxf(balance.knodl_cooldown, 0.01)
 	if state.downed:
-		_toast.text = tr(downed_key)
-		_toast_timer = 0.2
+		toast(tr(downed_key), 0.2)
 
 
-## Weapons and passives with their levels, one line each.
+## Weapons and passives with their levels, one line each (the [SLOW] log line).
 static func build_text(build: PlayerBuild) -> String:
 	var weapons: PackedStringArray = []
 	for owned: PlayerBuild.OwnedWeapon in build.weapons:
@@ -188,53 +202,42 @@ static func build_text(build: PlayerBuild) -> String:
 	var passives: PackedStringArray = []
 	for owned: PlayerBuild.OwnedPassive in build.passives:
 		passives.append("%s %d" % [TranslationServer.translate(owned.data.name_key), owned.level])
-	return " · ".join(weapons) + "
-" + " · ".join(passives)
+	return " · ".join(weapons) + "\n" + " · ".join(passives)
 
 
-## Points at the nearest open Wirtshaus: over it when it is on screen, else at the screen edge.
+## Points at the nearest open Wirtshaus, once the Knödl is big enough to cash in.
 func show_wirt_marker(camera: Camera3D, target: Vector3, distance: float) -> void:
-	if camera == null or not is_finite(distance):
+	if camera == null or not is_finite(distance) or _knodl_tier_index < 0:
 		_wirt_marker.visible = false
 		return
-	var view: Vector2 = _wirt_marker.get_viewport_rect().size
-	var point: Vector3 = target + Vector3(0.0, 6.5, 0.0)
-	var screen: Vector2 = camera.unproject_position(point)
-	if camera.is_position_behind(point):
-		# Behind the camera: mirror it to the bottom edge.
-		screen = Vector2(view.x - screen.x, view.y)
-	var margin := Vector2(120.0, 60.0)
-	# Kept above the build bar and the Knödl line at the bottom.
-	screen = screen.clamp(margin, view - margin - Vector2(0.0, MARKER_BOTTOM))
-	_wirt_marker.text = tr("HUD_WIRT_MARKER") % roundi(distance)
-	_wirt_marker.position = screen - _wirt_marker.size * 0.5
-	_wirt_marker.visible = true
+	_place(_wirt_marker, camera, target + Vector3(0.0, 6.5, 0.0), tr("HUD_WIRT_MARKER") % roundi(distance), "accent")
 
 
 func hide_wirt_marker() -> void:
 	_wirt_marker.visible = false
 
 
-## The boss bar under the clock (name and HP); hp_max <= 0 hides it.
+## The boss bar at the top (name and HP); hp_max <= 0 hides it.
 func show_boss(boss_name: String, hp: float, hp_max: float) -> void:
 	var on: bool = hp_max > 0.0
-	_boss_name.visible = on
-	_boss_bar.visible = on
+	if on and not _boss_box.visible:
+		_boss_bar.value = hp
+	_boss_box.visible = on
 	if on:
 		_boss_name.text = boss_name
 		_boss_bar.max_value = hp_max
-		_boss_bar.value = hp
+		_boss_target = hp
 
 
 ## The Formular quest line ("" hides it).
 func show_formular(text: String) -> void:
-	_formular.visible = text != ""
+	_formular_panel.visible = text != ""
 	_formular.text = text
 
 
-## A one-line hint above the XP bar ("" hides it).
+## A one-line hint at the bottom ("" hides it).
 func show_hint(text: String) -> void:
-	_hint_line.visible = text != ""
+	_hint_panel.visible = text != ""
 	_hint_line.text = text
 
 
@@ -243,22 +246,13 @@ func begin_markers() -> void:
 	_markers_used = 0
 
 
-func marker(camera: Camera3D, target: Vector3, text: String, color: Color) -> void:
+## `tone` is a palette colour name ("accent", "danger" ...).
+func marker(camera: Camera3D, target: Vector3, text: String, tone: String) -> void:
 	if camera == null or _markers_used >= _markers.size():
 		return
-	var label: Label = _markers[_markers_used]
+	var pill: WorldMarker = _markers[_markers_used]
 	_markers_used += 1
-	var view: Vector2 = label.get_viewport_rect().size
-	var screen: Vector2 = camera.unproject_position(target)
-	if camera.is_position_behind(target):
-		screen = Vector2(view.x - screen.x, view.y)
-	var margin := Vector2(120.0, 60.0)
-	# Kept above the build bar and the Knödl line at the bottom.
-	screen = screen.clamp(margin, view - margin - Vector2(0.0, MARKER_BOTTOM))
-	label.text = text
-	label.add_theme_color_override("font_color", color)
-	label.position = screen - label.size * 0.5
-	label.visible = true
+	_place(pill, camera, target, text, tone)
 
 
 func end_markers() -> void:
@@ -268,42 +262,80 @@ func end_markers() -> void:
 
 ## "Click into the game to look around with the mouse", while the pointer is free.
 func show_mouse_hint(on: bool) -> void:
-	_mouse_hint.visible = on
+	_mouse_hint.visible = on and _intro_timer <= 0.0
 
 
-func toast(text: String) -> void:
+func toast(text: String, seconds: float = TOAST_SECONDS) -> void:
+	var fresh: bool = _toast_timer <= 0.0 or _toast.text != text
 	_toast.text = text
-	_toast_timer = TOAST_SECONDS
+	_toast_timer = seconds
+	if fresh:
+		if _toast_tween != null:
+			_toast_tween.kill()
+		_toast.scale = Vector2.ONE * 0.9
+		_toast_tween = create_tween().set_parallel().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		_toast_tween.tween_property(_toast, "scale", Vector2.ONE, 0.15)
+		_toast_tween.tween_property(_toast, "modulate:a", 1.0, 0.15)
 
 
 func _process(delta: float) -> void:
+	_root.visible = not covered.call()
 	if _toast_timer > 0.0:
 		_toast_timer -= delta
-		_toast.modulate.a = clampf(_toast_timer / 0.4, 0.0, 1.0)
+		if _toast_timer < 0.4:
+			_toast.modulate.a = clampf(_toast_timer / 0.4, 0.0, 1.0)
+	if _intro_timer > 0.0:
+		_intro_timer -= delta
+		_intro.modulate.a = clampf(_intro_timer / 0.6, 0.0, 1.0)
+		_intro.visible = _intro_timer > 0.0
+	var ease: float = clampf(delta / UiStyle.T_BAR * 4.0, 0.0, 1.0)
+	_hp_bar.value = lerpf(_hp_bar.value, _hp_target, ease)
+	if _boss_box.visible:
+		_boss_bar.value = lerpf(_boss_bar.value, _boss_target, ease)
 
 
-func _label(font_size: int) -> Label:
-	var label := Label.new()
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_color", Color(1.0, 0.98, 0.92))
-	label.add_theme_color_override("font_outline_color", Color(0.15, 0.1, 0.05))
-	label.add_theme_constant_override("outline_size", 5)
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return label
+func _place(pill: WorldMarker, camera: Camera3D, point: Vector3, text: String, tone: String) -> void:
+	var view: Vector2 = pill.get_viewport_rect().size
+	var screen: Vector2 = camera.unproject_position(point)
+	if camera.is_position_behind(point):
+		# Behind the camera: mirror it to the bottom edge.
+		screen = Vector2(view.x - screen.x, view.y)
+	pill.text = text
+	pill.tone = tone
+	# Kept clear of the corner widgets.
+	pill.place(screen, Rect2(Vector2(EDGE, 96.0), view - Vector2(2.0 * EDGE, 192.0)))
+	pill.visible = true
 
 
-func _bar(color: Color, bar_size: Vector2) -> ProgressBar:
-	var bar := ProgressBar.new()
-	bar.show_percentage = false
-	bar.custom_minimum_size = bar_size
-	bar.size = bar_size
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = color
-	fill.set_corner_radius_all(4)
-	var back := StyleBoxFlat.new()
-	back.bg_color = Color(0.1, 0.07, 0.05, 0.6)
-	back.set_corner_radius_all(4)
-	bar.add_theme_stylebox_override("fill", fill)
-	bar.add_theme_stylebox_override("background", back)
-	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return bar
+## A themed panel pinned to a screen corner, 16 px in.
+func _corner(root: Control, preset: Control.LayoutPreset, variation: StringName) -> PanelContainer:
+	var box: PanelContainer = UiStyle.panel(variation)
+	root.add_child(box)
+	box.set_anchors_and_offsets_preset(preset, Control.PRESET_MODE_MINSIZE, int(EDGE))
+	match preset:
+		Control.PRESET_TOP_RIGHT:
+			box.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+		Control.PRESET_BOTTOM_RIGHT:
+			box.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+			box.grow_vertical = Control.GROW_DIRECTION_BEGIN
+		Control.PRESET_BOTTOM_LEFT:
+			box.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	return box
+
+
+## A row of keycaps with their words ("[WASD] gehn  [Leertaste] hupfn ...") in a HUD panel.
+func _key_hint(parent: Control, pairs: Array) -> PanelContainer:
+	var box: PanelContainer = UiStyle.panel(&"HudPanel")
+	box.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	parent.add_child(box)
+	var row := UiStyle.hbox(&"Row16")
+	box.add_child(row)
+	for pair: Array in pairs:
+		var item := UiStyle.hbox()
+		row.add_child(item)
+		if pair[0] != "":
+			var cap: Label = UiStyle.label(&"Keycap", pair[0])
+			cap.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			item.add_child(cap)
+		item.add_child(UiStyle.label(&"HudSmall", tr(pair[1])))
+	return box
