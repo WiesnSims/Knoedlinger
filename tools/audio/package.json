@@ -1,0 +1,9 @@
+{
+  "name": "knoedlinger-audio",
+  "private": true,
+  "type": "module",
+  "description": "Generates the game's music and sound effects (tools/audio/make_audio.mjs) as OGG files in assets/audio/.",
+  "dependencies": {
+    "wasm-media-encoders": "0.7.0"
+  }
+}

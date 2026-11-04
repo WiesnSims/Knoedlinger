@@ -39,6 +39,14 @@ extends Resource
 @export var props: Array[MapProp] = []
 ## Where Wirtshäuser stand (x, z); each faces the map centre. A run opens some of them at random.
 @export var wirtshaus_spots: PackedVector2Array = PackedVector2Array()
+## Buildings and set pieces (StructureKit expands them into props).
+@export var structures: Array[MapStructure] = []
+## Where the Stempel of the Formular quest may lie (x, z); a run picks balance.stempel_count of them.
+@export var stempel_spots: PackedVector2Array = PackedVector2Array()
+## Where map chests may stand (x, z); a run fills balance.map_chest_count of them.
+@export var chest_spots: PackedVector2Array = PackedVector2Array()
+## The boss gate (the portal to the Amt der Unterwelt) and where the boss appears out of it.
+@export var portal_point: Vector2 = Vector2(0.0, -60.0)
 
 @export_group("Look")
 @export var grass_color: Color = Color(0.4, 0.62, 0.3)
@@ -46,15 +54,41 @@ extends Resource
 @export var rock_color: Color = Color(0.55, 0.53, 0.5)
 @export var dirt_color: Color = Color(0.6, 0.48, 0.32)
 @export var sky_color: Color = Color(0.55, 0.75, 0.95)
+## Gravel paths painted on the terrain: x0, z0, x1, z1 per segment, path_width wide.
+@export var paths: PackedVector4Array = PackedVector4Array()
+@export var path_width: float = 4.0
+@export var path_color: Color = Color(0.72, 0.64, 0.5)
+## The village square around the centre is gravel too, out to this radius (0 = none).
+@export var plaza_radius: float = 0.0
+
+
+## 0..1: how much of a path or the plaza covers this point (soft edges).
+func path_cover(x: float, z: float) -> float:
+	var cover: float = 0.0
+	if plaza_radius > 0.0:
+		cover = smoothstep(plaza_radius + 1.0, plaza_radius - 1.0, sqrt(x * x + z * z))
+	var half: float = path_width * 0.5
+	var p := Vector2(x, z)
+	for line: Vector4 in paths:
+		var a := Vector2(line.x, line.y)
+		var ab := Vector2(line.z, line.w) - a
+		var t: float = clampf((p - a).dot(ab) / maxf(ab.length_squared(), 0.0001), 0.0, 1.0)
+		var d: float = p.distance_to(a + ab * t)
+		if d < half + 1.0:
+			cover = maxf(cover, smoothstep(half + 1.0, half - 0.5, d))
+	return cover
 
 var _noise: FastNoiseLite
 var _all_props: Array[MapProp] = []
 
 
-## The hand-placed props plus the buildings at every Wirtshaus spot (the same on every machine).
+## The hand-placed props, the structures and the buildings at every Wirtshaus spot (the same on
+## every machine).
 func all_props() -> Array[MapProp]:
 	if _all_props.is_empty():
 		_all_props = props.duplicate()
+		for structure: MapStructure in structures:
+			_all_props.append_array(StructureKit.props_for(self, structure))
 		for k: int in wirtshaus_spots.size():
 			_all_props.append_array(Wirtshaus.building_props(self, k))
 	return _all_props

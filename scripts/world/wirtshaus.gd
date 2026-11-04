@@ -37,8 +37,10 @@ static func building_props(map: MapData, k: int) -> Array[MapProp]:
 	var yaw: float = rad_to_deg(place.basis.get_euler().y)
 	var props: Array[MapProp] = []
 	props.append(_prop(place, Vector3.ZERO, HOUSE_SIZE, yaw, WALL_COLOR))
-	props.append(_prop(place, Vector3(0.0, HOUSE_SIZE.y, 0.0),
-			Vector3(HOUSE_SIZE.x + 0.8, ROOF_HEIGHT, HOUSE_SIZE.z + 0.8), yaw, ROOF_COLOR))
+	var roof: MapProp = _prop(place, Vector3(0.0, HOUSE_SIZE.y, 0.0),
+			Vector3(HOUSE_SIZE.x + 0.8, ROOF_HEIGHT * 1.8, HOUSE_SIZE.z + 0.8), yaw, ROOF_COLOR)
+	roof.kind = MapProp.Kind.ROOF
+	props.append(roof)
 	props.append(_prop(place, Vector3(0.0, 0.0, HOUSE_SIZE.z * 0.5 + 0.05), Vector3(1.6, 2.4, 0.2), yaw, DOOR_COLOR))
 	return props
 
@@ -75,7 +77,7 @@ func setup(map: MapData, p_spot: int, ground: Heightfield) -> void:
 	_sign = Label3D.new()
 	_sign.name = "Sign"
 	_sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_sign.position = Vector3(0.0, HOUSE_SIZE.y + ROOF_HEIGHT + 1.2, HOUSE_SIZE.z * 0.5)
+	_sign.position = Vector3(0.0, HOUSE_SIZE.y + ROOF_HEIGHT * 1.8 + 1.0, HOUSE_SIZE.z * 0.5)
 	_sign.font_size = 72
 	_sign.pixel_size = 0.01
 	_sign.outline_size = 14

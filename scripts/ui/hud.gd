@@ -7,6 +7,11 @@ extends CanvasLayer
 ## Every player-facing word goes through tr() (i18n/strings.csv).
 
 const TOAST_SECONDS: float = 1.6
+const MARKERS: int = 6
+## Markers stay this far above the bottom edge (the build bar and the Knödl line live there).
+const MARKER_BOTTOM: float = 130.0
+## Boss HP bar colour: deep violet (red is only for enemy attacks).
+const BOSS_COLOR := Color(0.55, 0.3, 0.75)
 
 var _hp_bar: ProgressBar
 var _hp_label: Label
@@ -21,7 +26,15 @@ var _mouse_hint: Label
 var _gold_label: Label
 var _build_bar: BuildBar
 var _wirt_marker: Label
+var _boss_name: Label
+var _boss_bar: ProgressBar
+var _formular: Label
+var _hint_line: Label
+var _markers: Array[Label] = []
+var _markers_used: int = 0
 var _toast_timer: float = 0.0
+## What the toast says while the local player is down (solo: the run is over).
+var downed_key: String = "TOAST_DOWNED"
 var _last_level: int = 1
 
 
@@ -98,6 +111,40 @@ func _ready() -> void:
 	_mouse_hint.text = tr("HUD_MOUSE_HINT")
 	_mouse_hint.visible = false
 	root.add_child(_mouse_hint)
+	_boss_name = _label(20)
+	_boss_name.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_boss_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_boss_name.position = Vector2(-260.0, 46.0)
+	_boss_name.size = Vector2(520.0, 26.0)
+	_boss_name.visible = false
+	root.add_child(_boss_name)
+	_boss_bar = _bar(BOSS_COLOR, Vector2(460.0, 16.0))
+	_boss_bar.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_boss_bar.position = Vector2(-230.0, 74.0)
+	_boss_bar.visible = false
+	root.add_child(_boss_bar)
+	_formular = _label(18)
+	_formular.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_formular.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_formular.position = Vector2(-260.0, 96.0)
+	_formular.size = Vector2(520.0, 26.0)
+	_formular.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5))
+	_formular.visible = false
+	root.add_child(_formular)
+	_hint_line = _label(18)
+	_hint_line.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_hint_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hint_line.position = Vector2(-300.0, -72.0)
+	_hint_line.size = Vector2(600.0, 26.0)
+	_hint_line.visible = false
+	root.add_child(_hint_line)
+	for k: int in MARKERS:
+		var marker: Label = _label(17)
+		marker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		marker.size = Vector2(220.0, 26.0)
+		marker.visible = false
+		root.add_child(marker)
+		_markers.append(marker)
 
 
 func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: BalanceData) -> void:
@@ -129,7 +176,7 @@ func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: Bala
 				_schupfn_label.text = tr("HUD_SCHUPFN_READY") if knodl.cooldown <= 0.0 \
 						else tr("HUD_SCHUPFN_COOLDOWN") % knodl.cooldown
 	if state.downed:
-		_toast.text = tr("TOAST_DOWNED")
+		_toast.text = tr(downed_key)
 		_toast_timer = 0.2
 
 
@@ -157,7 +204,8 @@ func show_wirt_marker(camera: Camera3D, target: Vector3, distance: float) -> voi
 		# Behind the camera: mirror it to the bottom edge.
 		screen = Vector2(view.x - screen.x, view.y)
 	var margin := Vector2(120.0, 60.0)
-	screen = screen.clamp(margin, view - margin)
+	# Kept above the build bar and the Knödl line at the bottom.
+	screen = screen.clamp(margin, view - margin - Vector2(0.0, MARKER_BOTTOM))
 	_wirt_marker.text = tr("HUD_WIRT_MARKER") % roundi(distance)
 	_wirt_marker.position = screen - _wirt_marker.size * 0.5
 	_wirt_marker.visible = true
@@ -165,6 +213,57 @@ func show_wirt_marker(camera: Camera3D, target: Vector3, distance: float) -> voi
 
 func hide_wirt_marker() -> void:
 	_wirt_marker.visible = false
+
+
+## The boss bar under the clock (name and HP); hp_max <= 0 hides it.
+func show_boss(boss_name: String, hp: float, hp_max: float) -> void:
+	var on: bool = hp_max > 0.0
+	_boss_name.visible = on
+	_boss_bar.visible = on
+	if on:
+		_boss_name.text = boss_name
+		_boss_bar.max_value = hp_max
+		_boss_bar.value = hp
+
+
+## The Formular quest line ("" hides it).
+func show_formular(text: String) -> void:
+	_formular.visible = text != ""
+	_formular.text = text
+
+
+## A one-line hint above the XP bar ("" hides it).
+func show_hint(text: String) -> void:
+	_hint_line.visible = text != ""
+	_hint_line.text = text
+
+
+## Markers toward places (Stempel, the gate, a boss): call begin, then marker() per place, then end.
+func begin_markers() -> void:
+	_markers_used = 0
+
+
+func marker(camera: Camera3D, target: Vector3, text: String, color: Color) -> void:
+	if camera == null or _markers_used >= _markers.size():
+		return
+	var label: Label = _markers[_markers_used]
+	_markers_used += 1
+	var view: Vector2 = label.get_viewport_rect().size
+	var screen: Vector2 = camera.unproject_position(target)
+	if camera.is_position_behind(target):
+		screen = Vector2(view.x - screen.x, view.y)
+	var margin := Vector2(120.0, 60.0)
+	# Kept above the build bar and the Knödl line at the bottom.
+	screen = screen.clamp(margin, view - margin - Vector2(0.0, MARKER_BOTTOM))
+	label.text = text
+	label.add_theme_color_override("font_color", color)
+	label.position = screen - label.size * 0.5
+	label.visible = true
+
+
+func end_markers() -> void:
+	for k: int in range(_markers_used, _markers.size()):
+		_markers[k].visible = false
 
 
 ## "Click into the game to look around with the mouse", while the pointer is free.

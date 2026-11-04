@@ -11,6 +11,8 @@ const STRIDE: int = 20
 const SHADOW_STRIDE: int = 12
 
 var _types: Array[EnemyTypeData] = []
+## One material per type (ChaseCamera drives their see-through).
+var materials: Array[ShaderMaterial] = []
 var _meshes: Array[MultiMesh] = []
 var _buffers: Array[PackedFloat32Array] = []
 var _shadow_mesh: MultiMesh
@@ -40,6 +42,7 @@ func setup(types: Array[EnemyTypeData], capacity: int, ground: Heightfield = nul
 		var material := ShaderMaterial.new()
 		material.shader = waddle
 		material.set_shader_parameter(&"debug_view", LaunchArgs.get_int("debug_view", 0))
+		materials.append(material)
 		var instance := MultiMeshInstance3D.new()
 		instance.name = "Enemies_%s" % type.id
 		instance.multimesh = multimesh
@@ -83,6 +86,8 @@ func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFl
 		_buffers[t] = PackedFloat32Array()
 		var scale: float = _types[t].model_scale
 		var flyer: float = 1.0 if _types[t].flying else 0.0
+		# Bosses are hit all the time; a full flash would wash them out.
+		var flash_mult: float = 0.3 if _types[t].boss else 1.0
 		var o: int = 0
 		for i: int in used:
 			if alive[i] == 0 or type[i] != t:
@@ -108,7 +113,7 @@ func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFl
 			buffer[o + 14] = 1.0
 			buffer[o + 15] = 1.0
 			buffer[o + 16] = phase[i]
-			buffer[o + 17] = flash[i]
+			buffer[o + 17] = flash[i] * flash_mult
 			buffer[o + 18] = flyer
 			buffer[o + 19] = 0.0
 			o += STRIDE

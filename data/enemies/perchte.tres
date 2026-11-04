@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/data/attack_data.gd" id="2_attack"]
+
+[sub_resource type="Resource" id="slam"]
+script = ExtResource("2_attack")
+id = &"perchte_slam"
+shape = 0
+aim = 1
+radius = 3.6
+telegraph = 1.1
+damage = 16.0
+cooldown = 4.5
+range = 3.2
+
+[resource]
+script = ExtResource("1_script")
+id = &"perchte"
+name_key = "ENEMY_PERCHTE"
+max_hp = 22.0
+speed = 2.5
+radius = 0.75
+model_scale = 1.35
+contact_damage = 9.0
+brosel_xp = 25
+knockback_factor = 0.25
+body_color = Color(0.3, 0.24, 0.18, 1)
+head_color = Color(0.86, 0.74, 0.52, 1)
+attack = SubResource("slam")
+gold_drop = 1
+look = &"perchte"

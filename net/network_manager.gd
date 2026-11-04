@@ -20,6 +20,8 @@ signal events_received(data: PackedByteArray)
 signal player_input_received(peer_id: int, data: PackedByteArray)
 signal world_state_received(data: PackedByteArray)
 signal brosel_received(data: PackedByteArray)
+## Run events from the host (RunEventCodec: attack marks, loot, toasts, bosses, the bus).
+signal run_events_received(data: PackedByteArray)
 ## A Speisekarte message for the local player (OfferCodec: offer, chest or notice).
 signal offer_received(data: PackedByteArray)
 ## Host: a player answered an offer (OfferCodec.Choice).
@@ -158,6 +160,23 @@ func send_brosel_to(peer: int, data: PackedByteArray) -> void:
 	if mode != Mode.HOST or not _accepted.has(peer) or not _can_send(peer):
 		return
 	_rx_brosel.rpc_id(peer, data)
+	bytes_sent += data.size() + MESSAGE_OVERHEAD
+
+
+## Host: run events (RunEventCodec) to every accepted client, reliable and in order.
+func send_run_events(data: PackedByteArray) -> void:
+	for peer: int in _accepted:
+		if not _can_send(peer):
+			continue
+		_rx_run_events.rpc_id(peer, data)
+		bytes_sent += data.size() + MESSAGE_OVERHEAD
+
+
+## Host: run events to one client (everything lying around when it joins).
+func send_run_events_to(peer: int, data: PackedByteArray) -> void:
+	if mode != Mode.HOST or not _accepted.has(peer) or not _can_send(peer):
+		return
+	_rx_run_events.rpc_id(peer, data)
 	bytes_sent += data.size() + MESSAGE_OVERHEAD
 
 
@@ -305,6 +324,12 @@ func _rx_world_state(data: PackedByteArray) -> void:
 func _rx_brosel(data: PackedByteArray) -> void:
 	bytes_received += data.size() + MESSAGE_OVERHEAD
 	brosel_received.emit(data)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _rx_run_events(data: PackedByteArray) -> void:
+	bytes_received += data.size() + MESSAGE_OVERHEAD
+	run_events_received.emit(data)
 
 
 @rpc("authority", "call_remote", "reliable")

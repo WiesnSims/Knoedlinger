@@ -24,6 +24,20 @@ func _ready() -> void:
 	# The same variants the pools use: shots without instance colours, orbit pieces with them.
 	add_child(_instanced(MeshFactory.projectile(), projectile, false))
 	add_child(_instanced(MeshFactory.orbit_piece(WeaponData.Look.BALL), projectile, true))
+	# M3: attack marks (colours + custom data), Stempel beams, loot (vertex colours, instanced), the gate.
+	var quad := PlaneMesh.new()
+	quad.size = Vector2.ONE
+	add_child(_instanced(quad, load("res://shaders/hazard.gdshader"), true, true))
+	add_child(_instanced(quad, load("res://shaders/beam.gdshader"), true))
+	var loot_look: MultiMeshInstance3D = _instanced(MeshFactory.brosel(), null, true)
+	loot_look.material_override = MapBuilder.vertex_color_material()
+	add_child(loot_look)
+	var portal := MeshInstance3D.new()
+	portal.mesh = quad
+	var portal_material := ShaderMaterial.new()
+	portal_material.shader = load("res://shaders/portal.gdshader")
+	portal.material_override = portal_material
+	add_child(portal)
 	for path: String in ["res://shaders/pulse.gdshader", "res://shaders/swing.gdshader"]:
 		var disc := MeshInstance3D.new()
 		disc.mesh = MeshFactory.swing_fan(TAU, 8)
@@ -40,10 +54,11 @@ func _process(_delta: float) -> void:
 		queue_free()
 
 
-func _instanced(mesh: Mesh, shader: Shader, colors: bool) -> MultiMeshInstance3D:
+func _instanced(mesh: Mesh, shader: Shader, colors: bool, custom: bool = false) -> MultiMeshInstance3D:
 	var multimesh := MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.use_colors = colors
+	multimesh.use_custom_data = custom
 	multimesh.mesh = mesh
 	multimesh.instance_count = 1
 	multimesh.set_instance_transform(0, Transform3D())

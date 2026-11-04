@@ -20,6 +20,7 @@ CHARACTER_FERDL,Onkel Ferdl
 WEAPON_SCHNEESCHAUFEL,Schneeschaufel
 KNODL_SEMMEL,Semmelknödl
 MAP_TESTFELD,Testfeld
+MAP_KIRTAG,Kirtag in Unterhinterkogl
 HUD_MOUSE_HINT,Klick ins Spiel zum Umschaun mit der Maus (Esc lasst aus)
 ENEMY_TAUBE,Taube
 ENEMY_WILDSCHWEIN,Wildschwein
@@ -124,3 +125,49 @@ END_GOLD,%d Gold
 END_KNODL,Größter Knödl: %d Brösel
 END_CASH_INS,%d× eingekehrt
 END_DOWNED,%d× umgfoin
+ENEMY_PERCHTE,Perchte
+ENEMY_RADLER,Radlfahrer
+ENEMY_AKTEN_GEIST,Akten-Geist
+ENEMY_FORMULAR,Formular
+BOSS_OBERKRAMPUS,Oberkrampus
+BOSS_OBERKRAMPUS_2,"Oberkrampus, zweite Runde"
+BOSS_HOFRAT,Der Hofrat der Unterwelt
+BOSS_OBERKRAMPUS_INTRO,Da Oberkrampus is do! Rennt's!
+BOSS_OBERKRAMPUS_2_INTRO,Da Oberkrampus is zruck. Und angfressn.
+BOSS_OBERKRAMPUS_DEFEAT,Da Krampus hat gnua. Kistl schnappn!
+BOSS_HOFRAT_INTRO,Der Hofrat der Unterwelt. Bitte Nummer ziehn.
+BOSS_HOFRAT_DEFEAT,Aktenzeichen erledigt! Der Hofrat is in Pension.
+BOSS_KRAMPUS_CHARGE,Obacht – er nimmt Anlauf!
+BOSS_HOFRAT_ABGELEHNT,ABGELEHNT!
+BOSS_HOFRAT_QUEUE,Bitte hinten anstelln!
+BOSS_HOFRAT_DIENSTWEG,Den Dienstweg einhalten!
+TOAST_HOFRAT_FORCED,Da Hofrat wartet ned länger – er kummt raus!
+TOAST_FORMULAR,"A Formular! Drei Stempel finden, dann geht's Tor beim Gemeindeamt auf."
+TOAST_GATE_OPEN,Formular komplett! Ab zum Gemeindeamt!
+TOAST_STEMPEL_1,Stempel 1 von 3!
+TOAST_STEMPEL_2,Stempel 2 von 3!
+TOAST_STEMPEL_3,Stempel 3 von 3 – erledigt!
+TOAST_BUS,Da Touristenbus is do!
+TOAST_DOWNED_SOLO,Umgfoin! Des wor's …
+BUS_SIGN,Reisebus Gemütlich
+GATE_NAME,Amt der Unterwelt
+GATE_SEALED,Formular: %d / %d Stempel
+GATE_CLOSED,Parteienverkehr: ab 10:00
+GATE_OPEN,Bitte eintreten!
+GATE_BOSS_OUT,Derzeit nicht besetzt
+GATE_DONE,Wegen Pensionierung geschlossen
+HUD_FORMULAR,Formular: %d / %d Stempel
+HUD_GATE_OPEN,Formular komplett! Ab zum Tor beim Gemeindeamt
+HUD_HOFRAT_BEATEN,Hofrat erledigt – jetzt no bis zur Sperrstund'!
+HUD_STEMPEL_MARKER,Stempel · %d m
+HUD_GATE_MARKER,Amt der Unterwelt · %d m
+HINT_CHEST,Kistl: %d Gold – drüberlaufn zum Aufmachen
+CHEST_TITLE_4,A Kistl!
+CHEST_TITLE_5,A Kistl vom Boss!
+NOTICE_2,Z'wenig Gold fürs Kistl!
+END_WON,Sperrstund'! Gwonnen – da Hofrat is erledigt.
+END_CLOSED,Sperrstund' – oba da Hofrat sitzt no in seim Amt.
+END_LOST,Umgfoin. Für heit is aus.
+END_TIME,%d:%02d gspielt
+END_BOSSES,%d Bosse erledigt
+END_STEMPEL,%d Stempel gsammelt

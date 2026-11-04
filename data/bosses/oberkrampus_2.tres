@@ -1,0 +1,63 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/boss_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/data/attack_data.gd" id="2_attack"]
+[ext_resource type="Resource" path="res://data/enemies/oberkrampus.tres" id="3_body"]
+[ext_resource type="Resource" path="res://data/enemies/perchte.tres" id="4_escort"]
+
+[sub_resource type="Resource" id="rute"]
+script = ExtResource("2_attack")
+id = &"krampus_rute_3"
+shape = 0
+aim = 0
+radius = 3.2
+telegraph = 1.0
+damage = 20.0
+count = 3
+spread = 6.0
+range = 30.0
+
+[sub_resource type="Resource" id="charge"]
+script = ExtResource("2_attack")
+id = &"krampus_charge_3"
+shape = 1
+aim = 0
+radius = 1.5
+length = 22.0
+telegraph = 1.1
+damage = 24.0
+count = 3
+spread = 25.0
+range = 30.0
+dash = true
+toast_key = "BOSS_KRAMPUS_CHARGE"
+
+[sub_resource type="Resource" id="chains"]
+script = ExtResource("2_attack")
+id = &"krampus_chains_8"
+shape = 0
+aim = 2
+radius = 2.6
+telegraph = 1.2
+damage = 18.0
+count = 8
+spread = 6.0
+range = 30.0
+
+[resource]
+script = ExtResource("1_script")
+id = &"oberkrampus_2"
+name_key = "BOSS_OBERKRAMPUS_2"
+intro_key = "BOSS_OBERKRAMPUS_2_INTRO"
+defeat_key = "BOSS_OBERKRAMPUS_DEFEAT"
+enemy = ExtResource("3_body")
+max_hp = 2200.0
+speed = 3.8
+attacks = Array[ExtResource("2_attack")]([SubResource("rute"), SubResource("charge"), SubResource("chains")])
+attack_pause = 2.0
+escort = ExtResource("4_escort")
+escort_count = 4
+chest_items = 3
+gold = 40
+golden_brosel = 3
+arrive_distance = 20.0

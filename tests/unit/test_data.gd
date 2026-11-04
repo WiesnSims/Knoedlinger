@@ -44,8 +44,47 @@ func test_m1_content_loads_with_translated_names() -> void:
 func test_enemy_types_drop_brosel_and_hurt() -> void:
 	for file: String in ResourceLoader.list_directory("res://data/enemies"):
 		var data: EnemyTypeData = load("res://data/enemies".path_join(file))
-		assert_gt(data.brosel_xp, 0, file)
+		# Bosses pay out through their BossData (golden Brösel, a chest) instead.
+		if not data.boss:
+			assert_gt(data.brosel_xp, 0, file)
 		assert_gt(data.contact_damage, 0.0, file)
+
+
+func test_m3_bosses_are_complete() -> void:
+	var wave: WaveData = load("res://data/waves/kirtag.tres")
+	var bosses: Array[BossData] = []
+	for entry: WaveBoss in wave.bosses:
+		bosses.append(entry.boss)
+	assert_not_null(wave.final_boss)
+	bosses.append(wave.final_boss)
+	assert_eq(bosses.size(), 3, "Oberkrampus twice and the Hofrat")
+	assert_true(wave.final_boss.final)
+	assert_lt(wave.formular_minute, wave.final_boss_minute)
+	for boss: BossData in bosses:
+		assert_true(boss.enemy.boss, String(boss.id))
+		assert_gte(wave.enemies.find(boss.enemy), 0, "%s has a body in the wave" % boss.id)
+		assert_false(boss.attacks.is_empty(), String(boss.id))
+		for key: String in [boss.name_key, boss.intro_key, boss.defeat_key]:
+			assert_ne(TranslationServer.translate(key), StringName(key), key)
+		for attack: AttackData in boss.attacks:
+			assert_gt(attack.telegraph, 0.3, "%s: every attack is telegraphed" % attack.id)
+			if attack.summon != null:
+				assert_gte(wave.enemies.find(attack.summon), 0, "%s summons a known type" % attack.id)
+			if attack.toast_key != "":
+				assert_ne(TranslationServer.translate(attack.toast_key), StringName(attack.toast_key))
+
+
+func test_elites_have_a_telegraphed_attack_and_splits_are_known() -> void:
+	var wave: WaveData = load("res://data/waves/kirtag.tres")
+	var elites: int = 0
+	for data: EnemyTypeData in wave.enemies:
+		if data.attack != null:
+			elites += 1
+			assert_gt(data.attack.telegraph, 0.3, String(data.id))
+			assert_gt(data.attack.cooldown, data.attack.telegraph, String(data.id))
+		if data.split_into != null:
+			assert_gte(wave.enemies.find(data.split_into), 0, "%s splits into a type in the wave" % data.id)
+	assert_gte(elites, 2, "Perchte and Radlfahrer")
 
 
 func test_the_catalog_has_the_m2_content_with_texts() -> void:

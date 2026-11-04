@@ -30,6 +30,8 @@ const query = new URLSearchParams({
 	projectiles: args.projectiles || '300',
 	seconds: String(seconds),
 	bot: '1',
+	// Knocked down = back at the spawn, so a 60 s measurement never ends in the death screen.
+	respawn: '1',
 	// Count the host's snapshot encoding too, as if clients were connected.
 	encode: '1',
 });

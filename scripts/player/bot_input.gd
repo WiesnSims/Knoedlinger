@@ -4,6 +4,10 @@ extends RefCounted
 ## a figure eight around the centre so the horde keeps moving and turning; with waypoints it wanders
 ## between them. In a run it also jumps now and then and throws and reels in its Knödl.
 
+const STUCK_CHECK: float = 1.0
+const STUCK_DISTANCE: float = 1.2
+const DETOUR_SECONDS: float = 1.4
+
 var radius: float = 18.0
 ## Seconds per figure eight.
 var period: float = 24.0
@@ -23,6 +27,10 @@ var _schupfn_timer: float = 0.0
 var _reel_timer: float = -1.0
 var _jump_pending: bool = false
 var _schupfn_pending: bool = false
+var _progress_from: Vector2 = Vector2.ZERO
+var _progress_timer: float = 0.0
+var _detour_timer: float = 0.0
+var _detour_side: float = 1.0
 
 
 func _init(start_phase: float = 0.0) -> void:
@@ -41,14 +49,32 @@ func sample(delta: float, position: Vector3) -> Vector2:
 	_time += delta
 	_tick_buttons(delta)
 	var here := Vector2(position.x, position.z)
+	# No path finding: a bot that has not got anywhere for a second walks sideways for a moment
+	# and jumps (round a house, over a fence).
+	_progress_timer += delta
+	if _progress_timer >= STUCK_CHECK:
+		if here.distance_to(_progress_from) < STUCK_DISTANCE and _detour_timer <= 0.0:
+			_detour_timer = DETOUR_SECONDS
+			_detour_side = -_detour_side
+			_jump_pending = true
+		_progress_from = here
+		_progress_timer = 0.0
 	if attractor.is_finite() and here.distance_to(attractor) > 0.3:
-		return (attractor - here).normalized()
+		var toward: Vector2 = (attractor - here).normalized()
+		if _detour_timer > 0.0:
+			_detour_timer -= delta
+			return (toward * 0.3 + Vector2(-toward.y, toward.x) * _detour_side).normalized()
+		return toward
 	if not _waypoints.is_empty():
 		var goal: Vector2 = _waypoints[_waypoint]
 		if here.distance_to(goal) < 2.5:
 			_waypoint = (_waypoint + 1) % _waypoints.size()
 			goal = _waypoints[_waypoint]
-		return (goal - here).normalized()
+		var ahead: Vector2 = (goal - here).normalized()
+		if _detour_timer > 0.0:
+			_detour_timer -= delta
+			return (ahead * 0.3 + Vector2(-ahead.y, ahead.x) * _detour_side).normalized()
+		return ahead
 	var w: float = TAU / period
 	var ahead: float = _time + 0.6
 	var target := Vector2(sin(ahead * w) * radius, sin(ahead * w * 2.0) * radius * 0.5)
