@@ -389,3 +389,23 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   M4) is updated to match.
 - **Open (not decided):** a stall-owner merchant and Marterl shrines as further item sources (Megabonk's Shady
   Guy, challenge and greed shrines).
+
+## 2026-11-04 – Plan for M4: main menu and settings first (not started)
+
+- **Owner: M4 starts with a proper main menu and a settings page**, before the build rework. Today `boot.tscn`
+  goes straight into a run and only the end screen exists.
+- **Claude: main menu** = title screen of the Gasthaus Zum Goldenen Knödl ("Knödlinger – Bis zur Sperrstund'!").
+  Entries: *Spielen* (character and map choice, then the run), *Stammtisch* (meta upgrades), *Aufträge* (the
+  Gemeindeamt quests, done and open), *Rekorde* (highscores), *Almanach* (unlocked and locked characters, weapons,
+  stat upgrades, items, enemies, each with its deadpan line), *Einstellungen*, and a greyed-out *Stammtisch
+  aufmachen* (co-op) until M6. The screens are built first with what exists and fill up as M4 adds the meta.
+  All text through `tr()`.
+- **Claude: highscores are local** (in the save, so in the export code too), per character and map: longest
+  survival, won runs, highest level, most kills, biggest Knödl, most Schilling from one run. An online leaderboard
+  is not planned (it would need a backend; ask first).
+- **Claude: settings page** (also reachable from the pause menu during a run), saved in `user://`: volume for
+  master, music, effects and voice barks plus mute; fullscreen; camera distance, FOV, mouse sensitivity, invert
+  and look smoothing; reduce flashing; show the dialect glossary tooltips; language (German only for now). M5 keeps
+  the rest of its "options" item: gamepad, auto-quality and touch settings.
+- **Claude: automated checks keep skipping the menu**: any run URL flag or command-line option (`bot=1`,
+  `scene=stress`, `autoplay=1`, `--net=...`) still starts the run directly; a plain URL opens the main menu.
