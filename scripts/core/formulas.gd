@@ -24,6 +24,15 @@ static func knodl_speed_factor(radius: float, balance: BalanceData) -> float:
 	return maxf(1.0 - extra * balance.knodl_drag_per_radius, balance.knodl_min_speed_factor)
 
 
+## The early-game share of the crowd or of enemy HP: `start` at 0:00, easing up to 1 by
+## balance.spawn_ease_minutes.
+static func early_ease(seconds: float, start: float, balance: BalanceData) -> float:
+	if balance.spawn_ease_minutes <= 0.0:
+		return 1.0
+	var t: float = clampf(seconds / (balance.spawn_ease_minutes * 60.0), 0.0, 1.0)
+	return lerpf(start, 1.0, smoothstep(0.0, 1.0, t))
+
+
 ## XP needed to go from level n to n + 1.
 static func xp_to_next(level: int, balance: BalanceData) -> float:
 	return balance.xp_base + balance.xp_linear * level + balance.xp_quadratic * level * level

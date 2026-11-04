@@ -1,7 +1,7 @@
 extends Node
 ## Player settings (autoload Settings), saved in user://settings.cfg (IndexedDB in the browser):
-## volumes, fullscreen, quality, camera, gamepad and touch, flashing, glossary tooltips, language and
-## the player name. Change a
+## volumes, fullscreen, anti-aliasing, quality, camera, gamepad and touch, flashing, glossary
+## tooltips, language and the player name. Change a
 ## value with set_value(); it is applied at once, saved, and `changed` tells the screens and the
 ## camera. Automated runs (bot, autoplay, headless) never load or save the file, so a player's
 ## settings never change what a test measures.
@@ -27,6 +27,8 @@ const DEFAULTS: Dictionary[StringName, Variant] = {
 	&"quality": "auto",
 	## The Jagatee's slight screen wobble (and other camera shakes).
 	&"screen_wobble": true,
+	## MSAA on the 3D view (WebGL2 supports it in the Compatibility renderer).
+	&"antialiasing": true,
 	## Metres, the camera's starting distance (the mouse wheel still zooms).
 	&"camera_distance": 8.0,
 	&"camera_fov": 80.0,
@@ -48,6 +50,8 @@ const DEFAULTS: Dictionary[StringName, Variant] = {
 	&"language": "de",
 	&"player_name": "",
 }
+## The anti-aliasing level when the setting is on.
+const MSAA_ON: Viewport.MSAA = Viewport.MSAA_4X
 ## Allowed range and step of the number settings: [min, max, step].
 const RANGES: Dictionary[StringName, Array] = {
 	&"volume_master": [0.0, 1.0, 0.05],
@@ -173,6 +177,8 @@ func _apply(key: StringName) -> void:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		elif not full and mode == DisplayServer.WINDOW_MODE_FULLSCREEN:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	elif key == &"antialiasing":
+		get_tree().root.msaa_3d = MSAA_ON if get_bool(&"antialiasing") else Viewport.MSAA_DISABLED
 	elif key == &"language":
 		TranslationServer.set_locale(str(get_value(&"language")))
 
