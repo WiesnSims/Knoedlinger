@@ -700,3 +700,13 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Preview deployed** to https://m4-meta.knoedlinger.pages.dev (with the Ehrentafel's preview database). From the
   preview (headless Edge, RTX 3080, 500 enemies, bot, 60 s): 153 fps avg, p95 8.4 ms, at most 127 draw calls, no
   console errors.
+
+## Fix: Stammtisch icons (2026-11-04)
+
+- **Owner (playtest):** the Stammtisch icons are wrong (Wanderschuhe showed a drink, Bergkas-Abo a Lebkuchenherz).
+- **Claude:** all 10 upgrades had borrowed item/stat icons since M4 part 3. Each now has its own icon in the same
+  flat SVG style, `assets/icons/meta_<id>.svg`: a cheese block with a plus (Bergkas-Abo), whetstone and blade
+  (Wetzstein), hiking boot (Wanderschuhe), dough rising out of a bowl (Großer Teig), a slip with reroll arrows
+  (Nochmal-Zetterl), a form crossed out in blue ink (Beschwerdeformular), a horseshoe over a door (Hufeisen überm
+  Tor), a leather pocket with spoon and ladle (Zweiter Hosensack), a plate getting a second Knödl (Nachschlag) and a
+  walking stick with reach arcs (Wanderstecken). No data entry shares an icon any more.
