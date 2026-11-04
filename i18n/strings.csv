@@ -408,3 +408,15 @@ SAVE_RESET,Alles löschen
 SAVE_RESET_SURE,Sicher? Nochmal drücken.
 SAVE_RESET_DONE,Neu angfangen.
 SAVE_PLACEHOLDER,Code do einfügen
+SET_BOARD,Ehrentafel mitmachen
+END_BOARD_RANK,Ehrentafel: Platz %d · diese Woche %d
+BOARD_SOLO,Allein
+BOARD_COOP,Familie
+BOARD_ALL,Ewig
+BOARD_WEEK,Diese Woche
+BOARD_LOADING,Der Wirt schaut nach …
+BOARD_OFFLINE,Die Ehrentafel is grad ned erreichbar.
+BOARD_EMPTY,Do steht no kana drauf. Sei du da Erste!
+BOARD_RESULT_0,umgfoin
+BOARD_RESULT_1,Sperrstund'
+BOARD_RESULT_2,gwonnen

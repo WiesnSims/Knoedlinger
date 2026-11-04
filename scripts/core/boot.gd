@@ -1,3 +1,4 @@
+class_name Boot
 extends Node
 ## The main scene: a plain start opens the main menu; any run option on the command line or in the
 ## URL (`bot=1`, `scene=stress`, `autoplay=1`, `--net=ws` ...) starts that scene directly, so the

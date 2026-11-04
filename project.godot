@@ -24,6 +24,7 @@ DebugOverlay="*res://scripts/systems/debug_overlay.gd"
 GameAudio="*res://scripts/systems/game_audio.gd"
 Settings="*res://scripts/core/settings.gd"
 Profile="*res://scripts/core/profile.gd"
+Board="*res://scripts/core/board.gd"
 
 [debug]
 

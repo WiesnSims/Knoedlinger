@@ -24,6 +24,8 @@ var _line: Label
 var _grid: GridContainer
 ## What the Profile paid: Schilling, quests stamped, a new Grant level.
 var _reward_box: VBoxContainer
+## "Ehrentafel: Platz 12 · diese Woche 3", once the board answered.
+var _rank_label: Label
 var _inventory: InventoryPanel
 var _again: ActionPill
 var _menu: ActionPill
@@ -97,6 +99,9 @@ func show_result(summary: Dictionary, can_restart: bool, build: PlayerBuild = nu
 			_reward_box.add_child(UiStyle.label(&"LabelSmall", line))
 		if reward.get("grant_unlocked", false):
 			_reward_box.add_child(UiStyle.label(&"LabelSmall", tr("END_GRANT_UP")))
+		_rank_label = UiStyle.label(&"LabelChange", "")
+		_rank_label.visible = false
+		_reward_box.add_child(_rank_label)
 	var outcome: String = str(summary.get("result", "WON"))
 	_title.text = tr("END_TITLE_%s" % outcome)
 	_line.text = tr("END_%s" % outcome)
@@ -128,6 +133,12 @@ func show_result(summary: Dictionary, can_restart: bool, build: PlayerBuild = nu
 	create_tween().tween_property(_shown, "modulate:a", 1.0, UiStyle.T_PANEL_IN * 2.0)
 	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+func show_rank(rank: int, week_rank: int) -> void:
+	if _rank_label != null and is_instance_valid(_rank_label):
+		_rank_label.text = tr("END_BOARD_RANK") % [rank, week_rank]
+		_rank_label.visible = true
 
 
 func _unhandled_input(event: InputEvent) -> void:

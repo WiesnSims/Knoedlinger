@@ -27,7 +27,7 @@ const RIGHT: Array = [
 		[&"invert_y", "SET_INVERT_Y", "toggle"],
 	]],
 	["SET_GROUP_GAME", [
-		[&"player_name", "SET_PLAYER_NAME", "name"], [&"glossary", "SET_GLOSSARY", "toggle"],
+		[&"player_name", "SET_PLAYER_NAME", "name"], [&"glossary", "SET_GLOSSARY", "toggle"], [&"board", "SET_BOARD", "toggle"],
 		[&"language", "SET_LANGUAGE", "language"],
 	]],
 ]

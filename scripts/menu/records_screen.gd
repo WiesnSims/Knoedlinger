@@ -16,8 +16,10 @@ const VALUE_WIDTH: float = 88.0
 var content: GameContent
 var _body: VBoxContainer
 var _tabs: HBoxContainer
-## The online board (part of this screen once it exists); null shows only the own records.
-var board: Control
+var _own_pill: ActionPill
+var _board_pill: ActionPill
+## The online Ehrentafel, the second tab.
+var board: BoardPanel
 
 
 func _init(p_content: GameContent) -> void:
@@ -28,10 +30,22 @@ func _init(p_content: GameContent) -> void:
 	var header: PanelContainer = UiStyle.panel(&"PanelHeader")
 	column.add_child(header)
 	header.add_child(UiStyle.label(&"LabelTitle", tr("RECORDS_TITLE")))
-	_tabs = UiStyle.hbox(&"Row16")
+	_tabs = UiStyle.hbox()
 	column.add_child(_tabs)
+	_own_pill = ActionPill.new()
+	_own_pill.set_label(tr("RECORDS_OWN"))
+	_own_pill.toggle_mode = true
+	_own_pill.pressed.connect(func() -> void: _show_board(false))
+	_tabs.add_child(_own_pill)
+	_board_pill = ActionPill.new()
+	_board_pill.set_label(tr("RECORDS_BOARD"))
+	_board_pill.toggle_mode = true
+	_board_pill.pressed.connect(func() -> void: _show_board(true))
+	_tabs.add_child(_board_pill)
 	_body = UiStyle.vbox(&"Gap24")
 	column.add_child(_body)
+	board = BoardPanel.new(content)
+	column.add_child(board)
 	var back := ActionPill.new("Esc")
 	back.set_label(tr("MENU_BACK"))
 	back.pressed.connect(func() -> void: closed.emit())
@@ -39,6 +53,7 @@ func _init(p_content: GameContent) -> void:
 
 
 func refresh() -> void:
+	_show_board(false)
 	for child: Node in _body.get_children():
 		child.queue_free()
 	for info: MapInfo in content.maps:
@@ -68,6 +83,25 @@ func refresh() -> void:
 
 func focus_first() -> void:
 	pass
+
+
+## Left / Right switch between the own records and the Ehrentafel.
+func _unhandled_key_input(event: InputEvent) -> void:
+	var key: InputEventKey = event as InputEventKey
+	if not is_visible_in_tree() or key == null or not key.pressed or key.echo:
+		return
+	if key.physical_keycode == KEY_LEFT or key.physical_keycode == KEY_RIGHT:
+		get_viewport().set_input_as_handled()
+		_show_board(key.physical_keycode == KEY_RIGHT)
+
+
+func _show_board(on: bool) -> void:
+	_own_pill.set_pressed_no_signal(not on)
+	_board_pill.set_pressed_no_signal(on)
+	_body.visible = not on
+	board.visible = on
+	if on:
+		board.fetch()
 
 
 static func value_text(key: String, record: Dictionary) -> String:

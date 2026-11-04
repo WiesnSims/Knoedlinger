@@ -607,3 +607,23 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   character; the online board joins it in the next part), Almanach (Familie, Waffen, Verbesserungen, Kirtagsware,
   Viecher; unknown entries are "???", locked ones name their quest; enemies got a deadpan line each). The end
   screen shows the Schilling and the quests stamped. The menu footer shows the Schilling.
+
+### Part 4: die Ehrentafel (online highscores)
+
+- **Claude: Berghittn's Gipfelbuch reused** as `board/board.js` + `functions/api/board/[action].js` on the
+  `knoedlinger` Pages project, D1 databases **`knoedlinger-board`** (production) and **`knoedlinger-board-preview`**
+  (previews, `[env.preview]` in the new `wrangler.toml`), created with the deploy login (free tier) and migrated.
+  Tickets (asked at run start, used once, 30 per hour per address, 3 h life) and plausibility checks (a run cannot
+  be longer than its ticket is old, at most 2,000 + 120 kills per second played per player, a win or a survived
+  Sperrstund' means at least 14:50 played).
+- **Claude: boards** per map and mode (solo, co-op), all time and this week, top 50. Order: result (gewonnen >
+  Sperrstund' erlebt > umgfoin), Grant level, time, kills. Rows: place, name(s), Knödlinger, result and Grant,
+  time, level, kills, biggest Knödl; own entries (ids kept in the Profile) in gold. Names: 16 characters,
+  Berghittn's swear filter, fallback "Knödlinger".
+- **Claude: only real runs count** – started from the main menu, no URL/command-line run options, the Settings
+  switch "Ehrentafel mitmachen" on (default on), in the browser (the page's own origin, so previews write to the
+  preview database). Headless, desktop and every automated check never send anything (`--board=<url>` for a
+  manual test). "Zum Menü" mid-run is not sent. The end screen shows "Ehrentafel: Platz n · diese Woche m".
+- **Claude: the local test server** (`tools/browser/serve.mjs`) answers `/api/*` with an "offline" reply, so the
+  board shows its offline line there instead of a 404 console error. Board tests: `node --test
+  board/test/board.test.mjs` (local D1 via `wrangler pages dev`, 8 tests).

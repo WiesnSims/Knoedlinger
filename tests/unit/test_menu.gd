@@ -45,6 +45,11 @@ func test_content_lists_characters_and_maps() -> void:
 	assert_eq(RunSetup.character_id(), RunSetup.character)
 
 
+func test_automated_runs_never_reach_the_ehrentafel() -> void:
+	assert_eq(Board.base_url(), "", "no board on the desktop without --board")
+	assert_false(Board.run_counts())
+
+
 func test_every_scene_script_compiles() -> void:
 	# Scripts only the scenes load (not the tests) would otherwise hide a parse error until a run.
 	for path: String in ["res://scripts/run/run_world.gd", "res://scripts/menu/main_menu.gd",

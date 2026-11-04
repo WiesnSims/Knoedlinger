@@ -19,6 +19,12 @@ const TYPES = {
 
 createServer((request, response) => {
 	const path = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
+	// No Pages Functions here: the Ehrentafel answers "offline" (the game shows its offline line)
+	// instead of a 404 that the checks would count as a console error.
+	if (path.startsWith('/api/')) {
+		response.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }).end('{"error":"offline"}');
+		return;
+	}
 	const file = normalize(join(dir, path === '/' ? 'index.html' : path));
 	if (!file.startsWith(dir + sep)) {
 		response.writeHead(403).end();

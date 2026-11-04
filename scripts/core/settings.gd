@@ -32,6 +32,8 @@ const DEFAULTS: Dictionary[StringName, Variant] = {
 	&"look_smoothing": 0.05,
 	&"reduce_flashing": false,
 	&"glossary": true,
+	## Send real runs to the online Ehrentafel.
+	&"board": true,
 	&"language": "de",
 	&"player_name": "",
 }

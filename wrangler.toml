@@ -1,0 +1,21 @@
+# Cloudflare Pages project knoedlinger (https://knoedlinger.pages.dev), deployed by tools/deploy_preview.ps1.
+# The Functions in functions/ keep die Ehrentafel (the global highscore board, board/) in a D1
+# database. Preview deployments get their own database, so play-tests never land on the real board
+# (as in Berghittn). The co-op relay (Worker + Durable Object) joins this file in M6.
+name = "knoedlinger"
+pages_build_output_dir = "build/web"
+compatibility_date = "2025-09-01"
+
+[[d1_databases]]
+binding = "BOARD"
+database_name = "knoedlinger-board"
+database_id = "e69433a1-34f8-4c4b-b252-f612fcd7247d"
+migrations_dir = "board/migrations"
+
+[env.preview]
+
+[[env.preview.d1_databases]]
+binding = "BOARD"
+database_name = "knoedlinger-board-preview"
+database_id = "8e2b53fa-a8ea-40ee-a61d-e14b5e6e2737"
+migrations_dir = "board/migrations"

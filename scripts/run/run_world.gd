@@ -333,6 +333,10 @@ func _ready() -> void:
 	DebugOverlay.visible = LaunchArgs.get_flag("debug", _bot and not _autoplay)
 	GameAudio.music(&"kirtag")
 	GameAudio.bark(&"servas")
+	# Die Ehrentafel: a ticket for this run (only real runs from the menu; Board decides).
+	if host:
+		Board.start_run("coop" if NetworkManager.is_online() else "solo", String(map.id))
+		Board.ranked.connect(_on_ranked)
 	print("[RUN] role=%s map=%s character=%s enemies=%s seconds=%s bot=%s bake_ms=%d adapter=%s" % [
 		_role(), map.id, character.id, _forced_enemies if _forced_enemies > 0 else "wave", _seconds, _bot,
 		_bake_ms, RenderingServer.get_video_adapter_name()])
@@ -341,6 +345,12 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	# A solo Speisekarte may still hold the pause when the scene goes.
 	get_tree().paused = false
+	if Board.ranked.is_connected(_on_ranked):
+		Board.ranked.disconnect(_on_ranked)
+
+
+func _on_ranked(rank: int, week_rank: int, _id: int) -> void:
+	end_screen.show_rank(rank, week_rank)
 
 
 func _process(delta: float) -> void:
@@ -1502,6 +1512,12 @@ func _record_profile(outcome: String) -> void:
 	summary["result"] = outcome
 	_reward = Profile.record_run(summary)
 	Profile.remember_choice(character.id, map.id, grant_index)
+	if outcome != "QUIT" and NetworkManager.is_host():
+		Board.submit({
+			"names": [Settings.player_name()], "characters": [String(character.id)], "result": outcome,
+			"grant": grant_index, "time": int(summary.get("time", 0.0)), "level": int(summary.get("level", 0)),
+			"kills": int(summary.get("kills", 0)), "knodl": int(summary.get("best_knodl_mass", 0.0)),
+		})
 
 
 func _knodl_start_mass(knodl: Knodl) -> float:
