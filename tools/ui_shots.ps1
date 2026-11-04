@@ -2,6 +2,7 @@
 # takes a fixed set of moments in headless Edge at every size: the HUD in play, the HUD with the
 # Formular / boss / markers (from 10:00), the Speisekarte with a hovered card, the Inventory/Stats
 # screen (Tab) and the end screen. PNGs go to build/shots/ui/<Name>/<scene>-<size>-<s>s.png.
+# Fails on console errors and on any moment at 150 draw calls or more (the web budget, UI included).
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/ui_shots.ps1 [-Name after] [-Url <preview url>]
 #        [-Sizes 1920x1080,1280x720] [-Only hud,menu]
 param(
@@ -38,7 +39,7 @@ try {
             if ($Only -ne '' -and -not ($Only.Split(',') -contains $scene.Id)) { continue }
             $sep = if ($Url.Contains('?')) { '&' } else { '?' }
             $arguments = @((Join-Path $Root 'tools\browser\screenshots.mjs'), "--url=$Url$sep$($scene.Query)",
-                "--out=$(Join-Path $outDir "$($scene.Id)-$size")", "--at=$($scene.At)", "--size=$size")
+                "--out=$(Join-Path $outDir "$($scene.Id)-$size")", "--at=$($scene.At)", "--size=$size", '--max-draws=150')
             if ($scene.Move) {
                 # "center" = middle of the screen, "card" = a little below it (the second menu row).
                 $points = $scene.Move.Split(',') | ForEach-Object {
@@ -48,7 +49,7 @@ try {
             }
             if ($scene.Press) { $arguments += "--keys=$($scene.Press)" }
             $code = Invoke-Logged -Exe $Node -Arguments $arguments -Log $log -WorkingDirectory (Join-Path $Root 'tools\browser')
-            if ($code -ne 0) { $failures += "$($scene.Id) at $size failed (console errors?)" }
+            if ($code -ne 0) { $failures += "$($scene.Id) at $size failed (console errors or draw calls, see log)" }
         }
     }
     Write-Host "screenshots: $outDir"

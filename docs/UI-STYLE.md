@@ -135,3 +135,18 @@ Every new UI must follow this file and use `ui/theme.tres`. After any UI change,
   Inventory/Stats, end screen, at 1920x1080 and 1280x720, into `build/shots/ui/<label>/`.
 - Look at every shot and check it against this list: corners only, 3 sizes, 8 px grid, no red
   except danger, rarity readable from the border, nothing overlaps, readable at 720p.
+- The shots also fail at 150 draw calls or more (the web budget counts the UI too).
+
+## 11. Draw calls
+
+The UI shares the < 150 draw-call budget with the game, and in co-op a menu stays open over a
+running crowd. In the Compatibility renderer the 2D batch breaks on every texture or font change,
+every StyleBoxFlat panel is a draw call of its own and every clipped control (`clip_text`,
+`clip_contents`, scroll containers) one more. So:
+
+- No `clip_text`; trim long text with `text_overrun_behavior` (ellipsis) instead.
+- Many small repeated things (tiles, pips, icons in a grid) are drawn by one control in passes
+  (all frames, then all icons, then all numbers), like `TileGrid`; icons come from the icon atlas
+  (`UiStyle.atlas_icon`).
+- Never draw a full-screen panel and the full HUD at once: the HUD stays hidden until a panel has
+  faded out completely.

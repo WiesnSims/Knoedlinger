@@ -146,6 +146,12 @@ func is_open() -> bool:
 	return _menu.visible and _offer != null
 
 
+## Open, or still fading out after the answer (the HUD stays hidden until the menu is gone, so the
+## two are never drawn on top of each other: that frame cost about 190 draw calls).
+func is_shown() -> bool:
+	return _menu.visible
+
+
 ## Seconds since the open offer was shown.
 func open_seconds() -> float:
 	return (Time.get_ticks_msec() - _opened_ms) / 1000.0

@@ -270,7 +270,7 @@ func _ready() -> void:
 	inventory.name = "Inventory"
 	add_child(inventory)
 	inventory.toggled.connect(_on_inventory_toggled)
-	hud.covered = func() -> bool: return speisekarte.is_open() or inventory.is_open() or end_screen.visible
+	hud.covered = func() -> bool: return speisekarte.is_shown() or inventory.is_open() or end_screen.visible
 	if host:
 		enemies = EnemyManager.new(balance, types, slots, seed_value, ground, map.half_size)
 		enemies.ring_min = balance.spawn_first_ring_min

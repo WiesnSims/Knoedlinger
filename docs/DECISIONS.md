@@ -478,3 +478,21 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   be adjusted in M4.
 - **Needs from the owner in M4:** nothing new expected (the Cloudflare login used for deploys can create the D1
   databases); if wrangler lacks the D1 permission, Claude asks.
+
+## 2026-11-04 – UI pass: draw-call fix before the preview
+
+- **Claude: the final browser check failed on draw calls** (max 231, budget < 150; fps was fine at 171).
+  Cause: the new Speisekarte UI cost about 105 draw calls on its own (Stats panel 41, Inventory 27, rows 20,
+  frame and pills 17), and for about 16 frames after a pick the full HUD came back while the menu was still
+  fading out over the running game. In co-op the menu stays open over a live crowd, so this had to be fixed,
+  not just tolerated.
+- **Claude: fixes** – the HUD stays hidden until the menu has faded out (`Speisekarte.is_shown()`) and
+  processes last in the frame, so a panel opened that frame hides it at once; the Stats rows and card titles
+  trim with an ellipsis instead of `clip_text` (each clipped label was its own draw call); the Inventory tiles
+  are drawn by one `TileGrid` control (frames, then atlas icons, then numbers) instead of a panel, icon and
+  label per tile, same look. Result at 1080p: Speisekarte 134 → 96, Tab screen 115 → 69, end screen 72 → 60;
+  browser check max 120-134 over two runs (fps avg 175-178).
+- **Claude: guard** – `tools/ui_shots.ps1` now fails on any shot at 150 draw calls or more (read from
+  `window.knoedlDraws`, which the debug overlay keeps current even while a menu pauses the game), and
+  `docs/UI-STYLE.md` got a "Draw calls" section. Open for M6: re-measure a 4-player crowd with a Speisekarte
+  open; the rows (about 20 draw calls) can use the same drawn-in-passes trick if needed.

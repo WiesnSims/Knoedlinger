@@ -33,7 +33,7 @@ func setup(card: Card, key: int, change: String, owned_level: int, catalog: Upgr
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(text)
 	var title: Label = UiStyle.label(&"", Speisekarte.card_name(card, catalog))
-	title.clip_text = true
+	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	text.add_child(title)
 	text.add_child(UiStyle.label(&"LabelChange", change))
 	var side := UiStyle.vbox()

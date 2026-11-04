@@ -35,7 +35,8 @@ func _init() -> void:
 			box.add_child(row)
 			var name: Label = UiStyle.label(&"LabelMuted", tr(row_def[1]))
 			name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			name.clip_text = true
+			# Trimmed, not clipped: a clipped label is its own draw call (scissor), about 18 here.
+			name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 			row.add_child(name)
 			var value: Label = UiStyle.label(&"LabelSmall")
 			value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT

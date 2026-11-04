@@ -56,6 +56,8 @@ func _ready() -> void:
 	layer = 10
 	# Runs while paused, so it can step back behind a solo Speisekarte.
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Last in the frame, so a panel opened this frame already hides it (no frame with both drawn).
+	process_priority = 100
 	var root: Control = UiStyle.root(self)
 	_root = root
 	# Top left: health and the Krügerl.
