@@ -293,7 +293,7 @@ func _ready() -> void:
 	NetworkManager.joined_host.connect(_on_joined_host)
 	NetworkManager.join_failed.connect(_on_join_failed)
 	NetworkManager.session_ended.connect(_on_session_ended)
-	DebugOverlay.visible = (_bot and not _autoplay) or LaunchArgs.get_flag("debug", false)
+	DebugOverlay.visible = LaunchArgs.get_flag("debug", _bot and not _autoplay)
 	GameAudio.music(&"kirtag")
 	GameAudio.bark(&"servas")
 	print("[RUN] role=%s map=%s character=%s enemies=%s seconds=%s bot=%s bake_ms=%d adapter=%s" % [
