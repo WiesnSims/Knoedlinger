@@ -99,8 +99,9 @@ func _quit() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Another panel (Tab screen) takes its own Esc.
-	if not event.is_action_pressed(&"pause") or (not is_open() and not allowed):
+	# Another panel (Tab screen) takes its own Esc. B on the pad closes it like Esc (never opens it).
+	var back: bool = is_open() and event.is_action_pressed(&"ui_cancel") and event is InputEventJoypadButton
+	if not (event.is_action_pressed(&"pause") or back) or (not is_open() and not allowed):
 		return
 	get_viewport().set_input_as_handled()
 	if _settings.visible:

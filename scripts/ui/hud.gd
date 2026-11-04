@@ -153,9 +153,10 @@ func _ready() -> void:
 	bottom.add_child(_hint_panel)
 	_hint_line = UiStyle.label(&"HudSmall")
 	_hint_panel.add_child(_hint_line)
-	_mouse_hint = _key_hint(bottom, [["", "HUD_MOUSE_HINT"]])
+	_mouse_hint = _key_hint(bottom, [[&"", "", "HUD_MOUSE_HINT"]])
 	_mouse_hint.visible = false
-	_intro = _key_hint(bottom, [["WASD", "HELP_MOVE"], [tr("KEY_SPACE"), "HELP_JUMP"], ["Shift", "HELP_SCHUPFN"], ["Tab", "HELP_INVENTORY"]])
+	_intro = _key_hint(bottom, [[&"move", "WASD", "HELP_MOVE"], [&"jump", tr("KEY_SPACE"), "HELP_JUMP"],
+			[&"schupfn", "Shift", "HELP_SCHUPFN"], [&"inventory", "Tab", "HELP_INVENTORY"]])
 	_wirt_marker = WorldMarker.new()
 	_wirt_marker.visible = false
 	root.add_child(_wirt_marker)
@@ -262,7 +263,7 @@ func end_markers() -> void:
 
 ## "Click into the game to look around with the mouse", while the pointer is free.
 func show_mouse_hint(on: bool) -> void:
-	_mouse_hint.visible = on and _intro_timer <= 0.0
+	_mouse_hint.visible = on and _intro_timer <= 0.0 and InputDevice.kind == InputDevice.Kind.KEYS
 
 
 func toast(text: String, seconds: float = TOAST_SECONDS) -> void:
@@ -287,7 +288,8 @@ func _process(delta: float) -> void:
 	if _intro_timer > 0.0:
 		_intro_timer -= delta
 		_intro.modulate.a = clampf(_intro_timer / 0.6, 0.0, 1.0)
-		_intro.visible = _intro_timer > 0.0
+		# Touch shows its own buttons instead of key words.
+		_intro.visible = _intro_timer > 0.0 and not InputDevice.is_touch()
 	var ease: float = clampf(delta / UiStyle.T_BAR * 4.0, 0.0, 1.0)
 	_hp_bar.value = lerpf(_hp_bar.value, _hp_target, ease)
 	if _boss_box.visible:
@@ -323,7 +325,8 @@ func _corner(root: Control, preset: Control.LayoutPreset, variation: StringName)
 	return box
 
 
-## A row of keycaps with their words ("[WASD] gehn  [Leertaste] hupfn ...") in a HUD panel.
+## A row of keycaps with their words ("[WASD] gehn  [Leertaste] hupfn ...") in a HUD panel; each
+## pair is [action, keyboard label, text key], the keycap follows the device in use.
 func _key_hint(parent: Control, pairs: Array) -> PanelContainer:
 	var box: PanelContainer = UiStyle.panel(&"HudPanel")
 	box.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -333,9 +336,9 @@ func _key_hint(parent: Control, pairs: Array) -> PanelContainer:
 	for pair: Array in pairs:
 		var item := UiStyle.hbox()
 		row.add_child(item)
-		if pair[0] != "":
-			var cap: Label = UiStyle.label(&"Keycap", pair[0])
+		if pair[1] != "":
+			var cap := KeycapLabel.new(pair[0], pair[1])
 			cap.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			item.add_child(cap)
-		item.add_child(UiStyle.label(&"HudSmall", tr(pair[1])))
+		item.add_child(UiStyle.label(&"HudSmall", tr(pair[2])))
 	return box

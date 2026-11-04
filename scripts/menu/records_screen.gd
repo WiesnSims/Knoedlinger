@@ -32,12 +32,12 @@ func _init(p_content: GameContent) -> void:
 	header.add_child(UiStyle.label(&"LabelTitle", tr("RECORDS_TITLE")))
 	_tabs = UiStyle.hbox()
 	column.add_child(_tabs)
-	_own_pill = ActionPill.new()
+	_own_pill = ActionPill.new("", &"shoulder_left")
 	_own_pill.set_label(tr("RECORDS_OWN"))
 	_own_pill.toggle_mode = true
 	_own_pill.pressed.connect(func() -> void: _show_board(false))
 	_tabs.add_child(_own_pill)
-	_board_pill = ActionPill.new()
+	_board_pill = ActionPill.new("", &"shoulder_right")
 	_board_pill.set_label(tr("RECORDS_BOARD"))
 	_board_pill.toggle_mode = true
 	_board_pill.pressed.connect(func() -> void: _show_board(true))
@@ -46,7 +46,7 @@ func _init(p_content: GameContent) -> void:
 	column.add_child(_body)
 	board = BoardPanel.new(content)
 	column.add_child(board)
-	var back := ActionPill.new("Esc")
+	var back := ActionPill.new("Esc", &"ui_cancel")
 	back.set_label(tr("MENU_BACK"))
 	back.pressed.connect(func() -> void: closed.emit())
 	column.add_child(back)
@@ -85,14 +85,17 @@ func focus_first() -> void:
 	pass
 
 
-## Left / Right switch between the own records and the Ehrentafel.
-func _unhandled_key_input(event: InputEvent) -> void:
-	var key: InputEventKey = event as InputEventKey
-	if not is_visible_in_tree() or key == null or not key.pressed or key.echo:
+## Left / Right (LB / RB on the pad) switch between the own records and the Ehrentafel.
+func _unhandled_input(event: InputEvent) -> void:
+	if not is_visible_in_tree():
 		return
-	if key.physical_keycode == KEY_LEFT or key.physical_keycode == KEY_RIGHT:
+	var key: InputEventKey = event as InputEventKey
+	if key != null and key.pressed and not key.echo and (key.physical_keycode == KEY_LEFT or key.physical_keycode == KEY_RIGHT):
 		get_viewport().set_input_as_handled()
 		_show_board(key.physical_keycode == KEY_RIGHT)
+	elif event.is_action_pressed(&"shoulder_left") or event.is_action_pressed(&"shoulder_right"):
+		get_viewport().set_input_as_handled()
+		_show_board(event.is_action_pressed(&"shoulder_right"))
 
 
 func _show_board(on: bool) -> void:

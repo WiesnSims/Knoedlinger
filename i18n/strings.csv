@@ -699,3 +699,21 @@ MAP_GAMSKOGL,Gamskogl-Piste
 MAP_GAMSKOGL_DESC,"Steil, rutschig, voller Schneemänner. Bergab is da Knödl a Waffn."
 MAP_GEMEINDEBAU,Gemeindebau-Hof
 MAP_GEMEINDEBAU_DESC,"Stiegen, Dächer, Wäscheleinen. Oben is ma sicherer, aber ned lang."
+SET_TAB_PICTURE,Ton & Bild
+SET_TAB_CONTROLS,Steuerung
+SET_TAB_GAME,Spiel
+SET_QUALITY,Qualität
+SET_QUALITY_AUTO,Automatisch
+SET_QUALITY_HIGH,Hoch
+SET_QUALITY_MEDIUM,Mittel
+SET_QUALITY_LOW,Niedrig
+SET_SCREEN_WOBBLE,Bildschirm wackeln
+SET_GROUP_PAD,Gamepad
+SET_PAD_LOOK_SPEED,Stick-Tempo
+SET_GROUP_TOUCH,Touch
+SET_TOUCH_CONTROLS,Touch-Knöpfe
+SET_TOUCH_CONTROLS_AUTO,Automatisch
+SET_TOUCH_CONTROLS_ON,Immer
+SET_TOUCH_CONTROLS_OFF,Nie
+SET_TOUCH_SIZE,Knopfgröße
+SET_TOUCH_OPACITY,Deckkraft

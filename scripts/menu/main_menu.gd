@@ -235,7 +235,7 @@ func _build_name_prompt(root: Control) -> void:
 	_name_edit.placeholder_text = Settings.NAME_FALLBACK
 	_name_edit.text_submitted.connect(func(_t: String) -> void: _confirm_name())
 	column.add_child(_name_edit)
-	var ok := ActionPill.new("Enter")
+	var ok := ActionPill.new("Enter", &"ui_accept")
 	ok.set_label(tr("NAME_OK"))
 	ok.pressed.connect(_confirm_name)
 	column.add_child(ok)
@@ -257,6 +257,12 @@ func _confirm_name() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# The pad cannot type: A takes the name as it stands (or the fallback).
+	if (_name_prompt.get_meta(&"shade") as Control).visible:
+		if event is InputEventJoypadButton and event.is_action_pressed(&"ui_accept"):
+			get_viewport().set_input_as_handled()
+			_confirm_name()
+		return
 	if event.is_action_pressed(&"pause") or event.is_action_pressed(&"ui_cancel"):
 		if _current != &"":
 			get_viewport().set_input_as_handled()

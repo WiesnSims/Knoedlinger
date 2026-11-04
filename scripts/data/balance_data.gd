@@ -34,6 +34,9 @@ extends Resource
 @export var camera_auto_turn_speed: float = 0.0
 ## Radians per second for the camera keys (Q/E).
 @export var camera_key_turn_speed: float = 2.4
+## Radians per second at full right-stick tilt, sideways and up/down (times the Gamepad setting).
+@export var camera_pad_yaw_speed: float = 3.2
+@export var camera_pad_pitch_speed: float = 1.6
 ## Radians per pixel of mouse movement.
 @export var camera_mouse_sensitivity: float = 0.0035
 ## The camera stays this far in front of terrain it would otherwise clip into.

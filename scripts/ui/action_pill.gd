@@ -4,12 +4,13 @@ extends Button
 ## (docs/UI-STYLE.md: verb + count, the key as a keycap). The text is laid out by its own row,
 ## so the button's own `text` stays empty.
 
-var _key: Label
+var _key: KeycapLabel
 var _text: Label
 var _count: Label
 
 
-func _init(key: String = "") -> void:
+## `action` picks the gamepad glyph (InputDevice); `key` is the keyboard's label.
+func _init(key: String = "", action: StringName = &"") -> void:
 	focus_mode = Control.FOCUS_NONE
 	size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	var row: HBoxContainer = UiStyle.hbox()
@@ -18,8 +19,7 @@ func _init(key: String = "") -> void:
 	row.offset_right = -16.0
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	add_child(row)
-	_key = UiStyle.label(&"Keycap", key)
-	_key.visible = key != ""
+	_key = KeycapLabel.new(action, key)
 	_key.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(_key)
 	_text = UiStyle.label(&"LabelSmall")
@@ -30,6 +30,8 @@ func _init(key: String = "") -> void:
 	# The labels only know their width once they have the theme's font.
 	for part: Label in [_key, _text, _count]:
 		part.minimum_size_changed.connect(_measure)
+	# The keycap hides and shows with the device in use.
+	_key.visibility_changed.connect(_measure)
 
 
 func set_label(text: String, count: String = "") -> void:

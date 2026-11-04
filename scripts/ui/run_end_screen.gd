@@ -10,6 +10,8 @@ signal again_pressed
 signal menu_pressed
 
 const WIDTH: float = 400.0
+## Milliseconds before the pad's A / B count on this screen.
+const PAD_ARM_MS: int = 1000
 ## Summary key, label key, how to show it.
 const ROWS: Array = [
 	["time", "END_STAT_TIME", "time"], ["level", "END_STAT_LEVEL", "int"], ["kills", "END_STAT_KILLS", "int"],
@@ -28,6 +30,7 @@ var _reward_box: VBoxContainer
 var _rank_label: Label
 var _inventory: InventoryPanel
 var _again: ActionPill
+var _shown_ms: int = 0
 var _menu: ActionPill
 
 
@@ -64,13 +67,13 @@ func _ready() -> void:
 	column.add_child(_grid)
 	_reward_box = UiStyle.vbox(&"Tight")
 	column.add_child(_reward_box)
-	_again = ActionPill.new("Enter")
+	_again = ActionPill.new("Enter", &"ui_accept")
 	_again.set_label(tr("END_AGAIN"))
 	_again.pressed.connect(func() -> void: again_pressed.emit())
 	var buttons := UiStyle.hbox(&"Row16")
 	column.add_child(buttons)
 	buttons.add_child(_again)
-	_menu = ActionPill.new("Esc")
+	_menu = ActionPill.new("Esc", &"ui_cancel")
 	_menu.set_label(tr("END_MENU"))
 	_menu.pressed.connect(func() -> void: menu_pressed.emit())
 	buttons.add_child(_menu)
@@ -129,6 +132,7 @@ func show_result(summary: Dictionary, can_restart: bool, build: PlayerBuild = nu
 		_inventory.show_build(build, balance)
 	_again.visible = can_restart
 	visible = true
+	_shown_ms = Time.get_ticks_msec()
 	_shown.modulate.a = 0.0
 	create_tween().tween_property(_shown, "modulate:a", 1.0, UiStyle.T_PANEL_IN * 2.0)
 	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
@@ -142,12 +146,18 @@ func show_rank(rank: int, week_rank: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	var key: InputEventKey = event as InputEventKey
-	if not visible or key == null or not key.pressed or key.echo:
+	if not visible:
 		return
-	if _again.visible and (key.physical_keycode == KEY_ENTER or key.physical_keycode == KEY_KP_ENTER):
+	var key: InputEventKey = event as InputEventKey
+	var pad: InputEventJoypadButton = event as InputEventJoypadButton
+	# The pad's A was a jump a moment ago: it only counts once the screen has been up a little.
+	var armed: bool = Time.get_ticks_msec() - _shown_ms > PAD_ARM_MS
+	var again: bool = (key != null and key.pressed and not key.echo
+			and (key.physical_keycode == KEY_ENTER or key.physical_keycode == KEY_KP_ENTER)) 			or (pad != null and armed and event.is_action_pressed(&"ui_accept"))
+	var back: bool = (key != null and key.pressed and not key.echo and key.physical_keycode == KEY_ESCAPE) 			or (pad != null and armed and event.is_action_pressed(&"ui_cancel"))
+	if _again.visible and again:
 		get_viewport().set_input_as_handled()
 		again_pressed.emit()
-	elif key.physical_keycode == KEY_ESCAPE:
+	elif back:
 		get_viewport().set_input_as_handled()
 		menu_pressed.emit()

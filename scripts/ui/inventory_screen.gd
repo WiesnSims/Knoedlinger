@@ -37,7 +37,7 @@ func _ready() -> void:
 	var hint := UiStyle.hbox()
 	hint.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(hint)
-	var cap: Label = UiStyle.label(&"Keycap", "Tab")
+	var cap := KeycapLabel.new(&"inventory", "Tab")
 	cap.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hint.add_child(cap)
 	hint.add_child(UiStyle.label(&"HudSmall", tr("INV_CLOSE")))
@@ -72,16 +72,12 @@ func set_open(on: bool) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	var key: InputEventKey = event as InputEventKey
-	if key == null or not key.pressed or key.echo:
-		return
-	match key.physical_keycode:
-		KEY_TAB, KEY_I:
-			set_open(not is_open())
-		KEY_ESCAPE:
-			if not is_open():
-				return
-			set_open(false)
-		_:
+	if event.is_action_pressed(&"inventory"):
+		set_open(not is_open())
+	elif event.is_action_pressed(&"pause") or event.is_action_pressed(&"ui_cancel"):
+		if not is_open():
 			return
+		set_open(false)
+	else:
+		return
 	get_viewport().set_input_as_handled()

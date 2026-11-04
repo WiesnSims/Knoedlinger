@@ -38,7 +38,7 @@ func _init(p_content: GameContent) -> void:
 	_list = UiStyle.vbox()
 	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scroll.add_child(_list)
-	var back := ActionPill.new("Esc")
+	var back := ActionPill.new("Esc", &"ui_cancel")
 	back.set_label(tr("MENU_BACK"))
 	back.pressed.connect(func() -> void: closed.emit())
 	column.add_child(back)

@@ -39,7 +39,8 @@ func setup(card: Card, key: int, change: String, owned_level: int, catalog: Upgr
 	var side := UiStyle.vbox()
 	side.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_child(side)
-	var cap: Label = UiStyle.label(&"Keycap", str(key))
+	# Pad and touch pick the focused or tapped row; only the keyboard has number keys.
+	var cap := KeycapLabel.new(&"", str(key))
 	cap.size_flags_horizontal = Control.SIZE_SHRINK_END
 	side.add_child(cap)
 	_pips = PipRow.new()

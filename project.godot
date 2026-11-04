@@ -25,6 +25,7 @@ GameAudio="*res://scripts/systems/game_audio.gd"
 Settings="*res://scripts/core/settings.gd"
 Profile="*res://scripts/core/profile.gd"
 Board="*res://scripts/core/board.gd"
+InputDevice="*res://scripts/core/input_device.gd"
 
 [debug]
 

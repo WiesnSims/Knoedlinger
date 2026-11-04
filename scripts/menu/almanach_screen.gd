@@ -74,7 +74,7 @@ func _init(p_content: GameContent) -> void:
 	_extra = UiStyle.label(&"LabelChange", "")
 	_extra.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text.add_child(_extra)
-	var back := ActionPill.new("Esc")
+	var back := ActionPill.new("Esc", &"ui_cancel")
 	back.set_label(tr("MENU_BACK"))
 	back.pressed.connect(func() -> void: closed.emit())
 	column.add_child(back)

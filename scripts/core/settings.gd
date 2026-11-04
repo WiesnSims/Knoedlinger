@@ -1,6 +1,7 @@
 extends Node
 ## Player settings (autoload Settings), saved in user://settings.cfg (IndexedDB in the browser):
-## volumes, fullscreen, camera, flashing, glossary tooltips, language and the player name. Change a
+## volumes, fullscreen, quality, camera, gamepad and touch, flashing, glossary tooltips, language and
+## the player name. Change a
 ## value with set_value(); it is applied at once, saved, and `changed` tells the screens and the
 ## camera. Automated runs (bot, autoplay, headless) never load or save the file, so a player's
 ## settings never change what a test measures.
@@ -22,14 +23,24 @@ const DEFAULTS: Dictionary[StringName, Variant] = {
 	&"volume_voice": 0.9,
 	&"mute": false,
 	&"fullscreen": false,
+	## Render quality (QualityScaler): "auto" steps down by itself when the frame rate drops.
+	&"quality": "auto",
+	## The Jagatee's slight screen wobble (and other camera shakes).
+	&"screen_wobble": true,
 	## Metres, the camera's starting distance (the mouse wheel still zooms).
 	&"camera_distance": 8.0,
 	&"camera_fov": 80.0,
 	## Multiplies balance.camera_mouse_sensitivity.
 	&"mouse_sensitivity": 1.0,
 	&"invert_y": false,
+	## Multiplies the right stick's look speed (balance.camera_pad_yaw_speed / _pitch_speed).
+	&"pad_look_speed": 1.0,
 	## Seconds of look smoothing (balance.camera_look_smoothing is the default).
 	&"look_smoothing": 0.05,
+	## Touch buttons on screen (TouchControls): "auto" = once the screen is touched.
+	&"touch_controls": "auto",
+	&"touch_size": 1.0,
+	&"touch_opacity": 0.6,
 	&"reduce_flashing": false,
 	&"glossary": true,
 	## Send real runs to the online Ehrentafel.
@@ -46,7 +57,15 @@ const RANGES: Dictionary[StringName, Array] = {
 	&"camera_distance": [4.5, 16.0, 0.5],
 	&"camera_fov": [60.0, 100.0, 1.0],
 	&"mouse_sensitivity": [0.25, 3.0, 0.05],
+	&"pad_look_speed": [0.25, 3.0, 0.05],
 	&"look_smoothing": [0.0, 0.2, 0.01],
+	&"touch_size": [0.7, 1.5, 0.05],
+	&"touch_opacity": [0.2, 1.0, 0.05],
+}
+## The allowed values of the choice settings, in the order the menu steps through them.
+const CHOICES: Dictionary[StringName, Array] = {
+	&"quality": ["auto", "high", "medium", "low"],
+	&"touch_controls": ["auto", "on", "off"],
 }
 
 var _values: Dictionary[StringName, Variant] = {}
@@ -83,6 +102,10 @@ func set_value(key: StringName, value: Variant) -> void:
 	if RANGES.has(key):
 		var range_def: Array = RANGES[key]
 		value = clampf(snappedf(float(value), float(range_def[2])), float(range_def[0]), float(range_def[1]))
+	elif CHOICES.has(key):
+		value = str(value)
+		if not CHOICES[key].has(value):
+			value = DEFAULTS[key]
 	elif key == &"player_name":
 		value = clean_name(str(value))
 	if _values.get(key) == value:
@@ -164,6 +187,9 @@ func _load() -> void:
 			if typeof(value) == typeof(DEFAULTS[key]) or (DEFAULTS[key] is float and value is int):
 				_values[key] = value
 	_values[&"player_name"] = clean_name(str(_values[&"player_name"]))
+	for key: StringName in CHOICES:
+		if not CHOICES[key].has(str(_values[key])):
+			_values[key] = DEFAULTS[key]
 
 
 func _save() -> void:

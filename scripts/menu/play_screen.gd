@@ -73,13 +73,13 @@ func _init(p_content: GameContent) -> void:
 	maps.add_child(UiStyle.label(&"LabelAccent", tr("PLAY_MAP")))
 	var map_row := UiStyle.hbox(&"Row16")
 	maps.add_child(map_row)
-	var map_down := ActionPill.new()
+	var map_down := ActionPill.new("", &"shoulder_left")
 	map_down.set_label("‹")
 	map_down.pressed.connect(func() -> void: _step_map(-1))
 	map_row.add_child(map_down)
 	_map_card = _make_map_card()
 	map_row.add_child(_map_card)
-	var map_up := ActionPill.new()
+	var map_up := ActionPill.new("", &"shoulder_right")
 	map_up.set_label("›")
 	map_up.pressed.connect(func() -> void: _step_map(1))
 	map_row.add_child(map_up)
@@ -94,7 +94,7 @@ func _init(p_content: GameContent) -> void:
 	grants.add_child(UiStyle.label(&"LabelAccent", tr("PLAY_GRANT")))
 	var grant_row := UiStyle.hbox(&"Row16")
 	grants.add_child(grant_row)
-	_grant_down = ActionPill.new("Q")
+	_grant_down = ActionPill.new("Q", &"trigger_left")
 	_grant_down.set_label("‹")
 	_grant_down.pressed.connect(func() -> void: _select_grant(_grant - 1))
 	grant_row.add_child(_grant_down)
@@ -103,7 +103,7 @@ func _init(p_content: GameContent) -> void:
 	_grant_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_grant_name.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	grant_row.add_child(_grant_name)
-	_grant_up = ActionPill.new("E")
+	_grant_up = ActionPill.new("E", &"trigger_right")
 	_grant_up.set_label("›")
 	_grant_up.pressed.connect(func() -> void: _select_grant(_grant + 1))
 	grant_row.add_child(_grant_up)
@@ -113,11 +113,11 @@ func _init(p_content: GameContent) -> void:
 	grants.add_child(_grant_desc)
 	var buttons := UiStyle.hbox(&"Row16")
 	column.add_child(buttons)
-	_start = ActionPill.new("Enter")
+	_start = ActionPill.new("Enter", &"ui_accept")
 	_start.set_label(tr("PLAY_START"))
 	_start.pressed.connect(_on_start)
 	buttons.add_child(_start)
-	var back := ActionPill.new("Esc")
+	var back := ActionPill.new("Esc", &"ui_cancel")
 	back.set_label(tr("MENU_BACK"))
 	back.pressed.connect(func() -> void: closed.emit())
 	buttons.add_child(back)
@@ -263,10 +263,26 @@ func _on_start() -> void:
 	start_pressed.emit(_character, _map, _grant)
 
 
-## Enter starts even while a card has the focus (the card would only take it as a click).
+## Enter starts even while a card has the focus (the card would only take it as a click). On the
+## pad: the stick or D-pad walks the cards, A starts, LB / RB switch the map, LT / RT the Grant level.
 func _input(event: InputEvent) -> void:
+	if not is_visible_in_tree():
+		return
+	if event is InputEventJoypadButton or event is InputEventJoypadMotion:
+		var handled: bool = true
+		if event.is_action_pressed(&"ui_accept"):
+			_on_start()
+		elif event.is_action_pressed(&"shoulder_left") or event.is_action_pressed(&"shoulder_right"):
+			_step_map(1 if event.is_action_pressed(&"shoulder_right") else -1)
+		elif event.is_action_pressed(&"trigger_left") or event.is_action_pressed(&"trigger_right"):
+			_select_grant(_grant + (1 if event.is_action_pressed(&"trigger_right") else -1))
+		else:
+			handled = false
+		if handled:
+			get_viewport().set_input_as_handled()
+		return
 	var key: InputEventKey = event as InputEventKey
-	if not is_visible_in_tree() or key == null or not key.pressed or key.echo:
+	if key == null or not key.pressed or key.echo:
 		return
 	if key.physical_keycode == KEY_ENTER or key.physical_keycode == KEY_KP_ENTER:
 		get_viewport().set_input_as_handled()

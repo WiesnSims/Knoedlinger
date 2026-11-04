@@ -16,6 +16,8 @@ signal answered(data: PackedByteArray)
 const CHEST_SECONDS: float = 3.5
 const MENU_WIDTH: float = 560.0
 const FOOTER_HEIGHT: float = 64.0
+## Seconds before the pad's focus lands on the first row.
+const PAD_FOCUS_DELAY: float = 0.4
 ## The bot reads the menu this long before it picks (`?pick_delay=3` for screenshots).
 const BOT_DELAY: float = 0.35
 ## Stats shown as flat numbers; the rest are percentages.
@@ -107,14 +109,14 @@ func _ready() -> void:
 	var buttons := UiStyle.hbox()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(buttons)
-	_reroll = ActionPill.new("R")
+	_reroll = ActionPill.new("R", &"card_reroll")
 	buttons.add_child(_reroll)
 	_reroll.pressed.connect(_answer.bind(OfferCodec.Action.REROLL, 0))
-	_banish = ActionPill.new("B")
+	_banish = ActionPill.new("B", &"card_banish")
 	_banish.toggle_mode = true
 	buttons.add_child(_banish)
 	_banish.toggled.connect(_on_banish_toggled)
-	_skip = ActionPill.new("N")
+	_skip = ActionPill.new("N", &"card_skip")
 	buttons.add_child(_skip)
 	_skip.pressed.connect(_answer.bind(OfferCodec.Action.SKIP, 0))
 	_timer_bar = UiStyle.bar(&"BarTimer")
@@ -211,6 +213,7 @@ func show_offer(offer: OfferCodec.Offer, build: PlayerBuild) -> void:
 		_menu.modulate.a = 1.0
 	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	get_tree().create_timer(PAD_FOCUS_DELAY, true).timeout.connect(_focus_for_pad)
 
 
 ## What a Wirtshaus cash-in gave (tier, gold, cards), as icon tiles.
@@ -370,31 +373,35 @@ func _input(event: InputEvent) -> void:
 	if not is_open():
 		return
 	var key: InputEventKey = event as InputEventKey
-	if key == null or not key.pressed or key.echo:
-		return
-	match key.physical_keycode:
-		KEY_1, KEY_2, KEY_3, KEY_4:
-			var k: int = key.physical_keycode - KEY_1
-			if k < _offer.cards.size():
-				_on_card(k)
-		KEY_R:
-			if _offer.rerolls > 0:
-				_answer(OfferCodec.Action.REROLL, 0)
-		KEY_B:
-			if _offer.banishes > 0:
-				_banish.button_pressed = not _banish.button_pressed
-		KEY_N:
-			_answer(OfferCodec.Action.SKIP, 0)
-		KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT:
-			# Arrow keys walk the rows; the focused one shows its details, Enter takes it.
-			if not _cards.is_empty() and get_viewport().gui_get_focus_owner() == null:
-				var forward: bool = key.physical_keycode == KEY_DOWN or key.physical_keycode == KEY_RIGHT
-				_cards[0 if forward else _cards.size() - 1].grab_focus()
-			else:
-				return
-		_:
+	if key != null and key.pressed and not key.echo and key.physical_keycode >= KEY_1 and key.physical_keycode <= KEY_4:
+		var k: int = key.physical_keycode - KEY_1
+		if k < _offer.cards.size():
+			_on_card(k)
+	elif event.is_action_pressed(&"card_reroll"):
+		if _offer.rerolls > 0:
+			_answer(OfferCodec.Action.REROLL, 0)
+	elif event.is_action_pressed(&"card_banish"):
+		if _offer.banishes > 0:
+			_banish.button_pressed = not _banish.button_pressed
+	elif event.is_action_pressed(&"card_skip"):
+		_answer(OfferCodec.Action.SKIP, 0)
+	elif event.is_action_pressed(&"ui_up") or event.is_action_pressed(&"ui_down") 			or event.is_action_pressed(&"ui_left") or event.is_action_pressed(&"ui_right"):
+		# Arrow keys and the D-pad walk the rows; the focused one shows its details, Enter / A takes it.
+		if not _cards.is_empty() and get_viewport().gui_get_focus_owner() == null:
+			var forward: bool = event.is_action_pressed(&"ui_down") or event.is_action_pressed(&"ui_right")
+			_cards[0 if forward else _cards.size() - 1].grab_focus()
+		else:
 			return
+	else:
+		return
 	get_viewport().set_input_as_handled()
+
+
+## On the pad the first row takes the focus a moment after the menu opens, so the A that was a jump
+## a moment ago cannot pick a card by accident.
+func _focus_for_pad() -> void:
+	if is_open() and InputDevice.is_pad() and not _cards.is_empty() and get_viewport().gui_get_focus_owner() == null:
+		_cards[0].grab_focus()
 
 
 ## The bot's taste: an evolution first, then its own weapons, then anything new, at random within

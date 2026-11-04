@@ -3,9 +3,9 @@ extends Camera3D
 ## Third-person camera in the style of Megabonk (docs/DECISIONS.md): the mouse always looks around
 ## (one click into the game captures the pointer, Esc lets go), the player runs relative to where
 ## the camera looks, the view sits close and low behind the player with a wide field of view, and
-## the mouse wheel zooms. Q/E turn it for keyboard-only play. It follows the player tightly, never
-## sinks into the terrain between it and the player (props it looks through), and backs off as the
-## Knödl grows. All numbers come from balance.tres.
+## the mouse wheel zooms. Q/E turn it for keyboard-only play, the right stick on the gamepad. It
+## follows the player tightly, never sinks into the terrain between it and the player (props it
+## looks through), and backs off as the Knödl grows. All numbers come from balance.tres.
 
 var balance: BalanceData
 var target: Node3D
@@ -29,6 +29,7 @@ var see_through: Array[ShaderMaterial] = []
 var see_through_radius: float = 1.9
 
 var _sensitivity: float = 0.0
+var _pad_speed: float = 1.0
 var _invert: float = 1.0
 var _smoothing: float = 0.0
 var _yaw_target: float = 0.0
@@ -58,12 +59,14 @@ func _apply_settings(key: StringName) -> void:
 	_sensitivity = balance.camera_mouse_sensitivity
 	_invert = 1.0
 	_smoothing = balance.camera_look_smoothing
+	_pad_speed = 1.0
 	if not Settings.persistent:
 		return
 	fov = Settings.get_float(&"camera_fov")
 	_sensitivity *= Settings.get_float(&"mouse_sensitivity")
 	_invert = -1.0 if Settings.get_bool(&"invert_y") else 1.0
 	_smoothing = Settings.get_float(&"look_smoothing")
+	_pad_speed = Settings.get_float(&"pad_look_speed")
 	if key == &"camera_distance":
 		zoom = clampf(Settings.get_float(&"camera_distance"), balance.camera_min_distance, balance.camera_max_distance)
 
@@ -115,6 +118,14 @@ func _process(delta: float) -> void:
 		return
 	var turn: float = Input.get_axis(&"camera_right", &"camera_left")
 	_yaw_target += turn * balance.camera_key_turn_speed * delta
+	# The right stick, on a squared curve so small tilts aim finely.
+	var stick: Vector2 = Input.get_vector(&"look_left", &"look_right", &"look_up", &"look_down")
+	stick *= stick.length()
+	if stick != Vector2.ZERO:
+		turn -= stick.x
+		_yaw_target -= stick.x * balance.camera_pad_yaw_speed * _pad_speed * delta
+		_pitch_target = clampf(_pitch_target + stick.y * balance.camera_pad_pitch_speed * _pad_speed * _invert * delta,
+				deg_to_rad(balance.camera_min_pitch_degrees), deg_to_rad(balance.camera_max_pitch_degrees))
 	var moved: Vector3 = _target_position() - _last_target
 	_last_target = _target_position()
 	moved.y = 0.0
