@@ -17,7 +17,8 @@ const LEFT: Array = [
 		[&"mute", "SET_MUTE", "toggle"],
 	]],
 	["SET_GROUP_DISPLAY", [
-		[&"fullscreen", "SET_FULLSCREEN", "toggle"], [&"reduce_flashing", "SET_REDUCE_FLASHING", "toggle"],
+		[&"fullscreen", "SET_FULLSCREEN", "toggle"], [&"antialiasing", "SET_ANTIALIASING", "toggle"],
+		[&"reduce_flashing", "SET_REDUCE_FLASHING", "toggle"],
 	]],
 ]
 const RIGHT: Array = [

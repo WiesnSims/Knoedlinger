@@ -170,6 +170,14 @@ extends Resource
 
 ## Enemy HP grows over the run: max HP * (1 + this * minutes).
 @export var spawn_hp_per_minute: float = 0.35
+## A gentler start while the build is thin (playtest: the first minutes were the hardest part): the
+## crowd, enemy HP and enemy contact damage start at these shares and ease (smoothstep) up to the
+## full curve by spawn_ease_minutes. A thinner crowd was tried (count 0.6): fewer Brösel, slower
+## levels, a weaker run overall (docs/DECISIONS.md), so the crowd stays full and the enemies soft.
+@export var spawn_ease_minutes: float = 3.0
+@export var spawn_ease_count: float = 1.0
+@export var spawn_ease_hp: float = 0.5
+@export var spawn_ease_damage: float = 0.5
 ## Co-op scaling per extra player (GAME-DESIGN.md: +60 % count, +40 % HP, +1 Wirtshaus).
 @export var coop_count_per_player: float = 0.6
 @export var coop_hp_per_player: float = 0.4

@@ -212,6 +212,11 @@ func _start_run(character: StringName, map: StringName, grant: int) -> void:
 	Profile.remember_choice(character, map, grant)
 	RunSetup.from_menu = true
 	GameAudio.set_music_speed(1.0)
+	# The loading screen first: building the map takes a moment, and the run shows the same screen
+	# while the browser builds its shaders.
+	add_child(LoadingScreen.new())
+	await get_tree().process_frame
+	await get_tree().process_frame
 	get_tree().change_scene_to_file.call_deferred(RUN_SCENE)
 
 

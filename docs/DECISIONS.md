@@ -710,3 +710,31 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   (Nochmal-Zetterl), a form crossed out in blue ink (Beschwerdeformular), a horseshoe over a door (Hufeisen überm
   Tor), a leather pocket with spoon and ladle (Zweiter Hosensack), a plate getting a second Knödl (Nachschlag) and a
   walking stick with reach arcs (Wanderstecken). No data entry shares an icon any more.
+
+## Fix: playtest round after M4 (2026-11-04)
+
+- **Owner (playtest):** after choosing an upgrade the game pauses and the mouse is no longer captured;
+  lag spikes when a run starts (a loading bar instead of a frozen screen?); use Godot's anti-aliasing
+  with a settings toggle, on by default; the start of a run is too hard.
+- **Claude: pause after a pick.** A solo Speisekarte (and the Tab screen) pauses the tree, so RunWorld's
+  "pointer lost = browser Esc" check kept a stale `_was_captured` and opened the pause menu on the first
+  frame after the pick. Now a panel that frees the pointer is remembered and the pointer is captured
+  again once the panel is gone (the pick or key press is the browser's user gesture). The pause menu
+  keeps "click to look" (re-locking right after the browser's Esc is refused by browsers).
+- **Claude: loading screen.** Measured with `tools/browser/hitch_probe.mjs` (fresh Edge profile): the
+  first frame of a run compiled ~81 WebGL programs and froze ~11 s. `ShaderWarmup` now runs behind a
+  `LoadingScreen` (title, gold bar, the page loader's LOADING_JOKE_* lines) before the clock starts:
+  the camera sees only render layer 20, one node per frame joins it (one per distinct look first, never
+  culled, MultiMeshes with one instance, lights always on), so each stall is ≤ 2 s and the bar moves.
+  Solo stays paused meanwhile; headless runs skip it. The menu shows the screen before switching scenes.
+  Returning visit (browser shader cache): through in ~1 s. Batching several nodes after a quick frame
+  was tried and dropped (a batch then held several new looks: 4 s frames).
+- **Claude: anti-aliasing** = setting `antialiasing` (default on) -> root viewport `msaa_3d` 4x; toggle
+  "Kantenglättung" under Anzeige. Browser check: 152 fps avg (153 before), max 124 draw calls.
+  M5 moves the row into its tabbed settings and turns MSAA off at quality Niedrig.
+- **Claude: gentler start** (`spawn_ease_*` in BalanceData, `Formulas.early_ease`): enemy HP and
+  contact damage start at 50 % and ease (smoothstep) to the full curve by 3:00; the crowd stays full.
+  Autoplay, 3 runs, seed 1: first knock-down at 53-88 s (was ~37 s every run), knock-downs before 3:00
+  2/4/2 (was 5/7/3), levels at 1:00/3:00 unchanged (6-7 / 13-16). A thinner crowd (count 60 %) was
+  tried first: fewer Brösel, level 3 at 1:00, a weaker run overall, so it stays at 100 %. M5 part 6
+  tunes on top.

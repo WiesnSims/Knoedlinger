@@ -145,6 +145,11 @@ var _resumed: bool = false
 var _panel_paused: bool = false
 ## The pointer was captured last frame (the browser lets go of it on Esc without telling the game).
 var _was_captured: bool = false
+## The Speisekarte or the Tab screen opened while the mouse looked; the pointer is taken back when
+## the panel is gone.
+var _panel_had_mouse: bool = false
+## Shown until ShaderWarmup is through (not in headless runs).
+var _loading: LoadingScreen
 var _log_slow: bool = false
 ## The key the local player is stored under; a client only learns its real peer id once joined.
 var _local_key: int = 1
@@ -287,7 +292,6 @@ func _ready() -> void:
 		camera.see_through.append(props_material)
 	camera.see_through.append_array(renderer.materials)
 	camera.make_current()
-	ShaderWarmup.attach(camera)
 	hud = Hud.new()
 	hud.name = "Hud"
 	add_child(hud)
@@ -313,7 +317,7 @@ func _ready() -> void:
 	pause.toggled.connect(_on_pause_toggled)
 	pause.quit_pressed.connect(_quit_to_menu)
 	hud.covered = func() -> bool:
-		return speisekarte.is_shown() or inventory.is_open() or end_screen.visible or pause.is_open()
+		return speisekarte.is_shown() or inventory.is_open() or end_screen.visible or pause.is_open() or _loading != null
 	if host:
 		enemies = EnemyManager.new(balance, types, slots, seed_value, ground, map.half_size)
 		enemies.ring_min = balance.spawn_first_ring_min
@@ -347,6 +351,18 @@ func _ready() -> void:
 	NetworkManager.join_failed.connect(_on_join_failed)
 	NetworkManager.session_ended.connect(_on_session_ended)
 	DebugOverlay.visible = LaunchArgs.get_flag("debug", _bot and not _autoplay)
+	# The browser builds the run's shaders behind the loading screen; a solo run waits for it.
+	if DisplayServer.get_name() != "headless":
+		_loading = LoadingScreen.new()
+		add_child(_loading)
+		var warmup: ShaderWarmup = ShaderWarmup.start(self, camera)
+		warmup.progressed.connect(_loading.set_progress)
+		warmup.finished.connect(_on_warmed)
+		# No Tab screen or pause menu under the loading screen (RunWorld allows them again per frame).
+		pause.allowed = false
+		inventory.allowed = false
+		if host and NetworkManager.client_ids().is_empty():
+			get_tree().paused = true
 	GameAudio.music(&"kirtag")
 	GameAudio.bark(&"servas")
 	# Die Ehrentafel: a ticket for this run (only real runs from the menu; Board decides).
@@ -356,6 +372,15 @@ func _ready() -> void:
 	print("[RUN] role=%s map=%s character=%s enemies=%s seconds=%s bot=%s bake_ms=%d adapter=%s" % [
 		_role(), map.id, character.id, _forced_enemies if _forced_enemies > 0 else "wave", _seconds, _bot,
 		_bake_ms, RenderingServer.get_video_adapter_name()])
+
+
+func _on_warmed() -> void:
+	_loading.finish()
+	_loading = null
+	if NetworkManager.is_host() and NetworkManager.client_ids().is_empty() and not speisekarte.is_open() \
+			and not _panel_paused:
+		get_tree().paused = false
+	_resumed = true
 
 
 func _exit_tree() -> void:
@@ -405,7 +430,8 @@ func _host_frame(delta: float) -> void:
 		_wave_timer = 1.0
 		_update_wave()
 	if _forced_enemies == 0 and phase == Phase.RUNNING:
-		var ramp: float = balance.spawn_start_count + balance.spawn_count_per_minute * run_time / 60.0
+		var ramp: float = (balance.spawn_start_count + balance.spawn_count_per_minute * run_time / 60.0) \
+				* Formulas.early_ease(run_time, balance.spawn_ease_count, balance)
 		ramp *= 1.0 + balance.coop_count_per_player * (players.size() - 1)
 		var cap: int = ceili(balance.spawn_max_count * (1.0 + balance.coop_count_per_player * (players.size() - 1)))
 		if _bus_left > 0.0:
@@ -446,9 +472,10 @@ func _host_frame(delta: float) -> void:
 		if eaten > 0.0:
 			states[knodl_peers[k]].mass_eaten_by_enemies += eaten
 			knodls[knodl_peers[k]].bite(eaten, balance.knodl_bite_spill)
+	var damage_mult: float = grant.enemy_damage * Formulas.early_ease(run_time, balance.spawn_ease_damage, balance)
 	for t: int in peers.size():
 		var state: PlayerState = states[peers[t]]
-		var hit: float = Formulas.hit_damage(enemies.touch_damage[t] * grant.enemy_damage, state.build.stat(&"armor"), balance)
+		var hit: float = Formulas.hit_damage(enemies.touch_damage[t] * damage_mult, state.build.stat(&"armor"), balance)
 		var hp_before: float = state.hp
 		if not _god and phase == Phase.RUNNING and state.hurt(hit, balance):
 			_on_downed(peers[t])
@@ -521,7 +548,8 @@ func _update_wave() -> void:
 			if types[t].attack != null and not types[t].boss:
 				enemies.type_weights[t] *= balance.kontrolle_elite_mult
 	enemies.hp_mult = (1.0 + balance.spawn_hp_per_minute * run_time / 60.0) \
-			* (1.0 + balance.coop_hp_per_player * maxi(players.size() - 1, 0)) * grant.enemy_hp
+			* (1.0 + balance.coop_hp_per_player * maxi(players.size() - 1, 0)) * grant.enemy_hp \
+			* Formulas.early_ease(run_time, balance.spawn_ease_hp, balance)
 
 
 ## Host: Sperrstund' at 15:00. The crowd stops coming, the Riesen-Wirt sweeps the Kirtag empty,
@@ -619,8 +647,16 @@ func _on_run_ended() -> void:
 ## Solo: the Tab screen pauses the game like the Speisekarte does; co-op runs on.
 func _on_inventory_toggled(open: bool) -> void:
 	if open:
+		_note_panel_mouse()
 		inventory.show_player(states.get(NetworkManager.local_id()), knodls.get(NetworkManager.local_id()), balance)
 	_hold_pause(open)
+
+
+## A panel that frees the pointer opens: remember to take it back (in the browser the release is
+## not seen at once, so last frame's state counts too).
+func _note_panel_mouse() -> void:
+	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED or _was_captured:
+		_panel_had_mouse = true
 
 
 func _on_pause_toggled(open: bool) -> void:
@@ -984,8 +1020,18 @@ func _local_frame(delta: float) -> void:
 	pause.allowed = not speisekarte.is_open() and not inventory.is_open() and phase != Phase.ENDED
 	if not pause.allowed and pause.is_open():
 		pause.set_open(false)
-	# The browser lets go of the pointer on Esc without passing the key on: treat it as Esc.
+	# The browser lets go of the pointer on Esc without passing the key on: treat it as Esc. The
+	# Speisekarte and the Tab screen let go of it on their own (and a solo pause stops this check
+	# meanwhile), so that is no Esc: once the panel is gone the pointer is taken back (the pick or
+	# key press was the user gesture for it).
 	var captured: bool = Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
+	if speisekarte.is_shown() or inventory.is_open():
+		_was_captured = false
+	elif _panel_had_mouse:
+		_panel_had_mouse = false
+		_was_captured = false
+		if camera.mouse_capture_allowed and not captured and not pause.is_open() and phase != Phase.ENDED:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if _was_captured and not captured and pause.allowed:
 		pause.set_open(true)
 	_was_captured = captured
@@ -1373,6 +1419,7 @@ func _on_offer(data: PackedByteArray) -> void:
 	_offers_received += 1
 	match offer.type:
 		OfferCodec.Type.OFFER:
+			_note_panel_mouse()
 			speisekarte.show_offer(offer, state.build)
 			speisekarte.show_player(state, knodls.get(NetworkManager.local_id()))
 			inventory.set_open(false)

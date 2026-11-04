@@ -14,6 +14,17 @@ func test_xp_curve_matches_the_design() -> void:
 	assert_almost_eq(Formulas.xp_to_next(50, balance), 1405.0, 0.001)
 
 
+func test_early_ease_starts_low_and_reaches_the_full_curve() -> void:
+	balance.spawn_ease_minutes = 3.0
+	assert_almost_eq(Formulas.early_ease(0.0, 0.6, balance), 0.6, 0.0001)
+	assert_almost_eq(Formulas.early_ease(90.0, 0.6, balance), 0.8, 0.0001)
+	assert_almost_eq(Formulas.early_ease(180.0, 0.6, balance), 1.0, 0.0001)
+	assert_almost_eq(Formulas.early_ease(600.0, 0.6, balance), 1.0, 0.0001)
+	assert_gt(Formulas.early_ease(60.0, 0.6, balance), Formulas.early_ease(30.0, 0.6, balance))
+	balance.spawn_ease_minutes = 0.0
+	assert_eq(Formulas.early_ease(0.0, 0.6, balance), 1.0)
+
+
 func test_levels_from_total_xp() -> void:
 	assert_eq(Formulas.level_for_xp(0.0, balance), 1)
 	assert_eq(Formulas.level_for_xp(13.3, balance), 1)
