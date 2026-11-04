@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/stempel.svg" id="9_icon"]
+[ext_resource type="Resource" path="res://data/passives/pensionistenausweis.tres" id="2_evolves_with"]
+[ext_resource type="Resource" path="res://data/weapons/amtsweg.tres" id="2_evolution"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"stempel"
+name_key = "WEAPON_STEMPEL"
+desc_key = "DESC_WEAPON_STEMPEL"
+pattern = 5
+cooldown = 1.6
+damage = 7.0
+knockback = 2.0
+reach = 12.0
+impact_radius = 1.6
+slow_mult = 0.0
+slow_seconds = 1.2
+evolves_with = ExtResource("2_evolves_with")
+evolution = ExtResource("2_evolution")
+color = Color(0.7, 0.5, 1, 1)
+icon = ExtResource("9_icon")
+level_mods = Dictionary[StringName, float]({&"damage": 0.3, &"rate": 0.12, &"area": 0.1, &"amount": 1.0})
+max_amount = 5

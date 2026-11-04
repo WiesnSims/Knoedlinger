@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"krampuslauf"
+title_key = "QUEST_KRAMPUSLAUF"
+desc_key = "DESC_QUEST_KRAMPUSLAUF"
+kind = &"bosses"
+filter = &"oberkrampus_2"
+target = 1.0
+reward_schilling = 200
+unlock_kind = &"weapon"
+unlock_id = &"krampusrute"

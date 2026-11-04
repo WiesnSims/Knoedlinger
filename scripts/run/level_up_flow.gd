@@ -102,7 +102,7 @@ func is_open(peer: int) -> bool:
 
 
 func _deal(peer: int, state: PlayerState, coop: bool) -> void:
-	var count: int = balance.card_count
+	var count: int = balance.card_count + state.build.extra_cards
 	var cards: Array[Card] = CardDealer.deal(state.build, balance, rng, count)
 	_seq = (_seq + 1) & 0xFFFF
 	_cards[peer] = cards

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KnodlSortData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/knodl_sort_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"kaspressknoedl"
+name_key = "KNODL_KASPRESS"
+pierce = true
+flatness = 0.55
+color = Color(0.92, 0.8, 0.45, 1)
+crumb_color = Color(0.75, 0.55, 0.25, 1)
+fleck_color = Color(0.35, 0.55, 0.25, 1)

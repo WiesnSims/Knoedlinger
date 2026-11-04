@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"zeitunglesen"
+title_key = "QUEST_ZEITUNGLESEN"
+desc_key = "DESC_QUEST_ZEITUNGLESEN"
+kind = &"survive"
+target = 15.0
+reward_schilling = 150
+unlock_kind = &"passive"
+unlock_id = &"kaffeehaus_zeitung"

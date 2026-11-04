@@ -15,6 +15,12 @@ extends Resource
 @export var heal_per_mass: float = 0.0
 ## Start mass as a multiple of balance.knodl_start_mass (characters can raise it further).
 @export var start_mass_mult: float = 1.0
+## Kaspressknödl: cuts through a line of enemies instead of pushing them aside.
+@export var pierce: bool = false
+## Height of the look against its width (Kaspressknödl: a flat disc). Only the look; it still rolls.
+@export var flatness: float = 1.0
+## Grammelknödl: enemies near its greasy trail slow down to (1 - trail_slow) of their speed.
+@export var trail_slow: float = 0.0
 @export var color: Color = Color(0.8, 0.66, 0.44)
 @export var crumb_color: Color = Color(0.7, 0.5, 0.28)
 ## Little flecks in the dough (parsley in a Semmelknödl).

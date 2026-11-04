@@ -31,6 +31,8 @@ $scenes = @(
     @{ Id = 'menu'; Query = "$common&pick_delay=90"; At = '22,24'; Move = 'center,card' },
     @{ Id = 'inventory'; Query = "$common&knodl_mass=160"; At = '40'; Press = 'Tab' },
     @{ Id = 'end'; Query = "$common&start_time=891"; At = '32' },
+    # The new weapon effects (impacts, chain bolts, mines, the boomerang tray) in a held crowd.
+    @{ Id = 'weapons'; Query = "$common&weapons=hagelkanone,krampusrute,sachertorte,tablett&enemies=250&god=1"; At = '22,23' },
     # A minute into a run with quick picks: weapon level cards with their rolled gain, then the build.
     @{ Id = 'late'; Query = "$common&pick_delay=1.5&god=1"; At = '70,71,72,73,74,110'; Press = ',,,,,Tab' },
     @{ Id = 'pause'; Query = "$common&knodl_mass=160"; At = '24,27'; Press = 'Escape,ArrowDown+Enter' },

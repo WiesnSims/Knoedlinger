@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AttackData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/attack_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"schneemann_ball"
+aim = 0
+radius = 1.6
+telegraph = 1.1
+damage = 12.0
+cooldown = 3.5
+range = 14.0

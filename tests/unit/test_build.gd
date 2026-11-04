@@ -213,10 +213,10 @@ func test_a_chest_gives_items_and_an_evolution_first() -> void:
 
 func test_a_chest_falls_back_when_its_rarity_is_used_up() -> void:
 	var build := PlayerBuild.new(catalog, balance)
-	# Hold every Hofratswürdig item there is: a Hofratswürdig chest still gives something.
+	# No Hofratswürdig item can be taken (all locked): a Hofratswürdig chest still gives something.
 	for index: int in catalog.items.size():
-		while catalog.items[index].rarity == 3 and build.can_take_item(index):
-			build.add_item(index)
+		if catalog.items[index].rarity == 3:
+			build.locked[Card.Kind.ITEM * 256 + index] = true
 	var picked: int = CardDealer.pick_item(build, rng, 3)
 	assert_gte(picked, 0)
 	assert_lt(catalog.items[picked].rarity, 3)

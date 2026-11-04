@@ -236,6 +236,38 @@ extends Resource
 @export var foehn_force: float = 3.0
 @export var kontrolle_elite_mult: float = 2.0
 
+@export_group("Character traits")
+## Onkel Ferdl's Grant stops at this much extra damage.
+@export var grant_cap: float = 0.3
+## Kommerzialrat Gustl's coffee break: enemies this close to him pause for this long.
+@export var coffee_range: float = 15.0
+@export var coffee_seconds: float = 3.0
+@export var coffee_enemies: int = 6
+## Kevin's shockwave: radius, damage (times the damage stat), knockback.
+@export var jump_wave_radius: float = 4.5
+@export var jump_wave_damage: float = 6.0
+@export var jump_wave_knockback: float = 14.0
+
+@export_group("Kontrolleur")
+## From this minute on, a Kontrolleur stands at every open Wirtshaus that has not served yet; it
+## blocks the door while it stands within guard_radius of the door mat.
+@export var kontrolleur_minute: float = 4.0
+@export var guard_radius: float = 4.5
+
+@export_group("Item effects")
+## Powidl-Füllung: when a Schupfn ends, a blast (radius = Knödl radius + this, damage per metre of
+## Knödl radius) that costs this share of the Knödl's mass.
+@export var powidl_radius: float = 2.5
+@export var powidl_damage: float = 18.0
+@export var powidl_cost: float = 0.1
+## Schweizerkracher: a kill blows up with this chance per copy (radius, damage).
+@export var kracher_radius: float = 2.5
+@export var kracher_damage: float = 12.0
+## Kirchenglocke: a ring around the player every this many seconds (fewer with more copies).
+@export var bell_seconds: float = 10.0
+@export var bell_radius: float = 5.0
+@export var bell_damage: float = 10.0
+
 @export_group("Wirtshaus")
 ## Open Wirtshäuser per run (each serves once) out of the map's spots; +1 per extra player.
 @export var wirtshaus_count: int = 3

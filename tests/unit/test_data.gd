@@ -21,8 +21,11 @@ func test_every_enemy_type_loads_with_a_translated_name() -> void:
 		assert_ne(TranslationServer.translate(data.name_key), StringName(data.name_key), file)
 
 
+## Snapshots carry an enemy's type as an index into its map's wave list, in 4 bits.
 func test_enemy_types_fit_the_snapshot_type_bits() -> void:
-	assert_lt(ResourceLoader.list_directory("res://data/enemies").size(), 16)
+	for file: String in ResourceLoader.list_directory("res://data/waves"):
+		var wave: WaveData = load("res://data/waves".path_join(file))
+		assert_lte(wave.enemies.size(), 16, file)
 
 
 func test_m1_content_loads_with_translated_names() -> void:

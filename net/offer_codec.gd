@@ -16,7 +16,7 @@ const CHOICE_SIZE: int = 5
 
 enum Type { OFFER, CHEST, NOTICE }
 enum Action { PICK, REROLL, BANISH, SKIP }
-enum Notice { TOO_SMALL, WIRT_SERVED, NO_GOLD }
+enum Notice { TOO_SMALL, WIRT_SERVED, NO_GOLD, KONTROLLE }
 
 
 class Offer:

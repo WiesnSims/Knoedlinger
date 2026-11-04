@@ -59,8 +59,10 @@ static func weapon_damage(weapon: WeaponData, mods: PackedFloat32Array, damage_s
 
 ## Seconds between attacks: its rate mod divides it, the cooldown stat takes off a share (never
 ## more than 60 %), and it never drops below balance.weapon_min_cooldown.
-static func weapon_cooldown(weapon: WeaponData, mods: PackedFloat32Array, cooldown_stat: float, balance: BalanceData) -> float:
-	return maxf(weapon.cooldown / (1.0 + maxf(mods[1], 0.0)) * maxf(1.0 - cooldown_stat, 0.4), balance.weapon_min_cooldown)
+static func weapon_cooldown(weapon: WeaponData, mods: PackedFloat32Array, cooldown_stat: float, balance: BalanceData,
+		rate_stat: float = 0.0) -> float:
+	return maxf(weapon.cooldown / (1.0 + maxf(mods[1], 0.0)) / (1.0 + maxf(rate_stat, 0.0)) * maxf(1.0 - cooldown_stat, 0.4),
+			balance.weapon_min_cooldown)
 
 
 ## Size factor for reach, radius and orbit: its area mod and the area stat.

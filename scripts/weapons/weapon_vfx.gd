@@ -2,7 +2,9 @@ class_name WeaponVfx
 extends Node3D
 ## Shows one player's weapons on every machine, from their (mirrored) build alone: swing fans for
 ## ARC, a growing ring for RING, a glowing disc that pulses for AURA, circling pieces for ORBIT,
-## and on clients the shots of PROJECTILE weapons (the host's pool already shows its real ones). A
+## on clients the shots of PROJECTILE weapons (the host's pool already shows its real ones), and
+## impact rings and chain bolts for DROP, MINE and CHAIN (the host shows where it really hit; clients
+## draw them around the player from the fire counter, cosmetic only). A
 ## weapon's fire counter changing means "it just attacked"; orbit pieces are placed from the run
 ## time like on the host. Effects are built once per weapon and replayed (no instantiate() per
 ## attack).
@@ -12,6 +14,22 @@ const AURA_PULSE_SECONDS: float = 0.3
 const AURA_FILL: float = 0.12
 ## Height of effects above the player's feet.
 const GROUND_LIFT: float = 0.15
+## Impacts and bolts per weapon at once, and how long each shows.
+const SPARKS: int = 32
+const IMPACT_SECONDS: float = 0.4
+const BOLT_SECONDS: float = 0.18
+
+
+## One impact ring or chain bolt being shown.
+class Spark:
+	extends RefCounted
+	var at: Vector3 = Vector3.ZERO
+	## Negative = not yet (a mine still ticking).
+	var age: float = 0.0
+	var radius: float = 1.0
+	var bolt: bool = false
+	var angle: float = 0.0
+	var length: float = 0.0
 
 
 class Effect:
@@ -22,6 +40,7 @@ class Effect:
 	var nodes: Array[Node3D] = []
 	var material: ShaderMaterial
 	var multimesh: MultiMesh
+	var sparks: Array[Spark] = []
 
 
 var player: Player
@@ -88,6 +107,12 @@ func sync(build: PlayerBuild, run_time: float, delta: float, shots: ProjectilePo
 				effect.material.set_shader_parameter(&"progress", clampf(effect.time / AURA_PULSE_SECONDS, 0.0, 1.0))
 			WeaponData.Pattern.ORBIT:
 				_place_orbit(effect, owned, build, origin, run_time, area)
+			WeaponData.Pattern.DROP, WeaponData.Pattern.MINE, WeaponData.Pattern.CHAIN:
+				if shots == null:
+					_add_host_sparks(effect, owned, area)
+				elif fired:
+					_add_client_sparks(effect, owned, origin, area)
+				_draw_sparks(effect, weapon, delta)
 
 
 func _place_orbit(effect: Effect, owned: PlayerBuild.OwnedWeapon, build: PlayerBuild, origin: Vector3,
@@ -106,6 +131,94 @@ func _place_orbit(effect: Effect, owned: PlayerBuild.OwnedWeapon, build: PlayerB
 		var at := Vector3(origin.x + offset.x, origin.y + WeaponSystem.SHOT_HEIGHT, origin.z + offset.y)
 		effect.multimesh.set_instance_transform(k, Transform3D(basis.scaled(Vector3.ONE * size), at))
 	effect.multimesh.visible_instance_count = count
+
+
+## Host: where the weapon really hit this frame (a chain's points in order).
+func _add_host_sparks(effect: Effect, owned: PlayerBuild.OwnedWeapon, area: float) -> void:
+	var weapon: WeaponData = owned.data
+	var points: PackedVector2Array = owned.impacts
+	if weapon.pattern == WeaponData.Pattern.CHAIN:
+		for k: int in range(1, points.size()):
+			_bolt(effect, points[k - 1], points[k])
+		return
+	for point: Vector2 in points:
+		_ring(effect, point, weapon.impact_radius * area, 0.0)
+
+
+## Client: the same kind of picture around the player, from the fire counter (cosmetic only).
+func _add_client_sparks(effect: Effect, owned: PlayerBuild.OwnedWeapon, origin: Vector3, area: float) -> void:
+	var weapon: WeaponData = owned.data
+	var rng := RandomNumberGenerator.new()
+	rng.seed = owned.fires * 7919 + owned.index
+	var amount: int = Formulas.weapon_amount(weapon, owned.mods)
+	var here := Vector2(origin.x, origin.z)
+	match weapon.pattern:
+		WeaponData.Pattern.DROP:
+			for k: int in amount:
+				var angle: float = rng.randf() * TAU
+				var distance: float = rng.randf_range(0.3, 0.7) * weapon.reach * area
+				_ring(effect, here + Vector2(cos(angle), sin(angle)) * distance, weapon.impact_radius * area, 0.0)
+		WeaponData.Pattern.MINE:
+			_ring(effect, here, weapon.impact_radius * area, weapon.mine_delay)
+		WeaponData.Pattern.CHAIN:
+			var facing: Vector3 = player.facing_direction()
+			var heading: float = atan2(facing.z, facing.x)
+			var last: Vector2 = here
+			for k: int in amount:
+				heading += rng.randf_range(-0.9, 0.9)
+				var next: Vector2 = last + Vector2(cos(heading), sin(heading)) * weapon.chain_range * area * 0.6
+				_bolt(effect, last, next)
+				last = next
+
+
+func _ring(effect: Effect, at: Vector2, radius: float, delay: float) -> void:
+	var spark := Spark.new()
+	spark.at = Vector3(at.x, player.ground_height_at(Vector3(at.x, 0.0, at.y)) + GROUND_LIFT, at.y)
+	spark.radius = radius
+	spark.age = -delay
+	_keep(effect, spark)
+
+
+func _bolt(effect: Effect, from: Vector2, to: Vector2) -> void:
+	var spark := Spark.new()
+	var mid: Vector2 = (from + to) * 0.5
+	spark.at = Vector3(mid.x, player.ground_height_at(Vector3(mid.x, 0.0, mid.y)) + WeaponSystem.SHOT_HEIGHT, mid.y)
+	spark.bolt = true
+	spark.angle = atan2(to.x - from.x, to.y - from.y)
+	spark.length = from.distance_to(to)
+	_keep(effect, spark)
+
+
+func _keep(effect: Effect, spark: Spark) -> void:
+	if effect.sparks.size() >= SPARKS:
+		effect.sparks.pop_front()
+	effect.sparks.append(spark)
+
+
+func _draw_sparks(effect: Effect, weapon: WeaponData, delta: float) -> void:
+	var shown: int = 0
+	var k: int = 0
+	while k < effect.sparks.size():
+		var spark: Spark = effect.sparks[k]
+		spark.age += delta
+		var life: float = BOLT_SECONDS if spark.bolt else IMPACT_SECONDS
+		if spark.age >= life:
+			effect.sparks.remove_at(k)
+			continue
+		k += 1
+		if spark.age < 0.0:
+			continue
+		var t: float = spark.age / life
+		var basis: Basis
+		if spark.bolt:
+			basis = Basis(Vector3.UP, spark.angle).scaled(Vector3(0.14, 0.14, spark.length))
+		else:
+			basis = Basis.IDENTITY.scaled(Vector3.ONE * spark.radius * lerpf(0.4, 1.0, sqrt(t)))
+		effect.multimesh.set_instance_transform(shown, Transform3D(basis, spark.at))
+		effect.multimesh.set_instance_color(shown, weapon.color)
+		effect.multimesh.set_instance_custom_data(shown, Color(t, 1.0 if spark.bolt else 0.0, 0.0, 0.0))
+		shown += 1
+	effect.multimesh.visible_instance_count = shown
 
 
 func _build(owned: PlayerBuild.OwnedWeapon) -> Effect:
@@ -158,6 +271,32 @@ func _build(owned: PlayerBuild.OwnedWeapon) -> Effect:
 			pieces.custom_aabb = AABB(Vector3(-1000.0, -50.0, -1000.0), Vector3(2000.0, 200.0, 2000.0))
 			add_child(pieces)
 			effect.nodes.append(pieces)
+		WeaponData.Pattern.DROP, WeaponData.Pattern.MINE, WeaponData.Pattern.CHAIN:
+			# Rings lie flat (the fan mesh); a chain bolt is a thin box along +Z.
+			var sparks := MultiMeshInstance3D.new()
+			sparks.name = "Sparks_%s" % weapon.id
+			sparks.top_level = true
+			sparks.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+			effect.multimesh = MultiMesh.new()
+			effect.multimesh.transform_format = MultiMesh.TRANSFORM_3D
+			effect.multimesh.use_colors = true
+			effect.multimesh.use_custom_data = true
+			if weapon.pattern == WeaponData.Pattern.CHAIN:
+				var bolt := BoxMesh.new()
+				bolt.size = Vector3(1.0, 1.0, 1.0)
+				effect.multimesh.mesh = bolt
+			else:
+				effect.multimesh.mesh = MeshFactory.swing_fan(TAU, 24)
+			effect.multimesh.instance_count = SPARKS
+			effect.multimesh.visible_instance_count = 0
+			var spark_material := ShaderMaterial.new()
+			spark_material.shader = load("res://shaders/impact.gdshader")
+			sparks.material_override = spark_material
+			sparks.multimesh = effect.multimesh
+			sparks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			sparks.custom_aabb = AABB(Vector3(-1000.0, -50.0, -1000.0), Vector3(2000.0, 200.0, 2000.0))
+			add_child(sparks)
+			effect.nodes.append(sparks)
 	return effect
 
 

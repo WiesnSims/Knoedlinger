@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="KnodlSortData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/knodl_sort_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"germknoedl"
+name_key = "KNODL_GERM"
+bounce = 0.8
+throw_distance_mult = 2.0
+color = Color(0.97, 0.95, 0.9, 1)
+crumb_color = Color(0.8, 0.75, 0.7, 1)
+fleck_color = Color(0.35, 0.3, 0.35, 1)

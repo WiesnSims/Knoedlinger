@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/attacks/gartenzwerg_boom.tres" id="3_death"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"gartenzwerg"
+name_key = "ENEMY_GARTENZWERG"
+desc_key = "DESC_ENEMY_GARTENZWERG"
+max_hp = 5.0
+speed = 3.2
+radius = 0.35
+model_scale = 0.7
+contact_damage = 5.0
+body_color = Color(0.3, 0.45, 0.75, 1)
+head_color = Color(0.95, 0.8, 0.65, 1)
+look = &"gartenzwerg"
+death_attack = ExtResource("3_death")

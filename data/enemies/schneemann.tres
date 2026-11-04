@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/attacks/schneemann_ball.tres" id="2_attack"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"schneemann"
+name_key = "ENEMY_SCHNEEMANN"
+desc_key = "DESC_ENEMY_SCHNEEMANN"
+max_hp = 18.0
+speed = 2.0
+radius = 0.5
+contact_damage = 6.0
+brosel_xp = 5
+keep_distance = 9.0
+body_color = Color(0.95, 0.97, 1, 1)
+head_color = Color(0.95, 0.97, 1, 1)
+look = &"schneemann"
+attack = ExtResource("2_attack")

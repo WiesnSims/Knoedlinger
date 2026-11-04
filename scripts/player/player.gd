@@ -39,6 +39,8 @@ var stat_extra_jumps: int = 0
 ## Velocity on host and clients alike; remote players estimate it from their poses.
 var motion_velocity: Vector3 = Vector3.ZERO
 var jumps_used: int = 0
+## Every jump so far (wraps at 256; the host counts Kevin's shockwaves from it).
+var jump_count: int = 0
 
 var _tick: int = 0
 var _manual_timer: float = 0.0
@@ -115,6 +117,11 @@ func run_speed() -> float:
 	return balance.player_speed * speed_factor * stat_speed
 
 
+## The fastest this player can be: on a slope with Cousin Toni's bonus (the host's pose check).
+func max_speed() -> float:
+	return run_speed() * (1.0 + (character.slope_speed if character != null else 0.0))
+
+
 ## Puts the player back at a point (start of a run, respawn).
 func teleport(where: Vector3) -> void:
 	global_position = where
@@ -149,7 +156,11 @@ func _physics_process(delta: float) -> void:
 		jumps_used = 0
 	else:
 		_coyote = maxf(_coyote - delta, 0.0)
-	var target := Vector2(move.x, move.y) * run_speed()
+	var speed: float = run_speed()
+	# Cousin Toni: faster on any slope steeper than about 8 degrees.
+	if on_floor and character != null and character.slope_speed > 0.0 and get_floor_normal().y < 0.99:
+		speed *= 1.0 + character.slope_speed
+	var target := Vector2(move.x, move.y) * speed
 	var accel: float = balance.player_acceleration * (1.0 if on_floor else balance.player_air_control)
 	var horizontal := Vector2(velocity.x, velocity.z).move_toward(target, accel * delta)
 	velocity.x = horizontal.x
@@ -188,6 +199,7 @@ func _physics_process(delta: float) -> void:
 	last_input.move = move
 	last_input.buttons = InputMessage.BUTTON_JUMP if Input.is_action_pressed(&"jump") else 0
 	last_input.schupfn_presses = _schupfn_presses
+	last_input.jumps = jump_count
 	last_input.position = global_position
 	last_input.yaw = rotation.y
 
@@ -204,6 +216,7 @@ func _jump() -> void:
 	# Jump height grows with the bonus: v = v0 * sqrt(1 + bonus).
 	velocity.y = balance.player_jump_velocity * sqrt(1.0 + maxf(stat_jump_height, 0.0))
 	jumps_used += 1
+	jump_count = (jump_count + 1) & 0xFF
 	_jump_buffer = 0.0
 	_coyote = 0.0
 

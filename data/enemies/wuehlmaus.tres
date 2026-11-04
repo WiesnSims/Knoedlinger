@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wuehlmaus"
+name_key = "ENEMY_WUEHLMAUS"
+desc_key = "DESC_ENEMY_WUEHLMAUS"
+max_hp = 2.0
+speed = 5.5
+radius = 0.3
+model_scale = 0.6
+contact_damage = 4.0
+spawn_near = 7.0
+body_color = Color(0.45, 0.35, 0.28, 1)
+head_color = Color(0.55, 0.42, 0.32, 1)
+look = &"wuehlmaus"

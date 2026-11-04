@@ -6,10 +6,12 @@ extends Resource
 ## balance.evolution_level with its `evolves_with` stat held can become its `evolution` (a weapon of
 ## its own with `is_evolution`, never offered as a normal card); it keeps its level and its mods.
 
-## ARC: melee arc in facing direction. PROJECTILE: shots in facing direction that pierce.
-## RING: a shockwave around the player. AURA: damages everything close, all the time.
-## ORBIT: things circling the player.
-enum Pattern { ARC, PROJECTILE, RING, AURA, ORBIT }
+## ARC: melee arc (or cone) in facing direction. PROJECTILE: shots in facing direction that pierce
+## (a boomerang comes back). RING: a shockwave around the player. AURA: damages everything close, all
+## the time. ORBIT: things circling the player. DROP: impacts on enemies near the player (stamps,
+## hail, snow globes). MINE: blasts where the player stood, a moment later. CHAIN: a hit that jumps
+## from enemy to enemy.
+enum Pattern { ARC, PROJECTILE, RING, AURA, ORBIT, DROP, MINE, CHAIN }
 ## How ORBIT pieces and projectiles look.
 enum Look { BALL, PIN, SPEAR }
 
@@ -54,6 +56,23 @@ enum Look { BALL, PIN, SPEAR }
 @export var orbit_speed_from_move_speed: float = 0.0
 ## ORBIT: each piece hits the same enemy at most this often.
 @export var hit_interval: float = 0.4
+
+@export_group("On hit")
+## Sets hit enemies on fire: burn_share of the hit's damage per second, for burn_seconds.
+@export var burn_share: float = 0.0
+@export var burn_seconds: float = 0.0
+## Slows hit enemies to slow_mult of their speed (0 = frozen / stunned) for slow_seconds.
+@export var slow_mult: float = 1.0
+@export var slow_seconds: float = 0.0
+
+@export_group("Drops, mines, chains")
+## DROP / MINE: radius of one impact. CHAIN: how far the hit jumps to the next enemy.
+@export var impact_radius: float = 1.5
+@export var chain_range: float = 6.0
+## MINE: seconds until a laid mine goes off.
+@export var mine_delay: float = 1.0
+## PROJECTILE: the shot flies back to where it came from after half its lifetime (Tablett-Wurf).
+@export var boomerang: bool = false
 
 @export_group("Levels")
 ## What a level card can roll, mod -> gain per level on a Gewöhnlich card (rarity multiplies it):

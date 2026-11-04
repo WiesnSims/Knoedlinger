@@ -10,7 +10,7 @@ extends RefCounted
 ## Every stat a stat upgrade or item can raise. Fractions are percentages (0.1 = +10 %).
 const STATS: Array[StringName] = [
 	&"damage", &"area", &"cooldown", &"move_speed", &"max_hp", &"regen", &"armor", &"crit", &"pickup",
-	&"jump_height", &"extra_jumps", &"string_length", &"luck", &"gold", &"knodl_guard",
+	&"jump_height", &"extra_jumps", &"string_length", &"luck", &"gold", &"knodl_guard", &"rate", &"duration",
 ]
 ## Counted per level, never scaled by rarity (half a jump makes no sense).
 const COUNT_STATS: Array[StringName] = [&"extra_jumps", &"knodl_guard"]
@@ -19,7 +19,10 @@ const WEAPON_MODS: Array[StringName] = [&"damage", &"rate", &"area", &"crit", &"
 const MOD_AMOUNT: int = 4
 ## The item rules the game knows (ItemData.effect): a map chest is free (chance), more damage per
 ## chest opened, a revive per copy.
-const EFFECTS: Array[StringName] = [&"free_chest", &"damage_per_chest", &"revive"]
+## Knödl items: spikes (damage per second to what it touches), a burst when a Schupfn ends, a
+## downhill bonus. Visible ones: kills blow up (chance), a bell ring around the player.
+const EFFECTS: Array[StringName] = [&"free_chest", &"damage_per_chest", &"revive", &"knodl_spikes", &"knodl_burst",
+	&"knodl_slope", &"kill_blast", &"bell"]
 
 
 class OwnedWeapon:
@@ -35,6 +38,10 @@ class OwnedWeapon:
 	var timer: float = 0.0
 	## Continuous weapons: per enemy slot, the run time from which it may be hit again.
 	var hit_until: PackedFloat32Array = PackedFloat32Array()
+	## MINE: laid mines (x, z, seconds left). DROP / MINE / CHAIN: where it hit this frame, for the
+	## host's own effects (x, z; a chain's points in order).
+	var mines: PackedVector3Array = PackedVector3Array()
+	var impacts: PackedVector2Array = PackedVector2Array()
 
 	func mod(key: StringName) -> float:
 		return mods[WEAPON_MODS.find(key)]
@@ -71,8 +78,12 @@ var banishes: int = 0
 var chests_opened: int = 0
 ## Host: all gold this player picked up in the run (it becomes Schilling at the end).
 var gold_earned: int = 0
-## The player's Stammtisch bonus (Profile.meta_bonus()), stats on top of the build.
+## The player's Stammtisch bonus (Profile.meta_bonus()) and character trait, stats on top of the build.
 var meta: Dictionary[StringName, float] = {}
+## More cards on every Speisekarte (Herr Poldi).
+var extra_cards: int = 0
+## Host: damage from Onkel Ferdl's Grant (it grows with every hit taken).
+var grant_damage: float = 0.0
 var weapon_slots: int = 2
 var passive_slots: int = 4
 var evolution_level: int = 8
@@ -270,6 +281,7 @@ func recompute() -> void:
 	for key: StringName in meta:
 		if stats.has(key):
 			stats[key] += meta[key]
+	stats[&"damage"] += grant_damage
 
 
 ## Client: takes the host's view of this build (from the world state): rows as weapon_rows(),

@@ -420,3 +420,273 @@ BOARD_EMPTY,Do steht no kana drauf. Sei du da Erste!
 BOARD_RESULT_0,umgfoin
 BOARD_RESULT_1,Sperrstund'
 BOARD_RESULT_2,gwonnen
+WEAPON_TABLETT,Tablett-Wurf
+DESC_WEAPON_TABLETT,"Fliagt hin, kummt zruck. Wie da Ober mit da Rechnung."
+WEAPON_OBSTLER,Obstler-Flammenwerfer
+DESC_WEAPON_OBSTLER,"80 Prozent. Zündet alles an, was ned schnell gnua is."
+WEAPON_STEMPEL,Stempel
+DESC_WEAPON_STEMPEL,"ABGELEHNT. Wer gstempelt is, bleibt stehn."
+WEAPON_ALPHORN,Alphorn
+DESC_WEAPON_ALPHORN,"Ein Ton, drei Täler, kein Tourist mehr."
+WEAPON_HAGEL,Hagelkanone
+DESC_WEAPON_HAGEL,Schiaßt in Himmel. Da Himmel schiaßt zruck.
+WEAPON_SCHNEEKUGEL,Schneekugel
+DESC_WEAPON_SCHNEEKUGEL,"Einmal schütteln, alle eingfrorn."
+WEAPON_WUERSTEL,Wiener Würstel
+DESC_WEAPON_WUERSTEL,Hupft von am zum andern. Mit Senf.
+WEAPON_ZITHER,Zither
+DESC_WEAPON_ZITHER,"Schallwellen in Moll. Tut weh, klingt schön."
+WEAPON_KRAMPUSRUTE,Krampusrute
+DESC_WEAPON_KRAMPUSRUTE,Springt von Sünder zu Sünder.
+WEAPON_SACHERTORTE,Sachertorte-Mine
+DESC_WEAPON_SACHERTORTE,Mit Schlag. Sehr viel Schlag.
+WEAPON_JODEL_APOKALYPSE,Jodel-Apokalypse
+DESC_WEAPON_JODEL_APOKALYPSE,Holaradio in alle Richtungen.
+WEAPON_UNWETTER,Jahrhundert-Unwetter
+DESC_WEAPON_UNWETTER,"Wie im Wetterbericht, nur ehrlich."
+WEAPON_AMTSWEG,Amtsweg
+DESC_WEAPON_AMTSWEG,Bitte warten. Und warten. Und warten.
+WEAPON_SCHNAPSBRENNEREI,Schnapsbrennerei
+DESC_WEAPON_SCHNAPSBRENNEREI,Hinter dir brennt da Weg. Prost.
+WEAPON_WATSCHN_BAUM,Watschn-Baum
+DESC_WEAPON_WATSCHN_BAUM,Watschn wachsen do auf Bäum.
+PASSIVE_BERGKAS,Bergkas
+DESC_PASSIVE_BERGKAS,"Stinkt, hält aber."
+PASSIVE_JAGATEE,Jagatee
+DESC_PASSIVE_JAGATEE,Mehr Schaden. Die Welt wackelt a bissl.
+PASSIVE_HUFEISEN,Hufeisen vom Kirtag
+DESC_PASSIVE_HUFEISEN,Am Schießstand gwonnen. Glaubt eh kana.
+PASSIVE_KRUEGERL,Krügerl
+DESC_PASSIVE_KRUEGERL,Alles geht a bissl schneller.
+PASSIVE_ZEITUNG,Kaffeehaus-Zeitung
+DESC_PASSIVE_ZEITUNG,Alles dauert länger. Wie im Kaffeehaus.
+PASSIVE_BAUSPAR,Bausparvertrag
+DESC_PASSIVE_BAUSPAR,Mehr Gold. Irgendwann.
+KNODL_SPECK,Speckknödl
+KNODL_MARILLEN,Marillenknödl
+KNODL_GERM,Germknödl
+KNODL_KASPRESS,Kaspressknödl
+KNODL_GRAMMEL,Grammelknödl
+CHARACTER_RESI,Oma Resi
+ROLE_RESI,Oberhaupt
+TRAIT_RESI,Hüterin vom Rezept: ihr Marillenknödl startet 50 % größer und heilt beim Essen.
+CHARACTER_TONI,Cousin Toni
+ROLE_TONI,Skilehrer
+TRAIT_TONI,"Pistenstar: 25 % schneller am Hang, Doppelsprung von Anfang an."
+CHARACTER_POLDI,Herr Poldi
+ROLE_POLDI,Ober
+TRAIT_POLDI,Kennt die Karte: auf jeder Speisekarte steht a Gericht mehr.
+CHARACTER_VRONI,Tante Vroni
+ROLE_VRONI,Almbäuerin
+TRAIT_VRONI,Zaach wia a Alm: 20 max. HP mehr und heilt si langsam selber.
+CHARACTER_SEPP,Sepp
+ROLE_SEPP,Feuerwehr
+TRAIT_SEPP,Freiwillige Feuerwehr: alles von ihm wirkt auf 15 % mehr Fläche.
+CHARACTER_GUSTL,Kommerzialrat Gustl
+ROLE_GUSTL,Schwarzes Schaf
+TRAIT_GUSTL,"Mit Titel: jede Minute a gratis ""Des mog i ned"", und Gegner machen gern Kaffeepause."
+CHARACTER_KEVIN,Kevin
+ROLE_KEVIN,Schuhplattler
+TRAIT_KEVIN,Plattln: jeder fünfte Sprung macht a Druckwelle.
+ITEM_EDELWEISS,Edelweiß
+DESC_ITEM_EDELWEISS,Ganz oben gfundn. Bringt Glück und trifft genauer.
+ITEM_ROSENKRANZ,Rosenkranz
+DESC_ITEM_ROSENKRANZ,Hilft. Sagt die Oma.
+ITEM_TRACHTENJANKER,Trachtenjanker
+DESC_ITEM_TRACHTENJANKER,"Dick wie a Panzer, nur fescher."
+ITEM_SAUERKRAUT,Sauerkraut
+DESC_ITEM_SAUERKRAUT,Gesund. Und sonst nix.
+ITEM_KRACHERL,Kracherl
+DESC_ITEM_KRACHERL,Zuckerl in flüssig. Macht Füße.
+ITEM_ZIRBENSCHNAPS,Zirbenschnaps
+DESC_ITEM_ZIRBENSCHNAPS,"Riecht nach Wald, wirkt wie a Lawine."
+ITEM_HOLUNDERSAFT,Holundersaft
+DESC_ITEM_HOLUNDERSAFT,Von der Hecke hinterm Stadl.
+ITEM_SPITZWEGERICH,Spitzwegerich
+DESC_ITEM_SPITZWEGERICH,"Wächst am Wegrand, heilt eh alles."
+ITEM_FELDSTECHER,Feldstecher
+DESC_ITEM_FELDSTECHER,Siehst Brösel von weiter weg.
+ITEM_SONNTAGSGWAND,Sonntagsgwand
+DESC_ITEM_SONNTAGSGWAND,"Wer fesch is, kriegt mehr Trinkgeld."
+ITEM_WETTERHAHN,Wetterhahn
+DESC_ITEM_WETTERHAHN,"Dreht si, und mit ihm alles a bissl weiter."
+ITEM_KUCKUCKSUHR,Kuckucksuhr
+DESC_ITEM_KUCKUCKSUHR,Geht nach. Alles dauert länger.
+ITEM_MAIBAUMSPITZ,Maibaum-Spitz
+DESC_ITEM_MAIBAUMSPITZ,Gstohln vom Nachbardorf. Viel mehr Schaden.
+ITEM_BROESELBUTTER,Bröselbutter
+DESC_ITEM_BROESELBUTTER,"Wer am Knödl picken bleibt, kriegt dauernd was ab."
+ITEM_POWIDL,Powidl-Füllung
+DESC_ITEM_POWIDL,Am End vom Schupfn platzt da Knödl auf. Kost a bissl Masse.
+ITEM_BERGAB_GESETZ,Bergab-Gesetz
+DESC_ITEM_BERGAB_GESETZ,Bergab rollt da Knödl doppelt so gfährlich.
+ITEM_SCHWEIZERKRACHER,Schweizerkracher
+DESC_ITEM_SCHWEIZERKRACHER,Manche Gegner gehn mit an Knall.
+ITEM_KIRCHENGLOCKE,Kirchenglocke
+DESC_ITEM_KIRCHENGLOCKE,Läutet alle paar Sekunden. Rundherum fallt alles um.
+QUEST_OMAS_KOCHBUCH,Omas Kochbuch
+DESC_QUEST_OMAS_KOCHBUCH,Spiel deine erste Runde.
+QUEST_PISTENGAUDI,Pistengaudi
+DESC_QUEST_PISTENGAUDI,Erreich Level 15 in einer Runde.
+QUEST_HERR_OBER,Herr Ober!
+DESC_QUEST_HERR_OBER,Kehr insgesamt 3-mal ein.
+QUEST_ALMAUFTRIEB,Almauftrieb
+DESC_QUEST_ALMAUFTRIEB,Erledig 100 Wildschweine.
+QUEST_FEUERWEHRFEST,Feuerwehrfest
+DESC_QUEST_FEUERWEHRFEST,Erledig insgesamt 5.000 Gegner.
+QUEST_TITELVERLEIHUNG,Titelverleihung
+DESC_QUEST_TITELVERLEIHUNG,Besieg den Hofrat der Unterwelt.
+QUEST_PLATTLERKURS,Plattlerkurs
+DESC_QUEST_PLATTLERKURS,Überleb 12 Minuten in einer Runde.
+QUEST_TABLETTSCHUPFER,Tablettschupfer
+DESC_QUEST_TABLETTSCHUPFER,Erreich Level 15 mit Herrn Poldi.
+QUEST_BRANDSCHUTZ,Brandschutz
+DESC_QUEST_BRANDSCHUTZ,Erreich Level 15 mit dem Sepp.
+QUEST_BEAMTENLAUFBAHN,Beamtenlaufbahn
+DESC_QUEST_BEAMTENLAUFBAHN,Erreich Level 15 mit dem Kommerzialrat.
+QUEST_ECHO,Echo
+DESC_QUEST_ECHO,Erledig 50 Perchten.
+QUEST_GEWITTERFRONT,Gewitterfront
+DESC_QUEST_GEWITTERFRONT,Erledig 3.000 Gelsen.
+QUEST_WINTERZAUBER,Winterzauber
+DESC_QUEST_WINTERZAUBER,Überleb 14 Minuten in einer Runde.
+QUEST_WUERSTELSTAND,Würstelstand
+DESC_QUEST_WUERSTELSTAND,Erledig 5.000 Touristen-Zombies.
+QUEST_STUBNMUSI,Stubnmusi
+DESC_QUEST_STUBNMUSI,Erreich Level 25 mit Oma Resi.
+QUEST_KRAMPUSLAUF,Krampuslauf
+DESC_QUEST_KRAMPUSLAUF,Besieg den zweiten Oberkrampus.
+QUEST_KONDITOREI,Konditorei
+DESC_QUEST_KONDITOREI,Kehr 2-mal mit an XL-Knödl ein.
+QUEST_KRAFTKAS,Kraftkas
+DESC_QUEST_KRAFTKAS,Erreich Level 20 mit Tante Vroni.
+QUEST_HUETTENZAUBER,Hüttenzauber
+DESC_QUEST_HUETTENZAUBER,Gewinn 2 Runden.
+QUEST_SCHIESSBUDE,Schießbude
+DESC_QUEST_SCHIESSBUDE,Find 12 verschiedene Kirtagswaren.
+QUEST_STAMMTISCHRUNDE,Stammtischrunde
+DESC_QUEST_STAMMTISCHRUNDE,Spiel 10 Runden.
+QUEST_ZEITUNGLESEN,Zeitunglesen
+DESC_QUEST_ZEITUNGLESEN,Überleb 15 Minuten in einer Runde.
+QUEST_BAUHERR,Bauherr
+DESC_QUEST_BAUHERR,Verdien insgesamt 3.000 Schilling.
+QUEST_KAESEKELLER,Käsekeller
+DESC_QUEST_KAESEKELLER,Kehr 5-mal mit an L-Knödl ein.
+QUEST_ZWETSCHKENERNTE,Zwetschkenernte
+DESC_QUEST_ZWETSCHKENERNTE,Lass dein Knödl auf 3.000 Masse wachsen.
+QUEST_STEILHANG,Steilhang
+DESC_QUEST_STEILHANG,Erreich Level 25 mit Cousin Toni.
+QUEST_SILVESTER,Silvester
+DESC_QUEST_SILVESTER,Erledig 2.000 Kampf-Dackel.
+QUEST_MESNER,Mesner
+DESC_QUEST_MESNER,Sammel insgesamt 20 Stempel.
+QUEST_GIPFELSIEG,Gipfelsieg
+DESC_QUEST_GIPFELSIEG,Gewinn a Runde auf Hofratsgrant oder schwerer.
+QUEST_AKTENBERG,Aktenberg
+DESC_QUEST_AKTENBERG,Erledig 500 Akten-Geister.
+QUEST_PAPIERKRAM,Papierkram
+DESC_QUEST_PAPIERKRAM,Erledig 1.500 Formulare.
+QUEST_RADLWEG,Radlweg
+DESC_QUEST_RADLWEG,Erledig 100 Radlfahrer.
+QUEST_PERCHTENLAUF,Perchtenlauf
+DESC_QUEST_PERCHTENLAUF,Erledig 200 Perchten.
+QUEST_GELSENKOENIG,Gelsenkönig
+DESC_QUEST_GELSENKOENIG,Erledig 10.000 Gelsen.
+QUEST_MASSENTOURISMUS,Massentourismus
+DESC_QUEST_MASSENTOURISMUS,Erledig 20.000 Touristen-Zombies.
+QUEST_HUNDERT_TAUSEND,Hunderttausend
+DESC_QUEST_HUNDERT_TAUSEND,Erledig insgesamt 100.000 Gegner.
+QUEST_FUENFZIGTAUSEND,Fünfzigtausend
+DESC_QUEST_FUENFZIGTAUSEND,Erledig insgesamt 50.000 Gegner.
+QUEST_VIELFRASS,Vielfraß
+DESC_QUEST_VIELFRASS,Kehr insgesamt 30-mal ein.
+QUEST_XL_MEISTER,XL-Meister
+DESC_QUEST_XL_MEISTER,Kehr 10-mal mit an XL-Knödl ein.
+QUEST_LEVEL_40,Meister
+DESC_QUEST_LEVEL_40,Erreich Level 40 in einer Runde.
+QUEST_LEVEL_50,Großmeister
+DESC_QUEST_LEVEL_50,Erreich Level 50 in einer Runde.
+QUEST_RESI_40,Omas Bestes
+DESC_QUEST_RESI_40,Erreich Level 40 mit Oma Resi.
+QUEST_TONI_40,Skistar
+DESC_QUEST_TONI_40,Erreich Level 40 mit Cousin Toni.
+QUEST_POLDI_40,Oberkellner
+DESC_QUEST_POLDI_40,Erreich Level 40 mit Herrn Poldi.
+QUEST_VRONI_40,Almkönigin
+DESC_QUEST_VRONI_40,Erreich Level 40 mit Tante Vroni.
+QUEST_SEPP_40,Kommandant
+DESC_QUEST_SEPP_40,Erreich Level 40 mit dem Sepp.
+QUEST_GUSTL_40,Hofrat in spe
+DESC_QUEST_GUSTL_40,Erreich Level 40 mit dem Kommerzialrat.
+QUEST_KEVIN_40,Plattlerkönig
+DESC_QUEST_KEVIN_40,Erreich Level 40 mit Kevin.
+QUEST_FERDL_SIEG,Hausmeistersieg
+DESC_QUEST_FERDL_SIEG,Gewinn a Runde mit Onkel Ferdl.
+QUEST_RESI_SIEG,Omas Sieg
+DESC_QUEST_RESI_SIEG,Gewinn a Runde mit Oma Resi.
+QUEST_TONI_SIEG,Abfahrtssieg
+DESC_QUEST_TONI_SIEG,Gewinn a Runde mit Cousin Toni.
+QUEST_POLDI_SIEG,Zahlen bitte!
+DESC_QUEST_POLDI_SIEG,Gewinn a Runde mit Herrn Poldi.
+QUEST_VRONI_SIEG,Almabtrieb
+DESC_QUEST_VRONI_SIEG,Gewinn a Runde mit Tante Vroni.
+QUEST_SEPP_SIEG,Brand aus
+DESC_QUEST_SEPP_SIEG,Gewinn a Runde mit dem Sepp.
+QUEST_GUSTL_SIEG,Genehmigt
+DESC_QUEST_GUSTL_SIEG,Gewinn a Runde mit dem Kommerzialrat.
+QUEST_KEVIN_SIEG,Gaudi
+DESC_QUEST_KEVIN_SIEG,Gewinn a Runde mit Kevin.
+QUEST_ZEHN_KIRTAGE,Kirtagsstammgast
+DESC_QUEST_ZEHN_KIRTAGE,Spiel 25 Runden.
+QUEST_FUENFZIG_KIRTAGE,Kirtagsinventar
+DESC_QUEST_FUENFZIG_KIRTAGE,Spiel 50 Runden.
+QUEST_HOFRAT_DREI,Dreifach abgelehnt
+DESC_QUEST_HOFRAT_DREI,Besieg den Hofrat 3-mal.
+QUEST_HOFRAT_ZEHN,Amtsmüde
+DESC_QUEST_HOFRAT_ZEHN,Besieg den Hofrat 10-mal.
+QUEST_KRAMPUS_ZEHN,Krampusjäger
+DESC_QUEST_KRAMPUS_ZEHN,Besieg den Oberkrampus 10-mal.
+QUEST_STEMPELSAMMLER,Stempelsammler
+DESC_QUEST_STEMPELSAMMLER,Sammel insgesamt 50 Stempel.
+QUEST_MEGA_KNOEDL,Mega-Knödl
+DESC_QUEST_MEGA_KNOEDL,Lass dein Knödl auf 6.000 Masse wachsen.
+QUEST_SCHILLINGKOENIG,Schillingkönig
+DESC_QUEST_SCHILLINGKOENIG,Verdien insgesamt 10.000 Schilling.
+QUEST_ALLES_GFUNDN,Alles gfundn
+DESC_QUEST_ALLES_GFUNDN,Find 25 verschiedene Kirtagswaren.
+QUEST_HOFRATSGRANT_SIEG,Hofratsgrant
+DESC_QUEST_HOFRATSGRANT_SIEG,Gewinn a Runde auf Hofratsgrant oder schwerer.
+QUEST_WELTUNTERGANG_SIEG,Weltuntergang
+DESC_QUEST_WELTUNTERGANG_SIEG,Gewinn a Runde auf Weltuntergang.
+QUEST_OHNE_SCHUPFN_KRAMPUS,Händisch
+DESC_QUEST_OHNE_SCHUPFN_KRAMPUS,Besieg den Oberkrampus in einer Runde ganz ohne Schupfn.
+QUEST_GEMUETLICH_SIEG,Gmiatlich gwonnen
+DESC_QUEST_GEMUETLICH_SIEG,Gewinn a Runde am Kirtag.
+QUEST_ZEHN_SIEGE,Zehn Sperrstund'n
+DESC_QUEST_ZEHN_SIEGE,Gewinn 10 Runden.
+QUEST_EIN_JAHR,Ein Kirtagsjahr
+DESC_QUEST_EIN_JAHR,Spiel 100 Runden.
+QUEST_WUEHLEREI,Wühlerei
+DESC_QUEST_WUEHLEREI,Erledig 500 Wühlmäuse.
+QUEST_RASENPFLEGE,Rasenpflege
+DESC_QUEST_RASENPFLEGE,Erledig 100 Rasenmäher-Roboter.
+QUEST_GARTENSCHAU,Gartenschau
+DESC_QUEST_GARTENSCHAU,Erledig 300 Gartenzwerge.
+QUEST_FAHRSCHEINKONTROLLE,Fahrscheinkontrolle
+DESC_QUEST_FAHRSCHEINKONTROLLE,Erledig 20 Kontrolleure.
+QUEST_NIMMERSATT,Nimmersatt
+DESC_QUEST_NIMMERSATT,Erledig 100 hungrige Touristen.
+NOTICE_3,Kontrolle! Zerscht den Kontrolleur erledigen.
+ENEMY_WUEHLMAUS,Wühlmaus
+DESC_ENEMY_WUEHLMAUS,"Kummt aus'm Boden, wo du grad stehst."
+ENEMY_RASENMAEHER,Rasenmäher-Roboter
+DESC_ENEMY_RASENMAEHER,Mäht seine Runden. Um di.
+ENEMY_SCHNEEMANN,Schneemann
+DESC_ENEMY_SCHNEEMANN,Bleibt auf Abstand und schmeißt.
+ENEMY_GARTENZWERG,Gartenzwerg
+DESC_ENEMY_GARTENZWERG,Geht mit an Knall. Bitte Abstand halten.
+ENEMY_KONTROLLEUR,Kontrolleur
+DESC_ENEMY_KONTROLLEUR,Steht vorm Wirtshaus. Ohne Fahrschein ka Knödl.
+ENEMY_HUNGRIGER_TOURIST,Hungriger Tourist
+DESC_ENEMY_HUNGRIGER_TOURIST,Frisst dir den Knödl unterm Hintern weg.
+STAT_DURATION,Dauer

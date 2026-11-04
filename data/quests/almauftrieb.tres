@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"almauftrieb"
+title_key = "QUEST_ALMAUFTRIEB"
+desc_key = "DESC_QUEST_ALMAUFTRIEB"
+kind = &"kills"
+filter = &"wildschwein"
+target = 100.0
+reward_schilling = 120
+unlock_kind = &"character"
+unlock_id = &"vroni"

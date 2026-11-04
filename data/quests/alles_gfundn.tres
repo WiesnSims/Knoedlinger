@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"alles_gfundn"
+title_key = "QUEST_ALLES_GFUNDN"
+desc_key = "DESC_QUEST_ALLES_GFUNDN"
+kind = &"items"
+target = 25.0
+reward_schilling = 500

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/schweizerkracher.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"schweizerkracher"
+name_key = "ITEM_SCHWEIZERKRACHER"
+desc_key = "DESC_ITEM_SCHWEIZERKRACHER"
+rarity = 1
+stats = Dictionary[StringName, float]({})
+effect = &"kill_blast"
+effect_value = 0.08
+max_stacks = 5
+icon = ExtResource("2_icon")
+color = Color(0.6, 0.8, 0.55, 1)

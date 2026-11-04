@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/schneekugel.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"schneekugel"
+name_key = "WEAPON_SCHNEEKUGEL"
+desc_key = "DESC_WEAPON_SCHNEEKUGEL"
+pattern = 5
+cooldown = 2.4
+damage = 5.0
+knockback = 1.0
+reach = 10.0
+impact_radius = 2.0
+slow_mult = 0.0
+slow_seconds = 1.8
+color = Color(0.8, 0.92, 1, 1)
+icon = ExtResource("9_icon")
+level_mods = Dictionary[StringName, float]({&"damage": 0.3, &"rate": 0.12, &"area": 0.12, &"amount": 1.0})
+max_amount = 4

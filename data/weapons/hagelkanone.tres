@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/hagelkanone.svg" id="9_icon"]
+[ext_resource type="Resource" path="res://data/passives/strickpullover.tres" id="2_evolves_with"]
+[ext_resource type="Resource" path="res://data/weapons/jahrhundert_unwetter.tres" id="2_evolution"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hagelkanone"
+name_key = "WEAPON_HAGEL"
+desc_key = "DESC_WEAPON_HAGEL"
+pattern = 5
+cooldown = 1.0
+damage = 4.0
+knockback = 1.0
+reach = 16.0
+impact_radius = 0.9
+amount = 3
+evolves_with = ExtResource("2_evolves_with")
+evolution = ExtResource("2_evolution")
+color = Color(0.85, 0.95, 1, 1)
+icon = ExtResource("9_icon")
+level_mods = Dictionary[StringName, float]({&"damage": 0.27, &"rate": 0.12, &"area": 0.1, &"amount": 1.0})
+max_amount = 10
