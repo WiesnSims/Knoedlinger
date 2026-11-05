@@ -1077,3 +1077,9 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   frame 20.7 ms / at most 104 draw calls; `mp_test -Clients 1` passes (30.8 KiB/s, 3 of 3 lines reached the client); `mp_test -Clients 3
   -StartTime 595` passes (57.2 KiB/s with 846 enemies, every client got the same 7 of the host's 10 lines,
   probably the 3 said before the clients had joined; not confirmed from the logs).
+- **Owner: approved** on the preview https://enemy-voices.knoedlinger.pages.dev; merged into `main` (4a13ef9),
+  branch `enemy-voices` deleted. **Production deploy of 1.2.0** on 2026-11-05 at the owner's word: live on
+  https://knoedlinger.pages.dev. Measured on production (headless Edge, RTX 3080, 500 enemies, bot, 60 s):
+  132.3 fps, p95 10.2 ms, max frame 26.1 ms, at most 98 draw calls, no console errors; `mp_test -Clients 1`
+  passes (31.4 KiB/s, 3 of 3 enemy lines reached the client). The other running session (weapons) was told to
+  merge `main` so its builds carry 1.2.0 too.
