@@ -713,6 +713,8 @@ func _update_phase(delta: float) -> void:
 				_set_phase(Phase.SPERRSTUND)
 		Phase.SPERRSTUND:
 			_phase_timer += delta
+			if fmod(_phase_timer, 0.5) < delta:
+				_send_guests_home()
 			if _riesen_wirt != null:
 				var at: Vector3 = _riesen_wirt.global_position
 				var found: int = enemies.grid.query(at.x, at.z, RIESEN_WIRT_SWEEP)
@@ -728,6 +730,25 @@ func _update_phase(delta: float) -> void:
 					_set_phase(Phase.ENDED)
 			elif overtime_seconds() >= balance.overtime_max_seconds:
 				_set_phase(Phase.ENDED)
+
+
+## Host, Nachspielzeit: the Kirtag crowd goes home out of sight (no drops, no kill), so their slots
+## fill with Stammgast-Geister. Those close by stay until beaten or swept by the Riesen-Wirt.
+func _send_guests_home() -> void:
+	var positions: PackedVector3Array = _player_positions()
+	var reach_sq: float = balance.overtime_leave_distance * balance.overtime_leave_distance
+	for i: int in enemies.capacity:
+		if enemies.alive[i] == 0 or enemies.controlled[i] != 0 or types[enemies.type[i]].stays_at_sperrstund:
+			continue
+		var near: bool = false
+		for at: Vector3 in positions:
+			var dx: float = enemies.pos_x[i] - at.x
+			var dz: float = enemies.pos_z[i] - at.z
+			if dx * dx + dz * dz < reach_sq:
+				near = true
+				break
+		if not near:
+			enemies.despawn(i)
 
 
 ## Every role: the phase changed (host: its own clock; client: the world state).
@@ -2526,7 +2547,8 @@ func _collect_loot(delta: float) -> void:
 						state.heal(loot.values[slot])
 						_take_loot(slot, peer)
 				LootField.Kind.STEMPEL:
-					if d < balance.stempel_pickup_radius:
+					# Past Sperrstund' the Formular is moot: the result is settled.
+					if d < balance.stempel_pickup_radius and phase == Phase.RUNNING:
 						_take_loot(slot, peer)
 						stempel_found += 1
 						events.toast("TOAST_STEMPEL_%d" % mini(stempel_found, 3))

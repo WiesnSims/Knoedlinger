@@ -230,7 +230,10 @@ extends Resource
 @export_group("Nachspielzeit")
 ## Past Sperrstund' the Stammgast-Geister come (the wave's entries from minute 15): this many at
 ## first, more every minute, up to spawn_max_count (co-op: times the co-op count).
-@export var overtime_start_count: int = 150
+@export var overtime_start_count: int = 80
+## From Sperrstund' on the Kirtag guests go home: any ordinary enemy (not a boss, not a ghost) farther
+## than this from every player leaves, unseen and without drops, so the ghosts get their slots.
+@export var overtime_leave_distance: float = 25.0
 @export var overtime_count_per_minute: float = 60.0
 ## Every overtime_step_seconds every enemy gets this much faster (up to overtime_pace_max), hits this
 ## much harder and new ones bring this much more HP (on top of spawn_hp_per_minute).

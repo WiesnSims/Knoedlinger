@@ -1212,10 +1212,13 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   before and his broom keeps sweeping the Kirtag crowd (no drops), but not the ghosts
   (`EnemyTypeData.stays_at_sperrstund`) or bosses (they stand and wait, as before). New spawns are only
   the wave's entries past minute 15: the **Stammgast-Geist** (white bedsheet ghost with his Krügerl,
-  6 HP, 5.2 m/s, 12 damage, 1 XP) from 15:00, the **Grantiger Stammgast** (red, 12 HP, 6.4 m/s,
-  30 damage, 5 XP; toast "D' Stammgäst wern grantig! Renn!") from 17:00 at a quarter of the mix and
+  6 HP, 5.0 m/s, 8 damage, 1 XP) from 15:00, the **Grantiger Stammgast** (red, 12 HP, 6.4 m/s,
+  24 damage, 5 XP; toast "D' Stammgäst wern grantig! Renn!") from 17:00 at a quarter of the mix and
   half from 19:00. Both fly (no slopes, no walls) and rise 8 m to players on roofs. Crowd:
-  `overtime_start_count` 150 + 60 per minute, capped like the normal crowd. Every
+  `overtime_start_count` 80 + 60 per minute, capped like the normal crowd. The Kirtag guests go
+  home: every 0.5 s any ordinary enemy more than `overtime_leave_distance` = 25 m from every player
+  leaves unseen (no drops), so the ghosts get the slots (found in the 4-player test: 572 old enemies
+  kept every slot and almost no ghost came). Every
   `overtime_step_seconds` = 30 s every enemy moves 6 % faster (`EnemyManager.pace`, max 2x), hits 10 %
   harder and new ones bring 10 % more HP (on top of the per-minute HP). Players take damage again (the
   old rule made them invulnerable after 15:00). The Schunkel waltz speeds up with the pace (max 1.5x).
@@ -1244,4 +1247,17 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   "Wer geht'n do scho ham?", "I kumm morgen wieder …" / "Wer sitzt auf mein Platz?!",
   "Sperrstund' gibt's ned!", "Zahln tu i nächste Wochn …" (0.22 MB).
 - **Claude: `ui_shots.ps1`** has two new scenes, `overtime` (15:01+) and `grantig` (17:10+); `end` takes
-  a second shot at 58 s (the bot now plays on into the Nachspielzeit before the end screen).
+  a second shot at 100 s (the bot now plays on into the Nachspielzeit before the end screen).
+- **Claude: the Formular is moot past 15:00.** Stempel can no longer be picked up in the Nachspielzeit
+  (the bot finished the Formular at 15:20 and "Formular komplett! Ab zum Gemeindeamt!" came up). A
+  waiting boss can still be beaten (it counts for boss quests, not for the result).
+- **Tuning (Claude, balance log, Ferdl / Kirtag / Grant 1, seeds 1-3; the bot never runs away from the
+  ghosts):** first numbers (150 ghosts, 12 / 30 damage): level 50-54 bots lasted 9-14 s. With the
+  numbers above and the guests going home: 15 s, 17 s and 1:56 (2,432 ghosts beaten; 922 Schilling).
+  A player who runs is faster than the white ghosts (7 vs 5 m/s) until the pace catches up after some
+  3-4 minutes. All numbers are in balance.tres / the ghosts' .tres for the owner's playtest.
+- **Measured** (local, RTX 3080): tests 188/188; browser check 173.6 fps, p95 7.1 ms, at most 101 draw
+  calls; `mp_test -Clients 1` passes (33.2 KiB/s, 0 pops); `mp_test -Clients 3 -StartTime 885 -Seconds 40`
+  passes (clients through Sperrstund' into 29 s of Nachspielzeit, result CLOSED on every client, ghosts
+  of type 16/17 over snapshot v3); `autoplay -Runs 3` passes; `ui_shots -Only hud,end,overtime,grantig`
+  passes (no console errors, under 150 draw calls).
