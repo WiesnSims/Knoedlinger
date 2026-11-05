@@ -1196,3 +1196,29 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   the merge is the same code, so after the production deploy only the browser check runs against the live
   URL: it catches deploy problems (files, headers, cache, loader). The full suite runs again only when
   something changed after approval (another merge on `main`, a fix, a version change like today).
+
+## 1.3.2 – Ehrentafel on the title screen (2026-11-05)
+
+Owner: 1.4 stays in planning (branch `v1-4`); this feature is needed now, as a patch release 1.3.2 off `main`
+(branch `ehrentafel-menu`). Owner asked for the top 5 (or 3) runs of the Ehrentafel in the main menu so every
+player sees it first, and for "Rekorde" to become "Ehrentafel" with the board shown directly and "Eigene" as
+the second tab.
+- **Top 5, not 3 (Claude):** five rows fit a compact panel at 1280x720 without crowding the menu, and the board
+  is still young (a top 3 would mostly show the owner's own runs). `BoardTop.SIZE` = 5.
+- **What it shows (Claude):** the first map (Kirtag), solo, all time – the default view of the full board, so
+  the panel and the board agree. Columns: place, name, result · Grant level, time; own entries in the accent.
+  Header "Ehrentafel", line "De bestn 5 · Kirtag in Unterhinterkogl · allein", pill "Ganze Ehrentafel" opens the
+  screen. One `Board.fetch` when the menu opens (every return from a run reloads the menu).
+- **Where (Claude):** bottom right of the title screen, 64 px from the edges, only while no menu screen is open
+  (it would sit under the screens otherwise). Hidden entirely when the board cannot be reached (desktop, local
+  server, offline) instead of showing the offline line on the title screen; an empty board shows
+  "Do steht no kana drauf. Sei du da Erste!".
+- **Renamed:** menu entry and screen title "Rekorde" → "Ehrentafel"; tabs "Ehrentafel" (first, default, LB /
+  Left) and "Eigene Rekorde" (second, RB / Right).
+- **Board filters in two rows (Claude):** maps, then Allein/Familie and Ewig/Diese Woche. In one row they were
+  wider than the menu's free area (cut off at 1280x720 and 1920x1080); unnoticed before because the board was
+  the second tab.
+- Patch note 1.3.2 on top of `patch_notes.tres`, version 1.3.2 in project.godot.
+- **Measured** (local, RTX 3080): tests pass; browser check 180.4 fps, p95 6.9 ms, at most 101 draw calls;
+  `mp_test -Clients 1` passes; `ui_shots -Only title,meta` pass at both sizes (screens checked by eye, with the
+  board list proxied read-only from production to see real rows).
