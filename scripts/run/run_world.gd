@@ -21,11 +21,12 @@ extends Node3D
 ## zero clients; only solo pauses for the Speisekarte. Every second it prints a [STATS] line; the
 ## browser also gets window.knoedlStats / knoedlResult.
 
-## RUNNING until Sperrstund' (balance.run_seconds), then the Riesen-Wirt sweeps for
-## sperrstund_seconds, then the run is ENDED. It also ends early when everyone is down.
+## RUNNING until Sperrstund' (balance.run_seconds), which settles the result; then the Nachspielzeit
+## (SPERRSTUND): the Riesen-Wirt sweeps the crowd out, the Stammgast-Geister come faster and harder
+## until everyone is down, and the run is ENDED. It also ends early when everyone is down.
 enum Phase { RUNNING, SPERRSTUND, ENDED }
 ## How a run ended: WON = Sperrstund' with the Hofrat beaten, CLOSED = Sperrstund' without,
-## LOST = everyone knocked down.
+## LOST = everyone knocked down before Sperrstund'.
 enum Result { NONE, WON, CLOSED, LOST }
 
 const MAP_DIR: String = "res://data/maps"
@@ -233,6 +234,8 @@ var _shockwave_next: int = 0
 ## Host: each Knödl's state last frame (a Schupfn ending sets off the Powidl), the bell clocks.
 var _knodl_state_last: Dictionary[int, int] = {}
 var _bell_timers: Dictionary[int, float] = {}
+## Host: enemy types whose arrive_toast was shown this run.
+var _arrived: Dictionary[int, bool] = {}
 const SHOCKWAVES: int = 8
 const SHOCKWAVE_SECONDS: float = 0.4
 
@@ -439,8 +442,10 @@ func _on_warmed() -> void:
 
 
 func _exit_tree() -> void:
-	# A solo Speisekarte may still hold the pause when the scene goes.
+	# A solo Speisekarte may still hold the pause when the scene goes, the Nachspielzeit's end its
+	# slow motion.
 	get_tree().paused = false
+	Engine.time_scale = 1.0
 	if Board.ranked.is_connected(_on_ranked):
 		Board.ranked.disconnect(_on_ranked)
 
@@ -515,9 +520,12 @@ func _host_frame(delta: float) -> void:
 	if _wave_timer <= 0.0:
 		_wave_timer = 1.0
 		_update_wave()
-	if _forced_enemies == 0 and phase == Phase.RUNNING:
+	if _forced_enemies == 0 and phase != Phase.ENDED:
 		var ramp: float = (balance.spawn_start_count + balance.spawn_count_per_minute * run_time / 60.0) \
 				* Formulas.early_ease(run_time, balance.spawn_ease_count, balance)
+		# Nachspielzeit: the Stammgast-Geister come in a crowd of their own.
+		if phase == Phase.SPERRSTUND:
+			ramp = balance.overtime_start_count + balance.overtime_count_per_minute * overtime_seconds() / 60.0
 		ramp *= 1.0 + balance.coop_count_per_player * (players.size() - 1)
 		var cap: int = ceili(balance.spawn_max_count * (1.0 + balance.coop_count_per_player * (players.size() - 1)))
 		if _bus_left > 0.0:
@@ -549,6 +557,7 @@ func _host_frame(delta: float) -> void:
 			knodl_peers.append(peer)
 			knodl_targets.append(Vector4(at.x, at.y, at.z, knodls[peer].radius))
 	var t0: int = Time.get_ticks_usec()
+	enemies.pace = overtime_pace()
 	enemies.update(delta, targets, knodl_targets)
 	_alive_held = enemies.alive_count
 	_start_attacks()
@@ -569,12 +578,13 @@ func _host_frame(delta: float) -> void:
 			states[knodl_peers[k]].mass_eaten_by_enemies += eaten
 			knodls[knodl_peers[k]].bite(eaten, balance.knodl_bite_spill)
 			voices.offer_bite(knodls[knodl_peers[k]].global_position, knodls[knodl_peers[k]].radius)
-	var damage_mult: float = grant.enemy_damage * Formulas.early_ease(run_time, balance.spawn_ease_damage, balance)
+	var damage_mult: float = grant.enemy_damage * Formulas.early_ease(run_time, balance.spawn_ease_damage, balance) \
+			* (1.0 + balance.overtime_damage_per_step * _overtime_steps())
 	for t: int in peers.size():
 		var state: PlayerState = states[peers[t]]
 		var hit: float = Formulas.hit_damage(enemies.touch_damage[t] * damage_mult, state.build.stat(&"armor"), balance)
 		var hp_before: float = state.hp
-		if not _god and phase == Phase.RUNNING and state.hurt(hit, balance):
+		if not _god and phase != Phase.ENDED and state.hurt(hit, balance):
 			on_downed(peers[t])
 		if state.hp < hp_before:
 			_on_hurt(peers[t])
@@ -658,11 +668,37 @@ func _update_wave() -> void:
 				enemies.type_weights[t] *= balance.kontrolle_elite_mult
 	enemies.hp_mult = (1.0 + balance.spawn_hp_per_minute * run_time / 60.0) \
 			* (1.0 + balance.coop_hp_per_player * maxi(players.size() - 1, 0)) * grant.enemy_hp * wave.enemy_hp \
-			* Formulas.early_ease(run_time, balance.spawn_ease_hp, balance)
+			* Formulas.early_ease(run_time, balance.spawn_ease_hp, balance) \
+			* (1.0 + balance.overtime_hp_per_step * _overtime_steps())
+	# A type that announces itself (the grantige Stammgast-Geist) does so once it joins the mix.
+	for t: int in mini(enemies.type_weights.size(), types.size()):
+		if enemies.type_weights[t] > 0.0 and types[t].arrive_toast != "" and not _arrived.has(t):
+			_arrived[t] = true
+			events.toast(types[t].arrive_toast)
 
 
-## Host: Sperrstund' at 15:00. The crowd stops coming, the Riesen-Wirt sweeps the Kirtag empty,
-## then the run ends as a win.
+## Seconds past Sperrstund' (0 before it, and for a run lost before it).
+func overtime_seconds() -> float:
+	if result == Result.LOST:
+		return 0.0
+	return maxf(run_time - balance.run_seconds, 0.0)
+
+
+## Whole overtime_step_seconds steps of Nachspielzeit so far: every step hurries the crowd on.
+func _overtime_steps() -> int:
+	if phase == Phase.RUNNING:
+		return 0
+	return floori(overtime_seconds() / maxf(balance.overtime_step_seconds, 0.01))
+
+
+## How much faster than normal every enemy moves right now (1 before Sperrstund').
+func overtime_pace() -> float:
+	return minf(1.0 + balance.overtime_pace_per_step * _overtime_steps(), balance.overtime_pace_max)
+
+
+## Host: Sperrstund' at 15:00 settles the result (won with the Hofrat beaten). Then the Nachspielzeit:
+## the Riesen-Wirt sweeps the Kirtag crowd out while the Stammgast-Geister come (the wave's entries
+## past minute 15), faster and harder every step, until the last player is down.
 func _update_phase(delta: float) -> void:
 	match phase:
 		Phase.RUNNING:
@@ -673,20 +709,46 @@ func _update_phase(delta: float) -> void:
 					_set_phase(Phase.ENDED)
 				return
 			if run_time >= balance.run_seconds:
+				result = Result.WON if gate_flags & WorldStateCodec.GATE_BOSS_BEATEN else Result.CLOSED
 				_set_phase(Phase.SPERRSTUND)
-				enemies.target_count = 0
 		Phase.SPERRSTUND:
 			_phase_timer += delta
+			if fmod(_phase_timer, 0.5) < delta:
+				_send_guests_home()
 			if _riesen_wirt != null:
 				var at: Vector3 = _riesen_wirt.global_position
 				var found: int = enemies.grid.query(at.x, at.z, RIESEN_WIRT_SWEEP)
 				for k: int in found:
-					# Bosses stay (a swept boss is not a beaten boss).
-					if enemies.controlled[enemies.grid.results[k]] == 0:
-						enemies.despawn(enemies.grid.results[k])
-			if _phase_timer >= balance.sperrstund_seconds:
-				result = Result.WON if gate_flags & WorldStateCodec.GATE_BOSS_BEATEN else Result.CLOSED
+					var slot: int = enemies.grid.results[k]
+					# Bosses stay (a swept boss is not a beaten boss), and so do the Stammgast-Geister.
+					if enemies.controlled[slot] == 0 and not types[enemies.type[slot]].stays_at_sperrstund:
+						enemies.despawn(slot)
+			if _lose_timer >= 0.0:
+				# The last one fell: the slow motion runs in real seconds.
+				_lose_timer -= delta / maxf(Engine.time_scale, 0.01)
+				if _lose_timer < 0.0:
+					_set_phase(Phase.ENDED)
+			elif overtime_seconds() >= balance.overtime_max_seconds:
 				_set_phase(Phase.ENDED)
+
+
+## Host, Nachspielzeit: the Kirtag crowd goes home out of sight (no drops, no kill), so their slots
+## fill with Stammgast-Geister. Those close by stay until beaten or swept by the Riesen-Wirt.
+func _send_guests_home() -> void:
+	var positions: PackedVector3Array = _player_positions()
+	var reach_sq: float = balance.overtime_leave_distance * balance.overtime_leave_distance
+	for i: int in enemies.capacity:
+		if enemies.alive[i] == 0 or enemies.controlled[i] != 0 or types[enemies.type[i]].stays_at_sperrstund:
+			continue
+		var near: bool = false
+		for at: Vector3 in positions:
+			var dx: float = enemies.pos_x[i] - at.x
+			var dz: float = enemies.pos_z[i] - at.z
+			if dx * dx + dz * dz < reach_sq:
+				near = true
+				break
+		if not near:
+			enemies.despawn(i)
 
 
 ## Every role: the phase changed (host: its own clock; client: the world state).
@@ -702,6 +764,7 @@ func _set_phase(new_phase: Phase) -> void:
 			_spawn_riesen_wirt()
 			hazards.clear()
 		Phase.ENDED:
+			Engine.time_scale = 1.0
 			_on_run_ended()
 
 
@@ -797,12 +860,10 @@ func _hold_pause(open: bool) -> void:
 
 ## Pause menu "Zum Menü" or the end screen: leave the run for the title screen.
 func _quit_to_menu() -> void:
-	# Leaving early still pays what the run made so far (like being knocked out).
-	if phase != Phase.ENDED:
-		result = Result.LOST
-		_record_profile("QUIT")
+	_record_leaving()
 	_finished = true
 	get_tree().paused = false
+	Engine.time_scale = 1.0
 	if Lobby.is_active():
 		Lobby.leave()
 	elif NetworkManager.is_online():
@@ -810,8 +871,19 @@ func _quit_to_menu() -> void:
 	get_tree().change_scene_to_file.call_deferred("res://scenes/menu/main_menu.tscn")
 
 
+## Leaving before the end still pays what the run made so far (like being knocked out); leaving in
+## the Nachspielzeit keeps the result Sperrstund' settled.
+func _record_leaving() -> void:
+	if phase == Phase.RUNNING:
+		result = Result.LOST
+		_record_profile("QUIT")
+	elif phase == Phase.SPERRSTUND:
+		_record_profile(Result.keys()[result])
+
+
 func _restart() -> void:
 	get_tree().paused = false
+	Engine.time_scale = 1.0
 	if Lobby.is_active():
 		# Co-op: everyone back to the room (the Lobby changes the scene).
 		Lobby.back_to_room()
@@ -845,7 +917,10 @@ func _open_wirtshaeuser(count: int, seed_value: int) -> void:
 
 
 ## Host: a Knödl rolled onto an open Wirtshaus door mat is eaten ("Mahlzeit!") and paid out by size.
+## From Sperrstund' on every Wirt is shut (so nobody is woken up in the Nachspielzeit either).
 func _check_wirtshaeuser(delta: float) -> void:
+	if phase != Phase.RUNNING:
+		return
 	for peer: int in _notice_timers.keys():
 		_notice_timers[peer] -= delta
 		if _notice_timers[peer] <= 0.0:
@@ -1026,6 +1101,19 @@ func on_downed(peer: int) -> void:
 		events.toast("TOAST_REVIVED")
 		return
 	state.downed_times.append(run_time)
+	# Nachspielzeit: down is out for good (no respawn, no teammate, the Wirtshäuser are shut). When the
+	# last one falls, a moment of slow motion, then the end screen.
+	if phase == Phase.SPERRSTUND:
+		state.bleeds_out = true
+		state.out = players.size() > 1
+		state.downed_timer = INF
+		for other: int in states:
+			if not states[other].downed:
+				return
+		_lose_timer = balance.overtime_end_seconds
+		if not _autoplay and _seconds <= 0.0 and DisplayServer.get_name() != "headless":
+			Engine.time_scale = balance.overtime_slowmo
+		return
 	if _respawn:
 		return
 	# Solo: the run is over. Co-op: down for coop_down_seconds (teammates can wake them, CoopRules),
@@ -1482,7 +1570,8 @@ func _run_summary() -> Dictionary:
 	var summary: Dictionary = {"time": snappedf(run_time, 0.1), "phase": Phase.keys()[phase],
 		"brosel_alive": brosel.active_count, "result": Result.keys()[result], "stempel": stempel_found,
 		"hofrat_beaten": (gate_flags & WorldStateCodec.GATE_BOSS_BEATEN) != 0, "bosses_beaten": _bosses_beaten.duplicate(),
-		"character": String(character.id), "map": String(map.id), "grant": grant_index}
+		"character": String(character.id), "map": String(map.id), "grant": grant_index,
+		"overtime": snappedf(overtime_seconds(), 0.1)}
 	var boss_ids: Array = []
 	for beaten: Array in _bosses_beaten:
 		boss_ids.append(beaten[0])
@@ -1841,10 +1930,9 @@ func _on_session_ended(reason: String) -> void:
 	# A player in the browser: say why, keep what the run made so far (like leaving), back to the menu.
 	hud.toast(CoopScreen.error_text(reason), 3.0)
 	_finished = true
-	if phase != Phase.ENDED:
-		result = Result.LOST
-		_record_profile("QUIT")
+	_record_leaving()
 	get_tree().paused = false
+	Engine.time_scale = 1.0
 	get_tree().create_timer(3.0).timeout.connect(func() -> void:
 		get_tree().change_scene_to_file("res://scenes/menu/main_menu.tscn"))
 
@@ -2178,6 +2266,7 @@ func _schilling_of(peer: int) -> int:
 		total += knodl.knodl_mass * balance.schilling_knodl_share
 	elif result == Result.WON:
 		total += balance.schilling_win_bonus
+	total += overtime_seconds() * balance.schilling_per_overtime_second
 	total *= grant.schilling * (1.0 + balance.coop_schilling_per_player * maxi(players.size() - 1, 0))
 	return roundi(total)
 
@@ -2291,7 +2380,7 @@ func _start_attacks() -> void:
 func _resolve_hazards() -> void:
 	for h: HazardField.Hazard in hazards.hits:
 		var attack: AttackData = h.attack
-		if phase == Phase.RUNNING and not _god:
+		if phase != Phase.ENDED and not _god:
 			for peer: int in players:
 				var state: PlayerState = states[peer]
 				if state.downed or state.choosing:
@@ -2458,7 +2547,8 @@ func _collect_loot(delta: float) -> void:
 						state.heal(loot.values[slot])
 						_take_loot(slot, peer)
 				LootField.Kind.STEMPEL:
-					if d < balance.stempel_pickup_radius:
+					# Past Sperrstund' the Formular is moot: the result is settled.
+					if d < balance.stempel_pickup_radius and phase == Phase.RUNNING:
 						_take_loot(slot, peer)
 						stempel_found += 1
 						events.toast("TOAST_STEMPEL_%d" % mini(stempel_found, 3))
@@ -2681,8 +2771,10 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 	hud.show_hint(hint)
 	if state != null:
 		hud.downed_key = "TOAST_DOWNED" if _respawn or players.size() > 1 else "TOAST_DOWNED_SOLO"
+		if phase != Phase.RUNNING:
+			hud.downed_key = "TOAST_THROWN_OUT"
 		hud.downed_text = ""
-		if state.downed and not _respawn and players.size() > 1:
+		if state.downed and not _respawn and players.size() > 1 and phase == Phase.RUNNING:
 			if state.out:
 				hud.downed_text = tr("TOAST_OUT")
 			elif state.revive_progress > 0.01:
@@ -2725,6 +2817,9 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 		GameAudio.music(&"boss" if boss_alive else &"kirtag")
 		if not boss_alive:
 			GameAudio.set_music_speed(1.0 + 0.12 * clampf(run_time / balance.run_seconds, 0.0, 1.0))
+	elif phase == Phase.SPERRSTUND:
+		# The Schunkel waltz hurries along with the Stammgast-Geister.
+		GameAudio.set_music_speed(minf(overtime_pace(), 1.5))
 
 
 ## Co-op: the family panel, the signs over knocked-down teammates, and once out the camera

@@ -126,7 +126,7 @@ func test_grant_levels_get_harder_and_pay_more() -> void:
 func test_every_quest_and_upgrade_is_known() -> void:
 	var catalog: UpgradeCatalog = load("res://data/catalog/catalog.tres")
 	var kinds: Array[StringName] = [&"kills", &"cash_ins", &"level", &"wins", &"runs", &"bosses", &"boss_no_throw",
-		&"stempel", &"knodl", &"survive", &"schilling", &"items", &"grant_win", &"coop"]
+		&"stempel", &"knodl", &"survive", &"overtime", &"schilling", &"items", &"grant_win", &"coop"]
 	for quest: QuestData in Profile.content.quests:
 		assert_true(kinds.has(quest.kind), "%s: kind %s" % [quest.id, quest.kind])
 		for key: String in [quest.title_key, quest.desc_key]:

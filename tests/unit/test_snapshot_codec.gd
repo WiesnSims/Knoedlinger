@@ -21,8 +21,8 @@ func before_each() -> void:
 		alive.append(1 if rng.randf() < 0.9 else 0)
 		x.append(rng.randf_range(-150.0, 150.0))
 		z.append(rng.randf_range(-150.0, 150.0))
-		type.append(rng.randi_range(0, 2))
-		hp.append(rng.randi_range(0, 15))
+		type.append(rng.randi_range(0, SnapshotCodec.MAX_TYPES - 1))
+		hp.append(rng.randi_range(0, SnapshotCodec.HP_MAX))
 
 
 ## Positions travel in 1 / POSITION_SCALE metre steps (5 cm since M6).

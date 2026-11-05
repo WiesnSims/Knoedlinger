@@ -32,7 +32,13 @@ $scenes = @(
     @{ Id = 'busy'; Query = "$common&start_time=598&god=1"; At = '34' },
     @{ Id = 'menu'; Query = "$common&pick_delay=90"; At = '22,24'; Move = 'center,card' },
     @{ Id = 'inventory'; Query = "$common&knodl_mass=160"; At = '40'; Press = 'Tab' },
-    @{ Id = 'end'; Query = "$common&start_time=891"; At = '32' },
+    # 1.3.2: Sperrstund' settles the result, then the Nachspielzeit runs until the bot falls (a fresh
+    # level-1 bot lasts some 30-60 s), then the end screen with its Nachspielzeit row.
+    @{ Id = 'end'; Query = "$common&start_time=891"; At = '32,100' },
+    # The Nachspielzeit itself: the clock counting on past 15:00, the white Stammgast-Geister, and from
+    # 17:00 the grantige red ones.
+    @{ Id = 'overtime'; Query = "$common&start_time=891&god=1"; At = '30,40' },
+    @{ Id = 'grantig'; Query = "$common&start_time=1030&god=1"; At = '30,36' },
     # The new weapon effects (impacts, chain bolts, mines, the boomerang tray) in a held crowd.
     @{ Id = 'weapons'; Query = "$common&weapons=hagelkanone,krampusrute,sachertorte,tablett&enemies=250&god=1"; At = '22,23' },
     # The maps of M4 (the bot plays on them).

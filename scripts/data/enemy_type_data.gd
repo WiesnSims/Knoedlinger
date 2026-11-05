@@ -55,3 +55,7 @@ extends Resource
 @export var death_attack: AttackData
 ## Stands at the door of an open Wirtshaus, and the Wirt serves nobody until it is beaten (Kontrolleur).
 @export var guards_wirtshaus: bool = false
+## The Riesen-Wirt's broom does not sweep it out at Sperrstund' (the Stammgast-Geister never go home).
+@export var stays_at_sperrstund: bool = false
+## Translation key of a toast when this type first joins the spawn mix of a run; "" = none.
+@export var arrive_toast: String = ""

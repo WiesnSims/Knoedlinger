@@ -376,4 +376,18 @@ static func _special_look(type: EnemyTypeData) -> Array[Dictionary]:
 			parts.append(_part(_cylinder(0.06, 0.06, 0.5, 6), _at(Vector3(0.68, 1.55, 0.38)), Color(0.5, 0.36, 0.22)))
 			parts.append(_part(_box(Vector3(0.6, 0.22, 0.45)), _at(Vector3(0.68, 1.85, 0.38)), Color(0.42, 0.3, 0.58)))
 			parts.append(_part(_box(Vector3(0.5, 0.36, 0.12)), _at(Vector3(-0.58, 0.6, 0.1)), Color(0.42, 0.28, 0.16)))
+		&"geist":
+			# A Stammgast-Geist: a bedsheet ghost with a ragged hem, arms out, round black eyes, a
+			# wailing mouth and his Krügerl (head colour) still in one hand. He hovers, so no feet.
+			parts.append(_part(_sphere(0.42, 10), _at(Vector3(0.0, 1.25, 0.0)), body))
+			parts.append(_part(_cylinder(0.42, 0.52, 0.85, 12), _at(Vector3(0.0, 0.82, 0.0)), body))
+			for k: int in 8:
+				var angle: float = TAU * k / 8.0
+				parts.append(_part(_cylinder(0.14, 0.0, 0.3, 6), _at(Vector3(sin(angle) * 0.42, 0.28, cos(angle) * 0.42)), body))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_sphere(0.09, 6), _at(Vector3(side * 0.15, 1.32, 0.36)), dark))
+				parts.append(_part(_cylinder(0.1, 0.13, 0.5, 6), _at(Vector3(side * 0.5, 1.0, 0.22), Vector3(PI / 2.4, 0.0, side * 0.3)), body))
+			parts.append(_part(_sphere(0.08, 6), _at(Vector3(0.0, 1.1, 0.39)), dark))
+			parts.append(_part(_cylinder(0.11, 0.11, 0.24, 8), _at(Vector3(0.58, 1.1, 0.5)), head))
+			parts.append(_part(_cylinder(0.12, 0.12, 0.06, 8), _at(Vector3(0.58, 1.24, 0.5)), Color(0.98, 0.97, 0.92)))
 	return parts

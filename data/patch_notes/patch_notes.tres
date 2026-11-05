@@ -7,7 +7,7 @@
 script = ExtResource("2_note")
 version = "1.3.2"
 date = "05.11.2026"
-line_keys = PackedStringArray("PATCH_1_3_2_01", "PATCH_1_3_2_02")
+line_keys = PackedStringArray("PATCH_1_3_2_01", "PATCH_1_3_2_02", "PATCH_1_3_2_03", "PATCH_1_3_2_04", "PATCH_1_3_2_05", "PATCH_1_3_2_06")
 
 [sub_resource type="Resource" id="note_1_3_1"]
 script = ExtResource("2_note")

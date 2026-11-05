@@ -23,6 +23,8 @@
 [ext_resource type="Resource" path="res://data/bosses/oberkrampus.tres" id="b_oberkrampus"]
 [ext_resource type="Resource" path="res://data/bosses/oberkrampus_2.tres" id="b_oberkrampus_2"]
 [ext_resource type="Resource" path="res://data/bosses/hofrat.tres" id="b_hofrat"]
+[ext_resource type="Resource" path="res://data/enemies/geist.tres" id="e_geist"]
+[ext_resource type="Resource" path="res://data/enemies/geist_grantig.tres" id="e_geist_grantig"]
 
 [sub_resource type="Resource" id="entry_0"]
 script = ExtResource("3_entry")
@@ -118,11 +120,32 @@ script = ExtResource("4_boss")
 minute = 10.0
 boss = ExtResource("b_oberkrampus_2")
 
+[sub_resource type="Resource" id="entry_geist_0"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_geist")
+from_minute = 15.0
+to_minute = 999.0
+weight = 3.0
+
+[sub_resource type="Resource" id="entry_geist_1"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_geist_grantig")
+from_minute = 17.0
+to_minute = 19.0
+weight = 1.0
+
+[sub_resource type="Resource" id="entry_geist_2"]
+script = ExtResource("3_entry")
+enemy = ExtResource("e_geist_grantig")
+from_minute = 19.0
+to_minute = 999.0
+weight = 3.0
+
 [resource]
 script = ExtResource("1_script")
 id = &"gemeindebau"
-enemies = Array[ExtResource("2_enemy")]([ExtResource("e_tourist"), ExtResource("e_gelse"), ExtResource("e_dackel"), ExtResource("e_taube"), ExtResource("e_wildschwein"), ExtResource("e_rasenmaeher"), ExtResource("e_perchte"), ExtResource("e_radler"), ExtResource("e_akten_geist"), ExtResource("e_formular"), ExtResource("e_oberkrampus"), ExtResource("e_hofrat"), ExtResource("e_kontrolleur"), ExtResource("e_hungriger_tourist"), ExtResource("e_gartenzwerg"), ExtResource("e_wuehlmaus")])
-entries = Array[ExtResource("3_entry")]([SubResource("entry_0"), SubResource("entry_1"), SubResource("entry_2"), SubResource("entry_3"), SubResource("entry_4"), SubResource("entry_5"), SubResource("entry_6"), SubResource("entry_7"), SubResource("entry_8"), SubResource("entry_9"), SubResource("entry_10"), SubResource("entry_11")])
+enemies = Array[ExtResource("2_enemy")]([ExtResource("e_tourist"), ExtResource("e_gelse"), ExtResource("e_dackel"), ExtResource("e_taube"), ExtResource("e_wildschwein"), ExtResource("e_rasenmaeher"), ExtResource("e_perchte"), ExtResource("e_radler"), ExtResource("e_akten_geist"), ExtResource("e_formular"), ExtResource("e_oberkrampus"), ExtResource("e_hofrat"), ExtResource("e_kontrolleur"), ExtResource("e_hungriger_tourist"), ExtResource("e_gartenzwerg"), ExtResource("e_wuehlmaus"), ExtResource("e_geist"), ExtResource("e_geist_grantig")])
+entries = Array[ExtResource("3_entry")]([SubResource("entry_0"), SubResource("entry_1"), SubResource("entry_2"), SubResource("entry_3"), SubResource("entry_4"), SubResource("entry_5"), SubResource("entry_6"), SubResource("entry_7"), SubResource("entry_8"), SubResource("entry_9"), SubResource("entry_10"), SubResource("entry_11"), SubResource("entry_geist_0"), SubResource("entry_geist_1"), SubResource("entry_geist_2")])
 bosses = Array[ExtResource("4_boss")]([SubResource("boss_0"), SubResource("boss_1")])
 final_boss = ExtResource("b_hofrat")
 enemy_hp = 0.85

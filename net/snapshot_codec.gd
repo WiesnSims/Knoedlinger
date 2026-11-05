@@ -6,11 +6,16 @@ extends RefCounted
 ## Snapshot on the wire: [u8 version][u8 compression][u32 raw size][compressed raw]
 ## Raw: [u16 seq][u32 host ms][u16 slots][alive bitmask, 1 bit per slot]
 ##      then for the n alive slots, as byte planes (v2, M6): n x high byte of x, n x low byte of x,
-##      the same for z (s16 in POSITION_SCALE units), n x [u8 type << 4 | hp bucket]. Planes keep
+##      the same for z (s16 in POSITION_SCALE units), n x [u8 type << 3 | hp bucket]. Planes keep
 ##      alike bytes together, which deflates far better (a 4-player crowd fits the budget).
+##      v3 (1.3.2): 5 bits of type (MAX_TYPES, the Nachspielzeit ghosts made 18) and 3 of HP (HP_MAX);
+##      the HP bucket only flashes hit enemies on clients.
 ## Events: [u8 version][u16 spawns]{[u16 slot][u8 type][s16 x][s16 z]}[u16 deaths]{[u16 slot]}
 
-const VERSION: int = 2
+const VERSION: int = 3
+## Enemy types a wave may list (5 bits), and the top HP bucket (3 bits).
+const MAX_TYPES: int = 32
+const HP_MAX: int = 7
 ## 5 cm steps: invisible on half-metre enemies that clients interpolate anyway.
 const POSITION_SCALE: float = 20.0
 const MAX_COORDINATE: float = 327.0
@@ -67,7 +72,7 @@ static func encode(seq: int, host_ms: int, slots: int, alive: PackedByteArray, x
 		raw[base + count + k] = qx & 0xFF
 		raw[base + 2 * count + k] = qz >> 8
 		raw[base + 3 * count + k] = qz & 0xFF
-		raw[base + 4 * count + k] = ((type[i] & 0x0F) << 4) | (hp[i] & 0x0F)
+		raw[base + 4 * count + k] = ((type[i] & 0x1F) << 3) | (hp[i] & HP_MAX)
 		k += 1
 	var packed: PackedByteArray = raw.compress(COMPRESSION)
 	var wire := PackedByteArray()
@@ -119,8 +124,8 @@ static func decode(wire: PackedByteArray) -> Frame:
 		frame.x[i] = (qx - 0x10000 if qx >= 0x8000 else qx) / POSITION_SCALE
 		frame.z[i] = (qz - 0x10000 if qz >= 0x8000 else qz) / POSITION_SCALE
 		var tag: int = raw[base + 4 * count + k]
-		frame.type[i] = tag >> 4
-		frame.hp[i] = tag & 0x0F
+		frame.type[i] = tag >> 3
+		frame.hp[i] = tag & HP_MAX
 		frame.alive_count += 1
 		k += 1
 	return frame
