@@ -1101,3 +1101,5 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   seeds on 1.1.0 and on this branch): level 45.3 → 46.2, kills 16.3k → 17.5k, knock-downs 23.2 → 17.5 (−25 %),
   bosses beaten 13 → 17, Hofrat beaten 0 → 2 runs. Seeds 1–4 favoured 1.1.0 (other card picks), seeds 5–10
   favoured the branch in 5 of 6; the bot's card luck swings a run by ±8 levels.
+- **Measured after the merge** (local, RTX 3080): tests 180/180; browser check 155.5 fps / p95 8.2 ms / at most
+  99 draw calls; `mp_test -Clients 1` passes (the swings and shots draw from the synced aim byte).
