@@ -1014,3 +1014,7 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   7.2 ms / at most 103 draw calls; with the full flying build (3 Gleitschirme, 3 Federn, 2 Haferlschuhe) 148 fps /
   p95 12.1 ms / 104 draw calls (fewer kills, denser crowd); `mp_test -Clients 1` passes (31.6 KiB/s, no rejected
   poses); autoplay Ferdl/Kirtag seed 1: CLOSED at level 55, both Oberkrampusse beaten (recent baseline 44–51).
+- **Owner: approved** on the preview https://movement.knoedlinger.pages.dev; merged into `main` (4887b6a), branch
+  `movement` deleted. **Production deploy of 1.1.0** on 2026-11-05 at the owner's word: live on
+  https://knoedlinger.pages.dev. Measured on production (headless Edge, RTX 3080, 500 enemies, bot, 60 s):
+  161.8 fps, p95 7.9 ms, at most 99 draw calls, no console errors; `mp_test -Clients 1` passes.
