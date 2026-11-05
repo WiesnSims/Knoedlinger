@@ -106,7 +106,7 @@ static func orbit_offset(weapon: WeaponData, k: int, count: int, run_time: float
 
 ## Damage a player takes from a hit after armor: armor takes a share that grows ever slower
 ## (armor_share), never below balance.min_hit_damage. It used to be subtracted, which made a few points
-## of it shrug off every fodder hit (docs/DECISIONS.md, 1.4.0).
+## of it shrug off every fodder hit (docs/DECISIONS.md, 1.3.1).
 static func hit_damage(amount: float, armor: float, balance: BalanceData) -> float:
 	if amount <= 0.0:
 		return 0.0

@@ -878,15 +878,15 @@ VOICE_RIESEN_WIRT_HAM,Und jetzt olle ham!
 MENU_PATCHES,Was is neu?
 PATCHES_TITLE,Was is neu?
 PATCHES_VERSION,Version %s
-PATCH_1_4_0_01,Obstler-Flammenwerfer: spuckt jetzt sichtbar Feuer – und hat a neues Bildl.
-PATCH_1_4_0_02,"Schupfn: Da Knödl fliagt dorthin, wo die Maus hinzeigt (Gamepad und Touch: in Gehrichtung)."
-PATCH_1_4_0_03,Nach da Speisekarte geht's gleich weiter: a gedrückte Taste muass ma nimmer neu drücken.
-PATCH_1_4_0_04,Steile Hänge: Von dort kann ma jetzt abspringen und so raufhupfn. Mauern bleiben Mauern.
-PATCH_1_4_0_05,"Da Lauf fangt erst an, wenn du di bewegst – vorher kommt nix daher."
-PATCH_1_4_0_06,"Gegner kommen weiter weg daher, vor allem dort, wo du hinrennst."
-PATCH_1_4_0_07,Rüstung nimmt jetzt an Anteil von jedem Treffer statt an fixen Wert: 10 Rüstung = halber Schaden. Vorher war ma mit a paar Punkten fast unverwundbar.
-PATCH_1_4_0_08,"Gold steht jetzt oben links, und über de Kistln steht da Preis – hell, wenn's da's leisten kannst."
-PATCH_1_4_0_09,Neu im Menü: „Was is neu?“ – de Liste do.
+PATCH_1_3_1_01,Obstler-Flammenwerfer: spuckt jetzt sichtbar Feuer – und hat a neues Bildl.
+PATCH_1_3_1_02,"Schupfn: Da Knödl fliagt dorthin, wo die Maus hinzeigt (Gamepad und Touch: in Gehrichtung)."
+PATCH_1_3_1_03,Nach da Speisekarte geht's gleich weiter: a gedrückte Taste muass ma nimmer neu drücken.
+PATCH_1_3_1_04,Steile Hänge: Von dort kann ma jetzt abspringen und so raufhupfn. Mauern bleiben Mauern.
+PATCH_1_3_1_05,"Da Lauf fangt erst an, wenn du di bewegst – vorher kommt nix daher."
+PATCH_1_3_1_06,"Gegner kommen weiter weg daher, vor allem dort, wo du hinrennst."
+PATCH_1_3_1_07,Rüstung nimmt jetzt an Anteil von jedem Treffer statt an fixen Wert: 10 Rüstung = halber Schaden. Vorher war ma mit a paar Punkten fast unverwundbar.
+PATCH_1_3_1_08,"Gold steht jetzt oben links, und über de Kistln steht da Preis – hell, wenn's da's leisten kannst."
+PATCH_1_3_1_09,Neu im Menü: „Was is neu?“ – de Liste do.
 PATCH_1_3_0_01,Hiebe und Schüsse zielen von selber auf den nächsten Gegner in Reichweite.
 PATCH_1_3_0_02,Nahkampfwaffen reichen um 30–40 % weiter.
 PATCH_1_2_0_01,D' Gegner reden: kurze Sprüch über eanare Köpf (Einstellung „Gegner reden“).

@@ -1115,7 +1115,7 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   https://knoedlinger.pages.dev. Measured on production (headless Edge, RTX 3080, 500 enemies, bot, 60 s):
   158.5 fps, p95 7.8 ms, at most 101 draw calls, no console errors; `mp_test -Clients 1` passes.
 
-## 2026-11-05 – Playtest fixes and the patch list (1.4.0)
+## 2026-11-05 – Playtest fixes and the patch list (1.3.1)
 
 - **Owner reported** (playtest of 1.3.0, asked for "1.2.1"; production was already 1.3.0): the Obstler has no
   effect and its icon looks like a sex toy; the Knödl should fly where the mouse aims; movement sometimes
@@ -1123,9 +1123,9 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   plays itself for a few seconds at the start; enemies spawn right in front of a running player; Rüstung
   is overpowered; gold must be visible and chests should show their price from afar; a patch list.
   Owner asked whether this should be a post-release milestone. **Claude:** one branch `playtest-fixes`
-  like the earlier 1.x releases, not a new milestone. **Version 1.4.0**, not 1.3.1: the aimed Schupfn,
-  the gold display, the chest prices, the slope jump and the patch list are features (CLAUDE.md:
-  features raise the minor).
+  like the earlier 1.x releases, not a new milestone. Claude first numbered it 1.4.0 (the aimed Schupfn,
+  the gold display, the chest prices, the slope jump and the patch list as features). **Owner: 1.3.1** –
+  mostly bug fixes and small changes, so a patch release.
 - **Obstler (Claude, measured):** it did work. Against the same 30 enemies for 5 s it dealt 547 damage
   (Schneeschaufel 450, Kochlöffel 475), burn included. What was missing was the look: a faint fan every
   0.35 s and no fire. New `WeaponData.Look.FLAME`: ARC weapons with it show a flickering flame stream
