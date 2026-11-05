@@ -1178,3 +1178,11 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   in `i18n/strings.csv` as `PATCH_<version>_<n>`. 1.0.0-1.3.0 written from this log. A test fails when
   the newest note is not the version in project.godot, so **every release adds its note on top**.
   `ui_shots.ps1` has a `patches` shot. `[STATS]` lines now carry the local player's position (`pos`).
+- **Measured** (local, RTX 3080): tests 183/183; browser check 177 fps; `mp_test -Clients 1`,
+  `-Clients 3 -StartTime 595` and `-Clients 3 -Coop` pass; preview https://playtest-fixes.knoedlinger.pages.dev
+  (b054d56): 164.5 fps / p95 7.7 ms / at most 114 draw calls. Obstler damage was never broken: 547 damage in
+  5 s on 30 enemies (Schneeschaufel 450, Kochlöffel 475), only its look was invisible.
+- **Autoplay** (Ferdl / Kirtag / Grant 1, seeds 1-10, compared with 1.3.0): level 46.2 → 47.4, kills
+  17.5k → 15.6k, knock-downs 17.5 → 27.7 (+58 %, the armour nerf: the bot no longer shrugs off fodder
+  mid-run), bosses beaten 17 → 20, Hofrat beaten 2 → 3 runs (WON 3, CLOSED 7). If the owner finds it too
+  hard, `armor_half` is the one number to lower (6 gives 8 armor −57 %).
