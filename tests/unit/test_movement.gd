@@ -74,3 +74,51 @@ func test_fliers_rise_to_airborne_targets_only_up_close() -> void:
 	assert_eq(EnemyManager.air_lift(12.0, 0.5, 8.0, range_m), 8.0, "never above its reach")
 	assert_eq(EnemyManager.air_lift(5.0, range_m + 1.0, 8.0, range_m), 0.0, "far away: stays low")
 	assert_eq(EnemyManager.air_lift(5.0, 0.5, 0.0, range_m), 0.0, "walkers never rise")
+
+
+
+## Runs at a slope (rising toward -z at `degrees` from a floor) for `seconds`, holding forward and
+## tapping jump; returns the height gained.
+func _climb(degrees: float, seconds: float) -> float:
+	InputSetup.ensure_actions()
+	var floor_box := BoxShape3D.new()
+	floor_box.size = Vector3(60.0, 1.0, 60.0)
+	_static(floor_box, Transform3D(Basis(), Vector3(0.0, -0.5, 0.0)))
+	var slope_box := BoxShape3D.new()
+	slope_box.size = Vector3(20.0, 1.0, 80.0)
+	var tilt := Basis(Vector3.RIGHT, deg_to_rad(degrees))
+	# Its top face runs through the origin and rises toward -z.
+	_static(slope_box, Transform3D(tilt, -tilt.y * 0.5))
+	var climber := Player.new()
+	climber.setup(2, true, balance, null, null)
+	add_child_autofree(climber)
+	climber.teleport(Vector3(0.0, 0.1, 3.0))
+	await wait_physics_frames(2)
+	var from: float = climber.global_position.y
+	Input.action_press(&"move_up")
+	for k: int in roundi(seconds * 60.0):
+		if k % 20 == 0:
+			Input.action_press(&"jump")
+		elif k % 20 == 8:
+			Input.action_release(&"jump")
+		await wait_physics_frames(1)
+	Input.action_release(&"move_up")
+	Input.action_release(&"jump")
+	return climber.global_position.y - from
+
+
+func _static(box: BoxShape3D, where: Transform3D) -> void:
+	var body := StaticBody3D.new()
+	body.collision_layer = MapBuilder.LAYER_WORLD
+	var shape := CollisionShape3D.new()
+	shape.shape = box
+	body.add_child(shape)
+	body.transform = where
+	add_child_autofree(body)
+
+
+func test_a_steep_slope_is_climbed_in_hops_but_a_wall_is_not() -> void:
+	var steep: float = await _climb(60.0, 3.0)
+	assert_gt(steep, 3.0, "60 degrees: too steep to walk, firm enough to hop up")
+	var wall: float = await _climb(88.0, 3.0)
+	assert_lt(wall, 3.0, "a wall stays a wall: one jump high at most")

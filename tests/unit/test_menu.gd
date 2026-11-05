@@ -57,3 +57,18 @@ func test_every_scene_script_compiles() -> void:
 		var script: GDScript = load(path)
 		assert_not_null(script, path)
 		assert_true(script != null and script.can_instantiate(), path)
+
+
+func test_the_patch_list_starts_with_this_version_and_every_line_has_text() -> void:
+	var notes: PatchNotes = PatchNotes.load_default()
+	assert_gt(notes.notes.size(), 0)
+	assert_eq(notes.notes[0].version, str(ProjectSettings.get_setting("application/config/version")),
+			"a release adds its note on top (data/patch_notes/patch_notes.tres)")
+	for note: PatchNote in notes.notes:
+		assert_gt(note.line_keys.size(), 0, note.version)
+		assert_ne(note.date, "", note.version)
+		for key: String in note.line_keys:
+			assert_ne(TranslationServer.translate(key), StringName(key), key)
+	var screen := PatchNotesScreen.new()
+	add_child_autofree(screen)
+	assert_true(screen.has_signal(&"closed"))

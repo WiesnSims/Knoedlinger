@@ -24,6 +24,11 @@ var speed_mult: float = 1.0
 ## New enemies appear on a ring this far from a random player.
 var ring_min: float = 0.0
 var ring_max: float = 0.0
+## Where each player (same order as the update's targets) is heading, flat and unit length, or zero.
+## New enemies ahead of a player spawn up to `ring_ahead` metres farther out: the camera looks that
+## way, so they walk in from the distance instead of popping up in front of a running player.
+var target_heading: PackedVector2Array = PackedVector2Array()
+var ring_ahead: float = 0.0
 ## While spawn_sector_width > 0, new enemies only come from that slice of the ring (radians around
 ## spawn_sector_angle): a wave from one direction (the Touristenbus).
 var spawn_sector_angle: float = 0.0
@@ -500,18 +505,29 @@ func clear_kills() -> void:
 
 func _spawn(slot: int, targets: PackedVector3Array) -> void:
 	var t: int = _pick_type()
-	var center: Vector3 = targets[_rng.randi_range(0, targets.size() - 1)] if not targets.is_empty() else Vector3.ZERO
+	var target: int = _rng.randi_range(0, targets.size() - 1) if not targets.is_empty() else -1
+	var center: Vector3 = targets[target] if target >= 0 else Vector3.ZERO
 	var angle: float = _rng.randf() * TAU
 	if spawn_sector_width > 0.0:
 		angle = spawn_sector_angle + _rng.randf_range(-0.5, 0.5) * spawn_sector_width
 	var distance: float = _rng.randf_range(ring_min, ring_max)
 	if types[t].spawn_near > 0.0:
 		distance = _rng.randf_range(types[t].spawn_near * 0.6, types[t].spawn_near)
+	elif target >= 0 and target < target_heading.size():
+		distance += ring_ahead * ahead_share(Vector2(cos(angle), sin(angle)), target_heading[target])
 	var half: float = bounds - 0.5
 	_reset(slot, t)
 	pos_x[slot] = clampf(center.x + cos(angle) * distance, -half, half)
 	pos_z[slot] = clampf(center.z + sin(angle) * distance, -half, half)
 	yaw[slot] = angle + PI
+
+
+## How much of `ring_ahead` a spawn in `direction` gets from a player heading along `heading`: all of
+## it within about 50 degrees of the heading, nothing from about 80 degrees on (outside the view).
+static func ahead_share(direction: Vector2, heading: Vector2) -> float:
+	if heading == Vector2.ZERO:
+		return 0.0
+	return smoothstep(0.17, 0.64, direction.dot(heading))
 
 
 ## A fresh enemy of type `t` in `slot` (position set by the caller).

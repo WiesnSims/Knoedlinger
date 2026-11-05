@@ -36,6 +36,9 @@ var _stick_origin: Vector2 = Vector2.ZERO
 var _stick_at: Vector2 = Vector2.ZERO
 var _stick_finger: int = -1
 var _pressed: Dictionary[int, bool] = {}
+## Move actions the stick holds down; only these are let go again, so a held key or pad stick
+## keeps working when the controls hide (a Speisekarte opening or closing).
+var _stick_actions: Dictionary[StringName, bool] = {}
 var _view: TouchView
 var _forced: bool = false
 var _was_covered: bool = false
@@ -148,8 +151,10 @@ func _set_move(v: Vector2) -> void:
 	for pair: Array in [[&"move_left", -v.x], [&"move_right", v.x], [&"move_up", -v.y], [&"move_down", v.y]]:
 		if pair[1] > 0.05:
 			Input.action_press(pair[0], minf(pair[1], 1.0))
-		else:
+			_stick_actions[pair[0]] = true
+		elif _stick_actions.has(pair[0]):
 			Input.action_release(pair[0])
+			_stick_actions.erase(pair[0])
 
 
 func _press(button: int) -> void:

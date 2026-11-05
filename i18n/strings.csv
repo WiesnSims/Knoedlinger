@@ -144,6 +144,7 @@ HUD_FORMULAR,Formular: %d / %d Stempel
 HUD_GATE_OPEN,Formular komplett! Ab zum Tor beim Gemeindeamt
 HUD_HOFRAT_BEATEN,Hofrat erledigt – jetzt no bis zur Sperrstund'!
 HUD_STEMPEL_MARKER,Stempel · %d m
+HUD_CHEST_MARKER,%d Gold
 HUD_GATE_MARKER,Amt der Unterwelt · %d m
 HINT_CHEST,Kistl: %d Gold (du host %d) – drüberlaufn
 CHEST_TITLE_4,A Kistl!
@@ -874,3 +875,26 @@ VOICE_HOFRAT_BESCHWERDE,Des is a Dienstaufsichtsbeschwerde wert!
 VOICE_HOFRAT_INSTANZ,Des geht an die nächste Instanz …
 VOICE_RIESEN_WIRT_SPERRSTUND,"Sperrstund'! Zahln, bitte!"
 VOICE_RIESEN_WIRT_HAM,Und jetzt olle ham!
+MENU_PATCHES,Was is neu?
+PATCHES_TITLE,Was is neu?
+PATCHES_VERSION,Version %s
+PATCH_1_3_1_01,Obstler-Flammenwerfer: spuckt jetzt sichtbar Feuer – und hat a neues Bildl.
+PATCH_1_3_1_02,"Schupfn: Da Knödl fliagt dorthin, wo die Maus hinzeigt (Gamepad und Touch: in Gehrichtung)."
+PATCH_1_3_1_03,Nach da Speisekarte geht's gleich weiter: a gedrückte Taste muass ma nimmer neu drücken.
+PATCH_1_3_1_04,Steile Hänge: Von dort kann ma jetzt abspringen und so raufhupfn. Mauern bleiben Mauern.
+PATCH_1_3_1_05,"Da Lauf fangt erst an, wenn du di bewegst – vorher kommt nix daher."
+PATCH_1_3_1_06,"Gegner kommen weiter weg daher, vor allem dort, wo du hinrennst."
+PATCH_1_3_1_07,Rüstung nimmt jetzt an Anteil von jedem Treffer statt an fixen Wert: 10 Rüstung = halber Schaden. Vorher war ma mit a paar Punkten fast unverwundbar.
+PATCH_1_3_1_08,"Gold steht jetzt oben links, und über de Kistln steht da Preis – hell, wenn's da's leisten kannst."
+PATCH_1_3_1_09,Neu im Menü: „Was is neu?“ – de Liste do.
+PATCH_1_3_0_01,Hiebe und Schüsse zielen von selber auf den nächsten Gegner in Reichweite.
+PATCH_1_3_0_02,Nahkampfwaffen reichen um 30–40 % weiter.
+PATCH_1_2_0_01,D' Gegner reden: kurze Sprüch über eanare Köpf (Einstellung „Gegner reden“).
+PATCH_1_2_0_02,Jede Gegnersorte hat a eigene Stimm.
+PATCH_1_1_1_01,Im Browser gibt's wieder an Ton.
+PATCH_1_1_0_01,"Neues Gehgefühl: Schwung, kurze und lange Sprünge, bergab wird ma schneller."
+PATCH_1_1_0_02,Gleiten: Spielhahnfeder und Gleitschirm als neue Sachen.
+PATCH_1_1_0_03,"Fliegende Gegner steigen dir nach, wenn du in da Luft bist."
+PATCH_1_0_0_01,"De erste Version: alle 8 Knödlinger, 3 Karten, 16 Waffen."
+PATCH_1_0_0_02,Familienausflug: Co-op mit bis zu 4 Leut über an Raumcode.
+PATCH_1_0_0_03,"D' Ehrentafel: Rekorde online, für alle zum Anschaun."

@@ -20,6 +20,7 @@ var _hp_label: Label
 var _heart: HudGlyph
 var _kruegerl: HudGlyph
 var _level_label: Label
+var _gold_label: Label
 var _clock: HudGlyph
 var _time_label: Label
 var _knodl: HudGlyph
@@ -88,7 +89,15 @@ func _ready() -> void:
 	_kruegerl = HudGlyph.new(HudGlyph.Kind.KRUEGERL, 24.0)
 	level_row.add_child(_kruegerl)
 	_level_label = UiStyle.label(&"HudLabel")
+	_level_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	level_row.add_child(_level_label)
+	# Gold, for the map chests (their price floats over them).
+	var coin: TextureRect = UiStyle.icon_rect(load(UiStyle.ICON_GOLD), 24.0)
+	coin.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	level_row.add_child(coin)
+	_gold_label = UiStyle.label(&"HudLabel")
+	_gold_label.custom_minimum_size = Vector2(64.0, 0.0)
+	level_row.add_child(_gold_label)
 	# Top right: the clock.
 	var top_right: PanelContainer = _corner(root, Control.PRESET_TOP_RIGHT, &"HudPanel")
 	var clock_row := UiStyle.hbox()
@@ -189,6 +198,7 @@ func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: Bala
 	_hp_bar.theme_type_variation = &"BarBoss" if _heart.warn else &"BarHp"
 	_kruegerl.fill = Formulas.level_progress(state.xp, balance)
 	_level_label.text = tr("HUD_LEVEL") % state.level
+	_gold_label.text = str(state.build.gold) if state.build != null else "0"
 	var clock: float = minf(run_time, balance.run_seconds)
 	_clock.fill = clock / balance.run_seconds
 	_time_label.text = "%d:%02d" % [floori(clock / 60.0), int(clock) % 60]
@@ -287,6 +297,11 @@ func set_touch_layout(clearance: float) -> void:
 	_touch_clearance = clearance
 	_knodl_corner.offset_bottom = -EDGE - clearance
 	_knodl_corner.offset_top = _knodl_corner.offset_bottom - _knodl_corner.get_combined_minimum_size().y
+
+
+## The key hints stay up in full (a solo run waiting for the first step).
+func hold_intro() -> void:
+	_intro_timer = INTRO_SECONDS
 
 
 ## "Click into the game to look around with the mouse", while the pointer is free.

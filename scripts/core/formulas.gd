@@ -104,11 +104,19 @@ static func orbit_offset(weapon: WeaponData, k: int, count: int, run_time: float
 	return Vector2(cos(angle), sin(angle)) * radius
 
 
-## Damage a player takes from a hit after armor (never below balance.min_hit_damage).
+## Damage a player takes from a hit after armor: armor takes a share that grows ever slower
+## (armor_share), never below balance.min_hit_damage. It used to be subtracted, which made a few points
+## of it shrug off every fodder hit (docs/DECISIONS.md, 1.3.1).
 static func hit_damage(amount: float, armor: float, balance: BalanceData) -> float:
 	if amount <= 0.0:
 		return 0.0
-	return maxf(amount - maxf(armor, 0.0), minf(balance.min_hit_damage, amount))
+	return maxf(amount * (1.0 - armor_share(armor, balance)), minf(balance.min_hit_damage, amount))
+
+
+## The share of every hit that armor takes: armor / (armor + balance.armor_half).
+static func armor_share(armor: float, balance: BalanceData) -> float:
+	armor = maxf(armor, 0.0)
+	return armor / (armor + maxf(balance.armor_half, 0.001))
 
 
 ## Wirtshaus tier for a Knödl mass: -1 below S, then 0 = S, 1 = M, 2 = L, 3 = XL.

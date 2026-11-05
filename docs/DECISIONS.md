@@ -1114,3 +1114,75 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Production deploy of 1.3.0** on 2026-11-05 at the owner's word: `main` c480221 is live on
   https://knoedlinger.pages.dev. Measured on production (headless Edge, RTX 3080, 500 enemies, bot, 60 s):
   158.5 fps, p95 7.8 ms, at most 101 draw calls, no console errors; `mp_test -Clients 1` passes.
+
+## 2026-11-05 – Playtest fixes and the patch list (1.3.1)
+
+- **Owner reported** (playtest of 1.3.0, asked for "1.2.1"; production was already 1.3.0): the Obstler has no
+  effect and its icon looks like a sex toy; the Knödl should fly where the mouse aims; movement sometimes
+  stops after a Speisekarte until the key is pressed again; some terrain cannot be jumped onto; the run
+  plays itself for a few seconds at the start; enemies spawn right in front of a running player; Rüstung
+  is overpowered; gold must be visible and chests should show their price from afar; a patch list.
+  Owner asked whether this should be a post-release milestone. **Claude:** one branch `playtest-fixes`
+  like the earlier 1.x releases, not a new milestone. Claude first numbered it 1.4.0 (the aimed Schupfn,
+  the gold display, the chest prices, the slope jump and the patch list as features). **Owner: 1.3.1** –
+  mostly bug fixes and small changes, so a patch release.
+- **Obstler (Claude, measured):** it did work. Against the same 30 enemies for 5 s it dealt 547 damage
+  (Schneeschaufel 450, Kochlöffel 475), burn included. What was missing was the look: a faint fan every
+  0.35 s and no fire. New `WeaponData.Look.FLAME`: ARC weapons with it show a flickering flame stream
+  (`shaders/flame.gdshader`, blend mix, deep orange tips, yellow core, never Krampus red) for 0.5 s per
+  burst, which never breaks at the Obstler's 0.35 s cooldown (a burst still burning keeps its length).
+  It plays from the fire counter like every swing, so co-op clients see it too. ShaderWarmup builds it.
+  Burning enemies show no fire of their own: that needs a status bit in the enemy snapshots, left for later.
+  New icon: a Schnaps bottle with a pear on the label, tipped forward, blasting a fan of flame.
+- **Movement stuck after the Speisekarte (Claude, cause found and reproduced in headless Edge):** every
+  time the Speisekarte opened or closed, `TouchControls._refresh()` ran (the screen is "covered"), and with
+  the touch view hidden it called `_release_all()`, which did `Input.action_release()` on all four move
+  actions, even with touch controls off. A held W/A/S/D was released inside Godot, and a held key sends
+  no new press. Now the touch stick only releases the move actions it pressed itself. Before: holding S
+  through a pick, the player stood still; after: holding A through a pick, x went -6.5 → -13.5 → -20.5.
+- **The run starting by itself (Claude, measured):** 1 s into a run with nobody at the keys there were
+  14 Brösel (the family's start crumbs, by design) and the first wave (9-15 m) arrived within a second;
+  at 0:07 the player had lost 18 HP. **Solo runs now wait for the first step** (move, jump or Schupfn):
+  no clock, no spawns, the crumbs lie there and the key hints stay up (`RunWorld._start_held`). Not for
+  co-op, the bot, `enemies=`, `seconds=` or online hosts.
+- **Spawns in front of a running player (Claude):** the camera is low (20° pitch, 8 m, 80° FOV), so it
+  sees the ground up to the horizon ahead; the 18-28 m ring was in plain view ahead. New spawns ahead of
+  a player (where they run above 2 m/s, else where they face) now lie up to `spawn_ring_ahead` = 24 m
+  farther out (42-52 m): all of it within about 50° of the heading, nothing from about 80° on
+  (`EnemyManager.ahead_share`, smoothstep over the cosine 0.17..0.64). Sides and back are unchanged
+  (outside the view from about ±65°). Applies to the first ring too.
+- **Terrain you cannot jump onto (Claude):** a reachability search over all three maps' ground fields
+  (walk ≤ 46°, one jump ≤ 2.0 m within 3 m, from the spawn) found every hill and prop top reachable by
+  some route; the unreachable tops were all buildings (houses, Wirtshäuser, stalls, the church) and the
+  rim. The real trouble: ground steeper than 46° is no floor, so the player slides and cannot jump.
+  Of the owner's two options Claude chose **jumping off steep slopes** (works on every map, also future
+  ones): touching ground between 46° and `player_slope_jump_degrees` = 80° while not rising counts as
+  ground for a jump (not for running), so a hillside is climbed in hops; walls stay walls, and the
+  mountains round the map (beyond `MapData.rim_start`) stay a wall. Test: a 60° slope is climbed
+  (> 3 m in 3 s; 0.6 m without the rule), an 88° wall is not.
+- **Schupfn follows the mouse (Claude):** keyboard and mouse throw toward the ground under the cursor,
+  or where the camera looks while it holds the pointer (mouse look); pad, touch and the bot still throw
+  the way they move. `InputMessage` VERSION 4 (26 bytes): `aim_yaw` (u16) and `BUTTON_AIM`; the host
+  uses `InputMessage.throw_direction()`, so the co-op pass aim works on it too.
+- **Rüstung (Claude):** armor was subtracted from every hit (minimum 1). Hits come at most every 0.5 s and
+  use the strongest touching enemy (fodder 2-5), and each Lederhosn level gives 1-2 armor plus the
+  Trachtenjanker (+2) and Rosenkranz (+1) stack: by mid-run ~8 armor turned almost every hit into 1
+  damage (75-85 % less). Now armor takes a share: `armor / (armor + armor_half)`, `armor_half` = 10
+  (3 → −23 %, 8 → −44 %, 20 → −67 %), minimum hit still 1. The Werte screen shows "8 (−44 %)".
+- **Gold and chest prices (Claude):** gold sits in the top-left HUD panel next to the level (coin icon).
+  Every map chest in view and within 45 m carries a world marker pill "25 Gold" (accent dot when the
+  player can afford it, muted when not), from the same marker pool as the Stempel and the gate.
+- **Patch list (Claude):** main menu entry "Was is neu?" (after Einstellungen) opens `PatchNotesScreen`:
+  every release newest first with version, date and one line per change. Data-driven:
+  `data/patch_notes/patch_notes.tres` (`PatchNotes` → `PatchNote`: version, date, line keys), the text
+  in `i18n/strings.csv` as `PATCH_<version>_<n>`. 1.0.0-1.3.0 written from this log. A test fails when
+  the newest note is not the version in project.godot, so **every release adds its note on top**.
+  `ui_shots.ps1` has a `patches` shot. `[STATS]` lines now carry the local player's position (`pos`).
+- **Measured** (local, RTX 3080): tests 183/183; browser check 177 fps; `mp_test -Clients 1`,
+  `-Clients 3 -StartTime 595` and `-Clients 3 -Coop` pass; preview https://playtest-fixes.knoedlinger.pages.dev
+  (b054d56): 164.5 fps / p95 7.7 ms / at most 114 draw calls. Obstler damage was never broken: 547 damage in
+  5 s on 30 enemies (Schneeschaufel 450, Kochlöffel 475), only its look was invisible.
+- **Autoplay** (Ferdl / Kirtag / Grant 1, seeds 1-10, compared with 1.3.0): level 46.2 → 47.4, kills
+  17.5k → 15.6k, knock-downs 17.5 → 27.7 (+58 %, the armour nerf: the bot no longer shrugs off fodder
+  mid-run), bosses beaten 17 → 20, Hofrat beaten 2 → 3 runs (WON 3, CLOSED 7). If the owner finds it too
+  hard, `armor_half` is the one number to lower (6 gives 8 armor −57 %).

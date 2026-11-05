@@ -17,6 +17,18 @@ func test_input_message_round_trip() -> void:
 	assert_almost_eq(back.position.x, 12.5, 0.001)
 	assert_almost_eq(back.position.z, -40.25, 0.001)
 	assert_almost_eq(back.yaw, 1.2, 0.001)
+	assert_eq(back.throw_direction(), Vector3(back.move.x, 0.0, back.move.y), "no aim: the movement stick")
+
+
+func test_an_aimed_schupfn_goes_where_the_mouse_points() -> void:
+	var message := InputMessage.new()
+	message.move = Vector2(1.0, 0.0)
+	message.buttons = InputMessage.BUTTON_AIM
+	message.aim_yaw = PI
+	var back: InputMessage = InputMessage.from_bytes(message.to_bytes())
+	var direction: Vector3 = back.throw_direction()
+	assert_almost_eq(direction.x, 0.0, 0.001)
+	assert_almost_eq(direction.z, -1.0, 0.001, "along the aim, not the stick")
 
 
 func test_input_message_rejects_wrong_size() -> void:

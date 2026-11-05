@@ -11,6 +11,7 @@ id = &"obstler"
 name_key = "WEAPON_OBSTLER"
 desc_key = "DESC_WEAPON_OBSTLER"
 pattern = 0
+look = 3
 cooldown = 0.35
 damage = 1.3
 knockback = 1.0

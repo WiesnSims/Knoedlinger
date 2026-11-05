@@ -77,7 +77,10 @@ static func value_text(key: StringName, value: float, balance: BalanceData) -> S
 			return str(roundi(value))
 		&"regen":
 			return "%.2f/s" % value if value > 0.0 else "0"
-		&"armor", &"extra_jumps":
+		&"armor":
+			# The number, and the share of every hit it takes.
+			return "%d (−%d %%)" % [roundi(value), roundi(Formulas.armor_share(value, balance) * 100.0)] if value > 0.0 else "0"
+		&"extra_jumps":
 			return "+%d" % roundi(value) if value > 0.0 else "0"
 		&"move_speed":
 			return "%.1f m/s" % (balance.player_speed * (1.0 + value))
