@@ -111,6 +111,24 @@ func test_ski_poles_pierce_through_a_line_of_enemies() -> void:
 	assert_eq(hurt, poles.pierce + 1, "passes through `pierce` enemies and stops in the next")
 
 
+func test_arcs_and_shots_aim_at_the_nearest_enemy_in_reach() -> void:
+	var manager: EnemyManager = _manager(3)
+	_place(manager, [Vector2(-3.0, 0.0), Vector2(0.0, -6.0), Vector2(30.0, 30.0)])
+	var facing := Vector3(0.0, 0.0, 1.0)
+	var aim: Vector3 = WeaponSystem.aim_at_nearest(Vector3.ZERO, facing, manager, 8.0, 2.0)
+	assert_almost_eq(aim.x, -1.0, 0.001, "the nearer enemy, not the way the player faces")
+	aim = WeaponSystem.aim_at_nearest(Vector3(20.0, 0.0, 0.0), facing, manager, 8.0, 2.0)
+	assert_eq(aim, facing, "nobody in reach: the way the player faces")
+	for direction: Vector3 in [Vector3(1.0, 0.0, 0.0), Vector3(-0.6, 0.0, -0.8), facing]:
+		var back: Vector3 = WeaponSystem.aim_direction(WeaponSystem.aim_byte(direction))
+		assert_lt(back.angle_to(direction), deg_to_rad(1.5), "the aim byte keeps the heading")
+	var poles: WeaponData = load("res://data/weapons/skistoecke.tres")
+	var tray: WeaponData = load("res://data/weapons/tablett.tres")
+	assert_almost_eq(WeaponSystem.aim_reach(poles, 1.0, 0.0), poles.projectile_speed * poles.projectile_lifetime, 0.001)
+	assert_almost_eq(WeaponSystem.aim_reach(tray, 1.0, 0.0), tray.projectile_speed * tray.projectile_lifetime * 0.5,
+			0.001, "a boomerang turns at half its flight")
+
+
 func test_a_client_pool_only_shows_shots() -> void:
 	var pool := ProjectilePool.new()
 	add_child_autofree(pool)

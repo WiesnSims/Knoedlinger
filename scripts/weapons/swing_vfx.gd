@@ -13,6 +13,8 @@ var _material: ShaderMaterial
 var _time: float = DURATION
 ## PI for the swing behind the player.
 var _turn: float = 0.0
+## The heading of this swing (the weapon's aim), as Player.rotation.y.
+var _yaw: float = 0.0
 
 
 func setup(p_player: Player, weapon: WeaponData, behind: bool = false) -> void:
@@ -32,9 +34,10 @@ func setup(p_player: Player, weapon: WeaponData, behind: bool = false) -> void:
 	visible = false
 
 
-## Plays one swing, `area` times the weapon's reach.
-func play(area: float = 1.0) -> void:
+## Plays one swing toward `yaw`, `area` times the weapon's reach.
+func play(area: float = 1.0, yaw: float = 0.0) -> void:
 	scale = Vector3.ONE * reach * area
+	_yaw = yaw
 	_time = 0.0
 	visible = true
 
@@ -47,5 +50,5 @@ func _process(delta: float) -> void:
 		visible = false
 		return
 	global_position = player.get_global_transform_interpolated().origin + Vector3(0.0, 0.6, 0.0)
-	rotation = Vector3(0.0, player.rotation.y + _turn, 0.0)
+	rotation = Vector3(0.0, _yaw + _turn, 0.0)
 	_material.set_shader_parameter(&"progress", _time / DURATION)

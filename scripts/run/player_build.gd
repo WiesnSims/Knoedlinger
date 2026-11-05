@@ -36,6 +36,8 @@ class OwnedWeapon:
 	var mods := PackedFloat32Array([0.0, 0.0, 0.0, 0.0, 0.0])
 	## Counts attacks (wraps at 256); every machine plays the effect when it changes.
 	var fires: int = 0
+	## ARC / PROJECTILE: the heading of the last attack (WeaponSystem.aim_byte), for every machine's effect.
+	var aim: int = 0
 	# Host only.
 	var timer: float = 0.0
 	## Continuous weapons: per enemy slot, the run time from which it may be hit again.
@@ -317,7 +319,7 @@ func mirror(weapon_rows: PackedInt32Array, passive_rows: PackedInt32Array, item_
 	rerolls = p_rerolls
 	banishes = p_banishes
 	chests_opened = p_chests
-	var width: int = 3 + WEAPON_MODS.size()
+	var width: int = 4 + WEAPON_MODS.size()
 	var count: int = weapon_rows.size() / width
 	if weapons.size() != count:
 		weapons.resize(count)
@@ -334,6 +336,7 @@ func mirror(weapon_rows: PackedInt32Array, passive_rows: PackedInt32Array, item_
 		weapons[k].fires = weapon_rows[o + 2]
 		for m: int in WEAPON_MODS.size():
 			weapons[k].mods[m] = weapon_rows[o + 3 + m] / 1000.0
+		weapons[k].aim = weapon_rows[o + 3 + WEAPON_MODS.size()]
 	var passive_count: int = passive_rows.size() / 3
 	if passives.size() != passive_count:
 		passives.resize(passive_count)
@@ -364,13 +367,14 @@ func mirror(weapon_rows: PackedInt32Array, passive_rows: PackedInt32Array, item_
 
 
 ## The rows mirror() takes, for the world state: per weapon index, level, fire counter, then each
-## mod * 1000.
+## mod * 1000, then the aim byte.
 func weapon_rows() -> PackedInt32Array:
 	var rows := PackedInt32Array()
 	for owned: OwnedWeapon in weapons:
 		rows.append_array([owned.index, owned.level, owned.fires & 0xFF])
 		for m: int in WEAPON_MODS.size():
 			rows.append(roundi(owned.mods[m] * 1000.0))
+		rows.append(owned.aim & 0xFF)
 	return rows
 
 

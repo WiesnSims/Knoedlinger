@@ -58,7 +58,7 @@ func test_world_state_round_trip() -> void:
 	e.gold = 1234
 	e.rerolls = 3
 	e.banishes = 1
-	e.weapons = PackedInt32Array([0, 8, 200, 1250, 500, 300, 50, 1000, 5, 1, 7, 0, 0, 0, 0, 0])
+	e.weapons = PackedInt32Array([0, 8, 200, 1250, 500, 300, 50, 1000, 77, 5, 1, 7, 0, 0, 0, 0, 0, 0])
 	e.passives = PackedInt32Array([9, 1, 150])
 	e.items = PackedInt32Array([3, 2, 0, 1])
 	e.knodl_state = Knodl.State.REELING

@@ -1083,3 +1083,31 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   132.3 fps, p95 10.2 ms, max frame 26.1 ms, at most 98 draw calls, no console errors; `mp_test -Clients 1`
   passes (31.4 KiB/s, 3 of 3 enemy lines reached the client). The other running session (weapons) was told to
   merge `main` so its builds carry 1.2.0 too.
+
+## 2026-11-05 – Auto-aim and longer melee reach (1.3.0)
+
+- **Owner asked** how many weapons are ranged and auto-aimed, compared with Megabonk: melee felt weak because you
+  die quickly up close. Counted on the 16 base weapons: 5 pick their own targets (Hagelkanone, Stempel,
+  Schneekugel, Krampusrute, Würstel), 4 are ranged but only shot the way the player moves (Skistöcke, Zither,
+  Tablett, Alphorn), 7 work close (Kochlöffel, Watschn, Mozartkugel, Sachertorte, Schaufel, Kuhglocke, Obstler);
+  none home. In Megabonk, aiming is a global setting (closest target / smart targeting) and ranged weapons aim
+  themselves. Kiting away from the horde used to fire every arc and shot away from it.
+- **Owner: ARC and PROJECTILE weapons aim at the nearest enemy** within their reach (ARC: reach × area; shots: how
+  far they fly, a boomerang half of that; same height check as the arc), else the way the player faces
+  (`WeaponSystem.aim_at_nearest`). The heading travels as one byte per weapon in the build rows (world state
+  codec version 6, weapon row 13 bytes), so every machine draws the swing and the shots the same way. A second
+  swing (amount 2) still goes the opposite way.
+- **Owner: more reach for the close weapons** (+30–40 %; area multiplies reach, so each area level is now worth
+  more metres too): Kochlöffel 2.4 → 3.3, Schneeschaufel 3.2 → 4.3, Watschn-Aura 2.6 → 3.5, Watschn-Baum
+  3.4 → 4.5, Kuhglocke 4.5 → 5.8, Obstler 4.6 → 5.8, Mozartkugel orbit 2.6 → 3.4, Kugel-Karussell 3.2 → 4.2,
+  Nudelwalker 3.0 → 4.0, Sachertorte blast 3.0 → 3.6.
+- **Owner: no defensive bonus for melee** (damage reduction / heal on hit) for now.
+- **Version 1.3.0** (a feature; `main` was already 1.2.0 with the enemy voices).
+- **Measured before the merge with the enemy voices** (autoplay Ferdl / Kirtag / Grant 1, seeds 1–10, the same
+  seeds on 1.1.0 and on this branch): level 45.3 → 46.2, kills 16.3k → 17.5k, knock-downs 23.2 → 17.5 (−25 %),
+  bosses beaten 13 → 17, Hofrat beaten 0 → 2 runs. Seeds 1–4 favoured 1.1.0 (other card picks), seeds 5–10
+  favoured the branch in 5 of 6; the bot's card luck swings a run by ±8 levels.
+- **Measured after the merge** (local, RTX 3080): tests 180/180; browser check 155.5 fps / p95 8.2 ms / at most
+  99 draw calls; `mp_test -Clients 1` passes (the swings and shots draw from the synced aim byte).
+- **Owner: approved** on the preview https://auto-aim.knoedlinger.pages.dev; merged into `main`, branch `auto-aim`
+  deleted, unused worktrees removed.
