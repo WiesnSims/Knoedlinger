@@ -958,3 +958,8 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   RTX 3080, 4 tabs in room FKEE, 300 enemies, bots, 60 s): host 143 fps / at most 125 draw calls, clients 192 fps /
   at most 114, 28.3 KiB/s down each, every Knödl and enemy shown, 0 pops, no console errors. Solo browser check
   on the preview: 174.5 fps, p95 7.1 ms, at most 99 draw calls.
+
+## 2026-11-05 – M6 approved
+
+- **Owner: M6 approved** on the preview; merged into `main`, branch `m6-coop` deleted. All milestones of
+  GAME-DESIGN.md (M0-M6) are now in `main`; production still only on the owner's word.
