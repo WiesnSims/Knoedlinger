@@ -952,5 +952,9 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   7.1 ms, at most 98 draw calls (M5: 152 fps, 126). Headless: `mp_test -Clients 3 -Coop` (revives, passes, merges,
   Familienstreit, Doppelportion on every client) and `-Lobby` pass; the relay's node tests pass (4). Co-op UI shots
   (`ui_shots.ps1 -Only coop`, room and HUDs at both sizes): at most 107 draw calls.
-- **Not deployed yet:** the relay Worker `knoedlinger-relay` needs `npx wrangler deploy` in `relay/` (a new Worker
-  on the Cloudflare account, free plan) before a preview or the live site can host co-op; waiting for the owner's OK.
+- **Owner: OK to deploy the relay.** `knoedlinger-relay` deployed with `npx wrangler deploy` in `relay/` (Durable
+  Object `Room`, free plan, no public route); the Pages project binds it as `ROOMS` for production and previews.
+- **Preview deployed** to https://m6-coop.knoedlinger.pages.dev. Through the real Cloudflare relay (headless Edge,
+  RTX 3080, 4 tabs in room FKEE, 300 enemies, bots, 60 s): host 143 fps / at most 125 draw calls, clients 192 fps /
+  at most 114, 28.3 KiB/s down each, every Knödl and enemy shown, 0 pops, no console errors. Solo browser check
+  on the preview: 174.5 fps, p95 7.1 ms, at most 99 draw calls.
