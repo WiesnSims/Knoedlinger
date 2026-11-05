@@ -1018,3 +1018,12 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   `movement` deleted. **Production deploy of 1.1.0** on 2026-11-05 at the owner's word: live on
   https://knoedlinger.pages.dev. Measured on production (headless Edge, RTX 3080, 500 enemies, bot, 60 s):
   161.8 fps, p95 7.9 ms, at most 99 draw calls, no console errors; `mp_test -Clients 1` passes.
+
+## Audio fix (1.1.1)
+
+- **Owner: no sound in Firefox and Edge.** Measured with a Web Audio analyser in headless Edge: the M3 preview
+  plays (peak 1.22), M4 and later, including production 1.1.0, output pure silence. Cause: since M4 part 1
+  GameAudio created the Music/Sfx/Voice buses at runtime with `AudioServer.add_bus()`; Godot's web audio
+  (sample playback) never gets those buses, so every player on them was silent. **Claude:** the buses now
+  come from `default_bus_layout.tres` (loaded at engine start); GameAudio only reports a missing bus, and
+  `tests/unit/test_audio.gd` guards it. Fixed build: menu music peak 0.20, bot run peak 0.76. Patch release 1.1.1.

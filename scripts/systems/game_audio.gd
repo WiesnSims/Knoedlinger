@@ -6,7 +6,9 @@ extends Node
 ## come at most once per BARK_GAP seconds (GAME-DESIGN.md: max one per 8 s). Music crossfades
 ## between tracks and can speed up with the run clock.
 ## `?mute=1` / `--mute=1` silences everything (automated runs). Music, effects and barks play on
-## their own buses (Music, Sfx, Voice), whose volumes the Settings set.
+## their own buses (Music, Sfx, Voice, from default_bus_layout.tres), whose volumes the Settings
+## set. The buses must come from the layout file: on the web, buses added at runtime never reach
+## the browser's audio graph and everything played on them is silent.
 
 const SFX_DIR: String = "res://assets/audio/sfx"
 const MUSIC_DIR: String = "res://assets/audio/music"
@@ -71,10 +73,7 @@ func _ready() -> void:
 	muted = LaunchArgs.get_flag("mute", false) or DisplayServer.get_name() == "headless"
 	for bus: StringName in [&"Music", &"Sfx", &"Voice"]:
 		if AudioServer.get_bus_index(bus) < 0:
-			AudioServer.add_bus()
-			var index: int = AudioServer.bus_count - 1
-			AudioServer.set_bus_name(index, bus)
-			AudioServer.set_bus_send(index, &"Master")
+			push_error("GameAudio: bus %s missing from default_bus_layout.tres" % bus)
 	for k: int in VOICES:
 		var player := AudioStreamPlayer.new()
 		player.name = "Voice%d" % k
