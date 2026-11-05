@@ -1293,3 +1293,18 @@ the second tab.
   (branch `ehrentafel-menu`, also 1.3.2), so 1.4 stays for the new features of the 1.4 plan. The
   patch note is one `note_1_3_2`: that branch has lines `PATCH_1_3_2_01`/`_02`, this one `_03`-`_06`;
   whichever merges second joins the two line lists.
+
+## 1.3.2 – merged with Nachspielzeit and released (2026-11-05)
+
+- **Owner: approved** the Ehrentafel in the menu and asked to merge it with the other session's branch
+  `nachspielzeit` (already renumbered to ship as 1.3.2) and to deploy to production. Both went into
+  `ehrentafel-menu`, then `main` (e7b9098). Conflicts: the 1.3.2 patch note takes the Ehrentafel lines
+  01-02 then the Nachspielzeit lines 03-06; both decisions entries kept; the translation regenerated
+  from the merged CSV.
+- **Merged code checked** (local, RTX 3080): tests pass, web export, browser check 182.5 fps / p95 6.9 ms
+  / at most 103 draw calls, `mp_test -Clients 1`, `-Clients 3 -StartTime 595` and `-Clients 3 -Coop`
+  pass, `board/test/board.test.mjs` 8/8 (`MAX_RUN_SECONDS` 1560 for the Nachspielzeit; no D1 migration).
+- **Production deploy of 1.3.2** at the owner's word: https://knoedlinger.pages.dev serves e7b9098.
+  Live browser check (headless Edge, 500 enemies, bot, 60 s): 176.3 fps, p95 6.9 ms, at most 100 draw
+  calls, no console errors; the title screen shows the real top 5.
+- `v1-4`'s Part 0 (fold in `nachspielzeit`) is now just merging `main` into `v1-4`.
