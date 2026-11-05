@@ -1,7 +1,8 @@
 # UI screenshots for checking the look against docs/UI-STYLE.md: serves build/web (or uses -Url) and
 # takes a fixed set of moments in headless Edge at every size: the HUD in play, the HUD with the
 # Formular / boss / markers (from 10:00), the Speisekarte with a hovered card, the Inventory/Stats
-# screen (Tab), the end screen, the touch controls and the settings tabs. PNGs go to build/shots/ui/<Name>/<scene>-<size>-<s>s.png.
+# screen (Tab), the end screen, the touch controls and the settings tabs, and co-op (M6, `coop`: two
+# players through the real menus and a local relay, the room and both HUDs; tools/browser/coop_shots.mjs). PNGs go to build/shots/ui/<Name>/<scene>-<size>-<s>s.png.
 # Fails on console errors and on any moment at 150 draw calls or more (the web budget, UI included).
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/ui_shots.ps1 [-Name after] [-Url <preview url>]
 #        [-Sizes 1920x1080,1280x720] [-Only hud,menu]
@@ -10,7 +11,8 @@ param(
     [string]$Url = '',
     [string]$Sizes = '1920x1080,1280x720',
     [string]$Only = '',
-    [int]$Port = 8062
+    [int]$Port = 8062,
+    [int]$RelayPort = 8791
 )
 . "$PSScriptRoot\common.ps1"
 
@@ -71,6 +73,26 @@ try {
             if ($scene.Touch) { $arguments += '--touch=1' }
             $code = Invoke-Logged -Exe $Node -Arguments $arguments -Log $log -WorkingDirectory (Join-Path $Root 'tools\browser')
             if ($code -ne 0) { $failures += "$($scene.Id) at $size failed (console errors or draw calls, see log)" }
+        }
+    }
+    if ($Only -eq '' -or ($Only.Split(',') -contains 'coop')) {
+        $relay = $null
+        $relayArg = @()
+        try {
+            if ($server) {
+                $relay = Start-LocalRelay -Port $RelayPort -Log $log
+                $relayArg = @("--relay=ws://127.0.0.1:$RelayPort")
+            }
+            foreach ($size in $Sizes.Split(',')) {
+                $arguments = @((Join-Path $Root 'tools\browser\coop_shots.mjs'), "--url=$Url", "--out=$(Join-Path $outDir "coop-$size")",
+                    "--size=$size", '--max-draws=150') + $relayArg
+                $code = Invoke-Logged -Exe $Node -Arguments $arguments -Log $log -WorkingDirectory (Join-Path $Root 'tools\browser')
+                if ($code -ne 0) { $failures += "coop at $size failed (console errors or draw calls, see log)" }
+            }
+        } catch {
+            $failures += $_.Exception.Message
+        } finally {
+            if ($relay) { Stop-ProcessTree $relay.Id }
         }
     }
     Write-Host "screenshots: $outDir"

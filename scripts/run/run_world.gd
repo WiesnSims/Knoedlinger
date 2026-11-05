@@ -138,6 +138,8 @@ var _host_brosel: int = 0
 var _alive_held: int = 0
 ## Most Knödl a client showed at once (players come and go; the end count says little).
 var _knodls_max: int = 0
+## Client: the host's end-of-run numbers for us (kills, bosses, knock-downs ...), merged into the summary.
+var _host_summary: Dictionary = {}
 ## The most draw calls of a frame this second and what was up then (the [STATS] line).
 var _draws_peak: int = 0
 var _draws_peak_what: String = ""
@@ -378,6 +380,7 @@ func _ready() -> void:
 	NetworkManager.joined_host.connect(_on_joined_host)
 	NetworkManager.join_failed.connect(_on_join_failed)
 	NetworkManager.session_ended.connect(_on_session_ended)
+	NetworkManager.run_summary_received.connect(func(data: Dictionary) -> void: _host_summary = data)
 	DebugOverlay.visible = LaunchArgs.get_flag("debug", _bot and not _autoplay)
 	# The browser builds the run's shaders behind the loading screen; a solo run waits for it.
 	if DisplayServer.get_name() != "headless":
@@ -683,6 +686,10 @@ func _move_riesen_wirt(delta: float) -> void:
 
 
 func _on_run_ended() -> void:
+	# Host: every client gets what only the host counted, before its end screen and Profile.
+	if NetworkManager.is_host():
+		for peer: int in NetworkManager.client_ids():
+			NetworkManager.send_run_summary(peer, _shared_summary(peer))
 	speisekarte.close()
 	if result == Result.WON:
 		GameAudio.play(&"victory")
@@ -1475,7 +1482,37 @@ func _run_summary() -> Dictionary:
 		summary["kills"] = enemies.kills
 		summary["brosel_merges"] = brosel.merges
 		summary["cards_picked"] = level_flow.picks
+	else:
+		summary.merge(_host_summary, true)
 	return summary
+
+
+## Host: the run numbers a client cannot count itself (the crowd lives here): team kills by type,
+## bosses, and that player's knock-downs, biggest Knödl, cash-ins, throws.
+func _shared_summary(peer: int) -> Dictionary:
+	var shared: Dictionary = {}
+	var by_type: Dictionary = {}
+	for enemy_id: StringName in _kills_by_type:
+		by_type[String(enemy_id)] = _kills_by_type[enemy_id]
+	shared["kills"] = enemies.kills
+	shared["kills_by_type"] = by_type
+	var state: PlayerState = states.get(peer)
+	if state != null:
+		shared["deaths"] = state.deaths
+		shared["best_knodl_mass"] = snappedf(state.best_knodl_mass, 0.1)
+		shared["cash_ins"] = Array(state.cash_ins)
+		var total: int = 0
+		for count: int in state.cash_ins:
+			total += count
+		shared["cash_in_total"] = total
+		shared["mass_eaten"] = snappedf(state.mass_eaten_by_enemies, 0.1)
+		shared["damage_taken"] = snappedf(state.damage_taken, 0.1)
+	var knodl: Knodl = knodls.get(peer)
+	if knodl != null:
+		shared["throws"] = knodl.throws
+		shared["knodl_hits"] = knodl.hits
+		shared["knodl_kills"] = knodl.crushed
+	return shared
 
 
 ## Balance log (CLAUDE.md: --autoplay): one JSON per run in build/balance/, then the next run.
@@ -2604,7 +2641,8 @@ func _show_team(local: Player, state: PlayerState) -> void:
 		player.note = ""
 		if mate == null or players.size() < 2 or _respawn:
 			continue
-		if mate.downed:
+		# Our own state is in the HUD's toast; signs are for the teammates.
+		if mate.downed and peer != me:
 			if mate.out:
 				player.note = tr("SIGN_OUT")
 			elif mate.revive_progress > 0.01:

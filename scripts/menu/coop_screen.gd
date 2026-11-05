@@ -54,14 +54,16 @@ func _init(p_content: GameContent) -> void:
 	NetworkManager.roster_changed.connect(_show)
 	Lobby.failed.connect(func(reason: String) -> void:
 		GameAudio.play(&"no_gold")
-		_error.text = error_text(reason)
+		_say(error_text(reason))
 		_show())
-	refresh()
+	# The menu calls refresh() when it opens the screen (after the name prompt, so an invite link
+	# joins with the right name).
+	_show()
 
 
 ## The menu opened this screen: a link with ?room=KNDL joins at once.
 func refresh() -> void:
-	_error.text = error_text(Lobby.error) if Lobby.error != "" else ""
+	_say(error_text(Lobby.error) if Lobby.error != "" else "")
 	if Lobby.state == Lobby.State.OFFLINE:
 		var room: String = _room_from_url()
 		if room != "":
@@ -96,6 +98,7 @@ func _build_offline(column: VBoxContainer) -> void:
 	_offline.add_child(line)
 	var open := ActionPill.new("Enter", &"ui_accept")
 	open.set_label(tr("COOP_OPEN"))
+	open.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	open.pressed.connect(func() -> void:
 		GameAudio.play(&"card")
 		Lobby.open_room())
@@ -111,7 +114,13 @@ func _build_offline(column: VBoxContainer) -> void:
 		var caret: int = _code_edit.caret_column
 		_code_edit.text = RoomCode.normalize(text)
 		_code_edit.caret_column = caret)
-	_code_edit.text_submitted.connect(func(_text: String) -> void: _join())
+	# Enter with no code opens a room (the Aufmachen pill shows the Enter key), with a code joins it.
+	_code_edit.text_submitted.connect(func(text: String) -> void:
+		if text.strip_edges() == "":
+			GameAudio.play(&"card")
+			Lobby.open_room()
+		else:
+			_join())
 	row.add_child(_code_edit)
 	var join := ActionPill.new("", &"")
 	join.set_label(tr("COOP_JOIN"))
@@ -119,6 +128,7 @@ func _build_offline(column: VBoxContainer) -> void:
 	row.add_child(join)
 	var back := ActionPill.new("Esc", &"ui_cancel")
 	back.set_label(tr("MENU_BACK"))
+	back.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	back.pressed.connect(func() -> void: closed.emit())
 	_offline.add_child(back)
 
@@ -129,6 +139,7 @@ func _build_connecting(column: VBoxContainer) -> void:
 	_connecting.add_child(UiStyle.label(&"LabelSmall", tr("COOP_CONNECTING")))
 	var cancel := ActionPill.new("Esc", &"ui_cancel")
 	cancel.set_label(tr("COOP_LEAVE"))
+	cancel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	cancel.pressed.connect(Lobby.leave)
 	_connecting.add_child(cancel)
 
@@ -142,7 +153,8 @@ func _build_room(column: VBoxContainer) -> void:
 	var code_box := UiStyle.vbox(&"Tight")
 	code_row.add_child(code_box)
 	code_box.add_child(UiStyle.label(&"LabelMuted", tr("COOP_ROOM")))
-	_code_label = UiStyle.label(&"LabelTitle")
+	# Letters a friend has to read out: the number font, not the Fraktur title font.
+	_code_label = UiStyle.label(&"HudNumber")
 	code_box.add_child(_code_label)
 	_copy = ActionPill.new("", &"")
 	_copy.set_label(tr("COOP_COPY"))
@@ -165,6 +177,7 @@ func _build_room(column: VBoxContainer) -> void:
 		seat.add_child(portrait)
 		var text := UiStyle.vbox(&"Tight")
 		text.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		seat.add_child(text)
 		var name_label: Label = UiStyle.label(&"LabelSmall")
 		name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -245,6 +258,7 @@ func _stepper(parent: Control, step: Callable) -> HBoxContainer:
 
 
 func _show() -> void:
+	_error.visible = _error.text != ""
 	if not is_inside_tree():
 		return
 	_offline.visible = Lobby.state == Lobby.State.OFFLINE
@@ -275,7 +289,7 @@ func _show() -> void:
 			var profile: Dictionary = profiles[order[k]]
 			var data: CharacterData = content.character(StringName(str(profile.get("character", ""))))
 			portrait.character = data
-			name_label.text = str(profile.get("name", "")) + ("  · " + tr("COOP_HOST") if order[k] == NetworkManager.HOST_ID else "")
+			name_label.text = str(profile.get("name", "")) + (" · " + tr("COOP_HOST") if order[k] == NetworkManager.HOST_ID else "")
 			role.text = tr(data.name_key) if data != null else "…"
 			seat.modulate.a = 1.0
 		portrait.queue_redraw()
@@ -311,27 +325,33 @@ func _show() -> void:
 		_status.text = ""
 
 
+## The error line, shown only when it says something.
+func _say(text: String) -> void:
+	_error.text = text
+	_error.visible = text != ""
+
+
 func _join() -> void:
 	var code: String = RoomCode.normalize(_code_edit.text)
 	if not RoomCode.is_valid(code):
 		GameAudio.play(&"no_gold")
-		_error.text = tr("COOP_ERR_NO_ROOM")
+		_say(tr("COOP_ERR_NO_ROOM"))
 		return
 	GameAudio.play(&"card")
-	_error.text = ""
+	_say("")
 	Lobby.join_room(code)
 
 
 func _pick(id: StringName) -> void:
 	if Lobby.taken_by_other(id):
 		GameAudio.play(&"no_gold")
-		_error.text = tr("COOP_ONLY_ONE")
+		_say(tr("COOP_ONLY_ONE"))
 		return
 	if not Profile.is_unlocked(&"character", id):
 		GameAudio.play(&"no_gold")
 		return
 	GameAudio.play(&"card")
-	_error.text = ""
+	_say("")
 	Lobby.choose_character(id)
 
 

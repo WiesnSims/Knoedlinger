@@ -43,6 +43,8 @@ signal run_events_received(data: PackedByteArray)
 signal offer_received(data: PackedByteArray)
 ## Host: a player answered an offer (OfferCodec.Choice).
 signal choice_received(peer_id: int, data: PackedByteArray)
+## Client: what only the host counted about our run (kills, bosses, our knock-downs ...), at its end.
+signal run_summary_received(data: Dictionary)
 
 enum Mode { SOLO, HOST, CLIENT }
 enum Backend { NONE, WS, RELAY }
@@ -349,6 +351,12 @@ func send_offer(peer_id: int, data: PackedByteArray) -> void:
 	bytes_sent += data.size() + MESSAGE_OVERHEAD
 
 
+## Host: the end-of-run numbers only the host keeps, to one client (reliable).
+func send_run_summary(peer_id: int, data: Dictionary) -> void:
+	if mode == Mode.HOST and _in_run.has(peer_id) and _can_send(peer_id):
+		_rx_run_summary.rpc_id(peer_id, data)
+
+
 ## The local player's answer to an offer: to the host, or straight to the host's own handler.
 func send_choice(data: PackedByteArray) -> void:
 	if is_host():
@@ -621,6 +629,11 @@ func _rx_run_events(data: PackedByteArray) -> void:
 func _rx_offer(data: PackedByteArray) -> void:
 	bytes_received += data.size() + MESSAGE_OVERHEAD
 	offer_received.emit(data)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _rx_run_summary(data: Dictionary) -> void:
+	run_summary_received.emit(data)
 
 
 @rpc("any_peer", "call_remote", "reliable")

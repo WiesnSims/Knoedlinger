@@ -51,7 +51,7 @@ func _ready() -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if Settings.needs_name():
 		_show_name_prompt()
-	elif Lobby.is_active() or LaunchArgs.has("room"):
+	elif Lobby.is_active() or LaunchArgs.has("room") or LaunchArgs.has("coop"):
 		# Back from a co-op run, or opened with an invite link: straight to the room.
 		_open(&"coop")
 	else:
@@ -272,7 +272,7 @@ func _confirm_name() -> void:
 	Settings.set_value(&"player_name", chosen if chosen != "" else Settings.NAME_FALLBACK)
 	(_name_prompt.get_meta(&"shade") as Control).visible = false
 	GameAudio.play(&"card")
-	if LaunchArgs.has("room"):
+	if LaunchArgs.has("room") or LaunchArgs.has("coop"):
 		_open(&"coop")
 	else:
 		_entries[0].grab_focus()

@@ -128,6 +128,23 @@ function Start-WebServer([int]$Port, [string]$Log) {
 }
 
 # Stops a process and everything it started.
+# The co-op relay (relay/: Worker + Durable Object) locally with wrangler dev; returns the process
+# once it serves ws://127.0.0.1:<Port>/api/room/<code> (M6). Throws if it does not start.
+function Start-LocalRelay([int]$Port, [string]$Log) {
+    $out = "$Log.relay.out"
+    $process = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', 'npx', 'wrangler@latest', 'dev', '--port', "$Port", '--ip', '127.0.0.1') `
+        -WorkingDirectory (Join-Path $Root 'relay') -PassThru -WindowStyle Hidden -RedirectStandardOutput $out -RedirectStandardError "$Log.relay.err"
+    $deadline = (Get-Date).AddSeconds(90)
+    while ((Get-Date) -lt $deadline -and -not (Select-String -Path $out -Pattern 'Ready on' -Quiet -ErrorAction SilentlyContinue)) {
+        Start-Sleep -Milliseconds 500
+    }
+    if (-not (Select-String -Path $out -Pattern 'Ready on' -Quiet -ErrorAction SilentlyContinue)) {
+        Stop-ProcessTree $process.Id
+        throw 'the local relay (wrangler dev) did not start'
+    }
+    return $process
+}
+
 function Stop-ProcessTree([int]$Id) {
     & taskkill.exe /PID $Id /T /F 2>&1 | Out-Null
 }

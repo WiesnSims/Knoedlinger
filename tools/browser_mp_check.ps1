@@ -27,16 +27,7 @@ try {
         $server = Start-WebServer -Port $Port -Log $log
         $Url = "http://127.0.0.1:$Port/"
         # The relay Worker with its Durable Object, locally (its own fetch serves /api/room/<code>).
-        $relayLog = "$log.relay.out"
-        $relay = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', 'npx', 'wrangler@latest', 'dev', '--port', "$RelayPort", '--ip', '127.0.0.1') `
-            -WorkingDirectory (Join-Path $Root 'relay') -PassThru -WindowStyle Hidden -RedirectStandardOutput $relayLog -RedirectStandardError "$log.relay.err"
-        $deadline = (Get-Date).AddSeconds(90)
-        while ((Get-Date) -lt $deadline -and -not (Select-String -Path $relayLog -Pattern 'Ready on' -Quiet -ErrorAction SilentlyContinue)) {
-            Start-Sleep -Milliseconds 500
-        }
-        if (-not (Select-String -Path $relayLog -Pattern 'Ready on' -Quiet -ErrorAction SilentlyContinue)) {
-            throw 'the local relay (wrangler dev) did not start'
-        }
+        $relay = Start-LocalRelay -Port $RelayPort -Log $log
         $relayArg = @("--relay=ws://127.0.0.1:$RelayPort")
     }
     $out = Join-Path $BuildDir "perf\browser_mp_check-$stamp.json"
