@@ -48,7 +48,7 @@ $scenes = @(
     @{ Id = 'settings'; Query = 'mute=1&debug=0'; At = '12,15,17,19'; Press = 'type:Resi+Enter,ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+Enter,KeyE,KeyE' },
     # A plain start (fresh browser profile): the name prompt, the menu, Spielen, Einstellungen.
     # Then back, Spielen, "Auf geht's!": the run started from the menu.
-    # The meta screens of a fresh profile: Stammtisch, Aufträge, Rekorde, Almanach, then Spielen.
+    # The meta screens of a fresh profile: Stammtisch, Aufträge, Ehrentafel (then Eigene Rekorde), Almanach, then Spielen.
     @{ Id = 'meta'; Query = 'mute=1&debug=0'; At = '12,15,18,21,23,26,29'; Press = 'type:Resi+Enter,ArrowDown+Enter,Escape+ArrowDown+Enter,Escape+ArrowDown+Enter,ArrowRight,Escape+ArrowDown+Enter,Escape+ArrowUp+ArrowUp+ArrowUp+ArrowUp+Enter' },
     # 1.3.1: the patch list ("Was is neu?", the seventh entry), at the top and scrolled down.
     @{ Id = 'patches'; Query = 'mute=1&debug=0'; At = '12,15,17'; Press = 'type:Resi+Enter,ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+Enter,PageDown+PageDown' },

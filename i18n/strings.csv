@@ -197,7 +197,7 @@ GAME_SUBTITLE,Bis zur Sperrstund'!
 MENU_PLAY,Spielen
 MENU_STAMMTISCH,Stammtisch
 MENU_QUESTS,Aufträge
-MENU_RECORDS,Rekorde
+MENU_RECORDS,Ehrentafel
 MENU_ALMANACH,Almanach
 MENU_SETTINGS,Einstellungen
 MENU_COOP,Stammtisch aufmachen
@@ -375,7 +375,7 @@ META_EFFECT_KNODL_START,+%d %% Startknödl
 META_EFFECT_REVIVES,+%d Nachschlag
 QUESTS_TITLE,Aufträge vom Gemeindeamt
 QUEST_DONE,Gestempelt
-RECORDS_TITLE,Rekorde
+RECORDS_TITLE,Ehrentafel
 RECORDS_NONE,Do warst no ned.
 REC_TIME,Zeit
 REC_WINS,Gwonnen
@@ -383,7 +383,7 @@ REC_LEVEL,Level
 REC_KILLS,Gegner
 REC_KNODL,Knödl
 REC_SCHILLING,Schilling
-RECORDS_OWN,Eigene
+RECORDS_OWN,Eigene Rekorde
 RECORDS_BOARD,Ehrentafel
 ALMANACH_TITLE,Almanach
 ALM_FAMILY,Familie
@@ -423,6 +423,9 @@ BOARD_ALL,Ewig
 BOARD_WEEK,Diese Woche
 BOARD_LOADING,Der Wirt schaut nach …
 BOARD_OFFLINE,Die Ehrentafel is grad ned erreichbar.
+BOARD_TOP_TITLE,Ehrentafel
+BOARD_TOP_LINE,De bestn %d · %s · allein
+BOARD_TOP_OPEN,Ganze Ehrentafel
 BOARD_EMPTY,Do steht no kana drauf. Sei du da Erste!
 BOARD_RESULT_0,umgfoin
 BOARD_RESULT_1,Sperrstund'
@@ -878,6 +881,8 @@ VOICE_RIESEN_WIRT_HAM,Und jetzt olle ham!
 MENU_PATCHES,Was is neu?
 PATCHES_TITLE,Was is neu?
 PATCHES_VERSION,Version %s
+PATCH_1_3_2_01,"Die Ehrentafel steht jetzt gleich im Hauptmenü: de bestn 5 vom Kirtag, a Klick zeigt de ganze Tafel."
+PATCH_1_3_2_02,"„Rekorde“ heißt jetzt „Ehrentafel“ und zeigt zuerst de Bestenliste, de eigenen Rekorde san da zweite Reiter."
 PATCH_1_3_1_01,Obstler-Flammenwerfer: spuckt jetzt sichtbar Feuer – und hat a neues Bildl.
 PATCH_1_3_1_02,"Schupfn: Da Knödl fliagt dorthin, wo die Maus hinzeigt (Gamepad und Touch: in Gehrichtung)."
 PATCH_1_3_1_03,Nach da Speisekarte geht's gleich weiter: a gedrückte Taste muass ma nimmer neu drücken.
