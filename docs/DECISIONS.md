@@ -1262,3 +1262,45 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Kept rules:** content as data, text through `tr()`, solo and co-op alike (host-authoritative), new enemy
   types as MultiMeshes (the snapshot allows 32 types since Nachspielzeit's codec v3), new catalog entries
   appended so save indices stay.
+
+## 2026-11-05 – 1.4 plan addition: gold and chests (task 6.6 P1, part of Part 6)
+
+- **Owner asked** how gold works ("I was never able to buy more than one chest") and how Megabonk does it;
+  then: aim for ~15 chests a run so players always look out for chests. **Owner: no edge-of-screen chest
+  arrow** (the 1.3.1 price pills within 45 m stay as they are).
+- **Found (1.3.1 code):** coins only from 0.6 % of kills (`coin_drop_chance`, 1 gold each, ~1 per 170 kills),
+  elites from 5:00 (`gold_drop` 1, Kontrolleur 3), bosses 25 / 40 / 80 (Oberkrampus, Oberkrampus II, Hofrat),
+  skip 10, S cash-in 0.5 per mass. Coins only by walking (4 m magnet), the Knödl ignores them. 6 map chests,
+  price 25 + 15 per map chest opened (`_chest_price`, `run_world.gd`); boss/Wirtshaus chests free and not
+  counted; Zweitschlüssel free chests still count. A ~15.6k-kill bot run makes ~100 coin gold, mostly late:
+  first chest after Oberkrampus at 5:00, the second (40) around 9-11 min. 1-2 chests per run is the norm.
+- **Megabonk (fan wiki/guides, not all reliable):** many chests per stage, first 30 gold, price grows per
+  *bought* chest (wiki table: #10 = 495, #30 = 21,249, ~×1.35 early, ~×1.2 later), free chests (Key, ~9 %
+  each) do not raise it; gold from enemies (scales with stage and gold gain), pots, Greed shrine (+25 gold,
+  +5 % difficulty), bosses/elites/challenge shrines; Shady Guy sells items. Income grows faster than the
+  price, so chests stay a steady buy (25-chest achievement).
+- **Balance check (Claude):** 15 chests are fine. Items are small (+4-15 % one stat; strong ones capped at
+  1-3 stacks), ~15 extra items ≈ 5-8 Speisekarte levels on top of ~47, and Grant 1 is hard now (bot wins 3/10,
+  ~28 knock-downs). Risks: **Sparbuch** (+3 % damage per chest opened *per stack*: 15 chests × 3 stacks =
+  +135 %), **Zweitschlüssel** 5 stacks = 50 % free chests (compounds once free chests do not raise the price),
+  Hofratswürdig items without a cap (Maibaumspitz +15 % damage) through more rolls with luck.
+- **Changes (starting values, all in `balance.tres` / item data):**
+  - Price: `map_chest_price` 25 → 20, price ×1.22 per *bought* map chest (new `map_chest_price_growth`,
+    replaces the +15 step): 20, 24, 30, 36, 44, 54, 66, 80, 98, 120, 146, 178, 217, 265, 323 (~1,650 for 15).
+    Free chests (Zweitschlüssel) do not raise it.
+  - Chests: `map_chest_count` 6 → ~15, maps get ~15-18 chest spots each (Kirtag, Gamskogl, Gemeindebau and
+    the new Heuriger; `map_kit.gd` overlap check).
+  - Income: `coin_drop_chance` 0.006 → ~0.03; coin value grows with the clock (new `coin_value_per_minute`,
+    ~1 at 0:00 → ~5 at 12:00; boss/elite gold unchanged to start); breakable props (Kirtag barrels / pots,
+    pooled, host-owned like loot, a few gold each, respawning per map area) as a steady source.
+  - Fixes: Sparbuch 0.03 → 0.015 per chest and `max_stacks` 2 (or a +30 % cap per stack); Zweitschlüssel
+    `max_stacks` 5 → 3; watch Hofratswürdig items in autoplay, cap their stacks only if they dominate.
+  - Targets: first chest ~1:30, then about one a minute; 12-15 chests in a good run; autoplay 10 seeds
+    (Ferdl / Kirtag / Grant 1) before and after: wins 3/10 → ~4-6/10 (not 10/10), no single item making up
+    most of a build's damage. Autoplay JSON gets `chests_bought` and `gold_earned`. Tune the gold numbers
+    first, the price growth second.
+  - Interplay with the 1.4 plan: the Standler (5.2) and the Marterl "Gier" (5.3, 2× gold) spend and make
+    gold too; tune them after this, on the new income. Patch-list lines for the change; co-op: gold, prices
+    and chests stay per player as now.
+- **Note:** Part 0 of the plan above is already done (Nachspielzeit shipped in 1.3.2); Part 0 is now only
+  "merge `main` into `v1-4`".
