@@ -1,5 +1,5 @@
 extends GutTest
-## 1.4.0 Nachspielzeit: past Sperrstund' the waves send only the Stammgast-Geister (the grantige ones
+## 1.3.2 Nachspielzeit: past Sperrstund' the waves send only the Stammgast-Geister (the grantige ones
 ## from 17:00), the crowd hurries on (EnemyManager.pace), and the Profile keeps the longest
 ## Nachspielzeit for its quests.
 

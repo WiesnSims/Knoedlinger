@@ -1197,7 +1197,7 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   URL: it catches deploy problems (files, headers, cache, loader). The full suite runs again only when
   something changed after approval (another merge on `main`, a fix, a version change like today).
 
-## 2026-11-05 – Nachspielzeit: the Stammgast-Geister after Sperrstund' (branch `nachspielzeit`, 1.4.0)
+## 2026-11-05 – Nachspielzeit: the Stammgast-Geister after Sperrstund' (branch `nachspielzeit`, 1.3.2)
 
 - **Owner asked:** what happens at 15:00, and whether a fast special enemy that one-shots the player
   would be better than the end screen just appearing. Claude researched Megabonk (its "Final Swarm":
@@ -1263,3 +1263,7 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   passes (no console errors, under 150 draw calls).
 - **Preview:** https://nachspielzeit.knoedlinger.pages.dev (66737cd): browser check 177.6 fps, p95 7 ms,
   at most 102 draw calls, no console errors. Board tests 8/8 (`MAX_RUN_SECONDS` 1560).
+- **Owner: this is 1.3.2, not 1.4.0.** It ships together with the Ehrentafel fix of the other session
+  (branch `ehrentafel-menu`, also 1.3.2), so 1.4 stays for the new features of the 1.4 plan. The
+  patch note is one `note_1_3_2`: that branch has lines `PATCH_1_3_2_01`/`_02`, this one `_03`-`_06`;
+  whichever merges second joins the two line lists.

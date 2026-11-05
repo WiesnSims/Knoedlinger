@@ -32,7 +32,7 @@ $scenes = @(
     @{ Id = 'busy'; Query = "$common&start_time=598&god=1"; At = '34' },
     @{ Id = 'menu'; Query = "$common&pick_delay=90"; At = '22,24'; Move = 'center,card' },
     @{ Id = 'inventory'; Query = "$common&knodl_mass=160"; At = '40'; Press = 'Tab' },
-    # 1.4.0: Sperrstund' settles the result, then the Nachspielzeit runs until the bot falls (a fresh
+    # 1.3.2: Sperrstund' settles the result, then the Nachspielzeit runs until the bot falls (a fresh
     # level-1 bot lasts some 30-60 s), then the end screen with its Nachspielzeit row.
     @{ Id = 'end'; Query = "$common&start_time=891"; At = '32,100' },
     # The Nachspielzeit itself: the clock counting on past 15:00, the white Stammgast-Geister, and from

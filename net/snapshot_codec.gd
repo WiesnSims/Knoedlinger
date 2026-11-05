@@ -8,7 +8,7 @@ extends RefCounted
 ##      then for the n alive slots, as byte planes (v2, M6): n x high byte of x, n x low byte of x,
 ##      the same for z (s16 in POSITION_SCALE units), n x [u8 type << 3 | hp bucket]. Planes keep
 ##      alike bytes together, which deflates far better (a 4-player crowd fits the budget).
-##      v3 (1.4.0): 5 bits of type (MAX_TYPES, the Nachspielzeit ghosts made 18) and 3 of HP (HP_MAX);
+##      v3 (1.3.2): 5 bits of type (MAX_TYPES, the Nachspielzeit ghosts made 18) and 3 of HP (HP_MAX);
 ##      the HP bucket only flashes hit enemies on clients.
 ## Events: [u8 version][u16 spawns]{[u16 slot][u8 type][s16 x][s16 z]}[u16 deaths]{[u16 slot]}
 
