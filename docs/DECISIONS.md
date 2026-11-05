@@ -1186,3 +1186,13 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   17.5k → 15.6k, knock-downs 17.5 → 27.7 (+58 %, the armour nerf: the bot no longer shrugs off fodder
   mid-run), bosses beaten 17 → 20, Hofrat beaten 2 → 3 runs (WON 3, CLOSED 7). If the owner finds it too
   hard, `armor_half` is the one number to lower (6 gives 8 armor −57 %).
+- **Owner: approved** as 1.3.1; merged into `main`, branch `playtest-fixes` deleted.
+- **Production deploy of 1.3.1** on 2026-11-05 at the owner's word: `main` 424bd2e is live on
+  https://knoedlinger.pages.dev. Before the merge (same code, `main` had not moved): tests 183/183,
+  browser check 181.9 fps, `mp_test -Clients 1` passes. On production (headless Edge, RTX 3080, 500
+  enemies, bot, 60 s): 174.2 fps, p95 7.2 ms, at most 101 draw calls, no console errors.
+- **Owner asked whether production gets the full test run again. Claude:** the full suite (tests, export,
+  browser check, multiplayer tests) runs on the branch before approval. When `main` has not moved since,
+  the merge is the same code, so after the production deploy only the browser check runs against the live
+  URL: it catches deploy problems (files, headers, cache, loader). The full suite runs again only when
+  something changed after approval (another merge on `main`, a fix, a version change like today).
