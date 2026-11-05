@@ -1069,7 +1069,11 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   x, z; 13 bytes) goes reliably to the clients (RunEventCodec VERSION 2), which show it at that slot.
   The Riesen-Wirt's line is local (every machine moves its own Riesen-Wirt). `mp_test` fails when none
   of the host's lines reach a client. Test hook `?voice_every=1` for the `voices` screenshots.
-- **Measured** (local, RTX 3080): tests 177/177; browser check 145 fps / p95 8.9 ms / at most 101 draw
-  calls; `mp_test -Clients 1` passes (30.8 KiB/s, 3 of 3 lines reached the client); `mp_test -Clients 3
+- **Claude:** the speech text is a shader variant of its own (fixed size, no depth test) and hidden
+  Label3Ds are not warmed up, so the first line of a run froze the page for ~100 ms; ShaderWarmup now
+  builds a copy (`EnemyVoices.make_text()`). Merged `main` (1.1.1, audio buses from the layout file) into
+  the branch so the voices are heard on the web.
+- **Measured** (local, RTX 3080, after the merge): tests 179/179; browser check 138 fps / p95 9.3 ms / max
+  frame 20.7 ms / at most 104 draw calls; `mp_test -Clients 1` passes (30.8 KiB/s, 3 of 3 lines reached the client); `mp_test -Clients 3
   -StartTime 595` passes (57.2 KiB/s with 846 enemies, every client got the same 7 of the host's 10 lines,
   probably the 3 said before the clients had joined; not confirmed from the logs).

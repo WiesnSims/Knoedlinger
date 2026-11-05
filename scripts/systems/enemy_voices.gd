@@ -76,19 +76,8 @@ func setup(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_ground: Heig
 		_type_seconds = 0.0
 	_gap = _rng.randf_range(_gap_min, _gap_max)
 	for k: int in SHOWN:
-		var label := Label3D.new()
+		var label: Label3D = make_text()
 		label.name = "Line%d" % k
-		label.font = UiStyle.font("bold")
-		label.font_size = TEXT_SIZE
-		label.pixel_size = TEXT_PIXEL
-		label.fixed_size = true
-		label.outline_size = 10
-		label.modulate = UiStyle.color("text")
-		label.outline_modulate = UiStyle.color("shadow")
-		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		label.no_depth_test = true
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		label.width = TEXT_WIDTH
 		label.visible = false
 		add_child(label)
 		_bubbles.append(label)
@@ -98,6 +87,23 @@ func setup(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_ground: Heig
 		_lift.append(0.0)
 		_left.append(0.0)
 		_at.append(Vector3.ZERO)
+
+
+## The text over a speaker's head (ShaderWarmup builds one too, so its shader is ready in time).
+static func make_text() -> Label3D:
+	var label := Label3D.new()
+	label.font = UiStyle.font("bold")
+	label.font_size = TEXT_SIZE
+	label.pixel_size = TEXT_PIXEL
+	label.fixed_size = true
+	label.outline_size = 10
+	label.modulate = UiStyle.color("text")
+	label.outline_modulate = UiStyle.color("shadow")
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test = true
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.width = TEXT_WIDTH
+	return label
 
 
 ## Host, every frame: the gaps run down, bosses at half health speak up, and an idle line comes
