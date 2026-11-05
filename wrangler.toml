@@ -1,7 +1,9 @@
 # Cloudflare Pages project knoedlinger (https://knoedlinger.pages.dev), deployed by tools/deploy_preview.ps1.
 # The Functions in functions/ keep die Ehrentafel (the global highscore board, board/) in a D1
 # database. Preview deployments get their own database, so play-tests never land on the real board
-# (as in Berghittn). The co-op relay (Worker + Durable Object) joins this file in M6.
+# (as in Berghittn). The Function in functions/api/room/ hands co-op WebSockets to the Room Durable
+# Object, which lives in the helper Worker in relay/ (knoedlinger-relay, no public route; deploy it
+# first with `npx wrangler deploy` in relay/).
 name = "knoedlinger"
 pages_build_output_dir = "build/web"
 compatibility_date = "2025-09-01"
@@ -12,7 +14,17 @@ database_name = "knoedlinger-board"
 database_id = "e69433a1-34f8-4c4b-b252-f612fcd7247d"
 migrations_dir = "board/migrations"
 
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+script_name = "knoedlinger-relay"
+
 [env.preview]
+
+[[env.preview.durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+script_name = "knoedlinger-relay"
 
 [[env.preview.d1_databases]]
 binding = "BOARD"
