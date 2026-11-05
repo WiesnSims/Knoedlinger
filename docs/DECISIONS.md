@@ -1196,3 +1196,69 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   the merge is the same code, so after the production deploy only the browser check runs against the live
   URL: it catches deploy problems (files, headers, cache, loader). The full suite runs again only when
   something changed after approval (another merge on `main`, a fix, a version change like today).
+
+## 2026-11-05 – Plan for 1.4.0 (branch `v1-4`, not started)
+
+- **Owner asked** for a new milestone for the 1.4 features: more maps, weapons and characters, plus Claude's
+  suggestions for new features and changes to existing ones, as a taskboard; planning only. Board:
+  https://claude.ai/artifact/NJ8t1sgRXKVoU9d79ZEHWM (task ids below match it).
+- **Owner: Nachspielzeit is part of 1.4** – the branch `nachspielzeit` (a931dba, already stamped 1.4.0, not yet
+  playtested) is merged into `v1-4` as Part 0 and playtested with the Part 1 preview.
+- **Owner: one branch `v1-4`** for the whole milestone, a preview deploy (`deploy_preview.ps1 -Branch v1-4`)
+  and the browser check after every part, the owner approves part by part; one production release 1.4.0 at
+  the end, only on the owner's word. Merge into `main` and delete the branch once 1.4 is approved.
+- **Owner: Heuriger now, the Kurort map in 1.5.** Moved to 1.5 with it: task 1.2 (Kurort Bad Unterhinterkogl:
+  Kurpark, thermal water that slows everyone and floats the Knödl, Seilbahn high route), 4.4 (Nordic-Walker,
+  Handtuch-Reservierer, Kurgast im Bademantel, mini-boss Der Bademeister) and the Kurort music and Kurkarte item.
+- **Owner: English later** (task 5.6, not in 1.4).
+- **Owner: start only when told** ("go with 1.4 part 1"); the session is cleared before that.
+- **Claude: the parts, in order** (P1 must, P2 should, P3 could; P3 slides to 1.5 first if 1.4 runs long).
+  Every number below is a starting value and goes into `balance.tres` / the data files:
+  - **Part 0 – Nachspielzeit** (0.1): merge `nachspielzeit`, re-run the tests, owner playtest.
+  - **Part 1 – the Heuriger map** (1.1 P1, 4.1 P1, 4.2 P1, 4.5 P1, 6.1 P1 music):
+    `tools/maps/make_heuriger.gd` on `map_kit.gd` → `data/maps/heuriger.tres`, `data/waves/heuriger.tres`.
+    Terraced vineyards on 4–5 levels (the Knödl rolls down terraces), Buschenschanken as the Wirtshäuser,
+    wine-cellar tunnels as shortcuts, boss gate at the Presshaus, Stempel on terrace tops. New enemies:
+    Weinbergschnecke (slow, tanky, slime trail slows players), Star-Schwarm (Bröselfresser flock, loose Brösel
+    first, then the Knödl), Wespe (fast, prefers the sweet Knödl sorts Marillen/Germ/Topfen). Mini-boss at
+    10:00: Der Sturm (a whirlwind of young wine; pulls in Brösel and enemies, flings them out with a red spiral
+    where they land; heavy Knödl sorts stay on the ground). Voice lines via `voices.py` (samples to the owner
+    first). Music per map: Heuriger (Schrammel techno), Gamskogl (après-ski techno), Gemeindebau (Wienerlied
+    beat) from `make_audio.mjs`, ~+1.5 MiB OGG. 1.3 map traits on the map select (P3).
+  - **Part 2 – the family** (2.1–2.5): Opa Hias the Schrebergärtner (Gartenschlauch, Serviettenknödl, trait
+    "Hat eh Zeit": +25 % attack speed after 1 s standing still; unlock: win on the Gemeindebau-Hof), Cousine
+    Mitzi the Fiakerin (Fiakerpeitsche, Topfenknödl, "Trab": +20 % speed and Knödl damage after 2 s running
+    straight, a sharp turn resets it; unlock: 2 min of Nachspielzeit in one run), Steffi the Winzerin (P2;
+    Steirische Harmonika, Marillenknödl, "Ausg'steckt": every Wirtshaus serves her twice; unlock: win on the
+    Heuriger). New Knödl sorts: Serviettenknödl (wide roll, sweeps a 2× strip, turns slowly, only rolls
+    forwards), Topfenknödl (reel-in 0.5 s, half Schupfn cooldown, −25 % contact damage). Portraits with the
+    family nose, barks, Almanach, the `_40` / `_sieg` Aufträge.
+  - **Part 3 – weapons, stats, evolutions** (3.1–3.8): Gartenschlauch (sweeping stream, knockback, wet =
+    −30 % speed for 2 s), Fiakerpeitsche (7 m lash, the last metre hits ×3), Steirische Harmonika (pulls
+    enemies within 8 m for 0.6 s, then a damage ring pushes them out), Krapfen-Kanone (P2; 3 bounces, jam
+    splash slows). Stats Seniorenteller (+XP from Brösel; no XP-gain stat exists yet) and Gummistiefel
+    (+knockback, slowing ground slows you less), appended to the catalog. Evolutions for the start weapons
+    without one: Schneeschaufel + Bergkas = Schneepflug, Skistöcke + Krügerl = Slalom-Gewitter, Tablett-Wurf +
+    Kaffeehaus-Zeitung = "Zahlen, bitte!", Kuhglocke + Hufeisen = Almabtrieb. P2: Gartenschlauch + Gummistiefel
+    = Hochwasser, Fiakerpeitsche + Spagat aus Hanf = Viererzug, Harmonika + Wanderkarte = Zeltfest,
+    Krapfen-Kanone + Seniorenteller = Faschingsdienstag. P2 items: Leberkässemmel (20 HP per cash-in),
+    Wetterfleck (no knockback on you), Rodel (Knödl gains speed downhill on the string) + two with visible
+    effects.
+  - **Part 4 – Die Hausmeisterin** (4.3 P1): the Gemeindebau-Hof's own mini-boss at 10:00 instead of
+    Oberkrampus II (broom sweeps in red, locks a stairwell for 10 s, voice lines).
+  - **Part 5 – features**: Daily Kirtag (5.1 P1: same map/character/Grant/seed for everyone per day, a daily
+    Ehrentafel board on D1, first try counts, weekly streak Auftrag), Der Standler (5.2 P2: merchant at 3:00
+    and 9:00, 3 items for gold, rising prices, own offer per co-op player), Marterl (5.3 P2: Mutprobe = 30 s
+    ring wave → chest, Gier = 2× enemies and gold for 60 s, Segen = 1 of 2 stat boosts; 2–3 per map),
+    Run-Abrechnung (5.4 P2: end-screen tab with damage per weapon, Knödl kills, top knock-down cause; same
+    numbers in autoplay JSON), co-op pings (5.5 P3), family voices via eSpeak (5.7 P3).
+  - **Part 6 – changes**: "Knödl folgt brav" (6.2 P1, GAME-DESIGN.md edge case never built; Spiel tab, off by
+    default), armour check after the owner's 1.3.1 playtest (6.3 P1: `armor_half` 10 → 6 is the softer
+    option), ~30 new Aufträge towards 300 (6.4 P1; 109 today), rebalance with autoplay on every map and
+    character, new weapons within ±10 % of the average (6.5 P2).
+  - **Part 7 – release**: 60 fps with 500 enemies + 300 projectiles and < 150 draw calls on the Heuriger,
+    .pck < 15 MiB; tests, export, browser check per map, `mp_test -Clients 3 -StartTime 595` on the Heuriger,
+    `mp_test -Coop`, ui_shots before/after; version stays 1.4.0 (from Part 0), patch-list entry on top.
+- **Kept rules:** content as data, text through `tr()`, solo and co-op alike (host-authoritative), new enemy
+  types as MultiMeshes (the snapshot allows 32 types since Nachspielzeit's codec v3), new catalog entries
+  appended so save indices stay.
