@@ -1111,3 +1111,6 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   99 draw calls; `mp_test -Clients 1` passes (the swings and shots draw from the synced aim byte).
 - **Owner: approved** on the preview https://auto-aim.knoedlinger.pages.dev; merged into `main`, branch `auto-aim`
   deleted, unused worktrees removed.
+- **Production deploy of 1.3.0** on 2026-11-05 at the owner's word: `main` c480221 is live on
+  https://knoedlinger.pages.dev. Measured on production (headless Edge, RTX 3080, 500 enemies, bot, 60 s):
+  158.5 fps, p95 7.8 ms, at most 101 draw calls, no console errors; `mp_test -Clients 1` passes.
