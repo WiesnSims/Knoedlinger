@@ -1376,3 +1376,44 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
     autoplay JSON get damage per item; autoplay 10 seeds before/after: no item above ~25 % of a build's damage,
     wins within the 6.6 target (~4-6/10); stress scene with 5 proc items stacked still 60 fps.
   - **Order:** after 6.6 (more chests make items matter), before the 6.5 rebalance; patch-list lines.
+
+## 2026-11-06 – 1.4 plan additions: item text on pickup (6.7) and the pause menu with the build (task 6.8 P1)
+
+- **Owner: an item must say what it does when you get it.** Checked: the chest reveal (`Speisekarte.show_chest`)
+  shows only icon, name and rarity border and fades after 3.5 s; no item has a line with its numbers, only the
+  deadpan `desc_key`, which the reveal does not show either. Added to **6.7**:
+  - **Effect text from the data:** a `ItemText.describe(item, stacks)` builder writes the exact effect from
+    `stats` and `effects` through `tr()` templates ("+10 % Glück", "10 % beim Treffer: 1,5 s einfrieren",
+    "Einmal pro Lauf: …"), with the stacked value when you hold more than one ("2× → 19 %"). No hand-written
+    number text, so tooltips never drift from the balance. The deadpan line stays below it, smaller.
+  - **Chest reveal:** each item tile gets its effect line under the name (deadpan line only for a new item);
+    the reveal stays ~6 s (+1.5 s per extra item, max 10 s), a first-time item gets a "Neu!" badge, and
+    hovering or Tab keeps it. The Speisekarte's item cards and the Almanach use the same builder.
+  - Co-op: the text is built on each client from its own data, the offer codec does not change.
+- **Owner: the Esc pause menu shows the stats and the inventory, like the upgrade UI without the choice, and
+  every tile can be hovered to see exactly what it does, with damage numbers for weapons.** New task **6.8 P1**
+  in Part 6, right after 6.7 (it needs 6.7's effect text):
+  - **Layout (Claude):** one shared `BuildView` (today's `InventoryPanel` + `StatsPanel`) used by both screens:
+    Esc = the menu column (Weiter, Einstellungen, Zum Menü) with the build view beside it; Tab stays the quick
+    look (same view, no menu). Solo pauses as today; co-op keeps running, as the pause menu does now.
+  - **Details on hover / focus / tap:** a detail panel (fixed spot next to the grid, not a floating tooltip, so
+    gamepad focus and touch tap work too): name, rarity border, level or stack count, the exact effect text,
+    the deadpan line.
+    - **Weapons:** damage per hit (`Formulas.weapon_damage` with the build's damage stat), attacks per second
+      (after attack speed), projectiles/hits per attack, crit chance × multiplier, and a simple
+      **DPS = damage × amount × (1 + crit chance × (crit mult − 1)) ÷ cooldown**; orbits and auras use
+      `hit_interval` and say "pro Gegner", burn adds its share over `burn_seconds`. Below: **this run** –
+      total damage and the DPS over the last 30 s, measured. The paper DPS ignores misses and pierce, so both
+      are shown and labelled ("Theorie" / "dieser Lauf").
+    - **Items with procs:** chance (after stacks and Stallaterne), cooldown, procs and damage this run.
+    - **Stats:** current value and what it is made of (base, stat upgrade, items, Stammtisch), as the
+      StatsPanel's card preview already does for the Speisekarte.
+  - **Measured damage per source:** a per-weapon / per-item damage counter on the host, sent to each player
+    with the existing per-player state (a few floats every ~1 s, reliable, not per hit). This pulls the
+    counter from Run-Abrechnung (5.4 P2) forward; 5.4 then only adds the end-screen tab.
+  - **Checks:** UI-STYLE.md (one theme, `theme_type_variation`, 8 px grid, rarity as border colour), fits at
+    1280×720 with 4 weapons, 4 stats and ~30 items (item grid scrolls), keyboard/mouse, gamepad focus and
+    touch; `ui_shots.ps1` before/after with a new `pause` shot (hovered weapon and item); unit tests for the
+    DPS formula per pattern and the effect-text builder; `mp_test -Clients 1` (the counter reaches the
+    client).
+  - **Order:** after 6.7, before the 6.5 rebalance (the DPS numbers help tuning).
