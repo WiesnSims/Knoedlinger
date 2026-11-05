@@ -1261,3 +1261,5 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   passes (clients through Sperrstund' into 29 s of Nachspielzeit, result CLOSED on every client, ghosts
   of type 16/17 over snapshot v3); `autoplay -Runs 3` passes; `ui_shots -Only hud,end,overtime,grantig`
   passes (no console errors, under 150 draw calls).
+- **Preview:** https://nachspielzeit.knoedlinger.pages.dev (66737cd): browser check 177.6 fps, p95 7 ms,
+  at most 102 draw calls, no console errors. Board tests 8/8 (`MAX_RUN_SECONDS` 1560).
