@@ -41,6 +41,9 @@ var _pitch_target: float = 0.0
 var _focus: Vector3 = Vector3.ZERO
 var _distance: float = 0.0
 var _last_target: Vector3 = Vector3.ZERO
+## The field of view from the balance or the settings; speed widens it a little on top.
+var _base_fov: float = 80.0
+var _speed_kick: float = 0.0
 
 
 func setup(p_balance: BalanceData, p_target: Node3D) -> void:
@@ -48,7 +51,8 @@ func setup(p_balance: BalanceData, p_target: Node3D) -> void:
 	target = p_target
 	# Moved every rendered frame from interpolated positions; not a physics object itself.
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
-	fov = balance.camera_fov
+	_base_fov = balance.camera_fov
+	fov = _base_fov
 	zoom = balance.camera_distance
 	_apply_settings(&"")
 	if Settings.persistent:
@@ -66,7 +70,8 @@ func _apply_settings(key: StringName) -> void:
 	_pad_speed = 1.0
 	if not Settings.persistent:
 		return
-	fov = Settings.get_float(&"camera_fov")
+	_base_fov = Settings.get_float(&"camera_fov")
+	fov = _base_fov
 	_sensitivity *= Settings.get_float(&"mouse_sensitivity")
 	_invert = -1.0 if Settings.get_bool(&"invert_y") else 1.0
 	_smoothing = Settings.get_float(&"look_smoothing")
@@ -151,6 +156,12 @@ func _process(delta: float) -> void:
 		if absf(difference) < deg_to_rad(110.0):
 			_yaw_target += sin(difference) * balance.camera_auto_turn_speed * delta
 	_yaw_target = wrapf(_yaw_target, -PI, PI)
+	# Momentum reads as speed: the view widens between run speed and twice that.
+	if delta > 0.0 and balance.camera_speed_fov > 0.0:
+		var speed: float = moved.length() / delta
+		var kick: float = clampf((speed - balance.player_speed) / balance.player_speed, 0.0, 1.0)
+		_speed_kick = lerpf(_speed_kick, kick, 1.0 - exp(-3.0 * delta))
+		fov = _base_fov + balance.camera_speed_fov * _speed_kick
 	# A touch of look smoothing, so mouse steps do not jerk the view.
 	var look: float = 1.0 if _smoothing <= 0.0 else 1.0 - exp(-delta / _smoothing)
 	yaw = lerp_angle(yaw, _yaw_target, look)

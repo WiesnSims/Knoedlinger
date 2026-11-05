@@ -21,6 +21,8 @@ extends Resource
 @export var body_color: Color = Color(0.4, 0.6, 0.3)
 @export var head_color: Color = Color(0.9, 0.75, 0.6)
 @export var flying: bool = false
+## A flier rises up to this many metres to reach a player (or Knödl) in the air; 0 = stays low.
+@export var air_reach: float = 0.0
 ## Share of the spawn mix when the wave has no timeline (relative weight).
 @export var spawn_weight: float = 1.0
 ## Bröselfresser (GAME-DESIGN.md): goes for the nearest Knödl instead of a player and eats this

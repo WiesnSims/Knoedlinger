@@ -3,6 +3,8 @@ extends CharacterBody3D
 ## A Knödlinger. The local player moves themselves (Jolt, CharacterBody3D) from the keyboard or a
 ## BotInput and reports where they went as an InputMessage; remote players only follow the messages
 ## they receive. Movement is relative to the camera; jumping uses coyote time and a jump buffer.
+## Movement in the style of Megabonk: jumps and downhill runs build momentum the air keeps, held
+## jumps go higher, and glide items let a held jump float down (docs/DECISIONS.md, movement).
 ## HP, damage and respawns are host state (PlayerState); the player only shows and obeys them.
 
 ## Seconds the bot waits after the last key press before it takes over again.
@@ -36,6 +38,8 @@ var choosing: bool = false
 var stat_speed: float = 1.0
 var stat_jump_height: float = 0.0
 var stat_extra_jumps: int = 0
+## Glide (items): holding jump on the way down falls slowly (balance.player_glide_strength).
+var stat_glide: float = 0.0
 ## Velocity on host and clients alike; remote players estimate it from their poses.
 var motion_velocity: Vector3 = Vector3.ZERO
 var jumps_used: int = 0
@@ -48,6 +52,10 @@ var _remote_target: Vector3 = Vector3.ZERO
 var _remote_yaw: float = 0.0
 var _coyote: float = 0.0
 var _jump_buffer: float = 0.0
+## Still rising from a jump whose height letting go of jump can cut short.
+var _rising: bool = false
+## This tick's stick, world space (x = world X, y = world Z).
+var _move: Vector2 = Vector2.ZERO
 var _schupfn_presses: int = 0
 var _last_position: Vector3 = Vector3.ZERO
 var _look: Node3D
@@ -121,9 +129,15 @@ func run_speed() -> float:
 	return balance.player_speed * speed_factor * stat_speed
 
 
-## The fastest this player can be: on a slope with Cousin Toni's bonus (the host's pose check).
+## The fastest this player can be: momentum from jumps and slopes, or Cousin Toni's slope bonus
+## (the host's pose check).
 func max_speed() -> float:
-	return run_speed() * (1.0 + (character.slope_speed if character != null else 0.0))
+	return maxf(momentum_cap(), run_speed() * (1.0 + (character.slope_speed if character != null else 0.0)))
+
+
+## Momentum never carries a player faster than this.
+func momentum_cap() -> float:
+	return run_speed() * balance.player_momentum_max
 
 
 ## Puts the player back at a point (start of a run, respawn).
@@ -133,6 +147,7 @@ func teleport(where: Vector3) -> void:
 	_last_position = where
 	velocity = Vector3.ZERO
 	motion_velocity = Vector3.ZERO
+	_rising = false
 	last_input.position = where
 	reset_physics_interpolation()
 
@@ -159,21 +174,22 @@ func _physics_process(delta: float) -> void:
 		return
 	var stuck: bool = downed or choosing
 	var move: Vector2 = Vector2.ZERO if stuck else _sample_move(delta)
+	_move = move
 	var on_floor: bool = is_on_floor()
 	if on_floor:
 		_coyote = balance.player_coyote_time
 		jumps_used = 0
+		_rising = false
 	else:
 		_coyote = maxf(_coyote - delta, 0.0)
 	var speed: float = run_speed()
 	# Cousin Toni: faster on any slope steeper than about 8 degrees.
 	if on_floor and character != null and character.slope_speed > 0.0 and get_floor_normal().y < 0.99:
 		speed *= 1.0 + character.slope_speed
-	var target := Vector2(move.x, move.y) * speed
-	var accel: float = balance.player_acceleration * (1.0 if on_floor else balance.player_air_control)
-	var horizontal := Vector2(velocity.x, velocity.z).move_toward(target, accel * delta)
+	var horizontal: Vector2 = _steer(Vector2(velocity.x, velocity.z), move, speed, on_floor, delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.y
+	var held: bool = _jump_held()
 	var jump_pressed: bool = Input.is_action_just_pressed(&"jump") or (bot != null and _manual_timer <= 0.0 and bot.take_jump())
 	if jump_pressed and not stuck:
 		_jump_buffer = balance.player_jump_buffer
@@ -189,8 +205,12 @@ func _physics_process(delta: float) -> void:
 			# Walked off a ledge without jumping: the air jump is the second one.
 			jumps_used = 1
 			_jump()
+	# Let go while rising: a short hop instead of the full arc (once per jump).
+	if _rising and not held and velocity.y > 0.0:
+		velocity.y *= balance.player_jump_cut
+		_rising = false
 	if not on_floor:
-		velocity.y -= balance.player_gravity * delta
+		_fall(held, delta)
 	move_and_slide()
 	var half: float = bounds - 1.0
 	global_position.x = clampf(global_position.x, -half, half)
@@ -224,10 +244,66 @@ func _jump() -> void:
 	GameAudio.play(&"jump", global_position)
 	# Jump height grows with the bonus: v = v0 * sqrt(1 + bonus).
 	velocity.y = balance.player_jump_velocity * sqrt(1.0 + maxf(stat_jump_height, 0.0))
+	# Momentum: every jump while moving pushes forward a little more, up to the cap.
+	var horizontal := Vector2(velocity.x, velocity.z)
+	if _move.length_squared() > 0.01:
+		var forward: Vector2 = horizontal.normalized() if horizontal.length_squared() > 1.0 else _move.normalized()
+		horizontal = (horizontal + forward * balance.player_jump_forward_boost).limit_length(momentum_cap())
+		velocity.x = horizontal.x
+		velocity.z = horizontal.y
 	jumps_used += 1
 	jump_count = (jump_count + 1) & 0xFF
 	_jump_buffer = 0.0
 	_coyote = 0.0
+	_rising = true
+
+
+## Horizontal velocity for this tick. Up to the run speed it is the old run: accelerate toward the
+## stick. Above it (jumps, slopes) the stick only steers and the speed fades on flat ground, never
+## in the air; pulling back brakes. Running downhill gains speed (docs/DECISIONS.md, movement).
+func _steer(horizontal: Vector2, move: Vector2, speed: float, on_floor: bool, delta: float) -> Vector2:
+	var accel: float = balance.player_acceleration * (1.0 if on_floor else balance.player_air_control)
+	var current: float = horizontal.length()
+	var moving: bool = move.length_squared() > 0.01
+	var downhill: float = 0.0
+	if on_floor and moving:
+		# The floor normal leans downhill; its flat part along the stick is how steep "down" runs.
+		var normal: Vector3 = get_floor_normal()
+		downhill = Vector2(normal.x, normal.z).dot(move.normalized())
+	# Steer while the stick points less than 120 degrees away from the flight; further back brakes.
+	if moving and current > speed and (horizontal / current).dot(move.normalized()) > -0.5:
+		var direction: Vector2 = horizontal.move_toward(move.normalized() * current, accel * delta).normalized()
+		if on_floor and downhill <= 0.05:
+			current = maxf(current - balance.player_momentum_decay * delta, speed)
+		horizontal = direction * current
+	elif moving or on_floor:
+		horizontal = horizontal.move_toward(move * speed, accel * delta)
+	if downhill > 0.05:
+		horizontal += move.normalized() * balance.player_gravity * downhill * balance.player_slope_gain * delta
+	return horizontal.limit_length(momentum_cap())
+
+
+## Gravity for this tick: harder falling, a hang at the top while jump is held, gliding (items)
+## when jump is held on the way down, and never above the height ceiling.
+func _fall(held: bool, delta: float) -> void:
+	var gravity: float = balance.player_gravity
+	var max_fall: float = balance.player_max_fall_speed
+	if held and absf(velocity.y) < balance.player_apex_speed:
+		gravity *= balance.player_apex_gravity_mult
+	elif velocity.y < 0.0:
+		gravity *= balance.player_fall_gravity_mult
+	if held and velocity.y < 0.0 and stat_glide > 0.0:
+		var glide: float = 1.0 + stat_glide * balance.player_glide_strength
+		gravity /= glide
+		max_fall = minf(max_fall, balance.player_glide_fall_speed / glide)
+	velocity.y = maxf(velocity.y - gravity * delta, -max_fall)
+	if velocity.y > 0.0 and global_position.y - ground_height_at(global_position) > balance.player_height_ceiling:
+		velocity.y = 0.0
+
+
+## Jump held down (keys, pad, touch); the bot always holds its jumps to the top.
+func _jump_held() -> bool:
+	return Input.is_action_pressed(&"jump") or (bot != null and _manual_timer <= 0.0)
 
 
 func _update_motion(delta: float) -> void:

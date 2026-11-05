@@ -101,6 +101,8 @@ var _bites: PackedFloat32Array = PackedFloat32Array()
 ## Per type: its attack (or null) and the type index it splits into (-1 = none).
 var _attacks: Array[AttackData] = []
 var _split_type: PackedInt32Array = PackedInt32Array()
+## Per type: metres a flier rises to reach a target in the air (EnemyTypeData.air_reach).
+var _air_reach: PackedFloat32Array = PackedFloat32Array()
 
 
 func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: int, seed_value: int = 1,
@@ -133,6 +135,17 @@ func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: in
 		_bites.append(t.bite_per_second)
 		_attacks.append(t.attack)
 		_split_type.append(types.find(t.split_into) if t.split_into != null else -1)
+		_air_reach.append(t.air_reach)
+
+
+## How high a flier with `reach` has risen toward a target `rise` metres above its ground, `distance`
+## metres away (flat): all the way up close, nothing from `climb_range` on. The host's touch check
+## and every renderer use this same rule, so nothing extra goes over the network.
+static func air_lift(rise: float, distance: float, reach: float, climb_range: float) -> float:
+	if reach <= 0.0 or rise <= 0.0:
+		return 0.0
+	var near: float = clampf((climb_range - distance) / maxf(climb_range - 1.0, 0.001), 0.0, 1.0)
+	return minf(rise, reach) * near
 
 
 ## Fills `count` slots right away around the given players (start of the stress test).
@@ -168,6 +181,7 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 	var max_neighbors: int = balance.enemy_separation_max_neighbors
 	var player_radius: float = balance.player_radius
 	var contact_height: float = balance.enemy_contact_height
+	var climb_range: float = balance.enemy_air_climb_range
 	var climb_slope: float = balance.enemy_climb_slope
 	var climb_min: float = balance.enemy_climb_min_factor
 	var kb_keep: float = exp(-balance.enemy_knockback_decay * delta)
@@ -273,7 +287,8 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 		if eater:
 			if distance < touch + 0.15:
 				var gy: float = ground.height_at(x, z) if has_ground else 0.0
-				if absf(knodls[best].y - gy) < knodls[best].w + contact_height:
+				var lift: float = air_lift(knodls[best].y - gy, distance, _air_reach[type[i]], climb_range)
+				if absf(knodls[best].y - gy - lift) < knodls[best].w + contact_height:
 					knodl_bites[best] += _bites[type[i]] * step
 				vx = 0.0
 				vz = 0.0
@@ -283,7 +298,8 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 					vz = (z - tz) / distance * push
 		elif distance < touch:
 			var gy: float = ground.height_at(x, z) if has_ground else 0.0
-			if absf(targets[best].y - gy) < contact_height:
+			var lift: float = air_lift(targets[best].y - gy, distance, _air_reach[type[i]], climb_range)
+			if absf(targets[best].y - gy - lift) < contact_height:
 				contacts += 1
 				var hurt: float = types[type[i]].contact_damage
 				if hurt > touch_damage[best]:
