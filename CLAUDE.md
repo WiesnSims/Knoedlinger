@@ -37,6 +37,7 @@ The full game design is here and must be followed:
 - Browser transport: reuse Berghittn's solution; otherwise `WebRTCMultiplayerPeer` + a signaling server on Cloudflare (Worker + Durable Object) that hands out 4-letter room codes.
 - Keep a WebSocket backend working at all times – it is the main way to test multiplayer headless without browsers.
 - Room codes and the handshake always carry `game=knoedlinger` and `ver=<version>`; reject mismatched versions.
+- Versioning: `application/config/version` in `project.godot` is the only source (HUD, handshake, Ehrentafel). Semantic versioning: features/content raise the minor (1.1.0), fixes/balance the patch (1.0.1). Raise it with every production release.
 - Never add a paid service (e.g. a TURN relay) without asking me first.
 
 ## Performance rules (web, non-negotiable)

@@ -42,7 +42,7 @@ async function ticket(mode = 'solo', map = 'kirtag', ageSeconds = 0) {
 function run(fields = {}) {
 	return {
 		names: ['Resi'], characters: ['ferdl'], result: 'LOST', grant: 1, time: 20, level: 3, kills: 40, knodl: 30,
-		version: '0.1.0', ...fields,
+		version: '1.0.0', ...fields,
 	};
 }
 

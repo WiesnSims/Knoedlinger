@@ -967,3 +967,14 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   (relay `knoedlinger-relay`). Measured on production (headless Edge, RTX 3080): solo 179.7 fps, p95 6.9 ms, at most
   99 draw calls; 4 tabs in one room through the live relay: host 132.5 fps, clients 172 fps, at most 124 draw calls,
   28.1 KiB/s down each, every Knödl and enemy shown, 0 pops, no console errors.
+
+## 2026-11-05 – Version 1.0.0
+
+- **Owner: the game is 1.0.0** (it showed the placeholder 0.1.0 from M1). All v1 content of GAME-DESIGN.md is in.
+  Deployed straight to production at the owner's word.
+- **Owner: semantic versioning from here on:** new features and content raise the minor number (1.1.0, 1.2.0),
+  bug fixes and small balance changes the patch number (1.0.1, 1.0.2); the major number only for something that
+  breaks old saves or reworks the core. The only source is `application/config/version` in `project.godot`
+  (HUD, co-op handshake, Ehrentafel entries all read it via `NetworkManager`).
+- **Claude: co-op keeps the exact version match**, patch numbers included: a fix can change the simulation, and
+  host and clients must run the same build. A player with an old tab open reloads to join.
