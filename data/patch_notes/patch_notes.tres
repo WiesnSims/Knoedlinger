@@ -1,7 +1,13 @@
-[gd_resource type="Resource" script_class="PatchNotes" load_steps=10 format=3]
+[gd_resource type="Resource" script_class="PatchNotes" load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/patch_notes.gd" id="1_notes"]
 [ext_resource type="Script" path="res://scripts/data/patch_note.gd" id="2_note"]
+
+[sub_resource type="Resource" id="note_1_4_0"]
+script = ExtResource("2_note")
+version = "1.4.0"
+date = "06.11.2026"
+line_keys = PackedStringArray("PATCH_1_4_0_01", "PATCH_1_4_0_02", "PATCH_1_4_0_03", "PATCH_1_4_0_04")
 
 [sub_resource type="Resource" id="note_1_3_2"]
 script = ExtResource("2_note")
@@ -47,4 +53,4 @@ line_keys = PackedStringArray("PATCH_1_0_0_01", "PATCH_1_0_0_02", "PATCH_1_0_0_0
 
 [resource]
 script = ExtResource("1_notes")
-notes = Array[ExtResource("2_note")]([SubResource("note_1_3_2"), SubResource("note_1_3_1"), SubResource("note_1_3_0"), SubResource("note_1_2_0"), SubResource("note_1_1_1"), SubResource("note_1_1_0"), SubResource("note_1_0_0")])
+notes = Array[ExtResource("2_note")]([SubResource("note_1_4_0"), SubResource("note_1_3_2"), SubResource("note_1_3_1"), SubResource("note_1_3_0"), SubResource("note_1_2_0"), SubResource("note_1_1_1"), SubResource("note_1_1_0"), SubResource("note_1_0_0")])

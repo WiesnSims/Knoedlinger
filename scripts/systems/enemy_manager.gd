@@ -74,6 +74,15 @@ var slow_timer: PackedFloat32Array = PackedFloat32Array()
 var slow_mult: PackedFloat32Array = PackedFloat32Array()
 var burn_timer: PackedFloat32Array = PackedFloat32Array()
 var burn_dps: PackedFloat32Array = PackedFloat32Array()
+## Brösel peckers (EnemyTypeData.eats_brosel): the crumb they fly to ((INF, INF) = none) and seconds
+## until they look again.
+var goal_x: PackedFloat32Array = PackedFloat32Array()
+var goal_z: PackedFloat32Array = PackedFloat32Array()
+var goal_timer: PackedFloat32Array = PackedFloat32Array()
+## Host: the loose Brösel peckers eat (null = they only go for the Knödl).
+var brosel: BroselField
+## Per Knödl passed to update(): 1 = sweet dough (KnodlSortData.sweet) for the Wespen.
+var knodl_sweet: PackedByteArray = PackedByteArray()
 
 ## Attacks elites started this update (slot and the target point), for the HazardField; the
 ## caller empties them.
@@ -110,6 +119,9 @@ var _attacks: Array[AttackData] = []
 var _split_type: PackedInt32Array = PackedInt32Array()
 ## Per type: metres a flier rises to reach a target in the air (EnemyTypeData.air_reach).
 var _air_reach: PackedFloat32Array = PackedFloat32Array()
+## Per type: 1 = only eats sweet Knödl; metres it looks for loose Brösel (0 = never).
+var _sweet: PackedByteArray = PackedByteArray()
+var _peck: PackedFloat32Array = PackedFloat32Array()
 
 
 func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: int, seed_value: int = 1,
@@ -130,7 +142,7 @@ func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: in
 	type.fill(0)
 	for name: String in ["pos_x", "pos_z", "yaw", "hp", "max_hp", "speed", "radius", "flash", "phase",
 			"respawn_timer", "kb_x", "kb_z", "knodl_timer", "attack_timer", "busy", "dash_x", "dash_z", "dash_time",
-			"slow_timer", "slow_mult", "burn_timer", "burn_dps"]:
+			"slow_timer", "slow_mult", "burn_timer", "burn_dps", "goal_x", "goal_z", "goal_timer"]:
 		var array := PackedFloat32Array()
 		array.resize(capacity)
 		array.fill(0.0)
@@ -143,6 +155,8 @@ func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: in
 		_attacks.append(t.attack)
 		_split_type.append(types.find(t.split_into) if t.split_into != null else -1)
 		_air_reach.append(t.air_reach)
+		_sweet.append(1 if t.sweet_tooth else 0)
+		_peck.append(t.eats_brosel)
 
 
 ## How high a flier with `reach` has risen toward a target `rise` metres above its ground, `distance`
@@ -226,18 +240,41 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 		var best_sq: float = INF
 		var best: int = 0
 		var eater: bool = knodl_total > 0 and _eats[type[i]] != 0
+		var pecking: bool = false
 		var tx: float = 0.0
 		var tz: float = 0.0
+		# Star-Schwarm: loose Brösel first, the Knödl only when none lie in reach.
+		if _peck[type[i]] > 0.0 and brosel != null:
+			goal_timer[i] -= delta
+			if goal_timer[i] <= 0.0:
+				goal_timer[i] = _rng.randf_range(0.5, 0.9)
+				var crumb: Vector2 = brosel.nearest(x, z, _peck[type[i]])
+				goal_x[i] = crumb.x
+				goal_z[i] = crumb.y
+			if goal_x[i] != INF:
+				pecking = true
+				eater = false
+				tx = goal_x[i]
+				tz = goal_z[i]
+				best_sq = (tx - x) * (tx - x) + (tz - z) * (tz - z)
 		if eater:
+			var picky: bool = _sweet[type[i]] != 0
 			for k: int in knodl_total:
+				if picky and (k >= knodl_sweet.size() or knodl_sweet[k] == 0):
+					continue
 				var knodl: Vector4 = knodls[k]
 				var d_sq: float = (knodl.x - x) * (knodl.x - x) + (knodl.z - z) * (knodl.z - z)
 				if d_sq < best_sq:
 					best_sq = d_sq
 					best = k
-			tx = knodls[best].x
-			tz = knodls[best].z
-		else:
+			# A Wespe with no sweet Knödl about goes for the players instead.
+			eater = best_sq < INF
+			if eater:
+				tx = knodls[best].x
+				tz = knodls[best].z
+		if pecking:
+			pass
+		elif not eater:
 			for t: int in target_total:
 				var target: Vector3 = targets[t]
 				var d_sq: float = (target.x - x) * (target.x - x) + (target.z - z) * (target.z - z)
@@ -291,7 +328,13 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 		# standing well above or below (a ledge, a jump) is out of reach. Bröselfresser stop at the
 		# Knödl and eat.
 		var touch: float = r + (knodls[best].w + 0.1 if eater else player_radius)
-		if eater:
+		if pecking:
+			if distance < r + 0.6:
+				vx = 0.0
+				vz = 0.0
+				brosel.steal(tx, tz, 0.8)
+				goal_timer[i] = 0.0
+		elif eater:
 			if distance < touch + 0.15:
 				var gy: float = ground.height_at(x, z) if has_ground else 0.0
 				var lift: float = air_lift(knodls[best].y - gy, distance, _air_reach[type[i]], climb_range)

@@ -80,6 +80,17 @@ func setup(ground: Heightfield, seed_value: int = 1) -> void:
 ## Host: the marks of one attack by an enemy at (sx, sz) aimed at (tx, tz). `source` is the
 ## attacker's slot (for dashes), -1 for none.
 func start_attack(attack: AttackData, sx: float, sz: float, tx: float, tz: float, source: int = -1) -> void:
+	if attack.shape == AttackData.Shape.CIRCLE and attack.aim == AttackData.Aim.SPIRAL:
+		# Out from the attacker in two turns, one mark after the other.
+		var count: int = maxi(attack.count, 1)
+		var start: float = _rng.randf() * TAU
+		for k: int in count:
+			var share: float = float(k + 1) / count
+			var around: float = start + share * TAU * 2.0
+			var reach: float = attack.radius + share * maxf(attack.spread - attack.radius, 0.0)
+			_make(attack, AttackData.Shape.CIRCLE, sx + cos(around) * reach, sz + sin(around) * reach, 0.0, source,
+					attack.telegraph + k * attack.stagger)
+		return
 	match attack.shape:
 		AttackData.Shape.LINE:
 			var dx: float = tx - sx
@@ -177,7 +188,8 @@ func clear() -> void:
 	_draw()
 
 
-func _make(attack: AttackData, shape: AttackData.Shape, x: float, z: float, angle: float, source: int) -> void:
+func _make(attack: AttackData, shape: AttackData.Shape, x: float, z: float, angle: float, source: int,
+		telegraph: float = -1.0) -> void:
 	if hazards.size() >= MAX_HAZARDS:
 		return
 	var h := Hazard.new()
@@ -189,8 +201,8 @@ func _make(attack: AttackData, shape: AttackData.Shape, x: float, z: float, angl
 	h.angle = angle
 	h.radius = attack.radius
 	h.length = attack.length if shape == AttackData.Shape.LINE else 0.0
-	h.telegraph = attack.telegraph
-	h.left = attack.telegraph
+	h.telegraph = telegraph if telegraph > 0.0 else attack.telegraph
+	h.left = h.telegraph
 	h.attack = attack
 	h.source = source
 	hazards.append(h)

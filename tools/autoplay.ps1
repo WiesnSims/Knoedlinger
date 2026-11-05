@@ -4,7 +4,7 @@
 # kills, Stempel, bosses beaten and the result, the build. Prints a table and
 # fails on any Godot error or warning, or a run that did not reach Sperrstund'.
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/autoplay.ps1 [-Runs 3] [-Seed 1] [-Character ferdl]
-#        [-Map kirtag|gamskogl|gemeindebau] [-Grant 1]   (Grant level index, 0 = Gemuetlich .. 4)
+#        [-Map kirtag|gamskogl|gemeindebau|heuriger] [-Grant 1]   (Grant level index, 0 = Gemuetlich .. 4)
 param(
     [int]$Runs = 3,
     [int]$Seed = 1,

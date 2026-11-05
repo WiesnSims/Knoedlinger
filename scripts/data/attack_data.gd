@@ -7,8 +7,9 @@ extends Resource
 ## CIRCLE: a disc of `radius`. LINE: a strip `radius` wide on each side and `length` long.
 enum Shape { CIRCLE, LINE }
 ## Where it lands: on the target player, around the attacker, or (LINE) from the attacker toward
-## the target. RING: `count` circles evenly around the attacker at `spread` metres.
-enum Aim { TARGET, SELF, RING }
+## the target. RING: `count` circles evenly around the attacker at `spread` metres. SPIRAL: `count`
+## circles on a spiral out from the attacker to `spread` metres, each `stagger` seconds after the last.
+enum Aim { TARGET, SELF, RING, SPIRAL }
 
 @export var id: StringName = &""
 @export var shape: Shape = Shape.CIRCLE
@@ -27,6 +28,8 @@ enum Aim { TARGET, SELF, RING }
 @export var spread: float = 0.0
 ## LINE: the attacker dashes along the line when it hits (the Radlfahrer, the Oberkrampus' charge).
 @export var dash: bool = false
+## SPIRAL: each mark fills up this many seconds later than the one before.
+@export var stagger: float = 0.0
 ## Enemies that appear when it hits (the Hofrat's Warteschlange); one per mark.
 @export var summon: EnemyTypeData
 @export var summon_count: int = 0

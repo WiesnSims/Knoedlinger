@@ -266,6 +266,44 @@ def geist_grantig(text):
 
 # --- the samples the owner listens to before every line is made -----------------------------------
 
+def schnecke(text):
+    """A vineyard snail: very slow, low and gooey, a lazy wobble."""
+    x, sr = speak(text, "de+m3", 95, 30)
+    x = at_pitch(x, sr, 0.82)
+    t = np.arange(len(x)) / SR
+    x = d.lowpass(d.normalize(x), 2200) * (1.0 + 0.25 * np.sin(2 * np.pi * 3.0 * t))
+    return finish(x, 0.15, 0.8)
+
+
+def star(text):
+    """A starling: quick, high and chirpy, a flutter on top."""
+    x, sr = speak(text, "de+f2", 200, 95)
+    x = at_pitch(x, sr, 1.5)
+    t = np.arange(len(x)) / SR
+    x = d.bandpass(d.normalize(x), 600, 8000) * (1.0 + 0.35 * np.sin(2 * np.pi * 14.0 * t))
+    return finish(x, 0.08, 0.4)
+
+
+def wespe(text):
+    """A wasp: high and nasal on a buzz."""
+    x, sr = speak(text, "de+m4", 175, 85)
+    x = at_pitch(x, sr, 1.3)
+    t = np.arange(len(x)) / SR
+    x = d.normalize(x) * (0.7 + 0.3 * np.sign(np.sin(2 * np.pi * 110.0 * t)))
+    x = d.bandpass(d.drive(x, 1.6), 500, 6000) + 0.8 * d.resonator(x, 1800.0, 6.0)
+    return finish(d.normalize(x), 0.08, 0.4)
+
+
+def sturm(text):
+    """Der Sturm: a big, tipsy whirlwind, breathy and swirling in a wide space."""
+    x, sr = speak(text, "de+m1", 120, 40)
+    x = at_pitch(x, sr, 0.8)
+    t = np.arange(len(x)) / SR
+    x = d.normalize(x) * (1.0 + 0.3 * np.sin(2 * np.pi * 1.5 * t))
+    x = 0.8 * x + 0.25 * d.lowpass(rasp(x, 1.0), 4000)
+    return finish(d.echo(x, 0.28, 0.35, 3, 2600), 0.35, 2.0)
+
+
 SAMPLES = {
     "tourist": ["Nur no a Selfie!", "Is des do ois inklusive?", "Des gibt a schlechte Bewertung!"],
     "akten": ["Formular B sieben fehlt!", "Bitte ziehen Sie eine Nummer."],
@@ -275,12 +313,16 @@ SAMPLES = {
     "kontrolleur": ["Ohne Stempel ka Eintritt!", "Behinderung einer Amtshandlung!"],
     "oberkrampus": ["Wer war heit ned brav?", "I kimm wieder. Nächsts Joahr!"],
     "hofrat": ["Sie san ned zuständig.", "Abgelehnt!", "Des geht an die nächste Instanz."],
+    "schnecke": ["Nur ned hudln.", "I hob Zeit. Vü Zeit."],
+    "star": ["Brösel! Brösel!", "Mia san vü mehr!"],
+    "wespe": ["Is des wos Süßes?", "Mmh, Marille!"],
+    "sturm": ["Heuer is a guater Johrgang!", "Jetzt wirds lustig!"],
 }
 FILTERS = {"tourist": tourist, "akten": akten, "radler": radler, "roboter": roboter, "perchte": perchte,
            "kontrolleur": kontrolleur, "oberkrampus": oberkrampus, "hofrat": hofrat, "hungrig": hungrig,
            "schneemann": schneemann, "zwerg": zwerg, "wuehlmaus": wuehlmaus, "dackel": dackel, "taube": taube,
            "wildschwein": wildschwein, "wirt": wirt, "geist": geist,
-           "geist_grantig": geist_grantig}
+           "geist_grantig": geist_grantig, "schnecke": schnecke, "star": star, "wespe": wespe, "sturm": sturm}
 
 # --- every line --------------------------------------------------------------------------------------
 # (enemy id, moment, line, text shown, how eSpeak says it, voice). The game's side is data:
@@ -364,6 +406,19 @@ LINES = [
     ("geist_grantig", "IDLE", "platz", "Wer sitzt auf mein Platz?!", "Wer sitzt auf mein Platz?", "geist_grantig"),
     ("geist_grantig", "IDLE", "sperrstund", "Sperrstund' gibt's ned!", "Sperrstund gibts ned!", "geist_grantig"),
     ("geist_grantig", "DEATH", "zahln", "Zahln tu i nächste Wochn …", "Zahln tu i nächste Wochn.", "geist_grantig"),
+    ("weinbergschnecke", "IDLE", "hudln", "Nur ned hudln.", "Nur ned hudln.", "schnecke"),
+    ("weinbergschnecke", "IDLE", "zeit", "I hob Zeit. Vü Zeit.", "I hob Zeit. Vü Zeit.", "schnecke"),
+    ("weinbergschnecke", "DEATH", "haeusl", "Mei Häusl …", "Mei Häusl.", "schnecke"),
+    ("star", "IDLE", "vue", "Mia san vü mehr!", "Mia san vü mehr!", "star"),
+    ("star", "EAT", "broesel", "Brösel! Brösel!", "Brösel! Brösel!", "star"),
+    ("wespe", "IDLE", "suess", "Is des wos Süßes?", "Is des wos Süßes?", "wespe"),
+    ("wespe", "EAT", "marille", "Mmh, Marille!", "Mmh, Marille!", "wespe"),
+    ("wespe", "DEATH", "bsss", "Bsss …", "Bsssss.", "wespe"),
+    ("sturm", "ARRIVE", "johrgang", "Heuer is a guater Johrgang!", "Heuer is a guater Johrgang!", "sturm"),
+    ("sturm", "ATTACK", "lustig", "Jetzt wird's lustig!", "Jetzt wirds lustig!", "sturm"),
+    ("sturm", "ATTACK", "drahn", "Olle a Runde drahn!", "Olle a Runde drahn!", "sturm"),
+    ("sturm", "HALF", "trueb", "I bin no ganz trüb!", "I bin no ganz trüb!", "sturm"),
+    ("sturm", "BEATEN", "vergoren", "I bin … vergoren …", "I bin. Vergoren.", "sturm"),
 ]
 
 

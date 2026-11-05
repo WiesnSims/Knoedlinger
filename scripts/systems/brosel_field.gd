@@ -26,6 +26,8 @@ var credits: Dictionary[int, Vector2] = {}
 var added: PackedInt32Array = PackedInt32Array()
 var removed: PackedInt32Array = PackedInt32Array()
 var merges: int = 0
+## Brösel value the Star-Schwärme pecked up this run.
+var stolen: int = 0
 
 var alive: PackedByteArray = PackedByteArray()
 var x: PackedFloat32Array = PackedFloat32Array()
@@ -51,10 +53,12 @@ var _mirror: bool = false
 var _multimesh: MultiMesh
 var _buffer: PackedFloat32Array = PackedFloat32Array()
 var _rng := RandomNumberGenerator.new()
+var _half: float = 100.0
 
 
 func setup(p_balance: BalanceData, p_ground: Heightfield, half_size: float) -> void:
 	balance = p_balance
+	_half = half_size - 1.0
 	ground = p_ground
 	capacity = balance.brosel_cap
 	# Redrawn from the packed arrays every rendered frame. With physics interpolation on, Godot would
@@ -209,6 +213,69 @@ func nearest(px: float, pz: float, reach: float) -> Vector2:
 			best_sq = d_sq
 			best = Vector2(x[i], z[i])
 	return best
+
+
+## Host: an enemy pecks up the lying Brösel closest to (px, pz) within `reach` (the Star-Schwarm);
+## nobody gets its XP. Returns false when there was none.
+func steal(px: float, pz: float, reach: float) -> bool:
+	_refresh_grid()
+	var found: int = _grid.query(px, pz, reach)
+	var best: int = -1
+	var best_sq: float = reach * reach
+	for k: int in found:
+		var i: int = _grid.results[k]
+		if alive[i] == 0 or target[i] != 0:
+			continue
+		var d_sq: float = (x[i] - px) * (x[i] - px) + (z[i] - pz) * (z[i] - pz)
+		if d_sq < best_sq:
+			best_sq = d_sq
+			best = i
+	if best < 0:
+		return false
+	_release(best)
+	removed.append(best)
+	stolen += value[best]
+	return true
+
+
+## Host: Der Sturm. Lying Brösel within `radius` of (cx, cz) drift `step` metres toward it; the
+## clients get their new places like new Brösel.
+func swirl(cx: float, cz: float, radius: float, step: float) -> void:
+	_refresh_grid()
+	var found: int = _grid.query(cx, cz, radius)
+	for k: int in found:
+		var i: int = _grid.results[k]
+		if alive[i] == 0 or target[i] != 0:
+			continue
+		var dx: float = cx - x[i]
+		var dz: float = cz - z[i]
+		var d: float = sqrt(dx * dx + dz * dz)
+		if d < 1.5 or d > radius:
+			continue
+		var move: float = minf(step, d - 1.0)
+		_move_to(i, x[i] + dx / d * move, z[i] + dz / d * move)
+
+
+## Host: Der Sturm lets go. Lying Brösel within `inner` of (cx, cz) land up to `reach` metres out.
+func fling(cx: float, cz: float, inner: float, reach: float) -> void:
+	_refresh_grid()
+	var found: int = _grid.query(cx, cz, inner)
+	for k: int in found:
+		var i: int = _grid.results[k]
+		if alive[i] == 0 or target[i] != 0:
+			continue
+		var angle: float = _rng.randf() * TAU
+		var out: float = _rng.randf_range(0.4, 1.0) * reach
+		_move_to(i, cx + cos(angle) * out, cz + sin(angle) * out)
+
+
+func _move_to(slot: int, px: float, pz: float) -> void:
+	x[slot] = clampf(px, -_half, _half)
+	z[slot] = clampf(pz, -_half, _half)
+	y[slot] = _ground_y(x[slot], z[slot])
+	added.append(slot)
+	_grid_dirty = true
+	_draw_dirty = true
 
 
 ## Host: empties the pool (a new run).

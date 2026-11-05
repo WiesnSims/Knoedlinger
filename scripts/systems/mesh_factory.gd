@@ -390,4 +390,43 @@ static func _special_look(type: EnemyTypeData) -> Array[Dictionary]:
 			parts.append(_part(_sphere(0.08, 6), _at(Vector3(0.0, 1.1, 0.39)), dark))
 			parts.append(_part(_cylinder(0.11, 0.11, 0.24, 8), _at(Vector3(0.58, 1.1, 0.5)), head))
 			parts.append(_part(_cylinder(0.12, 0.12, 0.06, 8), _at(Vector3(0.58, 1.24, 0.5)), Color(0.98, 0.97, 0.92)))
+		&"schnecke":
+			# A vineyard snail: a long soft foot, a striped spiral house on its back, two eye stalks.
+			parts.append(_part(_box(Vector3(0.42, 0.22, 1.2)), _at(Vector3(0.0, 0.11, 0.05)), body))
+			parts.append(_part(_sphere(0.2, 8), _at(Vector3(0.0, 0.26, 0.62)), body))
+			parts.append(_part(_sphere(0.5, 12), _at(Vector3(0.0, 0.62, -0.12)), head))
+			parts.append(_part(_sphere(0.34, 10), _at(Vector3(0.12, 0.7, -0.08)), head.darkened(0.15)))
+			parts.append(_part(_sphere(0.18, 8), _at(Vector3(0.24, 0.76, -0.04)), head.lightened(0.15)))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_cylinder(0.03, 0.04, 0.4, 5), _at(Vector3(side * 0.1, 0.48, 0.66), Vector3(-0.3, 0.0, side * 0.25)), body))
+				parts.append(_part(_sphere(0.06, 6), _at(Vector3(side * 0.15, 0.68, 0.72)), dark))
+		&"star":
+			# A starling: glossy dark speckled body, a yellow beak, wings out.
+			parts.append(_part(_sphere(0.3, 8), _at(Vector3(0.0, 0.5, 0.0)), body))
+			parts.append(_part(_sphere(0.2, 8), _at(Vector3(0.0, 0.66, 0.24)), body.lightened(0.08)))
+			parts.append(_part(_cylinder(0.0, 0.06, 0.22, 5), _at(Vector3(0.0, 0.64, 0.48), Vector3(PI / 2.0, 0.0, 0.0)), head))
+			parts.append(_part(_box(Vector3(0.18, 0.04, 0.3)), _at(Vector3(0.0, 0.5, -0.36), Vector3(0.2, 0.0, 0.0)), body.darkened(0.2)))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_box(Vector3(0.5, 0.04, 0.26)), _at(Vector3(side * 0.4, 0.58, -0.02), Vector3(0.0, 0.0, side * 0.35)), body.darkened(0.15)))
+				parts.append(_part(_sphere(0.04, 4), _at(Vector3(side * 0.18, 0.46, 0.12)), Color(0.85, 0.85, 0.8)))
+		&"wespe":
+			# A wasp: yellow and black stripes (no red: red is for danger), see-through-ish wings, a sting.
+			parts.append(_part(_sphere(0.16, 8), _at(Vector3(0.0, 0.62, 0.3)), dark))
+			parts.append(_part(_sphere(0.14, 8), _at(Vector3(0.0, 0.62, 0.1)), body))
+			for k: int in 3:
+				parts.append(_part(_cylinder(0.2 - k * 0.03, 0.2 - k * 0.03, 0.12, 8), _at(Vector3(0.0, 0.58, -0.1 - k * 0.13), Vector3(PI / 2.0, 0.0, 0.0)), body if k % 2 == 0 else dark))
+			parts.append(_part(_cylinder(0.0, 0.05, 0.16, 4), _at(Vector3(0.0, 0.56, -0.5), Vector3(-PI / 2.0, 0.0, 0.0)), dark))
+			for side: float in [-1.0, 1.0]:
+				parts.append(_part(_box(Vector3(0.42, 0.02, 0.2)), _at(Vector3(side * 0.26, 0.78, 0.08), Vector3(0.0, side * 0.3, side * 0.3)), head))
+				parts.append(_part(_sphere(0.05, 5), _at(Vector3(side * 0.08, 0.68, 0.42)), dark))
+		&"sturm":
+			# Der Sturm: a whirlwind funnel of young wine with leaves and a vine stake caught in it.
+			for k: int in 6:
+				var r: float = 0.25 + k * 0.17
+				parts.append(_part(_cylinder(r, r + 0.12, 0.38, 12), _at(Vector3(sin(k * 1.3) * 0.12, 0.2 + k * 0.36, cos(k * 1.3) * 0.12)), body if k % 2 == 0 else head))
+			for k: int in 5:
+				var angle: float = TAU * k / 5.0
+				parts.append(_part(_box(Vector3(0.24, 0.03, 0.18)), _at(Vector3(cos(angle) * (0.6 + k * 0.12), 0.6 + k * 0.38, sin(angle) * (0.6 + k * 0.12)), Vector3(0.6, angle, 0.4)), StructureKit.FIR_GREEN.lightened(0.2)))
+			parts.append(_part(_cylinder(0.04, 0.04, 1.4, 5), _at(Vector3(0.5, 1.4, 0.2), Vector3(0.4, 0.0, 0.9)), Color(0.5, 0.36, 0.22)))
+			parts.append(_part(_sphere(0.12, 6), _at(Vector3(-0.6, 1.9, 0.3)), Color(0.55, 0.2, 0.45)))
 	return parts

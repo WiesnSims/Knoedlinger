@@ -44,6 +44,9 @@ $scenes = @(
     # The maps of M4 (the bot plays on them).
     @{ Id = 'gamskogl'; Query = "$common&map=gamskogl&knodl_mass=160"; At = '24,34' },
     @{ Id = 'gemeindebau'; Query = "$common&map=gemeindebau&knodl_mass=160"; At = '24,34' },
+    # 1.4: the Heuriger, early (Wespen, Stare) and at 10:00 with Der Sturm.
+    @{ Id = 'heuriger'; Query = "$common&map=heuriger&knodl_mass=160"; At = '24,34' },
+    @{ Id = 'sturm'; Query = "$common&map=heuriger&start_time=598&god=1"; At = '12,16,20' },
     # A minute into a run with quick picks: weapon level cards with their rolled gain, then the build.
     @{ Id = 'late'; Query = "$common&pick_delay=1.5&god=1"; At = '70,71,72,73,74,110'; Press = ',,,,,Tab' },
     # Enemy lines over their heads (EnemyVoices; voice_every makes them talk often enough to catch).

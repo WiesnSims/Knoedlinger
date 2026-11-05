@@ -75,6 +75,7 @@ var terrain: Heightfield
 var ground: Heightfield
 var enemies: EnemyManager
 var replica: EnemyReplica
+var slime: SlimeTrail
 var renderer: EnemyRenderer
 var brosel: BroselField
 ## Host: the real shots; client: shots shown from the players' fire counters.
@@ -290,6 +291,10 @@ func _ready() -> void:
 	renderer.name = "EnemyRenderer"
 	add_child(renderer)
 	renderer.setup(types, slots, ground)
+	slime = SlimeTrail.new()
+	slime.name = "SlimeTrail"
+	add_child(slime)
+	slime.setup(types, ground, balance)
 	brosel = BroselField.new()
 	brosel.name = "BroselField"
 	add_child(brosel)
@@ -365,6 +370,7 @@ func _ready() -> void:
 	add_child(touch)
 	if host:
 		enemies = EnemyManager.new(balance, types, slots, seed_value, ground, map.half_size)
+		enemies.brosel = brosel
 		voices.enemies = enemies
 		enemies.ring_min = balance.spawn_first_ring_min
 		enemies.ring_max = balance.spawn_first_ring_max
@@ -382,6 +388,7 @@ func _ready() -> void:
 		_open_wirtshaeuser(balance.wirtshaus_count - (1 if grant.modifier == &"streik" else 0), seed_value)
 		_scatter_start_brosel(seed_value)
 		bosses = BossDirector.new(balance, enemies, hazards, wave)
+		bosses.brosel = brosel
 		coop = CoopRules.new(self, balance, seed_value)
 		_place_map_chests()
 	else:
@@ -416,7 +423,7 @@ func _ready() -> void:
 		inventory.allowed = false
 		if host and not NetworkManager.is_coop():
 			get_tree().paused = true
-	GameAudio.music(&"kirtag")
+	GameAudio.music(map.music if map != null else &"kirtag")
 	GameAudio.bark(&"servas")
 	# Die Ehrentafel: a ticket for this run (only real runs from the menu; Board decides).
 	if host:
@@ -551,11 +558,13 @@ func _host_frame(delta: float) -> void:
 		enemies.target_heading[k] = _heading(players[peers[k]])
 	var knodl_peers: Array[int] = []
 	var knodl_targets := PackedVector4Array()
+	enemies.knodl_sweet.clear()
 	for peer: int in knodls:
 		if states[peer].build.stat(&"knodl_guard") <= 0.0 and not knodls[peer].merged_away:
 			var at: Vector3 = knodls[peer].global_position
 			knodl_peers.append(peer)
 			knodl_targets.append(Vector4(at.x, at.y, at.z, knodls[peer].radius))
+			enemies.knodl_sweet.append(1 if knodls[peer].sort.sweet else 0)
 	var t0: int = Time.get_ticks_usec()
 	enemies.pace = overtime_pace()
 	enemies.update(delta, targets, knodl_targets)
@@ -620,11 +629,15 @@ func _host_frame(delta: float) -> void:
 	projectiles.update(delta, enemies)
 	hazards.update(delta)
 	_resolve_hazards()
+	var wind := Vector3.ZERO
 	if grant.modifier == &"foehn":
 		_wind_angle += delta * 0.07
 		var gust: float = balance.foehn_force * (0.55 + 0.45 * sin(run_time * 0.5))
-		for peer: int in knodls:
-			knodls[peer].wind = Vector3(cos(_wind_angle), 0.0, sin(_wind_angle)) * gust
+		wind = Vector3(cos(_wind_angle), 0.0, sin(_wind_angle)) * gust
+	# Der Sturm pulls every Knödl that is not too heavy toward it.
+	for peer: int in knodls:
+		var knodl: Knodl = knodls[peer]
+		knodl.wind = wind + (Vector3.ZERO if knodl.sort.heavy else bosses.pull_on(knodl.global_position))
 	var t2: int = Time.get_ticks_usec()
 	stats.add_system("knodl_weapons", t2 - t1)
 	_update_traits(delta)
@@ -647,6 +660,7 @@ func _host_frame(delta: float) -> void:
 	_update_air_targets()
 	renderer.draw(enemies.capacity, enemies.alive, enemies.pos_x, enemies.pos_z, enemies.yaw, enemies.type,
 			enemies.radius, enemies.flash, enemies.phase)
+	slime.update(delta, enemies.capacity, enemies.alive, enemies.pos_x, enemies.pos_z, enemies.type)
 	brosel.draw()
 	var t4: int = Time.get_ticks_usec()
 	stats.add_system("render_upload", t4 - t3)
@@ -1232,6 +1246,7 @@ func _client_frame(delta: float) -> void:
 	_update_air_targets()
 	renderer.draw(replica.capacity, replica.alive, replica.x, replica.z, replica.yaw, replica.type,
 			replica.radius, replica.flash, replica.phase)
+	slime.update(delta, replica.capacity, replica.alive, replica.x, replica.z, replica.type)
 	brosel.draw()
 	projectiles.update(delta, null)
 	hazards.update(delta)
@@ -2811,10 +2826,11 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 	for h: HazardField.Hazard in hazards.struck:
 		GameAudio.play(&"slam", Vector3(h.x, ground.height_at(h.x, h.z), h.z))
 	if local != null:
+		local.ground_slow = slime.speed_factor(local.global_position)
 		GameAudio.set_listener(local.global_position)
 		voices.update_view(delta, local.global_position)
 	if phase == Phase.RUNNING:
-		GameAudio.music(&"boss" if boss_alive else &"kirtag")
+		GameAudio.music(&"boss" if boss_alive else (map.music if map != null else &"kirtag"))
 		if not boss_alive:
 			GameAudio.set_music_speed(1.0 + 0.12 * clampf(run_time / balance.run_seconds, 0.0, 1.0))
 	elif phase == Phase.SPERRSTUND:

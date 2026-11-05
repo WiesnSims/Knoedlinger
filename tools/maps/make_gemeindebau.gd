@@ -30,6 +30,7 @@ func _init() -> void:
 	_map.id = &"gemeindebau"
 	_map.name_key = "MAP_GEMEINDEBAU"
 	_map.wave = load("res://data/waves/gemeindebau.tres")
+	_map.music = &"gemeindebau"
 	_map.half_size = 150.0
 	_map.terrain_samples = 256
 	_map.ground_cell = 0.5

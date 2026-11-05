@@ -927,3 +927,43 @@ PATCH_1_3_2_03,"Neu: Nachspielzeit! Um 15:00 steht's Ergebnis fest – dann komm
 PATCH_1_3_2_04,"Ab 17:00 wern s' grantig: rote Geister, de fast mit an Schlag umhaun."
 PATCH_1_3_2_05,"Jede Sekund' Nachspielzeit bringt Schilling, zählt auf da Ehrentafel und für drei neue Aufträg'."
 PATCH_1_3_2_06,"Ab da Sperrstund' san olle Wirtshäuser zua – und wer umfoit, bleibt liegn."
+ENEMY_WEINBERGSCHNECKE,Weinbergschnecke
+DESC_ENEMY_WEINBERGSCHNECKE,"Hat Zeit. Und hinterlasst a Spur, auf der du a ka Eile mehr hast."
+ENEMY_STAR,Star
+DESC_ENEMY_STAR,"Kommt nie allein. Pickt erst de Brösel auf, dann dein Knödl."
+ENEMY_WESPE,Wespe
+DESC_ENEMY_WESPE,Mag nur des Süße. Marillenknödl san ihr Lieblingsspeis.
+BOSS_STURM,Der Sturm
+BOSS_STURM_INTRO,Der Sturm is do! Halt dei Knödl fest!
+BOSS_STURM_DEFEAT,Der Sturm hat si glegt. Prost!
+BOSS_STURM_SPIRAL,Er draht si!
+DESC_ENEMY_STURM,A Wirbelwind aus jungem Wein. Zieht ois an und schleudert's wieder raus. Nur a schweres Knödl bleibt liegen.
+MAP_HEURIGER,Heuriger in den Weinbergen
+MAP_HEURIGER_DESC,"Terrassen, Kellergassen, Buschenschanken. Bergab rollt's Knödl von selber."
+QUEST_WEINLESE,Weinlese
+DESC_QUEST_WEINLESE,Gewinn 3 Runden.
+QUEST_SCHNECKENPOST,Schneckenpost
+DESC_QUEST_SCHNECKENPOST,Erledig 300 Weinbergschnecken.
+QUEST_STARENPLAGE,Starenplage
+DESC_QUEST_STARENPLAGE,Erledig 1000 Stare.
+QUEST_WESPENNEST,Wespennest
+DESC_QUEST_WESPENNEST,Erledig 500 Wespen.
+QUEST_STURMWARNUNG,Sturmwarnung
+DESC_QUEST_STURMWARNUNG,Besieg den Sturm.
+VOICE_WEINBERGSCHNECKE_HUDLN,Nur ned hudln.
+VOICE_WEINBERGSCHNECKE_ZEIT,I hob Zeit. Vü Zeit.
+VOICE_WEINBERGSCHNECKE_HAEUSL,Mei Häusl …
+VOICE_STAR_VUE,Mia san vü mehr!
+VOICE_STAR_BROESEL,Brösel! Brösel!
+VOICE_WESPE_SUESS,Is des wos Süßes?
+VOICE_WESPE_MARILLE,"Mmh, Marille!"
+VOICE_WESPE_BSSS,Bsss …
+VOICE_STURM_JOHRGANG,Heuer is a guater Johrgang!
+VOICE_STURM_LUSTIG,Jetzt wird's lustig!
+VOICE_STURM_DRAHN,Olle a Runde drahn!
+VOICE_STURM_TRUEB,I bin no ganz trüb!
+VOICE_STURM_VERGOREN,I bin … vergoren …
+PATCH_1_4_0_01,"Neue Karte: Heuriger in den Weinbergen. Fünf Terrassen, zwei Kellergassen, Buschenschanken. Freischalten: 3 Runden gewinnen."
+PATCH_1_4_0_02,"Neue Gegner: Weinbergschnecke (ihr Schleim bremst), Star-Schwarm (pickt Brösel und dann dein Knödl) und Wespen (mögen nur süße Knödl)."
+PATCH_1_4_0_03,Neuer Zwischengegner um 10:00 am Heurigen: Der Sturm. Zieht ois an und schleudert's in an Wirbel wieder raus. Schwere Knödl bleiben liegen.
+PATCH_1_4_0_04,"Jede Karte hat jetzt ihre eigene Musik: Schrammel-Techno, Après-Ski und a Wienerlied-Beat."

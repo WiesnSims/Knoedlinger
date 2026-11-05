@@ -33,3 +33,11 @@ extends Resource
 @export var final: bool = false
 ## Bosses that do not come through the gate appear this far from a player.
 @export var arrive_distance: float = 20.0
+## A whirlwind (Der Sturm): pulls enemies, loose Brösel and every Knödl that is not heavy within
+## this many metres toward it at pull_speed m/s; 0 = no pull. Its SPIRAL attacks fling the pulled
+## enemies back out at fling_speed m/s.
+@export var pull_radius: float = 0.0
+@export var pull_speed: float = 0.0
+@export var fling_speed: float = 0.0
+## Its pull on a Knödl in m/s^2 (the string and the player hold against it).
+@export var pull_knodl: float = 0.0

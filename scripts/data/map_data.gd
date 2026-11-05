@@ -37,9 +37,16 @@ extends Resource
 ## metres at the rim. Stacked ones make several levels (Megabonk-style climbs and drops).
 @export var mesas: PackedVector4Array = PackedVector4Array()
 @export var mesa_edge: float = 3.0
+## Lanes cut or banked into everything above (a Kellergasse up the terraces): x0, z0, x1, z1 per
+## lane, and half width, height at the start and height at the end in lane_shapes. Inside, the
+## ground rises evenly from start to end; it blends back over mesa_edge metres at the sides.
+@export var lanes: PackedVector4Array = PackedVector4Array()
+@export var lane_shapes: PackedVector3Array = PackedVector3Array()
 
 ## The run's timeline on this map (enemies, bosses, the Formular); null = the Kirtag's.
 @export var wave: WaveData
+## Music while the run is on (assets/audio/music/<id>.ogg).
+@export var music: StringName = &"kirtag"
 
 @export_group("Places")
 @export var spawn_point: Vector3 = Vector3(0.0, 0.0, 4.0)
@@ -48,6 +55,8 @@ extends Resource
 @export var props: Array[MapProp] = []
 ## Where Wirtshäuser stand (x, z); each faces the map centre. A run opens some of them at random.
 @export var wirtshaus_spots: PackedVector2Array = PackedVector2Array()
+## The Wirtshäuser are Buschenschanken: a bundle of green twigs hangs over the door (the Heuriger).
+@export var wirtshaus_buschen: bool = false
 ## Buildings and set pieces (StructureKit expands them into props).
 @export var structures: Array[MapStructure] = []
 ## Where the Stempel of the Formular quest may lie (x, z); a run picks balance.stempel_count of them.
@@ -142,6 +151,16 @@ func terrain_height(x: float, z: float) -> float:
 		var d: float = Vector2(x - mesa.x, z - mesa.y).length()
 		if d < mesa.z + mesa_edge:
 			h += mesa.w * smoothstep(mesa.z + mesa_edge, mesa.z, d)
+	for k: int in mini(lanes.size(), lane_shapes.size()):
+		var line: Vector4 = lanes[k]
+		var shape: Vector3 = lane_shapes[k]
+		var a := Vector2(line.x, line.y)
+		var ab: Vector2 = Vector2(line.z, line.w) - a
+		var p := Vector2(x, z)
+		var t: float = clampf((p - a).dot(ab) / maxf(ab.length_squared(), 0.0001), 0.0, 1.0)
+		var d: float = p.distance_to(a + ab * t)
+		if d < shape.x + mesa_edge:
+			h = lerpf(h, lerpf(shape.y, shape.z, t), smoothstep(shape.x + mesa_edge, shape.x, d))
 	h += x * tilt.x + z * tilt.y
 	var edge: float = maxf(absf(x), absf(z))
 	var rim: float = smoothstep(rim_start, half_size, edge)

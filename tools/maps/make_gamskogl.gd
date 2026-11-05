@@ -22,6 +22,7 @@ func _init() -> void:
 	_map.id = &"gamskogl"
 	_map.name_key = "MAP_GAMSKOGL"
 	_map.wave = load("res://data/waves/gamskogl.tres")
+	_map.music = &"gamskogl"
 	_map.half_size = 150.0
 	_map.terrain_samples = 256
 	_map.ground_cell = 0.5

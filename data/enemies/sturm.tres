@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/voice_lines/sturm.tres" id="9_voice"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"sturm"
+name_key = "BOSS_STURM"
+desc_key = "DESC_ENEMY_STURM"
+max_hp = 100.0
+speed = 4.0
+radius = 2.4
+model_scale = 2.0
+contact_damage = 18.0
+brosel_xp = 100
+knockback_factor = 0.05
+boss = true
+body_color = Color(0.9, 0.8, 0.52, 1)
+head_color = Color(0.72, 0.58, 0.66, 1)
+look = &"sturm"
+voice = ExtResource("9_voice")

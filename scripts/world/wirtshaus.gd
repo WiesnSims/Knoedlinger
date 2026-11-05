@@ -14,6 +14,7 @@ const MAT_DISTANCE: float = 2.0
 const WALL_COLOR := Color(0.94, 0.91, 0.82)
 const ROOF_COLOR := Color(0.5, 0.3, 0.16)
 const DOOR_COLOR := Color(0.45, 0.3, 0.17)
+const BUSCHEN_COLOR := Color(0.24, 0.45, 0.2)
 const MAT_OPEN := Color(1.0, 0.82, 0.35)
 const MAT_SERVED := Color(0.55, 0.85, 0.5)
 
@@ -42,6 +43,15 @@ static func building_props(map: MapData, k: int) -> Array[MapProp]:
 	roof.kind = MapProp.Kind.ROOF
 	props.append(roof)
 	props.append(_prop(place, Vector3(0.0, 0.0, HOUSE_SIZE.z * 0.5 + 0.05), Vector3(1.6, 2.4, 0.2), yaw, DOOR_COLOR))
+	if map.wirtshaus_buschen:
+		# Ausg'steckt: a pole over the door with a bundle of green twigs.
+		var pole: MapProp = _prop(place, Vector3(0.0, 2.9, HOUSE_SIZE.z * 0.5 + 0.7), Vector3(0.14, 0.14, 1.4), yaw, DOOR_COLOR)
+		pole.solid = false
+		props.append(pole)
+		var buschen: MapProp = _prop(place, Vector3(0.0, 1.7, HOUSE_SIZE.z * 0.5 + 1.3), Vector3(0.9, 1.2, 0.9), yaw, BUSCHEN_COLOR)
+		buschen.kind = MapProp.Kind.SPIRE
+		buschen.solid = false
+		props.append(buschen)
 	return props
 
 

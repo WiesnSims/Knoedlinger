@@ -3,7 +3,7 @@ extends GutTest
 ## from 17:00), the crowd hurries on (EnemyManager.pace), and the Profile keeps the longest
 ## Nachspielzeit for its quests.
 
-const WAVES: Array[String] = ["kirtag", "gamskogl", "gemeindebau"]
+const WAVES: Array[String] = ["kirtag", "gamskogl", "gemeindebau", "heuriger"]
 
 var balance: BalanceData
 

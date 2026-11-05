@@ -182,6 +182,8 @@ function bell(tr, t, f, amp = 0.2, decay = 2.5, pan = 0) {
 const CHORDS = {
 	G: ['G', 'B', 'D'], C: ['C', 'E', 'G'], D: ['D', 'F#', 'A'], D7: ['D', 'F#', 'C'], Em: ['E', 'G', 'B'],
 	Am: ['A', 'C', 'E'], B7: ['B', 'D#', 'A'], A: ['A', 'C#', 'E'], A7: ['A', 'C#', 'G'],
+	E: ['E', 'G#', 'B'], E7: ['E', 'G#', 'D'], Dm: ['D', 'F', 'A'], F: ['F', 'A', 'C'], Bm: ['B', 'D', 'F#'],
+	'F#m': ['F#', 'A', 'C#'],
 };
 
 // Melody bars as eighth notes (polka) or quarter notes (waltz); '_' holds, '.' rests.
@@ -311,6 +313,131 @@ function sperrstund() {
 	});
 	// The closing bell every eight bars.
 	for (let b = 0; b < bars; b += 8) bell(tr, b * bar, freq('D4'), 0.12, 3.0, 0.2);
+	return tr;
+}
+
+function heuriger() {
+	// Schrammel techno for the Heuriger: A major, 124 BPM, 24 bars. A plucked contra-guitar (zither)
+	// on the offbeats, the accordion with the tune in thirds, a two-fiddle line on the bright second
+	// half, a four-to-the-floor kick under it all.
+	const bpm = 124;
+	const beat = 60 / bpm;
+	const bar = beat * 4;
+	const chords = ['A', 'A', 'E7', 'E7', 'E7', 'E7', 'A', 'A', 'D', 'D', 'A', 'F#m', 'E7', 'E7', 'A', 'A'];
+	const tune = [
+		'E5 _ C#5 E5 A5 _ E5 C#5', 'D5 C#5 B4 C#5 A4 _ _ .', 'B4 _ G#4 B4 E5 _ D5 B4', 'D5 C#5 B4 A4 G#4 _ _ .',
+		'B4 C#5 D5 E5 F#5 E5 D5 B4', 'E5 _ D5 B4 G#4 _ B4 .', 'C#5 E5 A5 E5 C#5 A4 B4 C#5', 'A4 _ E4 _ A4 _ _ .',
+	];
+	const bars = 24;
+	const tr = new Track(bars * bar);
+	for (let b = 0; b < bars; b++) {
+		const t = b * bar;
+		const chord = CHORDS[chords[b % 16]];
+		const quiet = b >= 8 && b < 12;
+		for (let q = 0; q < 4; q++) {
+			kick(tr, t + q * beat, quiet ? 0.5 : 0.85);
+			hat(tr, t + q * beat + beat / 2, 0.09, q === 3);
+			if (q % 2 === 1 && !quiet) snare(tr, t + q * beat, 0.24);
+			// The contra-guitar: bass on the beat, the chord plucked on the offbeat.
+			zither(tr, t + q * beat, freq(chord[q % 2 === 0 ? 0 : 2] + '3'), 0.14, -0.3, 0.5);
+			for (const n of chord) zither(tr, t + q * beat + beat / 2, freq(n + '4'), 0.05, 0.3, 0.35);
+		}
+		tuba(tr, t, freq(chord[0] + '2'), beat * 0.7, 0.24);
+		tuba(tr, t + 2 * beat, freq(chord[2] + '2'), beat * 0.7, 0.22);
+	}
+	const lead = (t, f, d) => {
+		accordion(tr, t, f, d * 0.9, 0.17, -0.15);
+		accordion(tr, t, f * 0.8, d * 0.9, 0.08, -0.15);
+	};
+	playLine(tr, tune, 0, bar, 8, lead);
+	playLine(tr, tune, 16 * bar, bar, 8, (t, f, d) => {
+		lead(t, f, d);
+		zither(tr, t, f * 2, 0.08, 0.45, 0.6);
+	});
+	playLine(tr, tune.slice(0, 4), 8 * bar, bar, 8, (t, f) => zither(tr, t, f, 0.26, 0.1, 1.2));
+	return tr;
+}
+
+function gamskogl() {
+	// Après-ski techno for the Gamskogl: D major, 134 BPM, 24 bars. Pumping kick, open hats, an
+	// oom-pah tuba, sleigh-bell sixteenths and the accordion hook; a bell answer every two bars.
+	const bpm = 134;
+	const beat = 60 / bpm;
+	const bar = beat * 4;
+	const chords = ['D', 'D', 'G', 'A', 'D', 'D', 'G', 'A', 'Bm', 'G', 'D', 'A', 'G', 'A', 'D', 'D'];
+	const hook = [
+		'A4 A4 D5 . A4 A4 F#5 .', 'G5 F#5 E5 D5 B4 _ _ .', 'A4 A4 D5 . A4 A4 F#5 .', 'E5 F#5 E5 D5 C#5 _ _ .',
+		'D5 F#5 A5 . F#5 D5 A4 .', 'B4 D5 G5 . F#5 E5 D5 .', 'D5 F#5 A5 . B5 A5 F#5 .', 'E5 _ C#5 _ D5 _ _ .',
+	];
+	const bars = 24;
+	const tr = new Track(bars * bar);
+	for (let b = 0; b < bars; b++) {
+		const t = b * bar;
+		const chord = CHORDS[chords[b % 16]];
+		const breakdown = b >= 8 && b < 12;
+		for (let q = 0; q < 4; q++) {
+			if (!breakdown) kick(tr, t + q * beat, 0.95);
+			hat(tr, t + q * beat + beat / 2, 0.12, true);
+			if (q % 2 === 1) snare(tr, t + q * beat, breakdown ? 0.15 : 0.32);
+			for (let s = 0; s < 4; s++) hat(tr, t + q * beat + (s * beat) / 4, 0.035);
+		}
+		tuba(tr, t, freq(chord[0] + '2'), beat * 0.6, 0.3);
+		tuba(tr, t + 2 * beat, freq(chord[2] + '2'), beat * 0.6, 0.26);
+		for (let q = 0; q < 4; q++) {
+			for (const n of chord) accordion(tr, t + q * beat + beat / 2, freq(n + '4'), beat * 0.25, 0.06, 0.35);
+		}
+		if (b % 2 === 1) {
+			bell(tr, t + beat * 3, freq(chord[0] + '6'), 0.08, 1.2, 0.4);
+			bell(tr, t + beat * 3.5, freq(chord[2] + '6'), 0.06, 1.2, -0.4);
+		}
+	}
+	const lead = (t, f, d) => accordion(tr, t, f, d * 0.85, 0.2, -0.1);
+	playLine(tr, hook, 0, bar, 8, lead);
+	playLine(tr, hook, 16 * bar, bar, 8, lead);
+	playLine(tr, hook.slice(4), 8 * bar, bar, 8, (t, f) => bell(tr, t, f, 0.1, 1.5, 0.2));
+	return tr;
+}
+
+function gemeindebau() {
+	// A Wienerlied beat for the Gemeindebau: A minor, 96 BPM, 24 bars, laid back. A swung
+	// hip-hop kick and snare, a walking tuba, the melancholy accordion tune, the zither answering.
+	const bpm = 96;
+	const beat = 60 / bpm;
+	const bar = beat * 4;
+	const swing = beat * 0.58;
+	const chords = ['Am', 'Am', 'Dm', 'Dm', 'E7', 'E7', 'Am', 'Am', 'F', 'F', 'C', 'C', 'Dm', 'E7', 'Am', 'Am'];
+	const tune = [
+		'E5 _ _ C5 A4 _ B4 C5', 'B4 _ A4 _ E4 _ _ .', 'F5 _ _ D5 A4 _ C5 D5', 'C5 _ A4 _ F4 _ _ .',
+		'G#4 _ B4 _ E5 _ D5 C5', 'B4 _ G#4 _ E4 _ _ .', 'A4 _ C5 _ E5 _ A5 _', 'G#5 _ _ _ A5 _ _ .',
+	];
+	const bars = 24;
+	const tr = new Track(bars * bar);
+	for (let b = 0; b < bars; b++) {
+		const t = b * bar;
+		const chord = CHORDS[chords[b % 16]];
+		kick(tr, t, 0.85);
+		kick(tr, t + beat * 1.5 + (swing - beat / 2), 0.55);
+		kick(tr, t + beat * 2.5 + (swing - beat / 2), 0.7);
+		snare(tr, t + beat, 0.34);
+		snare(tr, t + beat * 3, 0.34);
+		for (let q = 0; q < 4; q++) {
+			hat(tr, t + q * beat, 0.08);
+			hat(tr, t + q * beat + swing, 0.05);
+		}
+		// Walking tuba: root, fifth, octave, a step toward the next chord.
+		const root = freq(chord[0] + '2');
+		tuba(tr, t, root, beat * 0.8, 0.26);
+		tuba(tr, t + beat, root * 1.5, beat * 0.8, 0.22);
+		tuba(tr, t + beat * 2, root * 2, beat * 0.8, 0.22);
+		tuba(tr, t + beat * 3, root * 1.335, beat * 0.8, 0.2);
+		for (const q of [1, 3]) {
+			for (const n of chord) accordion(tr, t + q * beat, freq(n + '4'), beat * 0.45, 0.05, 0.3);
+		}
+	}
+	const lead = (t, f, d) => accordion(tr, t, f, d * 0.95, 0.19, -0.12);
+	playLine(tr, tune, 0, bar, 8, lead);
+	playLine(tr, tune, 16 * bar, bar, 8, lead);
+	playLine(tr, tune, 8 * bar, bar, 8, (t, f) => zither(tr, t, f, 0.24, 0.2, 1.5));
 	return tr;
 }
 
@@ -520,7 +647,7 @@ async function writeOgg(path, channels, quality) {
 	return total;
 }
 
-const music = { kirtag, boss, sperrstund };
+const music = { kirtag, boss, sperrstund, heuriger, gamskogl, gemeindebau };
 for (const [id, make] of Object.entries(music)) {
 	if (only.length && !only.includes(id)) continue;
 	const tr = make();

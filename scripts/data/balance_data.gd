@@ -306,6 +306,11 @@ extends Resource
 @export var coop_schilling_per_player: float = 0.1
 ## Grant modifiers: Föhn pushes every Knödl this hard (m/s^2, in gusts), Kontrolle multiplies elites.
 @export var foehn_force: float = 3.0
+## The Weinbergschnecke's slime trail (SlimeTrail): seconds a spot lasts, seconds between two spots
+## of one snail, spot radius in metres.
+@export var slime_seconds: float = 5.0
+@export var slime_interval: float = 0.5
+@export var slime_radius: float = 0.9
 @export var kontrolle_elite_mult: float = 2.0
 
 @export_group("Character traits")

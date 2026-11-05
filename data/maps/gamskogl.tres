@@ -1191,6 +1191,7 @@ accent = Color(1, 1, 1, 1)
 [resource]
 script = ExtResource("2_h81mp")
 id = &"gamskogl"
+music = &"gamskogl"
 name_key = "MAP_GAMSKOGL"
 half_size = 150.0
 noise_seed = 23

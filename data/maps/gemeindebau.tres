@@ -3451,6 +3451,7 @@ accent = Color(1, 1, 1, 1)
 [resource]
 script = ExtResource("2_dnelu")
 id = &"gemeindebau"
+music = &"gemeindebau"
 name_key = "MAP_GEMEINDEBAU"
 half_size = 150.0
 noise_seed = 31

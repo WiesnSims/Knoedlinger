@@ -33,6 +33,8 @@ var slope_jump_reach: float = INF
 var camera_yaw: float = 0.0
 ## A big Knödl slows its player down (Formulas.knodl_speed_factor).
 var speed_factor: float = 1.0
+## Slowing ground under the local player (the Weinbergschnecke's slime, SlimeTrail); 1 = none.
+var ground_slow: float = 1.0
 ## Knocked down: cannot move (host state, see PlayerState).
 var downed: bool = false
 ## Choosing from the Speisekarte in co-op: stands still under a sign (host state).
@@ -132,7 +134,7 @@ func max_jumps() -> int:
 
 ## Run speed on flat ground with the build and the Knödl's drag (also the host's pose check).
 func run_speed() -> float:
-	return balance.player_speed * speed_factor * stat_speed
+	return balance.player_speed * speed_factor * stat_speed * ground_slow
 
 
 ## The fastest this player can be: momentum from jumps and slopes, or Cousin Toni's slope bonus
