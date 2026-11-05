@@ -855,3 +855,111 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Owner: M5 approved** on the first preview; merged into `main`, branch `m5-polish` deleted.
 - **Owner: first production deploy** – `main` with M5 is deployed to https://knoedlinger.pages.dev (with the
   real Ehrentafel database `knoedlinger-board`). Next: M6 (co-op).
+
+## 2026-11-05 – M6 build (branch m6-coop)
+
+### Part 1: transport and the co-op room
+
+- **Claude: Berghittn's relay reused as decided at the start** (`relay/`, Worker `knoedlinger-relay` with the
+  `Room` Durable Object, no public route; `functions/api/room/[code].js` hands the WebSocket over;
+  `net/transports/relay_peer.gd` is Berghittn's `RelayPeer`). Changes: 4-letter codes without I and O (route.js
+  draws them), the URL carries `game=knoedlinger&ver=&build=` (wrong game refused before the Durable Object, wrong
+  build refused by the room: "Eicha Version is ned de gleiche."), and a new target byte **0x20 | mask** sends a
+  frame to exactly the peers in the mask. Berghittn's "everyone" target reached a player the host had not heard
+  of yet, and Godot's path cache logged "Duplicate remote cache ID" (seen in the 4-tab browser check).
+- **Claude: NetworkManager keeps a roster** (`LobbyProfile`: name, character, Stammtisch bonus, unlocked
+  characters; the host's also carries map and Grant level), sent with the handshake and on every change; the host
+  starts the run for everyone (`start_run`), each client says when its run scene is loaded (`send_run_ready`) and
+  only then gets gameplay messages (`client_ids()`); after a run the host takes everyone back to the room. The
+  WebSocket backend works the same (`--net=ws`), and headless runs can meet in the room with `--lobby=N`
+  (host starts once N clients are in) / `--lobby` (client). A run started from the room uses the room's character,
+  map and Grant level, whatever the flags say.
+- **Claude: the `Lobby` autoload has the rules**: whoever picks a Knödlinger someone else already plays (or joins
+  with one) gets the first free one they have unlocked ("Es gibt nur eine Oma!"); the host needs at least two
+  players with different Knödlinger to start. Drop-in only in the room: the relay refuses joiners once started.
+- **Claude: "Stammtisch aufmachen" screen** (`CoopScreen`): Aufmachen (Enter, also Enter on an empty code field)
+  or a code to sit down with; in the room the code in the number font (Fraktur letters were hard to read out),
+  "Link kopieren" (`?room=KNDL` opens the menu and joins after the name prompt), four seats, the family to choose
+  from (taken ones dimmed), the host's map and Grant level, Auf geht's / Gehen. Co-op end screen: the host's
+  "Zurück an'n Stammtisch" brings everyone back to the room, "Gehen" leaves. If the host leaves mid-run, the others
+  see "Da Wirt is hoamgangen." and go to the menu, keeping what the run paid so far.
+
+### Part 2: every player their own Knödlinger
+
+- **Claude: per-player characters**: each player's model, start weapon, Knödl sort, traits (Grant, coffee
+  break, jump waves ...) and Stammtisch bonus come from their own room profile (`RunWorld.character_of`); the
+  Ehrentafel's co-op entry lists every name and character. Unlocks for the shared card pool stay the host's.
+
+### Part 3: downed, not dead; shared XP; the family HUD
+
+- **Claude: `CoopRules`** (host) holds every co-op rule. Knocked down in co-op = 30 s on the ground
+  (`coop_down_seconds`); a teammate standing within 2.2 m fills the revive in 3 s (it drains at 0.5/s when they
+  step away), any teammate's Knödl touching them wakes them at once ("Aufgweckt!"); back up with 50 % HP and 2 s
+  without hits. After 30 s they are out (spectating the nearest teammate) until the next Wirtshaus cash-in, which
+  wakes everyone ("Da Wirt weckt olle auf!"). The run is lost when everyone is down at once. Marterl-Kerze and
+  Nachschlag still revive on the spot first.
+- **Claude: shared XP** = 50 % of a Knödl's XP to every other player within 25 m (not to players who are out),
+  no mass; a merge partner gets all of it.
+- **Claude: HUD** – the bottom-left corner (kept free since the UI pass) shows the family in one drawn
+  `TeamPanel` (dot in the coat colour, name, level, HP bar or "umgfoin · 23 s" / "wird aufgweckt · 60 %" /
+  "draußen"); teammates get edge markers when far or off screen ("Resi aufwecken · 12 m" while down); a sign over a
+  knocked-down teammate counts down. World state v5 carries out, revive progress, seconds left, the merge partner,
+  the co-op deeds and the Doppelportion Knödl.
+
+### Part 4: the Knödl moves
+
+- **Claude: Knödl-Pass** – a Schupfn with a teammate within 30° of the throw and 30 m away aims straight at them;
+  when the flying Knödl reaches them (after 0.25 s in the air) they catch it: its mass above the start size goes
+  into their Knödl, the thrower's reels back empty. Throws away from teammates are plain throws, so nobody loses
+  mass by accident.
+- **Claude: Riesenknödl** – two Knödl touching at 4.5 m/s or more relative speed (3 m/s merged walking pairs all
+  the time in the first test) merge: the bigger one takes the mass and hangs on both strings (a second spring to
+  the partner, drawn as a second Spagat), the smaller one hides inside it. Schupfn by either of the two, 30 s, or
+  either going down splits it by the shares they brought; the same pair waits 8 s before merging again; no merge in
+  a player's first 5 s (everyone spawns side by side) and none with a pass in the air. **Gemeinsam einkehren**: a
+  merged Knödl at a Wirtshaus pays both players a chest of the combined tier, then both start over.
+- **Claude: Familienstreit** at 7:00 (co-op only): one random player's Knödl tears loose and rolls away (9 m/s,
+  wandering, turning back at the map's edge) for 10 s; Bröselfresser go for it as usual; a teammate touching it
+  brings it back ("Erwischt!"), else it comes home by itself when the time is up.
+
+### Part 5: content and bandwidth
+
+- **Claude: Doppelportion** (item, Edel, moved here from M5): a second Knödl at 60 % size on its own 2.2 m string;
+  it crushes and eats for its player (the mass goes to the main Knödl), Bröselfresser ignore it. Unlocked by the
+  new quest "Nachschlag bitte" (25 cash-ins). `--items=a,b` gives items at the start (testing).
+- **Claude: seven co-op quests** (kind `coop`, counted per player and stamped on each player's own Profile):
+  Familienausflug (a co-op run), Aufgweckt! (wake Onkel Ferdl with a Knödl), Erste Hilfe (wake 10), Knödl-Pass
+  (25 caught passes), Gemeinsam einkehren (merged XL cash-in), Streitschlichter (catch the Familienstreit Knödl),
+  Die ganze Familie (win with four). 109 quests now.
+- **Claude: snapshot v2** – positions in 5 cm steps (was 1 cm) and the enemy bytes as planes (all high bytes of
+  x, then the low ones, then z, then type/HP), which deflate far better: ~3.6 B per enemy. **The full 4-player crowd
+  (844 enemies) now needs 57.5 KiB/s per client** (was 63.5, budget 60); 500 enemies 31.8 KiB/s (was 37.5).
+- **Claude: clients get the host's numbers at the end** (kills by type, bosses, their knock-downs, biggest
+  Knödl, cash-ins, throws), so their end screen and their quests count the run, not zeros.
+
+### Part 6: browser checks and draw calls
+
+- **Claude: the relay jittered snapshots** (its 50 ms batching against the 15 Hz send): the host now flushes the
+  relay right after each world send, and clients show enemies 150 ms in the past over the relay (100 ms on the
+  local WebSocket). Measurements start after the loading screen (co-op runs on behind it).
+- **Claude: draw calls in co-op** – each player model was 7 meshes (14 draw calls with shadows); now one
+  vertex-coloured mesh. Signs over Wirtshäuser and the gate draw within 45 m, player signs within 70 m. The host's
+  own Speisekarte arrived a frame after the HUD decided to stay, so for one frame both drew (163 calls); the HUD now
+  steps back at once.
+- **Measured (local, RTX 3080):** 4 headless Edge tabs in one room through the local relay (`browser_mp_check.ps1
+  -Tabs 4`, 300 enemies, bots, 60 s): host 133 fps / at most 118 draw calls, clients 181 fps / at most 110,
+  28 KiB/s down each, every Knödl and enemy shown, 0 pops, no console errors. Solo browser check: 175 fps, p95
+  7.1 ms, at most 98 draw calls (M5: 152 fps, 126). Headless: `mp_test -Clients 3 -Coop` (revives, passes, merges,
+  Familienstreit, Doppelportion on every client) and `-Lobby` pass; the relay's node tests pass (4). Co-op UI shots
+  (`ui_shots.ps1 -Only coop`, room and HUDs at both sizes): at most 107 draw calls.
+- **Owner: OK to deploy the relay.** `knoedlinger-relay` deployed with `npx wrangler deploy` in `relay/` (Durable
+  Object `Room`, free plan, no public route); the Pages project binds it as `ROOMS` for production and previews.
+- **Preview deployed** to https://m6-coop.knoedlinger.pages.dev. Through the real Cloudflare relay (headless Edge,
+  RTX 3080, 4 tabs in room FKEE, 300 enemies, bots, 60 s): host 143 fps / at most 125 draw calls, clients 192 fps /
+  at most 114, 28.3 KiB/s down each, every Knödl and enemy shown, 0 pops, no console errors. Solo browser check
+  on the preview: 174.5 fps, p95 7.1 ms, at most 99 draw calls.
+
+## 2026-11-05 – M6 approved
+
+- **Owner: M6 approved** on the preview; merged into `main`, branch `m6-coop` deleted. All milestones of
+  GAME-DESIGN.md (M0-M6) are now in `main`; production still only on the owner's word.

@@ -7,7 +7,8 @@ extends RigidBody3D
 ## The host simulates every player's Knödl with Jolt (CLAUDE.md: host-authoritative Knödl physics).
 ## Clients get a frozen copy that follows the host's world state (apply_remote()).
 
-enum State { ATTACHED, THROWN, REELING }
+## LOOSE: torn off its string by the Familienstreit (co-op event), rolling away on its own.
+enum State { ATTACHED, THROWN, REELING, LOOSE }
 
 ## Below the ground by more than this, it fell out of the world and comes back.
 const FALL_LIMIT: float = 12.0
@@ -28,6 +29,18 @@ var balance: BalanceData
 var sort: KnodlSortData
 ## The player it is tied to.
 var holder: Player
+## Co-op Riesenknödl: the second player holding this merged Knödl by their string too.
+var co_holder: Player
+## Co-op: merged into a partner's Knödl (hidden, frozen, waiting to split off again).
+var merged_away: bool = false
+## Knödl-Pass: the teammate this throw is aimed at (0 = none) and seconds since the throw.
+var pass_target: int = 0
+var throw_age: float = 0.0
+## Familienstreit: where it rolls while LOOSE.
+var loose_direction: Vector3 = Vector3.ZERO
+var loose_speed: float = 0.0
+## The string's length factor on top of Spagat aus Hanf (Doppelportion's shorter second string).
+var rest_mult: float = 1.0
 ## Host: simulated with physics; client: follows apply_remote().
 var simulated: bool = true
 var knodl_mass: float = 0.0
@@ -166,11 +179,39 @@ func add_knodl_mass(amount: float) -> void:
 
 
 func rest_length() -> float:
-	return balance.knodl_rest_length * string_mult
+	return balance.knodl_rest_length * string_mult * rest_mult
 
 
 func max_length() -> float:
-	return balance.knodl_max_length * string_mult
+	return balance.knodl_max_length * string_mult * rest_mult
+
+
+## Host, co-op: hides it inside its merge partner (or brings it back out next to it).
+func set_merged_away(on: bool, where: Vector3 = Vector3.ZERO) -> void:
+	merged_away = on
+	visible = not on
+	if simulated:
+		freeze = on
+		collision_layer = 0 if on else LAYER_KNODL
+		collision_mask = 0 if on else MapBuilder.LAYER_WORLD
+	if not on:
+		place_at(where)
+
+
+## Host: tears it off its string and sends it rolling (Familienstreit).
+func set_loose(direction: Vector3, speed: float) -> void:
+	direction.y = 0.0
+	loose_direction = direction.normalized() if direction.length_squared() > 0.0001 else Vector3.FORWARD
+	loose_speed = speed
+	state = State.LOOSE
+	pass_target = 0
+	_stuck_timer = 0.0
+
+
+## Host: back on the string (a teammate caught the loose Knödl, or its time ran out).
+func reel_home() -> void:
+	if state == State.LOOSE or state == State.THROWN:
+		_start_reel()
 
 
 ## Host: Bröselfresser ate `amount` mass. `spill` of it falls off as loose Brösel (take_shed()),
@@ -202,6 +243,8 @@ func schupfn(direction: Vector3) -> bool:
 			state = State.THROWN
 			cooldown = balance.knodl_cooldown
 			_stuck_timer = 0.0
+			throw_age = 0.0
+			pass_target = 0
 			throws += 1
 			return true
 		State.THROWN:
@@ -332,7 +375,7 @@ func _view_fade() -> float:
 
 
 func _physics_process(delta: float) -> void:
-	if not simulated:
+	if not simulated or merged_away:
 		return
 	if cooldown > 0.0:
 		cooldown = maxf(cooldown - delta, 0.0)
@@ -343,7 +386,11 @@ func _physics_process(delta: float) -> void:
 	var distance: float = to_holder.length()
 	var moving: float = linear_velocity.length()
 	match state:
+		State.LOOSE:
+			# Hung up on something: it still comes back in the end (CoopRules ends the event).
+			_stuck_timer = _stuck_timer + delta if moving < balance.knodl_stuck_speed else 0.0
 		State.THROWN:
+			throw_age += delta
 			if not keeps_mass:
 				_shed_pending += knodl_mass * balance.knodl_shed_per_second * delta
 			_stuck_timer = _stuck_timer + delta if moving < balance.knodl_stuck_speed else 0.0
@@ -369,7 +416,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _integrate_forces(body: PhysicsDirectBodyState3D) -> void:
-	if not simulated or holder == null:
+	if not simulated or holder == null or merged_away:
 		return
 	var dt: float = body.step
 	var v: Vector3 = body.linear_velocity
@@ -379,6 +426,15 @@ func _integrate_forces(body: PhysicsDirectBodyState3D) -> void:
 	var distance: float = to_holder.length()
 	match state:
 		State.ATTACHED:
+			# A merged Riesenknödl: the second string pulls too (a clothesline between the two).
+			if co_holder != null:
+				var to_co: Vector3 = co_holder.hand_position() - p
+				var co_distance: float = to_co.length()
+				if co_distance > rest_length() and co_distance > 0.001:
+					var co_dir: Vector3 = to_co / co_distance
+					var co_pull: float = balance.knodl_spring * (co_distance - rest_length()) 							- balance.knodl_spring_damping * (v - co_holder.motion_velocity).dot(co_dir)
+					if co_pull > 0.0:
+						v += co_dir * co_pull * dt
 			if distance > rest_length() and distance > 0.001:
 				var dir: Vector3 = to_holder / distance
 				var relative: Vector3 = v - holder.motion_velocity
@@ -398,6 +454,10 @@ func _integrate_forces(body: PhysicsDirectBodyState3D) -> void:
 			var remaining: float = maxf(_reel_timer, 0.2)
 			var wanted: Vector3 = to_holder / remaining
 			v = v.lerp(wanted, minf(10.0 * dt, 1.0))
+		State.LOOSE:
+			var roll: Vector3 = loose_direction * loose_speed
+			v.x = lerpf(v.x, roll.x, minf(3.0 * dt, 1.0))
+			v.z = lerpf(v.z, roll.z, minf(3.0 * dt, 1.0))
 	if state != State.REELING:
 		v += wind * dt
 	var max_speed: float = balance.knodl_max_speed * sort.roll_speed_mult

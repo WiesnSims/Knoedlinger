@@ -28,12 +28,19 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	_mesh.clear_surfaces()
-	if knodl == null or knodl.holder == null or knodl.state == Knodl.State.THROWN:
+	if knodl == null or knodl.holder == null or knodl.state == Knodl.State.THROWN or knodl.state == Knodl.State.LOOSE:
 		return
 	var camera: Camera3D = get_viewport().get_camera_3d()
 	if camera == null:
 		return
-	var a: Vector3 = knodl.holder.hand_position_visual()
+	_ribbon(knodl.holder, camera.global_position)
+	# A merged Riesenknödl hangs on both strings.
+	if knodl.co_holder != null and knodl.state == Knodl.State.ATTACHED:
+		_ribbon(knodl.co_holder, camera.global_position)
+
+
+func _ribbon(hand_of: Player, eye: Vector3) -> void:
+	var a: Vector3 = hand_of.hand_position_visual()
 	var to_knodl: Vector3 = knodl.visual_position() - a
 	var length: float = to_knodl.length()
 	if length < 0.01:
@@ -44,7 +51,6 @@ func _process(_delta: float) -> void:
 	var sag: float = 0.0
 	if knodl.state == Knodl.State.ATTACHED and length < rest:
 		sag = sqrt(rest * rest - length * length) * 0.5
-	var eye: Vector3 = camera.global_position
 	_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
 	for s: int in SEGMENTS + 1:
 		var t: float = float(s) / SEGMENTS

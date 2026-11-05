@@ -11,6 +11,13 @@ var max_hp: float = 100.0
 var xp: float = 0.0
 var level: int = 1
 var downed: bool = false
+## Co-op: knocked down and nobody came in time; out until the next Wirtshaus cash-in (still downed).
+var out: bool = false
+## Co-op: a teammate standing by fills this to 1 and the player is back up (GAME-DESIGN.md: 3 s).
+var revive_progress: float = 0.0
+## Co-op: the peer whose Knödl ours is merged with (0 = none); the host keeps it in CoopRules, a
+## client reads it from the world state.
+var merge_partner: int = 0
 ## Counts respawns (wraps at 256); the owning player teleports to the spawn when it changes.
 var life: int = 0
 ## Level-ups not chosen yet, and whether a Speisekarte is open right now (co-op: the player stands
@@ -24,6 +31,17 @@ var hurt_timer: float = 0.0
 var downed_timer: float = 0.0
 ## Revives taken from items (Marterl-Kerze) this run.
 var revives_used: int = 0
+## Co-op: a knock-down runs out into `out` instead of a respawn.
+var bleeds_out: bool = false
+## Co-op deeds this run (quests, the end screen): teammates woken by standing by / by the Knödl
+## (and whom: character ids), Knödl passed and caught, merges, Familienstreit Knödl caught.
+var revives_given: int = 0
+var knodl_revives: PackedStringArray = PackedStringArray()
+var passes: int = 0
+var catches: int = 0
+var merges: int = 0
+var merged_cash_in_tier: int = -1
+var streit_catches: int = 0
 ## The last Schupfn press counter acted on (InputMessage.schupfn_presses).
 var schupfn_seen: int = 0
 var deaths: int = 0
@@ -88,6 +106,17 @@ func refresh_max_hp(base_hp: float) -> void:
 	hp = minf(hp, max_hp)
 
 
+## Host, co-op: back up where they lie (a teammate, a Knödl or a cash-in woke them).
+func revive(hp_share: float, grace: float) -> void:
+	downed = false
+	out = false
+	bleeds_out = false
+	revive_progress = 0.0
+	downed_timer = 0.0
+	hp = maxf(max_hp * hp_share, 1.0)
+	hurt_timer = grace
+
+
 func heal(amount: float) -> void:
 	if not downed and amount > 0.0:
 		hp = minf(hp + amount, max_hp)
@@ -103,6 +132,9 @@ func tick(delta: float) -> bool:
 		return false
 	downed_timer -= delta
 	if downed_timer > 0.0:
+		return false
+	if bleeds_out:
+		out = true
 		return false
 	downed = false
 	hp = max_hp

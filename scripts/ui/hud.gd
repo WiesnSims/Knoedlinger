@@ -10,7 +10,8 @@ extends CanvasLayer
 
 const TOAST_SECONDS: float = 1.6
 const INTRO_SECONDS: float = 10.0
-const MARKERS: int = 6
+## Stempel, the gate, the boss and up to three teammates.
+const MARKERS: int = 9
 const EDGE: float = 16.0
 const HP_BAR := Vector2(176.0, 16.0)
 
@@ -45,6 +46,8 @@ var _boss_target: float = 0.0
 var _knodl_tier_index: int = -1
 ## What the toast says while the local player is down (solo: the run is over).
 var downed_key: String = "TOAST_DOWNED"
+## Co-op: the knocked-down line with the seconds left (overrides downed_key when set).
+var downed_text: String = ""
 var _last_level: int = 1
 ## True while a full-screen panel (Speisekarte, Tab screen, end screen) covers the game; the HUD
 ## steps back then (RunWorld sets it).
@@ -53,6 +56,8 @@ var _knodl_corner: PanelContainer
 ## How far up the touch buttons reach (markers keep clear of them).
 var _touch_clearance: float = 0.0
 var _root: Control
+var _team_corner: PanelContainer
+var _team: TeamPanel
 
 
 func _ready() -> void:
@@ -112,6 +117,11 @@ func _ready() -> void:
 	knodl_text.add_child(_knodl_tier)
 	_knodl = HudGlyph.new(HudGlyph.Kind.KNODL, 56.0)
 	knodl_row.add_child(_knodl)
+	# Bottom left: the family (co-op only).
+	_team_corner = _corner(root, Control.PRESET_BOTTOM_LEFT, &"HudPanel")
+	_team = TeamPanel.new()
+	_team_corner.add_child(_team)
+	_team_corner.visible = false
 	# Top centre, only while it matters: the boss bar and the Formular line.
 	var top := UiStyle.vbox()
 	top.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
@@ -196,7 +206,13 @@ func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: Bala
 		_knodl.hollow = knodl.state != Knodl.State.ATTACHED
 		_knodl.ring = knodl.cooldown / maxf(balance.knodl_cooldown, 0.01)
 	if state.downed:
-		toast(tr(downed_key), 0.2)
+		toast(downed_text if downed_text != "" else tr(downed_key), 0.2)
+
+
+## Co-op: the teammates' rows (empty hides the corner).
+func show_team(rows: Array[TeamPanel.Row]) -> void:
+	_team.set_rows(rows)
+	_team_corner.visible = not rows.is_empty()
 
 
 ## Weapons and passives with their levels, one line each (the [SLOW] log line).
@@ -289,6 +305,11 @@ func toast(text: String, seconds: float = TOAST_SECONDS) -> void:
 		_toast_tween = create_tween().set_parallel().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		_toast_tween.tween_property(_toast, "scale", Vector2.ONE, 0.15)
 		_toast_tween.tween_property(_toast, "modulate:a", 1.0, 0.15)
+
+
+## Steps back (or comes back) at once, when a panel opened outside the usual frame order.
+func refresh_cover() -> void:
+	_root.visible = not covered.call()
 
 
 func _process(delta: float) -> void:

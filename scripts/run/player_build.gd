@@ -23,7 +23,7 @@ const MOD_AMOUNT: int = 4
 ## downhill bonus. Visible ones: kills blow up (chance), a bell ring around the player.
 ## Riesenknödl: the Knödl is twice the size and never loses mass.
 const EFFECTS: Array[StringName] = [&"free_chest", &"damage_per_chest", &"revive", &"knodl_spikes", &"knodl_burst",
-	&"knodl_slope", &"kill_blast", &"bell", &"riesenknodl"]
+	&"knodl_slope", &"kill_blast", &"bell", &"riesenknodl", &"second_knodl"]
 
 
 class OwnedWeapon:

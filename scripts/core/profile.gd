@@ -116,6 +116,8 @@ func progress(quest: QuestData) -> float:
 			return float(((data["found"] as Dictionary).get("item", []) as Array).size())
 		&"grant_win":
 			return float(best.get("grant_win", -1))
+		&"coop":
+			return float((stats.get("coop", {}) as Dictionary).get(filter, 0))
 	return 0.0
 
 
@@ -181,6 +183,14 @@ func record_run(run: Dictionary) -> Dictionary:
 	for k: int in mini(run_tiers.size(), 4):
 		tiers[k] = int(tiers[k]) + int(run_tiers[k])
 	stats["stempel"] = int(stats.get("stempel", 0)) + int(run.get("stempel", 0))
+	# Co-op deeds (CoopRules, counted per player): {runs, revives, passes, ...: n}.
+	var coop: Dictionary = run.get("coop", {})
+	if not coop.is_empty():
+		if not stats.has("coop"):
+			stats["coop"] = {}
+		var counts: Dictionary = stats["coop"]
+		for key: Variant in coop:
+			counts[str(key)] = int(counts.get(str(key), 0)) + int(coop[key])
 	var bosses: Dictionary = stats["bosses"]
 	for boss: Variant in run.get("bosses", []):
 		bosses[str(boss)] = int(bosses.get(str(boss), 0)) + 1

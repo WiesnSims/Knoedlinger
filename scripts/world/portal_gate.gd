@@ -51,6 +51,7 @@ func setup(map: MapData, ground: Heightfield) -> void:
 	_swirl.material_override = _material
 	add_child(_swirl)
 	_sign = Label3D.new()
+	_sign.visibility_range_end = 45.0
 	_sign.font = UiStyle.font("number")
 	_sign.name = "Sign"
 	_sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED

@@ -5,11 +5,14 @@ extends RefCounted
 ##
 ## Snapshot on the wire: [u8 version][u8 compression][u32 raw size][compressed raw]
 ## Raw: [u16 seq][u32 host ms][u16 slots][alive bitmask, 1 bit per slot]
-##      then per alive slot: [s16 x][s16 z] in POSITION_SCALE units, [u8 type << 4 | hp bucket]
+##      then for the n alive slots, as byte planes (v2, M6): n x high byte of x, n x low byte of x,
+##      the same for z (s16 in POSITION_SCALE units), n x [u8 type << 4 | hp bucket]. Planes keep
+##      alike bytes together, which deflates far better (a 4-player crowd fits the budget).
 ## Events: [u8 version][u16 spawns]{[u16 slot][u8 type][s16 x][s16 z]}[u16 deaths]{[u16 slot]}
 
-const VERSION: int = 1
-const POSITION_SCALE: float = 100.0
+const VERSION: int = 2
+## 5 cm steps: invisible on half-metre enemies that clients interpolate anyway.
+const POSITION_SCALE: float = 20.0
 const MAX_COORDINATE: float = 327.0
 const BYTES_PER_ENEMY: int = 5
 const RAW_HEADER: int = 8
@@ -52,15 +55,20 @@ static func encode(seq: int, host_ms: int, slots: int, alive: PackedByteArray, x
 	raw.encode_u16(0, seq & 0xFFFF)
 	raw.encode_u32(2, host_ms & 0xFFFFFFFF)
 	raw.encode_u16(6, slots)
-	var o: int = RAW_HEADER + mask_bytes
+	var base: int = RAW_HEADER + mask_bytes
+	var k: int = 0
 	for i: int in slots:
 		if alive[i] == 0:
 			continue
 		raw[RAW_HEADER + (i >> 3)] |= 1 << (i & 7)
-		raw.encode_s16(o, roundi(clampf(x[i], -MAX_COORDINATE, MAX_COORDINATE) * POSITION_SCALE))
-		raw.encode_s16(o + 2, roundi(clampf(z[i], -MAX_COORDINATE, MAX_COORDINATE) * POSITION_SCALE))
-		raw[o + 4] = ((type[i] & 0x0F) << 4) | (hp[i] & 0x0F)
-		o += BYTES_PER_ENEMY
+		var qx: int = roundi(clampf(x[i], -MAX_COORDINATE, MAX_COORDINATE) * POSITION_SCALE) & 0xFFFF
+		var qz: int = roundi(clampf(z[i], -MAX_COORDINATE, MAX_COORDINATE) * POSITION_SCALE) & 0xFFFF
+		raw[base + k] = qx >> 8
+		raw[base + count + k] = qx & 0xFF
+		raw[base + 2 * count + k] = qz >> 8
+		raw[base + 3 * count + k] = qz & 0xFF
+		raw[base + 4 * count + k] = ((type[i] & 0x0F) << 4) | (hp[i] & 0x0F)
+		k += 1
 	var packed: PackedByteArray = raw.compress(COMPRESSION)
 	var wire := PackedByteArray()
 	wire.resize(WIRE_HEADER)
@@ -94,19 +102,27 @@ static func decode(wire: PackedByteArray) -> Frame:
 	frame.z.resize(frame.slots)
 	frame.type.resize(frame.slots)
 	frame.hp.resize(frame.slots)
-	var o: int = RAW_HEADER + mask_bytes
+	var count: int = 0
+	for i: int in frame.slots:
+		if (raw[RAW_HEADER + (i >> 3)] & (1 << (i & 7))) != 0:
+			count += 1
+	var base: int = RAW_HEADER + mask_bytes
+	if raw.size() != base + count * BYTES_PER_ENEMY:
+		return null
+	var k: int = 0
 	for i: int in frame.slots:
 		if (raw[RAW_HEADER + (i >> 3)] & (1 << (i & 7))) == 0:
 			continue
-		if o + BYTES_PER_ENEMY > raw.size():
-			return null
 		frame.alive[i] = 1
-		frame.x[i] = raw.decode_s16(o) / POSITION_SCALE
-		frame.z[i] = raw.decode_s16(o + 2) / POSITION_SCALE
-		frame.type[i] = raw[o + 4] >> 4
-		frame.hp[i] = raw[o + 4] & 0x0F
+		var qx: int = (raw[base + k] << 8) | raw[base + count + k]
+		var qz: int = (raw[base + 2 * count + k] << 8) | raw[base + 3 * count + k]
+		frame.x[i] = (qx - 0x10000 if qx >= 0x8000 else qx) / POSITION_SCALE
+		frame.z[i] = (qz - 0x10000 if qz >= 0x8000 else qz) / POSITION_SCALE
+		var tag: int = raw[base + 4 * count + k]
+		frame.type[i] = tag >> 4
+		frame.hp[i] = tag & 0x0F
 		frame.alive_count += 1
-		o += BYTES_PER_ENEMY
+		k += 1
 	return frame
 
 

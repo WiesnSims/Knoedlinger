@@ -89,6 +89,15 @@ func take_jump() -> bool:
 	return pressed
 
 
+## Throws at once (co-op: a pass toward the teammate it walks to), unless a throw is already out.
+func throw_now() -> void:
+	if _reel_timer > 0.0 or _schupfn_pending:
+		return
+	_schupfn_pending = true
+	_reel_timer = reel_after + 0.6
+	_schupfn_timer = maxf(_schupfn_timer, schupfn_every)
+
+
 ## True once per planned Schupfn press (the throw, and later the reel-in).
 func take_schupfn() -> bool:
 	var pressed: bool = _schupfn_pending

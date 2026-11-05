@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/doppelportion.svg" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"doppelportion"
+name_key = "ITEM_DOPPELPORTION"
+desc_key = "DESC_ITEM_DOPPELPORTION"
+rarity = 2
+stats = Dictionary[StringName, float]({})
+effect = &"second_knodl"
+effect_value = 1.0
+max_stacks = 1
+knodl = true
+icon = ExtResource("2_icon")
+color = Color(0.94, 0.85, 0.63, 1)

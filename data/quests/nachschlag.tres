@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"nachschlag"
+title_key = "QUEST_NACHSCHLAG"
+desc_key = "DESC_QUEST_NACHSCHLAG"
+kind = &"cash_ins"
+filter = &""
+target = 25.0
+reward_schilling = 250
+unlock_kind = &"item"
+unlock_id = &"doppelportion"

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"erste_hilfe"
+title_key = "QUEST_ERSTE_HILFE"
+desc_key = "DESC_QUEST_ERSTE_HILFE"
+kind = &"coop"
+filter = &"revives"
+target = 10.0
+reward_schilling = 200
+unlock_kind = &""
+unlock_id = &""

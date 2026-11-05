@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"gemeinsam_einkehren"
+title_key = "QUEST_GEMEINSAM_EINKEHREN"
+desc_key = "DESC_QUEST_GEMEINSAM_EINKEHREN"
+kind = &"coop"
+filter = &"merge_cash_xl"
+target = 1.0
+reward_schilling = 400
+unlock_kind = &""
+unlock_id = &""

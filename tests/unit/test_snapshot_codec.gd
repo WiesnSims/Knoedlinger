@@ -25,7 +25,8 @@ func before_each() -> void:
 		hp.append(rng.randi_range(0, 15))
 
 
-func test_round_trip_is_lossless_within_one_centimetre() -> void:
+## Positions travel in 1 / POSITION_SCALE metre steps (5 cm since M6).
+func test_round_trip_is_lossless_within_half_a_step() -> void:
 	var wire: PackedByteArray = SnapshotCodec.encode(42, 123456, SLOTS, alive, x, z, type, hp)
 	var frame: SnapshotCodec.Frame = SnapshotCodec.decode(wire)
 	assert_not_null(frame)
@@ -37,7 +38,8 @@ func test_round_trip_is_lossless_within_one_centimetre() -> void:
 		if frame.alive[i] != alive[i]:
 			errors += 1
 		elif alive[i] != 0:
-			if absf(frame.x[i] - x[i]) > 0.0051 or absf(frame.z[i] - z[i]) > 0.0051:
+			var half_step: float = 0.5 / SnapshotCodec.POSITION_SCALE + 0.0001
+			if absf(frame.x[i] - x[i]) > half_step or absf(frame.z[i] - z[i]) > half_step:
 				errors += 1
 			if frame.type[i] != type[i] or frame.hp[i] != hp[i]:
 				errors += 1
