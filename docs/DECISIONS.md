@@ -1027,3 +1027,7 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   (sample playback) never gets those buses, so every player on them was silent. **Claude:** the buses now
   come from `default_bus_layout.tres` (loaded at engine start); GameAudio only reports a missing bus, and
   `tests/unit/test_audio.gd` guards it. Fixed build: menu music peak 0.20, bot run peak 0.76. Patch release 1.1.1.
+- **Owner: approved** on the preview https://fix-audio.knoedlinger.pages.dev ("sound is working"); merged into `main`
+  (e818b0c), branch `fix-audio` deleted. **Production deploy of 1.1.1** on 2026-11-05 at the owner's word: live on
+  https://knoedlinger.pages.dev. Measured on production (headless Edge, analyser on the output): menu music peak 0.25,
+  bot run peak 0.98, no console errors.
