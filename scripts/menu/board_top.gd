@@ -54,6 +54,7 @@ func _on_listed(mode: String, map: String, period: String, entries: Array, ok: b
 	visible = _ok and not _held
 	_status.text = tr("BOARD_EMPTY") if entries.is_empty() else ""
 	_status.visible = entries.is_empty()
+	_grid.visible = not entries.is_empty()
 	for child: Node in _grid.get_children():
 		child.queue_free()
 	for k: int in mini(entries.size(), SIZE):
