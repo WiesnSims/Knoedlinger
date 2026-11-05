@@ -963,3 +963,7 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 
 - **Owner: M6 approved** on the preview; merged into `main`, branch `m6-coop` deleted. All milestones of
   GAME-DESIGN.md (M0-M6) are now in `main`; production still only on the owner's word.
+- **Owner: production deploy of M6** on 2026-11-05: `main` 8a3f94b is live on https://knoedlinger.pages.dev with co-op
+  (relay `knoedlinger-relay`). Measured on production (headless Edge, RTX 3080): solo 179.7 fps, p95 6.9 ms, at most
+  99 draw calls; 4 tabs in one room through the live relay: host 132.5 fps, clients 172 fps, at most 124 draw calls,
+  28.1 KiB/s down each, every Knödl and enemy shown, 0 pops, no console errors.
