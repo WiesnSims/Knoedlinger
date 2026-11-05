@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyTypeData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/voice_lines/formular.tres" id="9_voice"]
 
 [resource]
 script = ExtResource("1_script")
@@ -18,3 +19,4 @@ head_color = Color(0.5, 0.55, 0.65, 1)
 flying = true
 spawn_weight = 0.0
 look = &"formular"
+voice = ExtResource("9_voice")

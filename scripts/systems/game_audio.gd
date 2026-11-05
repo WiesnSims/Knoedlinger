@@ -14,6 +14,8 @@ const SFX_DIR: String = "res://assets/audio/sfx"
 const MUSIC_DIR: String = "res://assets/audio/music"
 const VOICES: int = 20
 const BARK_GAP: float = 8.0
+## Enemy lines playing at once (say).
+const SAY_VOICES: int = 2
 ## Distance (m) at which a placed sound has faded out completely.
 const HEARING_RANGE: float = 45.0
 const CROSSFADE: float = 1.5
@@ -143,6 +145,40 @@ func bark(id: StringName) -> void:
 	player.pitch_scale = 1.0
 	player.set_meta(&"id", &"bark")
 	player.play()
+
+
+## An enemy's line (EnemyVoices) at a place, on the Voice bus, quieter with distance; at most
+## SAY_VOICES at once. Returns the line's length in seconds (also when muted or out of earshot),
+## 0 for a missing file.
+func say(id: StringName, at: Vector3) -> float:
+	var stream: AudioStream = _stream(SFX_DIR, id)
+	if stream == null:
+		return 0.0
+	var length: float = stream.get_length()
+	if muted or _playing(&"say") >= SAY_VOICES:
+		return length
+	var volume: float = -2.0
+	if at.is_finite() and _listener.is_finite():
+		var distance: float = at.distance_to(_listener)
+		if distance > HEARING_RANGE:
+			return length
+		volume += linear_to_db(clampf(1.0 - distance / HEARING_RANGE, 0.05, 1.0))
+	var player: AudioStreamPlayer = _free_voice()
+	if player == null:
+		return length
+	player.stream = stream
+	player.bus = &"Voice"
+	player.volume_db = volume
+	player.pitch_scale = 1.0
+	player.set_meta(&"id", &"say")
+	player.play()
+	return length
+
+
+## Seconds a sound lasts (0 for a missing file), muted or not.
+func length(id: StringName) -> float:
+	var stream: AudioStream = _stream(SFX_DIR, id)
+	return stream.get_length() if stream != null else 0.0
 
 
 ## Switches the music (crossfade); the same track keeps playing. &"" fades out.

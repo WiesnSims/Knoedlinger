@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="VoiceLineSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/voice_line_set.gd" id="1_set"]
+[ext_resource type="Script" path="res://scripts/data/voice_line_data.gd" id="2_line"]
+
+[sub_resource type="Resource" id="line_0"]
+script = ExtResource("2_line")
+moment = 5
+text_key = "VOICE_KONTROLLEUR_GESELLSCHAFT"
+sound = &"voice_kontrolleur_gesellschaft"
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("2_line")
+text_key = "VOICE_KONTROLLEUR_STEMPEL"
+sound = &"voice_kontrolleur_stempel"
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("2_line")
+text_key = "VOICE_KONTROLLEUR_AUSWEIS"
+sound = &"voice_kontrolleur_ausweis"
+
+[sub_resource type="Resource" id="line_3"]
+script = ExtResource("2_line")
+moment = 2
+text_key = "VOICE_KONTROLLEUR_NACHSPIEL"
+sound = &"voice_kontrolleur_nachspiel"
+
+[sub_resource type="Resource" id="line_4"]
+script = ExtResource("2_line")
+moment = 3
+text_key = "VOICE_KONTROLLEUR_AMTSHANDLUNG"
+sound = &"voice_kontrolleur_amtshandlung"
+
+[resource]
+script = ExtResource("1_set")
+lines = Array[ExtResource("2_line")]([SubResource("line_0"), SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4")])

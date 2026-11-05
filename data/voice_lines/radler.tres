@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="VoiceLineSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/voice_line_set.gd" id="1_set"]
+[ext_resource type="Script" path="res://scripts/data/voice_line_data.gd" id="2_line"]
+
+[sub_resource type="Resource" id="line_0"]
+script = ExtResource("2_line")
+moment = 1
+text_key = "VOICE_RADLER_RADWEG"
+sound = &"voice_radler_radweg"
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("2_line")
+moment = 1
+text_key = "VOICE_RADLER_KLINGEL"
+sound = &"voice_radler_klingel"
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("2_line")
+text_key = "VOICE_RADLER_VORRANG"
+sound = &"voice_radler_vorrang"
+
+[sub_resource type="Resource" id="line_3"]
+script = ExtResource("2_line")
+moment = 2
+text_key = "VOICE_RADLER_BESTZEIT"
+sound = &"voice_radler_bestzeit"
+
+[sub_resource type="Resource" id="line_4"]
+script = ExtResource("2_line")
+moment = 3
+text_key = "VOICE_RADLER_RADL"
+sound = &"voice_radler_radl"
+
+[resource]
+script = ExtResource("1_set")
+lines = Array[ExtResource("2_line")]([SubResource("line_0"), SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4")])

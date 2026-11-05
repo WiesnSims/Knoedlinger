@@ -236,6 +236,7 @@ SET_LOOK_SMOOTHING,Glättung
 SET_INVERT_Y,Maus umdrehen
 SET_PLAYER_NAME,Dein Name
 SET_GLOSSARY,Dialekt-Hilfe
+SET_ENEMY_CHATTER,Gegner reden
 SET_LANGUAGE,Sprache
 SET_LANGUAGE_DE,Deutsch (Österreich)
 SET_RESET,Standard
@@ -809,3 +810,67 @@ QUEST_STREITSCHLICHTER,Streitschlichter
 DESC_QUEST_STREITSCHLICHTER,"Fang beim Familienstreit an davonrollenden Knödl ein."
 QUEST_GANZE_FAMILIE,Die ganze Familie
 DESC_QUEST_GANZE_FAMILIE,"Gwinn a Runde zu viert."
+VOICE_TOURIST_SELFIE,Nur no a Selfie!
+VOICE_TOURIST_INKLUSIVE,Is des do ois inklusive?
+VOICE_TOURIST_WLAN,Wo is do des WLAN?
+VOICE_TOURIST_SPECK,Gibt's des a ohne Speck?
+VOICE_TOURIST_TSCHUESS,Tschüss!
+VOICE_TOURIST_BEWERTUNG,Des gibt a schlechte Bewertung!
+VOICE_TOURIST_KNOEDL,"Na geh, a Knödl!"
+VOICE_HUNGRIGER_TOURIST_NACHSPEIS,Und wo is die Nachspeis?
+VOICE_HUNGRIGER_TOURIST_BUFFET,Is des Buffet scho offen?
+VOICE_HUNGRIGER_TOURIST_MMH,"Mmh, a Knödl!"
+VOICE_HUNGRIGER_TOURIST_NACHSCHLAG,I nimm an Nachschlag!
+VOICE_HUNGRIGER_TOURIST_ZOIT,I hob no gar ned zoit!
+VOICE_AKTEN_GEIST_B7,Formular B7 fehlt!
+VOICE_AKTEN_GEIST_NUMMER,Bitte ziehen Sie eine Nummer.
+VOICE_AKTEN_GEIST_ABTEILUNG,Des is ned mei Abteilung.
+VOICE_AKTEN_GEIST_DREIFACH,In dreifacher Ausfertigung!
+VOICE_FORMULAR_AUSFUELLEN,Bitte vollständig ausfüllen!
+VOICE_FORMULAR_ZERKNITTERT,Zerknittert …
+VOICE_RADLER_RADWEG,Radweg! Weg do!
+VOICE_RADLER_KLINGEL,"Klingel, klingel!"
+VOICE_RADLER_VORRANG,I hob Vorrang!
+VOICE_RADLER_BESTZEIT,Mei Bestzeit …
+VOICE_RADLER_RADL,Mei Carbonradl!
+VOICE_RASENMAEHER_ABSTAND,Rasen wird gemäht. Bitte Abstand halten.
+VOICE_RASENMAEHER_MAEHBEREICH,Fehler: Knödl im Mähbereich.
+VOICE_RASENMAEHER_AKKU,Akku bei 10 %.
+VOICE_RASENMAEHER_LADESTATION,Zurück … zur … Ladestation …
+VOICE_PERCHTE_HOE,Hö-hö-hö!
+VOICE_PERCHTE_KIMMST,Jetzt kimmst!
+VOICE_PERCHTE_SCHELLN,Mei Schelln …
+VOICE_SCHNEEMANN_FANG,Fang!
+VOICE_SCHNEEMANN_SCHNEEBALLSCHLACHT,Schneeballschlacht!
+VOICE_SCHNEEMANN_HITZ,Is des a Hitz heit.
+VOICE_SCHNEEMANN_SCHMILZ,I schmilz …
+VOICE_GARTENZWERG_BEET,Runter von mein Beet!
+VOICE_GARTENZWERG_GARTENZAUN,Do is mei Gartenzaun!
+VOICE_GARTENZWERG_TUSCHT,"Obacht, gleich tuscht's!"
+VOICE_GARTENZWERG_BUMM,Bumm!
+VOICE_KONTROLLEUR_GESELLSCHAFT,Heit is gschlossene Gesellschaft!
+VOICE_KONTROLLEUR_STEMPEL,Ohne Stempel ka Eintritt!
+VOICE_KONTROLLEUR_AUSWEIS,"Ausweis, bitte."
+VOICE_KONTROLLEUR_NACHSPIEL,Des hat a Nachspiel …
+VOICE_KONTROLLEUR_AMTSHANDLUNG,Behinderung einer Amtshandlung!
+VOICE_WUEHLMAUS_RASEN,Mei Rasen!
+VOICE_WUEHLMAUS_KUCKUCK,Kuckuck!
+VOICE_WUEHLMAUS_LOCH,Zruck ins Loch …
+VOICE_DACKEL_WUFF,Wuff!
+VOICE_DACKEL_GRR,Grrr … wuff!
+VOICE_TAUBE_GURR,Gurr.
+VOICE_TAUBE_GURR_GURR,"Gurr, gurr!"
+VOICE_WILDSCHWEIN_GRUNZ,Grunz!
+VOICE_OBERKRAMPUS_BRAV,Wer war heit ned brav?
+VOICE_OBERKRAMPUS_SACKL,In mei Sackl mit dir!
+VOICE_OBERKRAMPUS_RUATN,Glei gibt's de Ruatn!
+VOICE_OBERKRAMPUS_BUESSN,Des wirst ma büßn!
+VOICE_OBERKRAMPUS_JOAHR,I kimm wieder … nächsts Joahr!
+VOICE_HOFRAT_ZUSTAENDIG,Sie san ned zuständig.
+VOICE_HOFRAT_ABGELEHNT,Abgelehnt!
+VOICE_HOFRAT_ANSTELLEN,"Hinten anstellen, bitte!"
+VOICE_HOFRAT_DIENSTWEG,Des geht nur übern Dienstweg.
+VOICE_HOFRAT_BESCHWERDE,Des is a Dienstaufsichtsbeschwerde wert!
+VOICE_HOFRAT_INSTANZ,Des geht an die nächste Instanz …
+VOICE_RIESEN_WIRT_SPERRSTUND,"Sperrstund'! Zahln, bitte!"
+VOICE_RIESEN_WIRT_HAM,Und jetzt olle ham!
