@@ -981,3 +981,36 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
 - **Production deploy of 1.0.0** on 2026-11-05: `main` 1932e0e is live on https://knoedlinger.pages.dev. Measured on
   production (headless Edge, RTX 3080, 500 enemies, bot, 60 s): 173.5 fps, p95 7 ms, at most 99 draw calls, no
   console errors. `mp_test -Clients 1` passes and still refuses an old-version client.
+
+## 2026-11-05 – Movement in the style of Megabonk (1.1.0)
+
+- **Owner asked for research on Megabonk's movement** (feel, and jumping that turns into flying with enough jump
+  power). What makes it feel good, from guides and reviews: jumping is the fastest way to move (running about 10
+  speed, plain jumps 20–40); the air keeps momentum and only the ground's friction takes it; downhill slides build
+  speed; jump height and extra jumps are build stats that stack into near-flight (Feathers: +jump height, +1 jump,
+  +forward speed per jump; Birdo floats while jump is held); easy to start, high skill ceiling; maps built for it.
+- **Owner: no slide button** – running downhill gains speed on its own. **Owner: no air-strafing** (no speed from
+  turning the camera in the air). **Owner: a Knödl lifted into the air only eats Brösel within its reach**, and
+  the player's 1 m pull only works near the player's body (height counts too), so flying high gathers nothing.
+- **Claude: jump arc** – rise gravity 22, jump speed 10 (2.3 m up), falling 1.5× gravity, half gravity around the
+  top while jump is held (|v.y| < 2 m/s), letting go while rising keeps 45 % of the upward speed (short hop).
+  A held jump lasts 1.04 s in the air (Megabonk ≈ 1.0 s; ours was 0.73 s / 1.7 m). Max fall speed 35 m/s.
+- **Claude: momentum** – each jump while moving adds 1.5 m/s forward; up to 2× run speed. Above run speed the
+  stick only steers (pulling back more than 120° from the flight brakes); speed fades at 16 m/s² on flat ground,
+  never in the air, and not while running downhill. Downhill gain: gravity × slope × 0.6. With no stick in the air
+  the player keeps flying in the same direction (before: stopped in 0.2 s). The host's pose check allows the
+  momentum cap (`Player.max_speed()`).
+- **Claude: new stat `glide` ("Schweben")** – holding jump on the way down divides gravity and the fall speed by
+  (1 + glide × 4), fall speed at most 6 m/s / that. Height ceiling: 30 m above the ground.
+- **Claude: two new items** (appended to the catalog, so old indices stay): *Spielhahnfeder* (Fein, +30 % jump
+  height, no stack limit – the "jump power" item) and *Gleitschirm* (Edel, +0.5 glide, at most 3). Gleitschirm is
+  orange, not red (red is for danger only).
+- **Claude: fliers rise to airborne players** – new `EnemyTypeData.air_reach` (Gelse 8 m, Taube 6 m): within
+  4 m (flat) they rise toward the nearest player or Knödl in the air, fully at touch range
+  (`EnemyManager.air_lift`, the same rule in the host's touch check and in every renderer, so nothing new goes
+  over the network). Flying is not a free pass; a lifted Knödl also crushes nothing (its height check already did).
+- **Claude: the camera widens up to 8° at full momentum** (`camera_speed_fov`), so speed reads as speed.
+- **Version 1.1.0** (new feature). **Measured** (local, RTX 3080): tests 172/172; browser check 172 fps / p95
+  7.2 ms / at most 103 draw calls; with the full flying build (3 Gleitschirme, 3 Federn, 2 Haferlschuhe) 148 fps /
+  p95 12.1 ms / 104 draw calls (fewer kills, denser crowd); `mp_test -Clients 1` passes (31.6 KiB/s, no rejected
+  poses); autoplay Ferdl/Kirtag seed 1: CLOSED at level 55, both Oberkrampusse beaten (recent baseline 44–51).

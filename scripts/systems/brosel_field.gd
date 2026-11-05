@@ -119,18 +119,22 @@ func drop(px: float, pz: float, amount: int, gives_xp: bool, pickup_delay: float
 	return slot
 
 
-## Host: Brösel within `reach` of (px, pz) start flying to the Knödl of `peer`.
-func attract(px: float, pz: float, reach: float, peer: int) -> void:
+## Host: Brösel within `reach` of a player's body (feet at `feet`, `body` metres tall) start flying
+## to the Knödl of `peer`. A player high in the air pulls nothing up (owner, movement).
+func attract(feet: Vector3, body: float, reach: float, peer: int) -> void:
 	_refresh_grid()
-	var found: int = _grid.query(px, pz, reach)
+	var found: int = _grid.query(feet.x, feet.z, reach)
 	var reach_sq: float = reach * reach
 	for k: int in found:
 		var i: int = _grid.results[k]
 		if alive[i] == 0 or target[i] != 0 or delay[i] > 0.0:
 			continue
-		var dx: float = x[i] - px
-		var dz: float = z[i] - pz
-		if dx * dx + dz * dz <= reach_sq:
+		var dx: float = x[i] - feet.x
+		var dz: float = z[i] - feet.z
+		# How far above the head or below the feet it lies (0 = level with the body).
+		var dy: float = maxf(feet.y - y[i], y[i] - feet.y - body)
+		dy = maxf(dy, 0.0)
+		if dx * dx + dz * dz + dy * dy <= reach_sq:
 			target[i] = peer
 			_flying += 1
 

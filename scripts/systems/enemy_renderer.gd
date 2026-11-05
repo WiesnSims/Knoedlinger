@@ -20,6 +20,10 @@ var _shadow_buffer: PackedFloat32Array = PackedFloat32Array()
 var _capacity: int = 0
 ## Enemies stand on this ground; null = flat at y = 0.
 var _ground: Heightfield
+## Players' feet and Knödl bottoms this frame: fliers with an air_reach rise toward the nearest one
+## (EnemyManager.air_lift, the same rule as the host's touch check). Empty = nobody to rise to.
+var air_targets: PackedVector3Array = PackedVector3Array()
+var air_climb_range: float = 4.0
 
 
 func setup(types: Array[EnemyTypeData], capacity: int, ground: Heightfield = null) -> void:
@@ -86,6 +90,7 @@ func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFl
 		_buffers[t] = PackedFloat32Array()
 		var scale: float = _types[t].model_scale
 		var flyer: float = 1.0 if _types[t].flying else 0.0
+		var air_reach: float = _types[t].air_reach if not air_targets.is_empty() else 0.0
 		# Bosses are hit all the time; a full flash would wash them out.
 		var flash_mult: float = 0.3 if _types[t].boss else 1.0
 		# Einstellungen: "Weniger Blitzen".
@@ -106,7 +111,10 @@ func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFl
 			buffer[o + 4] = 0.0
 			buffer[o + 5] = scale
 			buffer[o + 6] = 0.0
-			buffer[o + 7] = gy + flyer * 0.6
+			var lift: float = 0.0
+			if air_reach > 0.0:
+				lift = _air_lift(x[i], z[i], gy, air_reach)
+			buffer[o + 7] = gy + flyer * 0.6 + lift
 			buffer[o + 8] = -s
 			buffer[o + 9] = 0.0
 			buffer[o + 10] = c
@@ -145,3 +153,15 @@ func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFl
 		shadow_count += 1
 	_shadow_mesh.buffer = _shadow_buffer
 	_shadow_mesh.visible_instance_count = shadow_count
+
+
+## How far a flier at (px, pz) has risen toward the nearest airborne target.
+func _air_lift(px: float, pz: float, gy: float, reach: float) -> float:
+	var best_sq: float = INF
+	var best: Vector3 = Vector3.ZERO
+	for target: Vector3 in air_targets:
+		var d_sq: float = (target.x - px) * (target.x - px) + (target.z - pz) * (target.z - pz)
+		if d_sq < best_sq:
+			best_sq = d_sq
+			best = target
+	return EnemyManager.air_lift(best.y - gy, sqrt(best_sq), reach, air_climb_range)

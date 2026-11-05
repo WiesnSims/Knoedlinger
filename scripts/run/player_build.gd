@@ -11,6 +11,7 @@ extends RefCounted
 const STATS: Array[StringName] = [
 	&"damage", &"area", &"cooldown", &"move_speed", &"max_hp", &"regen", &"armor", &"crit", &"pickup",
 	&"jump_height", &"extra_jumps", &"string_length", &"luck", &"gold", &"knodl_guard", &"rate", &"duration",
+	&"glide",
 ]
 ## Counted per level, never scaled by rarity (half a jump makes no sense).
 const COUNT_STATS: Array[StringName] = [&"extra_jumps", &"knodl_guard"]

@@ -41,12 +41,33 @@ func test_shed_brosel_give_mass_but_no_xp_and_wait_before_pickup() -> void:
 
 func test_brosel_near_the_player_fly_to_their_knodl() -> void:
 	field.drop(0.5, 0.0, 1, true)
-	field.attract(0.0, 0.0, 1.0, 3)
+	field.attract(Vector3.ZERO, 1.8, 1.0, 3)
 	var knodls: Dictionary[int, Vector4] = {3: Vector4(-3.0, 0.5, 0.0, 0.5)}
 	for frame: int in 60:
 		field.update(1.0 / 60.0, knodls)
 	assert_eq(field.take_credits()[3], Vector2(1.0, 1.0))
 	assert_eq(field.active_count, 0)
+
+
+func test_a_player_high_in_the_air_pulls_no_brosel_up() -> void:
+	field.drop(0.5, 0.0, 1, true)
+	field.attract(Vector3(0.0, 6.0, 0.0), 1.8, 1.0, 3)
+	var knodls: Dictionary[int, Vector4] = {3: Vector4(-3.0, 6.0, 0.0, 0.5)}
+	for frame: int in 60:
+		field.update(1.0 / 60.0, knodls)
+	assert_true(field.take_credits().is_empty(), "too high above them")
+	field.attract(Vector3(0.0, 0.6, 0.0), 1.8, 1.0, 3)
+	for frame: int in 60:
+		field.update(1.0 / 60.0, knodls)
+	assert_eq(field.take_credits()[3], Vector2(1.0, 1.0), "a small hop still pulls")
+
+
+func test_a_knodl_hanging_in_the_air_eats_nothing_below() -> void:
+	field.drop(0.0, 0.0, 3, true)
+	field.absorb(Vector3(0.0, 4.0, 0.0), 0.5, 2)
+	assert_true(field.take_credits().is_empty())
+	field.absorb(Vector3(0.0, 0.6, 0.0), 0.5, 2)
+	assert_eq(field.take_credits()[2], Vector2(3.0, 3.0))
 
 
 func test_a_full_pool_merges_instead_of_losing_xp() -> void:

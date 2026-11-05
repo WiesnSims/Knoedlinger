@@ -16,4 +16,5 @@ model_scale = 0.6
 body_color = Color(0.25, 0.25, 0.3, 1)
 head_color = Color(0.55, 0.5, 0.45, 1)
 flying = true
+air_reach = 8.0
 spawn_weight = 1.0

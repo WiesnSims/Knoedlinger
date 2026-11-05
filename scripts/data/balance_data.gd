@@ -21,6 +21,8 @@ extends Resource
 @export var camera_max_distance: float = 16.0
 @export var camera_zoom_step: float = 1.0
 @export var camera_fov: float = 80.0
+## Degrees the view widens at full momentum (twice the run speed), so speed reads as speed.
+@export var camera_speed_fov: float = 8.0
 ## Extra distance per metre of Knödl radius above its start radius, so a huge Knödl stays in view.
 @export var camera_distance_per_knodl_radius: float = 1.6
 ## The camera looks at this point above the player's feet (a bit above the head: the player sits
@@ -52,9 +54,31 @@ extends Resource
 ## Ground acceleration in m/s^2; in the air it is scaled by player_air_control.
 @export var player_acceleration: float = 60.0
 @export var player_air_control: float = 0.55
-@export var player_gravity: float = 26.0
-## Jump take-off speed; the height is v^2 / (2 g), about 1.7 m with the defaults.
-@export var player_jump_velocity: float = 9.5
+## Gravity while rising; falling uses player_fall_gravity_mult on top (docs/DECISIONS.md, movement).
+@export var player_gravity: float = 22.0
+## Jump take-off speed; the rise is v^2 / (2 g), about 2.3 m and 0.9 s in the air with the defaults.
+@export var player_jump_velocity: float = 10.0
+## Letting go of jump while still rising keeps this much of the upward speed (a short hop).
+@export var player_jump_cut: float = 0.45
+## Falling pulls harder than rising: snappy instead of floaty.
+@export var player_fall_gravity_mult: float = 1.5
+## Holding jump around the top of the arc (|vertical speed| below apex_speed) hangs a moment.
+@export var player_apex_gravity_mult: float = 0.5
+@export var player_apex_speed: float = 2.0
+@export var player_max_fall_speed: float = 35.0
+## Momentum (Megabonk): a jump while moving adds this much speed forward (m/s) ...
+@export var player_jump_forward_boost: float = 1.5
+## ... up to this many times the run speed. The air keeps it; on the ground it fades (m/s^2).
+@export var player_momentum_max: float = 2.0
+@export var player_momentum_decay: float = 16.0
+## Running downhill gains speed: gravity times the slope's steepness times this (no slide button).
+@export var player_slope_gain: float = 0.6
+## Glide stat (items): holding jump while falling divides gravity and the fall speed by
+## (1 + glide * strength); at most player_glide_fall_speed / that.
+@export var player_glide_strength: float = 4.0
+@export var player_glide_fall_speed: float = 6.0
+## Players never rise higher than this above the ground.
+@export var player_height_ceiling: float = 30.0
 ## Jumps before landing again: 1 = single, 2 = double jump (an upgrade or Cousin Toni).
 @export var player_jumps: int = 1
 ## Seconds after leaving a ledge in which a ground jump still works, and how early a press counts.
@@ -155,6 +179,8 @@ extends Resource
 @export var enemy_separation_max_neighbors: int = 6
 ## Enemies only touch a player whose feet are within this height of their own.
 @export var enemy_contact_height: float = 1.6
+## Fliers with an air_reach rise toward an airborne target from this far away (metres, flat).
+@export var enemy_air_climb_range: float = 4.0
 ## Walkers slow down on ground steeper than this (rise per metre) and scramble up walls at the floor.
 @export var enemy_climb_slope: float = 0.9
 @export var enemy_climb_min_factor: float = 0.3

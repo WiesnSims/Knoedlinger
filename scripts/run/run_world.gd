@@ -586,6 +586,7 @@ func _host_frame(delta: float) -> void:
 	_flush_events()
 	var t3: int = Time.get_ticks_usec()
 	stats.add_system("brosel", t3 - t2)
+	_update_air_targets()
 	renderer.draw(enemies.capacity, enemies.alive, enemies.pos_x, enemies.pos_z, enemies.yaw, enemies.type,
 			enemies.radius, enemies.flash, enemies.phase)
 	brosel.draw()
@@ -914,6 +915,18 @@ func _drop_brosel() -> void:
 			knodl.set_knodl_mass(knodl.knodl_mass - shed)
 
 
+## Fliers rise toward players and Knödl in the air: the renderer needs to know where they are.
+func _update_air_targets() -> void:
+	var targets := PackedVector3Array()
+	for peer: int in players:
+		targets.append(players[peer].global_position)
+	for peer: int in knodls:
+		var knodl: Knodl = knodls[peer]
+		targets.append(knodl.global_position - Vector3(0.0, knodl.radius, 0.0))
+	renderer.air_targets = targets
+	renderer.air_climb_range = balance.enemy_air_climb_range
+
+
 ## Host: Brösel near a player fly to their Knödl; every Knödl eats what it touches; the credits
 ## turn into XP and mass.
 func _feed_knodls(delta: float) -> void:
@@ -925,7 +938,7 @@ func _feed_knodls(delta: float) -> void:
 		if not states[peer].downed:
 			var player: Vector3 = players[peer].global_position
 			var reach: float = balance.player_pickup_range * (1.0 + states[peer].build.stat(&"pickup"))
-			brosel.attract(player.x, player.z, reach, peer)
+			brosel.attract(player, Player.BODY_HEIGHT, reach, peer)
 		# Half of a Riesenknödl eats nothing itself: the merged one does, for both.
 		if not knodl.merged_away:
 			brosel.absorb(at, knodl.radius, peer)
@@ -1074,6 +1087,7 @@ func _client_frame(delta: float) -> void:
 		run_time += delta
 	var t0: int = Time.get_ticks_usec()
 	replica.update(Time.get_ticks_msec(), delta)
+	_update_air_targets()
 	renderer.draw(replica.capacity, replica.alive, replica.x, replica.z, replica.yaw, replica.type,
 			replica.radius, replica.flash, replica.phase)
 	brosel.draw()
@@ -1103,6 +1117,7 @@ func _local_frame(delta: float) -> void:
 		player.stat_speed = 1.0 + build.stat(&"move_speed")
 		player.stat_jump_height = build.stat(&"jump_height")
 		player.stat_extra_jumps = roundi(build.stat(&"extra_jumps"))
+		player.stat_glide = build.stat(&"glide")
 		var peer_knodl: Knodl = knodls.get(peer)
 		if peer_knodl != null:
 			peer_knodl.string_mult = 1.0 + build.stat(&"string_length")
