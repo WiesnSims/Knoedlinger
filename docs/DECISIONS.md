@@ -1304,3 +1304,75 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
     and chests stay per player as now.
 - **Note:** Part 0 of the plan above is already done (Nachspielzeit shipped in 1.3.2); Part 0 is now only
   "merge `main` into `v1-4`".
+
+## 2026-11-05 – 1.4 plan addition: item rework (task 6.7 P1, part of Part 6, right after 6.6)
+
+- **Owner asked:** items mostly give a stat bonus; they should do unique things (a one-time revive, flat HP
+  per second, a 10 % chance for attacks to freeze an enemy, ...), focused on the rare/legendary ones like
+  Megabonk; stat items are fine and needed. Does the current roster already have that? Compare with Megabonk.
+- **Found (1.3.2 data, 34 items in `data/items/`):** 23 are pure stats (Doppler, Edelweiss, Feldstecher,
+  Gleitschirm, Glücksschwein, Goldhaube, Haferlschuhe, Holundersaft, Kirtagsbrezn, Kracherl, Kuckucksuhr,
+  Lebkuchenherz, Maibaumspitz, Rosenkranz, Sauerkraut, Schießbudenrose, Sonntagsgwand, Spielhahnfeder,
+  Spitzwegerich, Trachtenjanker, Wetterhahn, Zirbenschnaps, Zuckerwatte); 11 have a rule, 7 of them Knödl
+  upgrades (Bergab-Gesetz, Bröselbutter, Doppelportion, Omas Rezept, Powidl, Riesenknödl) plus Marterl-Kerze
+  (revive), Kirchenglocke (ring every few s), Schweizerkracher (kill blast), Sparbuch, Zweitschlüssel.
+  Of the owner's examples, the revive exists (Marterl-Kerze) and flat HP/s exists (the `regen` stat is HP per
+  second: Holundersaft, Kirtagsbrezn, Spitzwegerich); **nothing procs on hit** (no freeze/burn/chain chance),
+  nothing reacts to taking damage, low HP, crits, standing still, being airborne or cheating death.
+  Rarity says little: 5 of 10 Edel items and Maibaumspitz (Hofratswürdig, plain +15 % damage) are stats only;
+  three pairs are near duplicates (Kracherl/Zuckerwatte, Holundersaft/Kirtagsbrezn, Lebkuchenherz/Sauerkraut).
+  Each `ItemData` has one `effect` name; every rule is hand-coded in `run_world.gd`. Already there to build on:
+  `EnemyManager.slow()` (0 = frozen/stunned, bosses a third and never stopped), `burn()`, Krampusrute's chain,
+  the pooled projectiles, `on_kill` (Schweizerkracher) and a timer (Kirchenglocke).
+- **Megabonk (guides, ~77 items, Default/Common/Rare/Epic/Legendary):** Commons are mostly stats but with
+  conditions (Idle Juice: up to +100 % damage standing still, Scarf: +33 % airborne, Tactical Glasses: +20 %
+  vs enemies above 90 % HP, Campfire: standing still heals, Coward's Cloak: speed when hit, Electric Plug:
+  shock when hit, Ice Cube: 20 % freeze on hit, Big Bonk: 2 % for 20× damage, Borgar: healing food on kill).
+  Rares/Epics are procs and conditions (Spicy Meatball 25 % explode, Moldy Cheese poison, Thunder Mitts,
+  Soul Harvester homing souls, Demonic Soul +0.1 % per kill, Gamer Goggles: more damage at low HP, Turbo
+  Skates: speed → attack speed, Backpack +1 projectile, Overpowered Lamp: +1 proc chance, Shattered Knowledge:
+  XP shards cut enemies). Legendaries change the rules (Za Warudo: freeze time instead of dying once, Mirror:
+  reflect + short invulnerability, Joe's Dagger: 1 % execute, each +1 % damage, Anvil: upgrades roll +1 stat,
+  Chonkplate: overheal, Holy Book: big HP/regen + healing hurts, Sucky Magnet: pulls all XP on screen).
+- **Claude: the rework** (starting values, all in item data / `balance.tres`):
+  - **Data, not code:** a new `ItemEffect` resource (`trigger`, `chance`, `action`, `value`, `radius`,
+    `seconds`, `cooldown`) and `ItemData.effects: Array[ItemEffect]`, so new items are `.tres` only.
+    Triggers: `on_hit`, `on_crit`, `on_kill`, `on_hurt`, `on_lethal`, `periodic`, `low_hp` (< 50 %),
+    `standing_still`, `moving`, `airborne`, `on_chest`, `on_cashin`, `on_schupfn_end`, `on_brosel`.
+    Actions: `freeze`, `burn`, `blast`, `chain`, `homing` (pooled projectile), `execute`, `heal`, `shield`,
+    `invulnerable`, `time_stop` (enemies near the player frozen; no real time-slow, co-op shares one clock),
+    `damage_mult` (conditional), `stat_buff` (timed), `pull_brosel`, `drop_food`. The 11 old rules move onto
+    it (old `effect` field read as a fallback until all items are converted).
+  - **Proc rules:** host only (procs are damage); chance per stack 1 − (1 − p)^n; procs never trigger procs;
+    a per-frame proc budget (~40) and chain/homing target caps so 500 enemies + 300 projectiles stay at 60 fps;
+    pooled VFX; frozen enemies tinted ice blue, burning orange (2 status bits in the enemy snapshot if not
+    sent yet). Nothing friendly in Krampus red.
+  - **Rarity means something:** Gewöhnlich = one stat; Fein = stat + a condition; Edel = a proc or rule;
+    Hofratswürdig = build-defining, `max_stacks` 1. Pure stats move to Gewöhnlich/Fein; the near duplicates
+    become new items (one of each pair keeps the stat).
+  - **New/changed items (~20, roster 34 → ~50; names/lines are drafts, all appended so save indices stay):**
+    - Fein: **Gfrorns** (10 % on hit: freeze 1.5 s; the owner's example), **Kachelofen** (standing still 1 s:
+      +4 HP/s), **Bierdeckel** (+20 % damage to enemies above 90 % HP), **Hosenträger** (+25 % damage
+      airborne), **Weidezaun** (when hit: shock 6 m), **Distelstrauß** (thorns: 50 % of contact damage back),
+      **Jagdtrophäe** (+15 % vs elites/bosses), **Leberkässemmel** (3 % on kill: a Semmel that heals 15 HP;
+      replaces the Part 3 draft "20 HP per cash-in").
+    - Edel: **Sonnwendfeuer** (15 % on hit: burn), **Blitzableiter** (12 % on hit: chain to 3, Krampusrute
+      code), **Scharfe Pfefferoni** (20 % of hits burst for 50 % around the target), **Irrlichter** (kills:
+      15 % a homing wisp), **Stallaterne** (+50 % to every proc chance), **Letzte Runde** (up to +50 %
+      damage as HP falls), **Strichliste** (+0.1 % damage per 10 kills, max +50 %), **Rucksack** (+1
+      projectile for all weapons), **Schutzengerl** (when hit: 1 s invulnerable + 20 % speed, 6 s cooldown),
+      **Bröselsturm** (Brösel flying to your Knödl cut enemies on the way; Knödl twist), **Wetterfleck**
+      (no knockback on you; from Part 3), **Rodel** (Knödl speeds up downhill on the string; from Part 3).
+    - Hofratswürdig: **Marterl-Kerze** (stays: revive, now with a blast and 2 s invulnerable), **Stehengebliebene
+      Uhr** (lethal hit once: enemies within 15 m frozen 3 s, heal 30 %), **Amtsschimmel** (1 % execute on
+      hit, non-boss; each execute +0.5 % damage, max +50 %), **Dreschflegel** (2 % of hits deal 15×),
+      **Staubsauger** (every 45 s all Brösel on screen fly to your Knödl), **Amboss vom Dorfschmied** (weapon
+      cards on the Speisekarte roll one extra bonus), **Federbett** (healing above max HP becomes a shield up to
+      +50 % max HP), **Maibaumspitz** (keeps +15 % damage, adds +25 % while standing higher than the enemy hit).
+  - **Co-op:** effects per player, host-authoritative; heals/shields on teammates only from items that say so
+    (none in this batch); revive and time stop are local to the owner's position.
+  - **Checks:** unit tests (proc odds per stack, no proc recursion, cheat-death once, item tooltip numbers),
+    Almanach entries and icons for every new item, deadpan line each through `tr()`, Run-Abrechnung (5.4) and
+    autoplay JSON get damage per item; autoplay 10 seeds before/after: no item above ~25 % of a build's damage,
+    wins within the 6.6 target (~4-6/10); stress scene with 5 proc items stacked still 60 fps.
+  - **Order:** after 6.6 (more chests make items matter), before the 6.5 rebalance; patch-list lines.
