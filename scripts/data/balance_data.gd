@@ -447,3 +447,28 @@ extends Resource
 @export var quality_raise_cooldown: float = 60.0
 ## Seconds after the start before it measures (shader compiles, the first spawns).
 @export var quality_warmup_seconds: float = 5.0
+
+@export_group("Enemy voices")
+## EnemyVoices (Berghittn's Gredn, far less chatty): one line overall every voice_gap_min..max
+## seconds at most (never over the one before), plus up to voice_idle_wait for a moment's line
+## (an attack, last words ...) before an idle one is picked. One line per enemy type every
+## voice_type_gap; only enemies within voice_reach of a player talk.
+@export var voice_gap_min: float = 2.5
+@export var voice_gap_max: float = 4.0
+@export var voice_idle_wait: float = 1.0
+@export var voice_type_gap: float = 10.0
+@export var voice_reach: float = 20.0
+## Bosses (and the Kontrolleur, the Riesen-Wirt) skip the overall gap, but say one line every
+## voice_boss_gap at most; their attacks only now and then.
+@export var voice_boss_gap: float = 6.0
+@export var voice_chance_boss_attack: float = 0.5
+## Chance per moment that a line is said when it comes (VoiceLineData.chance overrides it).
+@export var voice_chance_attack: float = 0.35
+@export var voice_chance_death: float = 0.15
+@export var voice_chance_crushed: float = 0.3
+@export var voice_chance_eat: float = 0.4
+## The text over the head: shown this far from the camera at most, at least this long (or the
+## voice's length), then fading.
+@export var voice_show_reach: float = 25.0
+@export var voice_min_seconds: float = 1.6
+@export var voice_fade_seconds: float = 0.4

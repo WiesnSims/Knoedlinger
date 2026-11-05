@@ -6,6 +6,8 @@ eSpeak NG (GPL-3) is only a tool on the dev machine, never shipped; the audio it
     winget install --id eSpeak-NG.eSpeak-NG -e      (or set ESPEAK to the espeak-ng executable)
     pip install numpy scipy soundfile
 
+    python tools/audio/voices/voices.py             # every line to assets/audio/sfx/voice_*.ogg
+    python tools/audio/voices/voices.py voice_hofrat_abgelehnt   # only these
     python tools/audio/voices/voices.py --samples   # a few lines per voice to build/voice_samples/
 """
 import html
@@ -175,6 +177,73 @@ def hofrat(text):
     return finish(d.echo(x, 0.33, 0.18, 2, 2200), 0.24, 2.2)
 
 
+def hungrig(text):
+    """The Tourist, slower and lower with his mouth full."""
+    x, sr = speak(text, "de+m1", 150, 40)
+    x = at_pitch(x, sr, 0.84)
+    x = d.bandpass(d.drive(d.normalize(x), 1.4), 200, 3800) + 0.3 * d.lowpass(x, 300)
+    return finish(x, 0.12)
+
+
+def schneemann(text):
+    """Low, slow and muffled (Berghittn's Wanderer), with a cold shiver on it."""
+    x, sr = speak(text, "de+m3", 125, 35)
+    x = at_pitch(x, sr, 0.9)
+    t = np.arange(len(x)) / SR
+    x = d.lowpass(d.drive(d.normalize(x), 1.3), 2800) + 0.25 * d.lowpass(x, 300)
+    return finish(x * (1.0 + 0.18 * np.sin(2 * np.pi * 9.0 * t)), 0.15)
+
+
+def zwerg(text, factor=1.2, cutoff=7500.0):
+    """Quick and high with a giggly wobble (Berghittn's Venedigermandl), a small dry room."""
+    x, sr = speak(text, "de+m4", 185, 80)
+    x = at_pitch(x, sr, factor)
+    t = np.arange(len(x)) / SR
+    x = d.normalize(x) * (1.0 + 0.22 * np.sin(2 * np.pi * 6.5 * t))
+    x = d.bandpass(d.drive(x, 1.2), 200, cutoff)
+    return finish(x, 0.1, 0.6)
+
+
+def wuehlmaus(text):
+    """Even higher than the Gartenzwerg, muffled from under the lawn."""
+    return zwerg(text, 1.45, 3000.0)
+
+
+def dackel(text):
+    """A small, yappy dog: a quick high bark, a little gritty."""
+    x, sr = speak(text, "de+m4", 210, 90)
+    x = at_pitch(x, sr, 1.35)
+    x = d.bandpass(d.drive(d.normalize(x), 2.0), 300, 6000)
+    return finish(x, 0.08, 0.4)
+
+
+def taube(text):
+    """A coo: low, round, rolling."""
+    x, sr = speak(text, "de+m3", 120, 45)
+    x = at_pitch(x, sr, 0.95)
+    t = np.arange(len(x)) / SR
+    x = d.lowpass(d.normalize(x), 1400) * (1.0 + 0.5 * np.sin(2 * np.pi * 22.0 * t))
+    return finish(x, 0.1, 0.5)
+
+
+def wildschwein(text):
+    """A grunt: very low and rough on a growl."""
+    x, sr = speak(text, "de+m3", 140, 15)
+    x = at_pitch(x, sr, 0.6)
+    s = len(x) / SR
+    carrier = growl(s, 70.0, [(0, "o"), (s, "u")], 0.5, 0.2, 0.08, 1.2)
+    x = 0.5 * d.normalize(rasp(x, 0.8)) + vocode(d.normalize(x), carrier[:len(x)])
+    return finish(d.lowpass(d.drive(d.normalize(x), 2.4), 2500), 0.1, 0.5)
+
+
+def wirt(text):
+    """The Riesen-Wirt: big, warm and booming, in the whole Wirtshaus."""
+    x, sr = speak(text, "de+m3", 135, 25)
+    x = at_pitch(x, sr, 0.74)
+    x = d.lowpass(d.drive(d.normalize(x), 1.6), 3500) + 0.35 * d.lowpass(x, 220)
+    return finish(x, 0.3, 2.0)
+
+
 # --- the samples the owner listens to before every line is made -----------------------------------
 
 SAMPLES = {
@@ -188,7 +257,106 @@ SAMPLES = {
     "hofrat": ["Sie san ned zuständig.", "Abgelehnt!", "Des geht an die nächste Instanz."],
 }
 FILTERS = {"tourist": tourist, "akten": akten, "radler": radler, "roboter": roboter, "perchte": perchte,
-           "kontrolleur": kontrolleur, "oberkrampus": oberkrampus, "hofrat": hofrat}
+           "kontrolleur": kontrolleur, "oberkrampus": oberkrampus, "hofrat": hofrat, "hungrig": hungrig,
+           "schneemann": schneemann, "zwerg": zwerg, "wuehlmaus": wuehlmaus, "dackel": dackel, "taube": taube,
+           "wildschwein": wildschwein, "wirt": wirt}
+
+# --- every line --------------------------------------------------------------------------------------
+# (enemy id, moment, line, text shown, how eSpeak says it, voice). The game's side is data:
+# data/voice_lines/<enemy>.tres (moment, text key VOICE_<ENEMY>_<LINE>, sound voice_<enemy>_<line>)
+# and the text in i18n/strings.csv. A new line goes into all three. Lines may share a sound
+# (the same enemy saying it at two moments): the first one makes it.
+LINES = [
+    ("tourist", "IDLE", "selfie", "Nur no a Selfie!", "Nur no a Selfie!", "tourist"),
+    ("tourist", "IDLE", "inklusive", "Is des do ois inklusive?", "Is des do ois inklusive?", "tourist"),
+    ("tourist", "IDLE", "wlan", "Wo is do des WLAN?", "Wo is do des W-LAN?", "tourist"),
+    ("tourist", "IDLE", "speck", "Gibt's des a ohne Speck?", "Gibts des a ohne Speck?", "tourist"),
+    ("tourist", "DEATH", "tschuess", "Tschüss!", "Tschüss!", "tourist"),
+    ("tourist", "DEATH", "bewertung", "Des gibt a schlechte Bewertung!", "Des gibt a schlechte Bewertung!", "tourist"),
+    ("tourist", "CRUSHED", "knoedl", "Na geh, a Knödl!", "Na geh, a Knödl!", "tourist"),
+    ("hungriger_tourist", "IDLE", "nachspeis", "Und wo is die Nachspeis?", "Und wo is die Nachspeis?", "hungrig"),
+    ("hungriger_tourist", "IDLE", "buffet", "Is des Buffet scho offen?", "Is des Buffet scho offen?", "hungrig"),
+    ("hungriger_tourist", "EAT", "mmh", "Mmh, a Knödl!", "Mmmh. A Knödl!", "hungrig"),
+    ("hungriger_tourist", "EAT", "nachschlag", "I nimm an Nachschlag!", "I nimm an Nachschlag!", "hungrig"),
+    ("hungriger_tourist", "DEATH", "zoit", "I hob no gar ned zoit!", "I hob no gar ned zoit!", "hungrig"),
+    ("akten_geist", "IDLE", "b7", "Formular B7 fehlt!", "Formular B sieben fehlt!", "akten"),
+    ("akten_geist", "IDLE", "nummer", "Bitte ziehen Sie eine Nummer.", "Bitte ziehen Sie eine Nummer.", "akten"),
+    ("akten_geist", "IDLE", "abteilung", "Des is ned mei Abteilung.", "Des is ned mei Abteilung.", "akten"),
+    ("akten_geist", "DEATH", "dreifach", "In dreifacher Ausfertigung!", "In dreifacher Ausfertigung!", "akten"),
+    ("formular", "IDLE", "ausfuellen", "Bitte vollständig ausfüllen!", "Bitte vollständig ausfüllen!", "akten"),
+    ("formular", "DEATH", "zerknittert", "Zerknittert …", "Zerknittert.", "akten"),
+    ("radler", "ATTACK", "radweg", "Radweg! Weg do!", "Radweg! Weg do!", "radler"),
+    ("radler", "ATTACK", "klingel", "Klingel, klingel!", "Kling kling!", "radler"),
+    ("radler", "IDLE", "vorrang", "I hob Vorrang!", "I hob Vorrang!", "radler"),
+    ("radler", "DEATH", "bestzeit", "Mei Bestzeit …", "Mei Bestzeit.", "radler"),
+    ("radler", "CRUSHED", "radl", "Mei Carbonradl!", "Mei Carbonradl!", "radler"),
+    ("rasenmaeher", "IDLE", "abstand", "Rasen wird gemäht. Bitte Abstand halten.",
+     "Rasen wird gemäht. Bitte Abstand halten.", "roboter"),
+    ("rasenmaeher", "IDLE", "maehbereich", "Fehler: Knödl im Mähbereich.", "Fehler. Knödl im Mähbereich.", "roboter"),
+    ("rasenmaeher", "IDLE", "akku", "Akku bei 10 %.", "Akku bei zehn Prozent.", "roboter"),
+    ("rasenmaeher", "DEATH", "ladestation", "Zurück … zur … Ladestation …", "Zurück. Zur. Ladestation.", "roboter"),
+    ("perchte", "IDLE", "hoe", "Hö-hö-hö!", "Hö! Hö! Hö!", "perchte"),
+    ("perchte", "ATTACK", "kimmst", "Jetzt kimmst!", "Jetzt kimmst!", "perchte"),
+    ("perchte", "DEATH", "schelln", "Mei Schelln …", "Mei Schelln.", "perchte"),
+    ("schneemann", "ATTACK", "fang", "Fang!", "Fang!", "schneemann"),
+    ("schneemann", "ATTACK", "schneeballschlacht", "Schneeballschlacht!", "Schneeballschlacht!", "schneemann"),
+    ("schneemann", "IDLE", "hitz", "Is des a Hitz heit.", "Is des a Hitz heit.", "schneemann"),
+    ("schneemann", "DEATH", "schmilz", "I schmilz …", "I schmilz.", "schneemann"),
+    ("gartenzwerg", "IDLE", "beet", "Runter von mein Beet!", "Runter von mein Beet!", "zwerg"),
+    ("gartenzwerg", "IDLE", "gartenzaun", "Do is mei Gartenzaun!", "Do is mei Gartenzaun!", "zwerg"),
+    ("gartenzwerg", "DEATH", "tuscht", "Obacht, gleich tuscht's!", "Obacht, gleich tuschts!", "zwerg"),
+    ("gartenzwerg", "DEATH", "bumm", "Bumm!", "Bumm!", "zwerg"),
+    ("kontrolleur", "ARRIVE", "gesellschaft", "Heit is gschlossene Gesellschaft!", "Heit is gschlossene Gesellschaft!",
+     "kontrolleur"),
+    ("kontrolleur", "IDLE", "stempel", "Ohne Stempel ka Eintritt!", "Ohne Stempel ka Eintritt!", "kontrolleur"),
+    ("kontrolleur", "IDLE", "ausweis", "Ausweis, bitte.", "Ausweis, bitte.", "kontrolleur"),
+    ("kontrolleur", "DEATH", "nachspiel", "Des hat a Nachspiel …", "Des hat a Nachspiel.", "kontrolleur"),
+    ("kontrolleur", "CRUSHED", "amtshandlung", "Behinderung einer Amtshandlung!", "Behinderung einer Amtshandlung!",
+     "kontrolleur"),
+    ("wuehlmaus", "IDLE", "rasen", "Mei Rasen!", "Mei Rasen!", "wuehlmaus"),
+    ("wuehlmaus", "IDLE", "kuckuck", "Kuckuck!", "Kuckuck!", "wuehlmaus"),
+    ("wuehlmaus", "DEATH", "loch", "Zruck ins Loch …", "Zruck ins Loch.", "wuehlmaus"),
+    ("dackel", "IDLE", "wuff", "Wuff!", "Wuff!", "dackel"),
+    ("dackel", "IDLE", "grr", "Grrr … wuff!", "Grrrr. Wuff!", "dackel"),
+    ("taube", "IDLE", "gurr", "Gurr.", "Gurrr.", "taube"),
+    ("taube", "EAT", "gurr_gurr", "Gurr, gurr!", "Gurrr, gurrr!", "taube"),
+    ("wildschwein", "IDLE", "grunz", "Grunz!", "Grunz!", "wildschwein"),
+    ("wildschwein", "EAT", "grunz", "Grunz!", "Grunz!", "wildschwein"),
+    ("oberkrampus", "ARRIVE", "brav", "Wer war heit ned brav?", "Wer war heit ned brav?", "oberkrampus"),
+    ("oberkrampus", "ATTACK", "sackl", "In mei Sackl mit dir!", "In mei Sackl mit dir!", "oberkrampus"),
+    ("oberkrampus", "ATTACK", "ruatn", "Glei gibt's de Ruatn!", "Glei gibts de Ruatn!", "oberkrampus"),
+    ("oberkrampus", "HALF", "buessn", "Des wirst ma büßn!", "Des wirst ma büßn!", "oberkrampus"),
+    ("oberkrampus", "BEATEN", "joahr", "I kimm wieder … nächsts Joahr!", "I kimm wieder. Nächsts Joahr!", "oberkrampus"),
+    ("hofrat", "ARRIVE", "zustaendig", "Sie san ned zuständig.", "Sie san ned zuständig.", "hofrat"),
+    ("hofrat", "ATTACK", "abgelehnt", "Abgelehnt!", "Abgelehnt!", "hofrat"),
+    ("hofrat", "ATTACK", "anstellen", "Hinten anstellen, bitte!", "Hinten anstellen, bitte!", "hofrat"),
+    ("hofrat", "ATTACK", "dienstweg", "Des geht nur übern Dienstweg.", "Des geht nur übern Dienstweg.", "hofrat"),
+    ("hofrat", "HALF", "beschwerde", "Des is a Dienstaufsichtsbeschwerde wert!", "Des is a Dienstaufsichtsbeschwerde wert!",
+     "hofrat"),
+    ("hofrat", "BEATEN", "instanz", "Des geht an die nächste Instanz …", "Des geht an die nächste Instanz.", "hofrat"),
+    ("riesen_wirt", "ARRIVE", "sperrstund", "Sperrstund'! Zahln, bitte!", "Sperrstund! Zahln, bitte!", "wirt"),
+    ("riesen_wirt", "ARRIVE", "ham", "Und jetzt olle ham!", "Und jetzt olle ham!", "wirt"),
+]
+
+
+def sound_id(enemy: str, line: str) -> str:
+    return "voice_%s_%s" % (enemy, line)
+
+
+def build(only) -> None:
+    out = ROOT / "assets" / "audio" / "sfx"
+    done = set()
+    total = 0
+    for enemy, _moment, line, _shown, spoken, voice in LINES:
+        name = sound_id(enemy, line)
+        if name in done or (only and name not in only):
+            continue
+        done.add(name)
+        path = out / (name + ".ogg")
+        seconds = write(path, name, FILTERS[voice], spoken)
+        total += path.stat().st_size
+        print("%-40s %5.2f s %6.1f KB" % (path.name, seconds, path.stat().st_size / 1024))
+    print("%d voices, %.2f MB" % (len(done), total / 1024 / 1024))
 
 
 def write(path: Path, name: str, fn, text: str) -> float:
@@ -232,4 +400,4 @@ if __name__ == "__main__":
     if "--samples" in sys.argv:
         samples()
     else:
-        sys.exit("usage: voices.py --samples")
+        build({a for a in sys.argv[1:] if not a.startswith("-")})

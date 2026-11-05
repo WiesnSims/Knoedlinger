@@ -6,7 +6,8 @@
 # never dry for longer than 2 snapshot intervals, no pops, the shown enemy count matches the host's,
 # and no ERROR/WARNING line in any log. In the run scene also: world states arrive, the Brosel mirror
 # matches the host, every player's Knoedl is shown, the host rejected no pose, and every client got
-# Speisekarte offers from the host and levelled up by answering them.
+# Speisekarte offers from the host and levelled up by answering them, and the enemy lines the host
+# picked reached them (EnemyVoices).
 # -HostLeavesFirst: the host quits mid-run and every client must notice it ("host_left") and end cleanly.
 # -StartTime 595: instead of holding -Enemies, the host plays the real timeline from that second (M3:
 # bosses, attack marks, the Formular, loot); every client must then get run events, marks and loot.
@@ -152,7 +153,11 @@ foreach ($run in $runs) {
         if (-not $HostLeavesFirst -and $rep.knodls_shown -lt $Clients + 1) { $failures += "${n}: shows $($rep.knodls_shown) Knoedl for $($Clients + 1) players" }
         if ($Coop -and $rep.seconds_shown -lt $Clients + 1) { $failures += "${n}: shows $($rep.seconds_shown) Doppelportion Knoedl for $($Clients + 1) players" }
         Write-Host ("{0}: level {1}, {2} Speisekarte messages, weapons {3}" -f $n, $r.run.level, $rep.offers_received, ($r.run.weapons -join ', '))
-        Write-Host ("{0}: {1} run events, {2} attack marks, {3} loot shown" -f $n, $rep.run_events, $rep.hazards_seen, $rep.loot_shown)
+        Write-Host ("{0}: {1} run events, {2} attack marks, {3} loot shown, {4} enemy lines (host said {5})" -f `
+            $n, $rep.run_events, $rep.hazards_seen, $rep.loot_shown, $rep.voice_lines, $hostResult.voices_said)
+        if (-not $HostLeavesFirst -and $hostResult.voices_said -ge 3 -and $rep.voice_lines -lt 1) {
+            $failures += "${n}: none of the host's $($hostResult.voices_said) enemy lines reached the client"
+        }
         if ($rep.loot_shown -lt 1) { $failures += "${n}: no loot shown (the map chests come with the join)" }
         if ($StartTime -ge 0 -and -not $HostLeavesFirst) {
             if ($rep.run_events -lt 5) { $failures += "${n}: only $($rep.run_events) run events" }

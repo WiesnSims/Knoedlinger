@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/data/attack_data.gd" id="2_attack"]
+[ext_resource type="Resource" path="res://data/voice_lines/perchte.tres" id="9_voice"]
 
 [sub_resource type="Resource" id="slam"]
 script = ExtResource("2_attack")
@@ -31,3 +32,4 @@ head_color = Color(0.86, 0.74, 0.52, 1)
 attack = SubResource("slam")
 gold_drop = 1
 look = &"perchte"
+voice = ExtResource("9_voice")

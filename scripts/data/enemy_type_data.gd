@@ -41,6 +41,8 @@ extends Resource
 ## Which model MeshFactory builds: "" = the plain fodder figure, or perchte, radler, akten,
 ## formular, krampus, hofrat.
 @export var look: StringName = &""
+## What it says now and then (EnemyVoices); null = it keeps quiet (Gelsen, the Lawine).
+@export var voice: VoiceLineSet
 
 @export_group("Behaviour")
 ## Pops up this close to a player instead of on the far ring (Wühlmaus); 0 = the normal ring.

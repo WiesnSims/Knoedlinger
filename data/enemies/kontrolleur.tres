@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyTypeData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/voice_lines/kontrolleur.tres" id="9_voice"]
 
 [resource]
 script = ExtResource("1_script")
@@ -19,3 +20,4 @@ guards_wirtshaus = true
 body_color = Color(0.2, 0.25, 0.4, 1)
 head_color = Color(0.93, 0.78, 0.66, 1)
 look = &"kontrolleur"
+voice = ExtResource("9_voice")

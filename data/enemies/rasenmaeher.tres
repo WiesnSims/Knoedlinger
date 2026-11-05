@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
 [ext_resource type="Resource" path="res://data/attacks/rasenmaeher_cut.tres" id="2_attack"]
+[ext_resource type="Resource" path="res://data/voice_lines/rasenmaeher.tres" id="9_voice"]
 
 [resource]
 script = ExtResource("1_script")
@@ -19,3 +20,4 @@ body_color = Color(0.25, 0.7, 0.45, 1)
 head_color = Color(0.85, 0.85, 0.82, 1)
 look = &"rasenmaeher"
 attack = ExtResource("2_attack")
+voice = ExtResource("9_voice")

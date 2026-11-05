@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyTypeData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/voice_lines/wildschwein.tres" id="9_voice"]
 
 [resource]
 script = ExtResource("1_script")
@@ -20,3 +21,4 @@ flying = false
 spawn_weight = 0.3
 eats_knodl = true
 bite_per_second = 8.0
+voice = ExtResource("9_voice")
