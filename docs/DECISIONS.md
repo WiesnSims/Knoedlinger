@@ -1529,3 +1529,49 @@ the second tab.
     DPS formula per pattern and the effect-text builder; `mp_test -Clients 1` (the counter reaches the
     client).
   - **Order:** after 6.7, before the 6.5 rebalance (the DPS numbers help tuning).
+
+## 2026-11-06 – 1.4 Part 1: the Heuriger (branch `v1-4`, version 1.4.0)
+
+- **Owner: "go with the 1.4 plan part 1"**, keep the session lean. Part 0 is just `main` (1.3.2) merged into
+  `v1-4`; the DECISIONS.md conflict kept both sides (1.3.2 entries, then the plan).
+- **Version 1.4.0 now** (Part 0 no longer stamps it): `project.godot` and the patch list carry 1.4.0 from Part 1
+  on; the patch entry grows with every part (four lines so far).
+- **Map: Heuriger in den Weinbergen** (`tools/maps/make_heuriger.gd` → `data/maps/heuriger.tres`). Five round
+  terraces of 3 m (radii 74/60/47/34/21 m round (0, −40)) with the Presshaus = boss gate on top; ramps on every
+  terrace edge, turned further round per level so the way up winds; two smaller vineyard hills (2 terraces)
+  east and west; vine rows with gaps so the Knödl can roll down; the Heurigen-Ort with the Knödl stand in the
+  south (spawn). Eight Buschenschank spots, Stempel on the terrace tops and side hills, 14 chest spots.
+- **Claude: the wine-cellar tunnels are Kellergassen, not tunnels.** The terrain is a heightmap and cannot hold
+  a real tunnel, so MapData got a small generic feature, `lanes` + `lane_shapes`: a straight strip whose ground
+  rises evenly from one height to another and blends back at the sides. Two Kellergassen (SE and SW) run from
+  the foot straight up to the fourth terrace (12 m over 55 m) – the shortcut – sunk into the terrace walls,
+  with stone cellar portals where they cross a wall and Presshäuser at their foot.
+- **Claude: Buschenschanken** are the normal Wirtshaus building plus a pole with a green Buschen over the
+  door (`MapData.wirtshaus_buschen`), so the Wirtshaus code stays one.
+- **Unlock: Auftrag "Weinlese" – win 3 runs** (Claude's choice; the other maps unlock by surviving 10 min and
+  by 5 runs). Four more Aufträge: Schneckenpost (300 Weinbergschnecken), Starenplage (1000 Stare),
+  Wespennest (500 Wespen), Sturmwarnung (beat Der Sturm) – 114 in all.
+- **New enemies (data flags, so later maps can reuse them):**
+  - Weinbergschnecke: 30 HP, speed 1.4, 5 XP. `slime_slow` 0.35: a slime trail slows players to 65 %.
+    Claude: the trail is not sent over the network – every machine drops spots behind the snails it sees
+    (host: EnemyManager, clients: the replica) and slows only its own player (`SlimeTrail`, one MultiMesh,
+    spots last 5 s, every 0.5 s per snail, 0.9 m radius; numbers in `balance_data.gd`).
+  - Star-Schwarm: 2 HP, speed 6.5, flier. `eats_brosel` 14 m: flies to the nearest loose Brösel and pecks it
+    up (nobody gets that XP; `BroselField.steal`), and goes for the Knödl like a Taube only when none lie in
+    reach.
+  - Wespe: 4 HP, speed 7, flier. `sweet_tooth`: a Bröselfresser only for sweet Knödl (new sort flag `sweet`:
+    Marillen- and Germknödl now; the Topfenknödl of Part 2 too); with no sweet Knödl about it chases players.
+- **Mini-boss at 10:00 on the Heuriger: Der Sturm** (2800 HP, escort 10 Stare). A whirlwind of young wine:
+  pulls enemies (with a swirl), loose Brösel and every Knödl that is not `heavy` (Speckknödl) within 18 m
+  toward it (enemies/Brösel 5 m/s, Knödl 6 m/s² through `Knodl.wind`, the Föhn hook). Its attacks: a gust
+  (5 scattered red circles) and the **spiral** – a new attack aim SPIRAL: 14 red circles on two turns out to
+  22 m, each filling 0.08 s after the last; when it starts, what it pulled in is flung back out (enemies with
+  14 m/s knockback, Brösel scattered up to 22 m, i.e. under the red marks). Brösel moves go to clients as
+  re-sent Brösel, four times a second.
+- **Voices** (`voices.py`, four new filters): Schnecke (slow, low, gooey), Star (high chirp), Wespe (buzzing),
+  Sturm (breathy, tipsy, echoing); 13 lines. Owner asked in the plan for samples first – they are in the
+  preview to listen to; any line can be redone.
+- **Music per map** (`make_audio.mjs`, `MapData.music`): Heuriger = Schrammel techno (A major, 124 BPM),
+  Gamskogl = après-ski techno (D major, 134 BPM), Gemeindebau = Wienerlied beat (A minor, 96 BPM, swung).
+  +1.4 MiB OGG. The Kirtag keeps its track; the boss and Sperrstund' tracks stay shared.
+- Not done in Part 1: map traits on the map select (1.3, P3) – slides to later as planned.
