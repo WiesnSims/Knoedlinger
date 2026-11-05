@@ -72,7 +72,9 @@ func _clock() -> void:
 	var radius: float = minf(size.x, size.y) * 0.5 - 1.0
 	draw_circle(centre, radius, UiStyle.color("panel_raised"))
 	if _shown_fill > 0.0:
-		draw_arc(centre, radius - 2.5, -PI * 0.5, -PI * 0.5 + TAU * _shown_fill, 32, UiStyle.color("accent"), 3.0, true)
+		# Nachspielzeit: the full arc blinks in the danger colour.
+		var arc: Color = UiStyle.color("danger") if warn and int(Time.get_ticks_msec() / 250) % 2 == 0 else UiStyle.color("accent")
+		draw_arc(centre, radius - 2.5, -PI * 0.5, -PI * 0.5 + TAU * _shown_fill, 32, arc, 3.0, true)
 	draw_arc(centre, radius, 0.0, TAU, 32, UiStyle.color("text"), 1.5, true)
 	# The hands: the big one shows the share of the run, the small one stays near the Sperrstund'.
 	var angle: float = -PI * 0.5 + TAU * _shown_fill

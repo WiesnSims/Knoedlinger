@@ -222,11 +222,32 @@ extends Resource
 @export var coop_wirtshaus_per_player: int = 1
 
 @export_group("Run")
-## The Kirtag lasts until Sperrstund' (15:00); then the Riesen-Wirt sweeps everyone out.
+## The Kirtag lasts until Sperrstund' (15:00). That settles the result (won with the Hofrat beaten,
+## else "Sperrstund' erlebt"); then the Nachspielzeit runs until everyone is down.
 @export var run_seconds: float = 900.0
-## How long the Riesen-Wirt sweeps before the run ends as a win.
-@export var sperrstund_seconds: float = 6.0
 @export var riesen_wirt_speed: float = 5.0
+
+@export_group("Nachspielzeit")
+## Past Sperrstund' the Stammgast-Geister come (the wave's entries from minute 15): this many at
+## first, more every minute, up to spawn_max_count (co-op: times the co-op count).
+@export var overtime_start_count: int = 150
+@export var overtime_count_per_minute: float = 60.0
+## Every overtime_step_seconds every enemy gets this much faster (up to overtime_pace_max), hits this
+## much harder and new ones bring this much more HP (on top of spawn_hp_per_minute).
+@export var overtime_step_seconds: float = 30.0
+@export var overtime_pace_per_step: float = 0.06
+@export var overtime_pace_max: float = 2.0
+@export var overtime_damage_per_step: float = 0.1
+@export var overtime_hp_per_step: float = 0.1
+## Schilling per second of Nachspielzeit (before the Grant and co-op multipliers).
+@export var schilling_per_overtime_second: float = 1.0
+## When the last player falls: slow motion at this speed, for this many real seconds, then the end
+## screen. Not in automated runs.
+@export var overtime_slowmo: float = 0.3
+@export var overtime_end_seconds: float = 2.5
+## The Nachspielzeit ends by itself after this long (a run nobody can lose, e.g. god mode); the
+## Ehrentafel accepts runs up to run_seconds + this (board/board.js MAX_RUN_SECONDS).
+@export var overtime_max_seconds: float = 600.0
 
 @export_group("Build")
 ## Two weapon and four stat slots (GAME-DESIGN.md pillar 4); weapon slots 3 and 4 come from the meta.

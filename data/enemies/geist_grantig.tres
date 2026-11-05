@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/voice_lines/geist_grantig.tres" id="9_voice"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"geist_grantig"
+name_key = "ENEMY_GEIST_GRANTIG"
+desc_key = "DESC_ENEMY_GEIST_GRANTIG"
+max_hp = 12.0
+speed = 6.4
+radius = 0.46
+contact_damage = 30.0
+brosel_xp = 5
+knockback_factor = 0.4
+model_scale = 1.1
+body_color = Color(0.86, 0.1, 0.08, 1)
+head_color = Color(0.95, 0.72, 0.2, 1)
+flying = true
+air_reach = 8.0
+spawn_weight = 0.0
+look = &"geist"
+voice = ExtResource("9_voice")
+stays_at_sperrstund = true
+arrive_toast = "TOAST_GEIST_GRANTIG"

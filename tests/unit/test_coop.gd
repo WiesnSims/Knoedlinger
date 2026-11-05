@@ -100,8 +100,8 @@ func test_planar_snapshot_round_trips_negative_and_far_positions() -> void:
 		alive.append(1 if i % 3 != 0 else 0)
 		x.append(-149.97 + i * 7.31)
 		z.append(150.0 - i * 6.9)
-		type.append(i % 16)
-		hp.append(15 - i % 16)
+		type.append(i % SnapshotCodec.MAX_TYPES)
+		hp.append(SnapshotCodec.HP_MAX - i % (SnapshotCodec.HP_MAX + 1))
 	var frame: SnapshotCodec.Frame = SnapshotCodec.decode(SnapshotCodec.encode(3, 99, slots, alive, x, z, type, hp))
 	assert_not_null(frame)
 	for i: int in slots:

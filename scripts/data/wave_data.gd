@@ -1,7 +1,7 @@
 class_name WaveData
 extends Resource
 ## Which enemies a run sends and when. `enemies` lists every type the run uses (its index is the
-## type id in snapshots, max 16); `entries` is the timeline that mixes them over the minutes. The
+## type id in snapshots, max SnapshotCodec.MAX_TYPES); `entries` is the timeline that mixes them over the minutes. The
 ## crowd size ramps by the spawn numbers in balance.tres. Without entries every type spawns all the
 ## time by its EnemyTypeData.spawn_weight.
 

@@ -1196,3 +1196,52 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   the merge is the same code, so after the production deploy only the browser check runs against the live
   URL: it catches deploy problems (files, headers, cache, loader). The full suite runs again only when
   something changed after approval (another merge on `main`, a fix, a version change like today).
+
+## 2026-11-05 – Nachspielzeit: the Stammgast-Geister after Sperrstund' (branch `nachspielzeit`, 1.4.0)
+
+- **Owner asked:** what happens at 15:00, and whether a fast special enemy that one-shots the player
+  would be better than the end screen just appearing. Claude researched Megabonk (its "Final Swarm":
+  when the stage timer runs out, endless ghosts that speed up over time, red "overtime" ghosts later,
+  rewards for lasting 1 / 2 / 6 minutes) and proposed a Nachspielzeit with the result locked at 15:00.
+  **Owner: "build it like you suggested in your points".** Before: at 15:00 the crowd stopped, the
+  Riesen-Wirt swept for 6 s, players were invulnerable, then the end screen came, which felt abrupt.
+- **Claude: the result is settled at Sperrstund'.** At 15:00, WON if the Hofrat is beaten, else CLOSED,
+  exactly as before; nothing in the Nachspielzeit can turn it into a loss. Leaving (menu, host gone)
+  in the Nachspielzeit records that result too (before 15:00 leaving is still "QUIT").
+- **Claude: the Nachspielzeit** (phase SPERRSTUND, no new phase on the wire). The Riesen-Wirt comes as
+  before and his broom keeps sweeping the Kirtag crowd (no drops), but not the ghosts
+  (`EnemyTypeData.stays_at_sperrstund`) or bosses (they stand and wait, as before). New spawns are only
+  the wave's entries past minute 15: the **Stammgast-Geist** (white bedsheet ghost with his Krügerl,
+  6 HP, 5.2 m/s, 12 damage, 1 XP) from 15:00, the **Grantiger Stammgast** (red, 12 HP, 6.4 m/s,
+  30 damage, 5 XP; toast "D' Stammgäst wern grantig! Renn!") from 17:00 at a quarter of the mix and
+  half from 19:00. Both fly (no slopes, no walls) and rise 8 m to players on roofs. Crowd:
+  `overtime_start_count` 150 + 60 per minute, capped like the normal crowd. Every
+  `overtime_step_seconds` = 30 s every enemy moves 6 % faster (`EnemyManager.pace`, max 2x), hits 10 %
+  harder and new ones bring 10 % more HP (on top of the per-minute HP). Players take damage again (the
+  old rule made them invulnerable after 15:00). The Schunkel waltz speeds up with the pace (max 1.5x).
+  Red for the grantige ghost: it is the deadliest enemy, so the danger colour fits; nothing friendly
+  uses it.
+- **Claude: down is out.** In the Nachspielzeit a knock-down is final: no respawn (also with
+  `respawn=1`, so automated runs end), co-op teammates cannot wake you (`out` at once), and every
+  Wirtshaus is shut from 15:00 (so no cash-in revive either). Item revives (Marterl-Kerze, Nachschlag)
+  still work. When the last player falls: 2.5 real seconds of slow motion at 0.3x (`Engine.time_scale`;
+  not in automated runs), then the end screen. Text when down: "Aussegschmissn! Des wor's …". A run
+  nobody can lose (god mode) ends after `overtime_max_seconds` = 10 min.
+- **Claude: what it pays.** 1 Schilling per second (`schilling_per_overtime_second`, before the Grant
+  and co-op multipliers); the end screen shows a "Nachspielzeit" row (only when there was any); the HUD
+  clock counts "+m:ss" with its arc blinking in the danger colour. The Ehrentafel already sorts by
+  result, Grant, then time, so a longer Nachspielzeit ranks higher; `MAX_RUN_SECONDS` 960 → 1560
+  (otherwise every run with more than a minute would have been refused). Three new Aufträge (quest kind
+  `overtime`, minutes of Nachspielzeit in one run, per character or any; Profile `best.overtime`):
+  "Nachspielzeit" (1 min, 150 S), "Sperrstund' ignoriert" (3 min, 400 S), "Oma bleibt sitzen"
+  (3 min with Oma Resi, 300 S). Schilling only, no unlocks.
+- **Claude: 18 enemy types per wave.** Every wave already listed 16 types, the snapshot's limit (4 bits
+  of type, 4 of HP bucket). Snapshot v3 splits the byte 5 / 3: up to 32 types, 8 HP buckets (they only
+  flash hit enemies on clients). Same bytes per enemy, so the bandwidth stays (57.5 KiB/s per client
+  at 844 enemies was too close to 60 for an extra byte plane).
+- **Claude: voices.** Seven new lines through the eSpeak pipeline (`geist`: airy, wavering, a big empty
+  Gaststube; `geist_grantig`: lower, driven, shaking): "Mei Stammplatzl …", "Oa Krügerl geht no!",
+  "Wer geht'n do scho ham?", "I kumm morgen wieder …" / "Wer sitzt auf mein Platz?!",
+  "Sperrstund' gibt's ned!", "Zahln tu i nächste Wochn …" (0.22 MB).
+- **Claude: `ui_shots.ps1`** has two new scenes, `overtime` (15:01+) and `grantig` (17:10+); `end` takes
+  a second shot at 58 s (the bot now plays on into the Nachspielzeit before the end screen).

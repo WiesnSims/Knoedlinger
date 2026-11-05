@@ -110,6 +110,8 @@ func progress(quest: QuestData) -> float:
 			return float(best.get("knodl", 0.0))
 		&"survive":
 			return float(best.get("survive", 0.0)) / 60.0
+		&"overtime":
+			return float((best["overtime"] as Dictionary).get(filter if filter != "" else "_all", 0.0)) / 60.0
 		&"schilling":
 			return float(data.get("schilling_total", 0))
 		&"items":
@@ -206,6 +208,10 @@ func record_run(run: Dictionary) -> Dictionary:
 		levels[key] = maxi(int(levels.get(key, 0)), level)
 	best["knodl"] = maxf(float(best.get("knodl", 0.0)), float(run.get("best_knodl_mass", 0.0)))
 	best["survive"] = maxf(float(best.get("survive", 0.0)), float(run.get("time", 0.0)))
+	# Nachspielzeit: the longest run past Sperrstund', overall and per Knödlinger (seconds).
+	var overtime: Dictionary = best["overtime"]
+	for key: String in ["_all", character]:
+		overtime[key] = maxf(float(overtime.get(key, 0.0)), float(run.get("overtime", 0.0)))
 	var grant: int = int(run.get("grant", 1))
 	var grant_up: bool = false
 	if won:
@@ -304,7 +310,7 @@ func _fresh() -> Dictionary:
 	return {
 		"v": VERSION, "schilling": 0, "schilling_total": 0, "ranks": {}, "quests": {}, "grant_unlocked": 1,
 		"stats": {"kills": {}, "cash_ins": [0, 0, 0, 0], "runs": 0, "wins": {}, "bosses": {}, "stempel": 0},
-		"best": {"level": {}, "knodl": 0.0, "survive": 0.0, "boss_no_throw": {}, "grant_win": -1},
+		"best": {"level": {}, "knodl": 0.0, "survive": 0.0, "boss_no_throw": {}, "grant_win": -1, "overtime": {}},
 		"found": {}, "records": {}, "last": {},
 	}
 

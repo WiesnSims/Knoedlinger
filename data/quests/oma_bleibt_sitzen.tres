@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"oma_bleibt_sitzen"
+title_key = "QUEST_OMA_BLEIBT_SITZEN"
+desc_key = "DESC_QUEST_OMA_BLEIBT_SITZEN"
+kind = &"overtime"
+filter = &"resi"
+target = 3.0
+reward_schilling = 300

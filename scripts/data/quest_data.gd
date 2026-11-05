@@ -15,6 +15,7 @@ extends Resource
 ##   stempel        Stempel collected over all runs
 ##   knodl          the biggest Knödl of one run, in mass
 ##   survive        minutes survived in one run
+##   overtime       minutes of Nachspielzeit (past Sperrstund') in one run (filter: character id, or any)
 ##   schilling      Schilling earned over all runs
 ##   items          different items found
 ##   grant_win      a run won at this Grant level or higher (target = level index)

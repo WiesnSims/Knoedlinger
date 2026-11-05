@@ -44,7 +44,7 @@ func test_kill_and_respawn_keep_the_count() -> void:
 	assert_true(events[1].has(0))
 
 
-func test_hp_bucket_scales_to_four_bits() -> void:
-	assert_eq(manager.hp_bucket(1), 15)
+func test_hp_bucket_scales_to_three_bits() -> void:
+	assert_eq(manager.hp_bucket(1), SnapshotCodec.HP_MAX)
 	manager.damage(1, manager.max_hp[1] * 0.5)
-	assert_between(manager.hp_bucket(1), 7, 8)
+	assert_between(manager.hp_bucket(1), 3, 4)
