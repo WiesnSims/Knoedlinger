@@ -1197,6 +1197,118 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   URL: it catches deploy problems (files, headers, cache, loader). The full suite runs again only when
   something changed after approval (another merge on `main`, a fix, a version change like today).
 
+## 1.3.2 – Ehrentafel on the title screen (2026-11-05)
+
+Owner: 1.4 stays in planning (branch `v1-4`); this feature is needed now, as a patch release 1.3.2 off `main`
+(branch `ehrentafel-menu`). Owner asked for the top 5 (or 3) runs of the Ehrentafel in the main menu so every
+player sees it first, and for "Rekorde" to become "Ehrentafel" with the board shown directly and "Eigene" as
+the second tab.
+- **Top 5, not 3 (Claude):** five rows fit a compact panel at 1280x720 without crowding the menu, and the board
+  is still young (a top 3 would mostly show the owner's own runs). `BoardTop.SIZE` = 5.
+- **What it shows (Claude):** the first map (Kirtag), solo, all time – the default view of the full board, so
+  the panel and the board agree. Columns: place, name, result · Grant level, time; own entries in the accent.
+  Header "Ehrentafel", line "De bestn 5 · Kirtag in Unterhinterkogl · allein", pill "Ganze Ehrentafel" opens the
+  screen. One `Board.fetch` when the menu opens (every return from a run reloads the menu).
+- **Where (Claude):** bottom right of the title screen, 64 px from the edges, only while no menu screen is open
+  (it would sit under the screens otherwise). Hidden entirely when the board cannot be reached (desktop, local
+  server, offline) instead of showing the offline line on the title screen; an empty board shows
+  "Do steht no kana drauf. Sei du da Erste!".
+- **Renamed:** menu entry and screen title "Rekorde" → "Ehrentafel"; tabs "Ehrentafel" (first, default, LB /
+  Left) and "Eigene Rekorde" (second, RB / Right).
+- **Board filters in two rows (Claude):** maps, then Allein/Familie and Ewig/Diese Woche. In one row they were
+  wider than the menu's free area (cut off at 1280x720 and 1920x1080); unnoticed before because the board was
+  the second tab.
+- Patch note 1.3.2 on top of `patch_notes.tres`, version 1.3.2 in project.godot.
+- **Measured** (local, RTX 3080): tests pass; browser check 180.4 fps, p95 6.9 ms, at most 101 draw calls;
+  `mp_test -Clients 1` passes; `ui_shots -Only title,meta` pass at both sizes (screens checked by eye, with the
+  board list proxied read-only from production to see real rows).
+
+## 2026-11-05 – Nachspielzeit: the Stammgast-Geister after Sperrstund' (branch `nachspielzeit`, 1.3.2)
+
+- **Owner asked:** what happens at 15:00, and whether a fast special enemy that one-shots the player
+  would be better than the end screen just appearing. Claude researched Megabonk (its "Final Swarm":
+  when the stage timer runs out, endless ghosts that speed up over time, red "overtime" ghosts later,
+  rewards for lasting 1 / 2 / 6 minutes) and proposed a Nachspielzeit with the result locked at 15:00.
+  **Owner: "build it like you suggested in your points".** Before: at 15:00 the crowd stopped, the
+  Riesen-Wirt swept for 6 s, players were invulnerable, then the end screen came, which felt abrupt.
+- **Claude: the result is settled at Sperrstund'.** At 15:00, WON if the Hofrat is beaten, else CLOSED,
+  exactly as before; nothing in the Nachspielzeit can turn it into a loss. Leaving (menu, host gone)
+  in the Nachspielzeit records that result too (before 15:00 leaving is still "QUIT").
+- **Claude: the Nachspielzeit** (phase SPERRSTUND, no new phase on the wire). The Riesen-Wirt comes as
+  before and his broom keeps sweeping the Kirtag crowd (no drops), but not the ghosts
+  (`EnemyTypeData.stays_at_sperrstund`) or bosses (they stand and wait, as before). New spawns are only
+  the wave's entries past minute 15: the **Stammgast-Geist** (white bedsheet ghost with his Krügerl,
+  6 HP, 5.0 m/s, 8 damage, 1 XP) from 15:00, the **Grantiger Stammgast** (red, 12 HP, 6.4 m/s,
+  24 damage, 5 XP; toast "D' Stammgäst wern grantig! Renn!") from 17:00 at a quarter of the mix and
+  half from 19:00. Both fly (no slopes, no walls) and rise 8 m to players on roofs. Crowd:
+  `overtime_start_count` 80 + 60 per minute, capped like the normal crowd. The Kirtag guests go
+  home: every 0.5 s any ordinary enemy more than `overtime_leave_distance` = 25 m from every player
+  leaves unseen (no drops), so the ghosts get the slots (found in the 4-player test: 572 old enemies
+  kept every slot and almost no ghost came). Every
+  `overtime_step_seconds` = 30 s every enemy moves 6 % faster (`EnemyManager.pace`, max 2x), hits 10 %
+  harder and new ones bring 10 % more HP (on top of the per-minute HP). Players take damage again (the
+  old rule made them invulnerable after 15:00). The Schunkel waltz speeds up with the pace (max 1.5x).
+  Red for the grantige ghost: it is the deadliest enemy, so the danger colour fits; nothing friendly
+  uses it.
+- **Claude: down is out.** In the Nachspielzeit a knock-down is final: no respawn (also with
+  `respawn=1`, so automated runs end), co-op teammates cannot wake you (`out` at once), and every
+  Wirtshaus is shut from 15:00 (so no cash-in revive either). Item revives (Marterl-Kerze, Nachschlag)
+  still work. When the last player falls: 2.5 real seconds of slow motion at 0.3x (`Engine.time_scale`;
+  not in automated runs), then the end screen. Text when down: "Aussegschmissn! Des wor's …". A run
+  nobody can lose (god mode) ends after `overtime_max_seconds` = 10 min.
+- **Claude: what it pays.** 1 Schilling per second (`schilling_per_overtime_second`, before the Grant
+  and co-op multipliers); the end screen shows a "Nachspielzeit" row (only when there was any); the HUD
+  clock counts "+m:ss" with its arc blinking in the danger colour. The Ehrentafel already sorts by
+  result, Grant, then time, so a longer Nachspielzeit ranks higher; `MAX_RUN_SECONDS` 960 → 1560
+  (otherwise every run with more than a minute would have been refused). Three new Aufträge (quest kind
+  `overtime`, minutes of Nachspielzeit in one run, per character or any; Profile `best.overtime`):
+  "Nachspielzeit" (1 min, 150 S), "Sperrstund' ignoriert" (3 min, 400 S), "Oma bleibt sitzen"
+  (3 min with Oma Resi, 300 S). Schilling only, no unlocks.
+- **Claude: 18 enemy types per wave.** Every wave already listed 16 types, the snapshot's limit (4 bits
+  of type, 4 of HP bucket). Snapshot v3 splits the byte 5 / 3: up to 32 types, 8 HP buckets (they only
+  flash hit enemies on clients). Same bytes per enemy, so the bandwidth stays (57.5 KiB/s per client
+  at 844 enemies was too close to 60 for an extra byte plane).
+- **Claude: voices.** Seven new lines through the eSpeak pipeline (`geist`: airy, wavering, a big empty
+  Gaststube; `geist_grantig`: lower, driven, shaking): "Mei Stammplatzl …", "Oa Krügerl geht no!",
+  "Wer geht'n do scho ham?", "I kumm morgen wieder …" / "Wer sitzt auf mein Platz?!",
+  "Sperrstund' gibt's ned!", "Zahln tu i nächste Wochn …" (0.22 MB).
+- **Claude: `ui_shots.ps1`** has two new scenes, `overtime` (15:01+) and `grantig` (17:10+); `end` takes
+  a second shot at 100 s (the bot now plays on into the Nachspielzeit before the end screen).
+- **Claude: the Formular is moot past 15:00.** Stempel can no longer be picked up in the Nachspielzeit
+  (the bot finished the Formular at 15:20 and "Formular komplett! Ab zum Gemeindeamt!" came up). A
+  waiting boss can still be beaten (it counts for boss quests, not for the result).
+- **Tuning (Claude, balance log, Ferdl / Kirtag / Grant 1, seeds 1-3; the bot never runs away from the
+  ghosts):** first numbers (150 ghosts, 12 / 30 damage): level 50-54 bots lasted 9-14 s. With the
+  numbers above and the guests going home: 15 s, 17 s and 1:56 (2,432 ghosts beaten; 922 Schilling).
+  A player who runs is faster than the white ghosts (7 vs 5 m/s) until the pace catches up after some
+  3-4 minutes. All numbers are in balance.tres / the ghosts' .tres for the owner's playtest.
+- **Measured** (local, RTX 3080): tests 188/188; browser check 173.6 fps, p95 7.1 ms, at most 101 draw
+  calls; `mp_test -Clients 1` passes (33.2 KiB/s, 0 pops); `mp_test -Clients 3 -StartTime 885 -Seconds 40`
+  passes (clients through Sperrstund' into 29 s of Nachspielzeit, result CLOSED on every client, ghosts
+  of type 16/17 over snapshot v3); `autoplay -Runs 3` passes; `ui_shots -Only hud,end,overtime,grantig`
+  passes (no console errors, under 150 draw calls).
+- **Preview:** https://nachspielzeit.knoedlinger.pages.dev (66737cd): browser check 177.6 fps, p95 7 ms,
+  at most 102 draw calls, no console errors. Board tests 8/8 (`MAX_RUN_SECONDS` 1560).
+- **Owner: this is 1.3.2, not 1.4.0.** It ships together with the Ehrentafel fix of the other session
+  (branch `ehrentafel-menu`, also 1.3.2), so 1.4 stays for the new features of the 1.4 plan. The
+  patch note is one `note_1_3_2`: that branch has lines `PATCH_1_3_2_01`/`_02`, this one `_03`-`_06`;
+  whichever merges second joins the two line lists.
+
+## 1.3.2 – merged with Nachspielzeit and released (2026-11-05)
+
+- **Owner: approved** the Ehrentafel in the menu and asked to merge it with the other session's branch
+  `nachspielzeit` (already renumbered to ship as 1.3.2) and to deploy to production. Both went into
+  `ehrentafel-menu`, then `main` (e7b9098). Conflicts: the 1.3.2 patch note takes the Ehrentafel lines
+  01-02 then the Nachspielzeit lines 03-06; both decisions entries kept; the translation regenerated
+  from the merged CSV.
+- **Merged code checked** (local, RTX 3080): tests pass, web export, browser check 182.5 fps / p95 6.9 ms
+  / at most 103 draw calls, `mp_test -Clients 1`, `-Clients 3 -StartTime 595` and `-Clients 3 -Coop`
+  pass, `board/test/board.test.mjs` 8/8 (`MAX_RUN_SECONDS` 1560 for the Nachspielzeit; no D1 migration).
+- **Production deploy of 1.3.2** at the owner's word: https://knoedlinger.pages.dev serves e7b9098.
+  Live browser check (headless Edge, 500 enemies, bot, 60 s): 176.3 fps, p95 6.9 ms, at most 100 draw
+  calls, no console errors; the title screen shows the real top 5.
+- `v1-4`'s Part 0 (fold in `nachspielzeit`) is now just merging `main` into `v1-4`.
+
 ## 2026-11-05 – Plan for 1.4.0 (branch `v1-4`, not started)
 
 - **Owner asked** for a new milestone for the 1.4 features: more maps, weapons and characters, plus Claude's

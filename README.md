@@ -18,7 +18,7 @@
 | Debug overlay | F3 |
 
 URL flags for testing: `?bot=1` (a bot plays), `?god=1`, `?knodl_mass=500`, `?enemies=500`, `?debug=1`,
-`?start_time=880` (start the clock late, e.g. to see Sperrstund'), `?scene=stress` (the M0 stress arena).
+`?start_time=880` (start the clock late, e.g. to see Sperrstund' and the Nachspielzeit), `?scene=stress` (the M0 stress arena).
 
 ## Toolchain
 

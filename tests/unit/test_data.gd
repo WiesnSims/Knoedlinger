@@ -25,7 +25,7 @@ func test_every_enemy_type_loads_with_a_translated_name() -> void:
 func test_enemy_types_fit_the_snapshot_type_bits() -> void:
 	for file: String in ResourceLoader.list_directory("res://data/waves"):
 		var wave: WaveData = load("res://data/waves".path_join(file))
-		assert_lte(wave.enemies.size(), 16, file)
+		assert_lte(wave.enemies.size(), SnapshotCodec.MAX_TYPES, file)
 
 
 func test_m1_content_loads_with_translated_names() -> void:
@@ -158,7 +158,7 @@ func test_characters_start_with_a_weapon_from_the_catalog() -> void:
 
 func test_the_wave_uses_known_enemies_and_has_broeselfresser() -> void:
 	var wave: WaveData = load("res://data/waves/kirtag.tres")
-	assert_lte(wave.enemies.size(), 16, "type fits 4 bits in snapshots")
+	assert_lte(wave.enemies.size(), SnapshotCodec.MAX_TYPES, "type fits 5 bits in snapshots")
 	var eaters: int = 0
 	for enemy: EnemyTypeData in wave.enemies:
 		if enemy.eats_knodl:
@@ -192,7 +192,7 @@ func test_every_map_has_its_places_and_a_wave() -> void:
 		var map: MapData = load("res://data/maps/%s.tres" % info.id)
 		assert_not_null(map, String(info.id))
 		var wave: WaveData = map.wave if map.wave != null else load("res://data/waves/kirtag.tres")
-		assert_lte(wave.enemies.size(), 16, String(info.id))
+		assert_lte(wave.enemies.size(), SnapshotCodec.MAX_TYPES, String(info.id))
 		assert_not_null(wave.final_boss, String(info.id))
 		for boss: WaveBoss in wave.bosses:
 			assert_true(wave.enemies.has(boss.boss.enemy), "%s: boss body %s in the wave" % [info.id, boss.boss.id])

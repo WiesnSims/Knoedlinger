@@ -1,8 +1,8 @@
 class_name RecordsScreen
 extends PanelContainer
-## "Rekorde": the player's own best runs per map, one row per Knödlinger (longest time, wins and
-## highest Grant won, highest level, most kills, biggest Knödl, most Schilling from one run). The
-## online Ehrentafel sits beside it (`board`, added when it exists).
+## "Ehrentafel": the online board first (`board`, the first tab and the default since 1.3.2), then
+## the player's own best runs per map, one row per Knödlinger (longest time, wins and highest Grant
+## won, highest level, most kills, biggest Knödl, most Schilling from one run).
 
 signal closed
 
@@ -18,7 +18,7 @@ var _body: VBoxContainer
 var _tabs: HBoxContainer
 var _own_pill: ActionPill
 var _board_pill: ActionPill
-## The online Ehrentafel, the second tab.
+## The online Ehrentafel, the first tab.
 var board: BoardPanel
 
 
@@ -32,16 +32,16 @@ func _init(p_content: GameContent) -> void:
 	header.add_child(UiStyle.label(&"LabelTitle", tr("RECORDS_TITLE")))
 	_tabs = UiStyle.hbox()
 	column.add_child(_tabs)
-	_own_pill = ActionPill.new("", &"shoulder_left")
-	_own_pill.set_label(tr("RECORDS_OWN"))
-	_own_pill.toggle_mode = true
-	_own_pill.pressed.connect(func() -> void: _show_board(false))
-	_tabs.add_child(_own_pill)
-	_board_pill = ActionPill.new("", &"shoulder_right")
+	_board_pill = ActionPill.new("", &"shoulder_left")
 	_board_pill.set_label(tr("RECORDS_BOARD"))
 	_board_pill.toggle_mode = true
 	_board_pill.pressed.connect(func() -> void: _show_board(true))
 	_tabs.add_child(_board_pill)
+	_own_pill = ActionPill.new("", &"shoulder_right")
+	_own_pill.set_label(tr("RECORDS_OWN"))
+	_own_pill.toggle_mode = true
+	_own_pill.pressed.connect(func() -> void: _show_board(false))
+	_tabs.add_child(_own_pill)
 	_body = UiStyle.vbox(&"Gap24")
 	column.add_child(_body)
 	board = BoardPanel.new(content)
@@ -53,7 +53,7 @@ func _init(p_content: GameContent) -> void:
 
 
 func refresh() -> void:
-	_show_board(false)
+	_show_board(true)
 	for child: Node in _body.get_children():
 		child.queue_free()
 	for info: MapInfo in content.maps:
@@ -85,17 +85,17 @@ func focus_first() -> void:
 	pass
 
 
-## Left / Right (LB / RB on the pad) switch between the own records and the Ehrentafel.
+## Left / Right (LB / RB on the pad) switch between the Ehrentafel and the own records.
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_visible_in_tree():
 		return
 	var key: InputEventKey = event as InputEventKey
 	if key != null and key.pressed and not key.echo and (key.physical_keycode == KEY_LEFT or key.physical_keycode == KEY_RIGHT):
 		get_viewport().set_input_as_handled()
-		_show_board(key.physical_keycode == KEY_RIGHT)
+		_show_board(key.physical_keycode == KEY_LEFT)
 	elif event.is_action_pressed(&"shoulder_left") or event.is_action_pressed(&"shoulder_right"):
 		get_viewport().set_input_as_handled()
-		_show_board(event.is_action_pressed(&"shoulder_right"))
+		_show_board(event.is_action_pressed(&"shoulder_left"))
 
 
 func _show_board(on: bool) -> void:

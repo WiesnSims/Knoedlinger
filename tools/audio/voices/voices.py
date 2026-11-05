@@ -244,6 +244,26 @@ def wirt(text):
     return finish(x, 0.3, 2.0)
 
 
+def geist(text):
+    """A Stammgast-Geist: slow, airy and wavering, a breath under it, far down an empty Gaststube."""
+    x, sr = speak(text, "de+m2", 120, 70)
+    x = at_pitch(x, sr, 1.06)
+    t = np.arange(len(x)) / SR
+    x = d.bandpass(d.normalize(x), 260, 4200) * (1.0 + 0.35 * np.sin(2 * np.pi * 5.5 * t))
+    x = d.normalize(x) + 0.35 * d.normalize(rasp(x, 0.9))
+    return finish(d.echo(x, 0.22, 0.4, 4, 3000), 0.4, 2.0)
+
+
+def geist_grantig(text):
+    """The grantige Stammgast: the same ghost lower, rougher and shaking with anger."""
+    x, sr = speak(text, "de+m3", 150, 35)
+    x = at_pitch(x, sr, 0.86)
+    t = np.arange(len(x)) / SR
+    x = d.bandpass(d.drive(d.normalize(x), 2.2), 180, 3800) * (1.0 + 0.3 * np.sin(2 * np.pi * 8.0 * t))
+    x = d.normalize(x) + 0.25 * d.normalize(rasp(x, 1.0))
+    return finish(d.echo(x, 0.18, 0.35, 3, 2500), 0.35, 1.6)
+
+
 # --- the samples the owner listens to before every line is made -----------------------------------
 
 SAMPLES = {
@@ -259,7 +279,8 @@ SAMPLES = {
 FILTERS = {"tourist": tourist, "akten": akten, "radler": radler, "roboter": roboter, "perchte": perchte,
            "kontrolleur": kontrolleur, "oberkrampus": oberkrampus, "hofrat": hofrat, "hungrig": hungrig,
            "schneemann": schneemann, "zwerg": zwerg, "wuehlmaus": wuehlmaus, "dackel": dackel, "taube": taube,
-           "wildschwein": wildschwein, "wirt": wirt}
+           "wildschwein": wildschwein, "wirt": wirt, "geist": geist,
+           "geist_grantig": geist_grantig}
 
 # --- every line --------------------------------------------------------------------------------------
 # (enemy id, moment, line, text shown, how eSpeak says it, voice). The game's side is data:
@@ -336,6 +357,13 @@ LINES = [
     ("hofrat", "BEATEN", "instanz", "Des geht an die nächste Instanz …", "Des geht an die nächste Instanz.", "hofrat"),
     ("riesen_wirt", "ARRIVE", "sperrstund", "Sperrstund'! Zahln, bitte!", "Sperrstund! Zahln, bitte!", "wirt"),
     ("riesen_wirt", "ARRIVE", "ham", "Und jetzt olle ham!", "Und jetzt olle ham!", "wirt"),
+    ("geist", "IDLE", "stammplatz", "Mei Stammplatzl …", "Mei Stammplatzl.", "geist"),
+    ("geist", "IDLE", "kruegerl", "Oa Krügerl geht no!", "Oa Krügerl geht no!", "geist"),
+    ("geist", "IDLE", "ham", "Wer geht'n do scho ham?", "Wer gehtn do scho ham?", "geist"),
+    ("geist", "DEATH", "morgen", "I kumm morgen wieder …", "I kumm morgen wieder.", "geist"),
+    ("geist_grantig", "IDLE", "platz", "Wer sitzt auf mein Platz?!", "Wer sitzt auf mein Platz?", "geist_grantig"),
+    ("geist_grantig", "IDLE", "sperrstund", "Sperrstund' gibt's ned!", "Sperrstund gibts ned!", "geist_grantig"),
+    ("geist_grantig", "DEATH", "zahln", "Zahln tu i nächste Wochn …", "Zahln tu i nächste Wochn.", "geist_grantig"),
 ]
 
 

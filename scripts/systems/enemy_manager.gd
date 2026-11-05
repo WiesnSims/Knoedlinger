@@ -21,6 +21,8 @@ var type_weights: PackedFloat32Array = PackedFloat32Array()
 ## speed_mult (the Grant level).
 var hp_mult: float = 1.0
 var speed_mult: float = 1.0
+## Every walking enemy, old or new, moves this much faster right now (the Nachspielzeit hurries them).
+var pace: float = 1.0
 ## New enemies appear on a ring this far from a random player.
 var ring_min: float = 0.0
 var ring_max: float = 0.0
@@ -213,10 +215,10 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 			if hp[i] <= 0.0:
 				damage(i, 0.0)
 				continue
-		var slowed: float = 1.0
+		var slowed: float = pace
 		if slow_timer[i] > 0.0:
 			slow_timer[i] -= delta
-			slowed = slow_mult[i]
+			slowed = slow_mult[i] * pace
 		if controlled[i] != 0:
 			continue
 		var x: float = pos_x[i]
@@ -482,9 +484,9 @@ func shove(slot: int, x: float, z: float) -> void:
 	pos_z[slot] = clampf(z, -half, half)
 
 
-## HP as 0..15 for the snapshot (4 bits).
+## HP as 0..SnapshotCodec.HP_MAX for the snapshot (3 bits).
 func hp_bucket(slot: int) -> int:
-	return clampi(ceili(hp[slot] / max_hp[slot] * 15.0), 0, 15)
+	return clampi(ceili(hp[slot] / max_hp[slot] * SnapshotCodec.HP_MAX), 0, SnapshotCodec.HP_MAX)
 
 
 func take_events() -> Array[PackedInt32Array]:

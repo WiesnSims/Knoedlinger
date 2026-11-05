@@ -202,8 +202,11 @@ func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: Bala
 	var clock: float = minf(run_time, balance.run_seconds)
 	_clock.fill = clock / balance.run_seconds
 	_time_label.text = "%d:%02d" % [floori(clock / 60.0), int(clock) % 60]
-	if run_time >= balance.run_seconds:
-		_time_label.text = tr("HUD_SPERRSTUND")
+	# Past Sperrstund' the clock counts the Nachspielzeit, blinking in the danger colour.
+	var overtime: float = run_time - balance.run_seconds
+	_clock.warn = overtime >= 0.0
+	if overtime >= 0.0:
+		_time_label.text = tr("HUD_OVERTIME") % [floori(overtime / 60.0), int(overtime) % 60]
 	if state.level > _last_level:
 		toast(tr("TOAST_LEVEL_UP") % state.level)
 	_last_level = state.level

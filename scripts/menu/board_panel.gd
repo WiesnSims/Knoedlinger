@@ -20,10 +20,11 @@ var _status: Label
 func _init(p_content: GameContent) -> void:
 	content = p_content
 	theme_type_variation = &"Gap16"
+	# Two rows (maps, then mode and period): in one row they were wider than the menu's free area.
+	var maps := UiStyle.hbox()
+	add_child(maps)
 	var filters := UiStyle.hbox(&"Row24")
 	add_child(filters)
-	var maps := UiStyle.hbox()
-	filters.add_child(maps)
 	for info: MapInfo in content.maps:
 		_pill(maps, "map:" + String(info.id), tr(info.name_key), func() -> void:
 			_map = info.id
