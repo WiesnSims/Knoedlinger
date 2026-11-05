@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
 [ext_resource type="Resource" path="res://data/attacks/schneemann_ball.tres" id="2_attack"]
+[ext_resource type="Resource" path="res://data/voice_lines/schneemann.tres" id="9_voice"]
 
 [resource]
 script = ExtResource("1_script")
@@ -18,3 +19,4 @@ body_color = Color(0.95, 0.97, 1, 1)
 head_color = Color(0.95, 0.97, 1, 1)
 look = &"schneemann"
 attack = ExtResource("2_attack")
+voice = ExtResource("9_voice")

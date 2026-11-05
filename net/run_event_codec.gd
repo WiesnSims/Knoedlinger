@@ -14,11 +14,12 @@ extends RefCounted
 ##   BOSS    u8 boss | u8 state | u16 slot
 ##   BUS     f32 x | f32 z | f32 yaw
 ##   CUE     u8 cue | f32 x | f32 z   (a sound or effect at a place: Stempel taken, chest opened ...)
+##   SAY     u8 enemy type | u8 line | u16 slot | f32 x | f32 z   (an enemy says a line, EnemyVoices)
 
-const VERSION: int = 1
+const VERSION: int = 2
 const MAX_EVENTS: int = 255
 
-enum Kind { HAZARD, LOOT, TAKEN, TOAST, BOSS, BUS, CUE }
+enum Kind { HAZARD, LOOT, TAKEN, TOAST, BOSS, BUS, CUE, SAY }
 enum BossState { ARRIVED, BEATEN }
 enum Cue { STEMPEL, CHEST, COIN, HEAL, GATE_OPEN, NO_GOLD, CASH_IN, HAZARD_HIT, BOSS_HIT, BUS_HORN, SHOCKWAVE }
 
@@ -27,9 +28,9 @@ class Event:
 	extends RefCounted
 	var kind: Kind = Kind.TOAST
 	var id: int = 0
-	## HAZARD: shape; LOOT: loot kind; BOSS: boss index; CUE: cue.
+	## HAZARD: shape; LOOT: loot kind; BOSS: boss index; CUE: cue; SAY: enemy type.
 	var a: int = 0
-	## LOOT: value; BOSS: slot; TAKEN: peer.
+	## LOOT: value; BOSS: slot; TAKEN: peer; SAY: line.
 	var b: int = 0
 	## BOSS: state.
 	var c: int = 0
@@ -108,6 +109,17 @@ class Queue:
 		e.z = z
 		events.append(e)
 
+	## An enemy of type `enemy_type` in `slot` (at x, z) says its line number `line`.
+	func say(enemy_type: int, line: int, slot: int, x: float, z: float) -> void:
+		var e := Event.new()
+		e.kind = Kind.SAY
+		e.a = enemy_type
+		e.b = line
+		e.id = slot
+		e.x = x
+		e.z = z
+		events.append(e)
+
 	func take() -> Array[Event]:
 		var out: Array[Event] = events
 		events = []
@@ -168,6 +180,13 @@ static func encode(events: Array[Event]) -> PackedByteArray:
 				data.encode_u8(o + 1, e.a)
 				data.encode_float(o + 2, e.x)
 				data.encode_float(o + 6, e.z)
+			Kind.SAY:
+				data.resize(o + 13)
+				data.encode_u8(o + 1, e.a & 0xFF)
+				data.encode_u8(o + 2, e.b & 0xFF)
+				data.encode_u16(o + 3, e.id & 0xFFFF)
+				data.encode_float(o + 5, e.x)
+				data.encode_float(o + 9, e.z)
 		data.encode_u8(o, e.kind)
 	return data
 
@@ -184,7 +203,7 @@ static func decode(data: PackedByteArray) -> Array[Event]:
 			return []
 		var e := Event.new()
 		var kind: int = data.decode_u8(o)
-		if kind > Kind.CUE:
+		if kind > Kind.SAY:
 			return []
 		e.kind = kind as Kind
 		var size: int = _size_of(e.kind, data, o)
@@ -223,6 +242,12 @@ static func decode(data: PackedByteArray) -> Array[Event]:
 				e.a = data.decode_u8(o + 1)
 				e.x = data.decode_float(o + 2)
 				e.z = data.decode_float(o + 6)
+			Kind.SAY:
+				e.a = data.decode_u8(o + 1)
+				e.b = data.decode_u8(o + 2)
+				e.id = data.decode_u16(o + 3)
+				e.x = data.decode_float(o + 5)
+				e.z = data.decode_float(o + 9)
 		if not (is_finite(e.x) and is_finite(e.z) and is_finite(e.angle)):
 			return []
 		out.append(e)
@@ -248,4 +273,6 @@ static func _size_of(kind: Kind, data: PackedByteArray, o: int) -> int:
 			return 13
 		Kind.CUE:
 			return 10
+		Kind.SAY:
+			return 13
 	return -1

@@ -40,6 +40,8 @@ $scenes = @(
     @{ Id = 'gemeindebau'; Query = "$common&map=gemeindebau&knodl_mass=160"; At = '24,34' },
     # A minute into a run with quick picks: weapon level cards with their rolled gain, then the build.
     @{ Id = 'late'; Query = "$common&pick_delay=1.5&god=1"; At = '70,71,72,73,74,110'; Press = ',,,,,Tab' },
+    # Enemy lines over their heads (EnemyVoices; voice_every makes them talk often enough to catch).
+    @{ Id = 'voices'; Query = "$common&knodl_mass=160&god=1&voice_every=1"; At = '26,29,32,35' },
     @{ Id = 'pause'; Query = "$common&knodl_mass=160"; At = '24,27'; Press = 'Escape,ArrowDown+Enter' },
     # M5: the touch controls (a real finger holds the stick and walks), then the three settings tabs.
     @{ Id = 'touch'; Query = "$common&knodl_mass=160&touch=1"; At = '24,30'; Touch = $true; Press = ',drag:{sx}:{sy}:{sx2}:{sy}:600' },

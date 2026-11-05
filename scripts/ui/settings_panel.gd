@@ -45,7 +45,7 @@ const TABS: Array = [
 	["SET_TAB_GAME", [
 		["SET_GROUP_GAME", [
 			[&"player_name", "SET_PLAYER_NAME", "name"], [&"glossary", "SET_GLOSSARY", "toggle"],
-			[&"board", "SET_BOARD", "toggle"], [&"language", "SET_LANGUAGE", "language"],
+			[&"enemy_chatter", "SET_ENEMY_CHATTER", "toggle"], [&"board", "SET_BOARD", "toggle"], [&"language", "SET_LANGUAGE", "language"],
 		]],
 	], []],
 ]

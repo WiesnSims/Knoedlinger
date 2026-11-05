@@ -228,6 +228,10 @@ func _add_effects() -> void:
 		material.set_shader_parameter(&"progress", 0.5)
 		disc.material_override = material
 		_add_effect(disc)
+	# 1.2: an enemy's line over its head (fixed size, no depth test: a look of its own).
+	var line: Label3D = EnemyVoices.make_text()
+	line.text = tr("SET_ENEMY_CHATTER")
+	_add_effect(line)
 
 
 ## Effects go first: they sit in front of the camera and are freed with the warm-up.

@@ -31,6 +31,8 @@ enum Result { NONE, WON, CLOSED, LOST }
 const MAP_DIR: String = "res://data/maps"
 const WAVE_PATH: String = "res://data/waves/kirtag.tres"
 const CATALOG_PATH: String = "res://data/catalog/catalog.tres"
+## What the Riesen-Wirt says as he comes for Sperrstund' (he is no enemy, so not in the wave).
+const RIESEN_WIRT_VOICE: String = "res://data/voice_lines/riesen_wirt.tres"
 const CHARACTER_DIR: String = "res://data/characters"
 ## Clients size their arrays for any host crowd up to this.
 const CLIENT_SLOTS: int = 1024
@@ -83,6 +85,8 @@ var seconds: Dictionary[int, Knodl] = {}
 var weapon_vfx: Dictionary[int, WeaponVfx] = {}
 var wirtshaeuser: Array[Wirtshaus] = []
 var hazards: HazardField
+## Talking enemies: the host picks the lines, every role shows them.
+var voices: EnemyVoices
 var loot: LootField
 var gate: PortalGate
 ## Host: the bosses of the run.
@@ -194,6 +198,7 @@ var _bosses_beaten: Array = []
 var _bus: TouristenBus
 var _run_events_received: int = 0
 var _hazards_seen: int = 0
+var _voice_lines_received: int = 0
 var _gate_shown: int = -1
 var _last_hp: float = 0.0
 var _was_downed: bool = false
@@ -290,6 +295,10 @@ func _ready() -> void:
 	hazards.name = "Hazards"
 	add_child(hazards)
 	hazards.setup(ground, seed_value)
+	voices = EnemyVoices.new()
+	voices.name = "EnemyVoices"
+	add_child(voices)
+	voices.setup(balance, types, ground, events, seed_value)
 	loot = LootField.new()
 	loot.name = "Loot"
 	add_child(loot)
@@ -349,6 +358,7 @@ func _ready() -> void:
 	add_child(touch)
 	if host:
 		enemies = EnemyManager.new(balance, types, slots, seed_value, ground, map.half_size)
+		voices.enemies = enemies
 		enemies.ring_min = balance.spawn_first_ring_min
 		enemies.ring_max = balance.spawn_first_ring_max
 		enemies.speed_mult = grant.enemy_speed
@@ -367,6 +377,7 @@ func _ready() -> void:
 		_place_map_chests()
 	else:
 		replica = EnemyReplica.new(balance, types, slots)
+		voices.replica = replica
 	NetworkManager.snapshot_received.connect(_on_snapshot)
 	NetworkManager.events_received.connect(_on_events)
 	NetworkManager.player_input_received.connect(_on_player_input)
@@ -510,6 +521,10 @@ func _host_frame(delta: float) -> void:
 	_start_attacks()
 	_on_bosses_beaten(bosses.update(delta, targets, phase == Phase.RUNNING))
 	bosses.touch_damage(targets, enemies.touch_damage)
+	var boss_slots := PackedInt32Array()
+	for boss: BossDirector.Active in bosses.active:
+		boss_slots.append(boss.slot)
+	voices.host_update(delta, targets, boss_slots)
 	if run_time > 1.0:
 		enemies.ring_min = balance.spawn_ring_min
 		enemies.ring_max = balance.spawn_ring_max
@@ -520,6 +535,7 @@ func _host_frame(delta: float) -> void:
 		if eaten > 0.0:
 			states[knodl_peers[k]].mass_eaten_by_enemies += eaten
 			knodls[knodl_peers[k]].bite(eaten, balance.knodl_bite_spill)
+			voices.offer_bite(knodls[knodl_peers[k]].global_position, knodls[knodl_peers[k]].radius)
 	var damage_mult: float = grant.enemy_damage * Formulas.early_ease(run_time, balance.spawn_ease_damage, balance)
 	for t: int in peers.size():
 		var state: PlayerState = states[peers[t]]
@@ -667,6 +683,7 @@ func _spawn_riesen_wirt() -> void:
 	var behind: Vector3 = local.global_position - local.facing_direction() * 22.0
 	behind.y = ground.height_at(behind.x, behind.z)
 	_riesen_wirt.global_position = behind
+	voices.say_local(load(RIESEN_WIRT_VOICE) as VoiceLineSet, VoiceLineData.Moment.ARRIVE, _riesen_wirt, 3.5 * 2.2)
 
 
 ## The Riesen-Wirt walks to the nearest player with his broom (every machine moves its own copy).
@@ -871,6 +888,7 @@ func _send_guards() -> void:
 			var slot: int = enemies.spawn_at(guard, at.x, at.z)
 			if slot >= 0:
 				_guards[wirt.spot] = slot
+				voices.offer(slot, VoiceLineData.Moment.ARRIVE)
 
 
 ## True while this Wirtshaus' Kontrolleur still stands at its door.
@@ -890,6 +908,10 @@ func _drop_brosel() -> void:
 		_kills_by_type[id] = _kills_by_type.get(id, 0) + 1
 		var kx: float = enemies.kill_x[k]
 		var kz: float = enemies.kill_z[k]
+		# Last words; a Knödl that just rolled over it gets its own.
+		var dead: int = enemies.kill_slot[k]
+		if not (enemies.knodl_timer[dead] > 0.0 and voices.offer(dead, VoiceLineData.Moment.CRUSHED)):
+			voices.offer(dead, VoiceLineData.Moment.DEATH)
 		# The Gartenzwerg goes off where it falls.
 		var death: AttackData = types[enemies.kill_type[k]].death_attack
 		if death != null:
@@ -1384,6 +1406,7 @@ func _finish() -> void:
 	if enemies != null:
 		report["kills"] = enemies.kills
 		report["enemies_alive"] = _alive_held
+		report["voices_said"] = voices.said
 		report["loot"] = loot.count
 	if NetworkManager.is_online() or _ended_reason != "":
 		var sent: int = NetworkManager.bytes_sent - maxi(_bytes_sent_start, 0)
@@ -1406,6 +1429,7 @@ func _finish() -> void:
 		replica_stats["offers_received"] = _offers_received
 		replica_stats["run_events"] = _run_events_received
 		replica_stats["hazards_seen"] = _hazards_seen
+		replica_stats["voice_lines"] = _voice_lines_received
 		replica_stats["loot_shown"] = loot.count
 		report["replica"] = replica_stats
 	var json: String = JSON.stringify(report)
@@ -2272,6 +2296,7 @@ func _on_bosses_beaten(beaten: Array[BossDirector.Active]) -> void:
 		var rarity: int = CardDealer.roll_chest_rarity(balance, _loot_rng, 0.0, balance.boss_chest_min_rarity)
 		_drop_loot(LootField.Kind.BOSS_CHEST, x, z, LootField.chest_value(chest, rarity))
 		events.boss(boss.index, RunEventCodec.BossState.BEATEN, boss.slot)
+		voices.offer(boss.slot, VoiceLineData.Moment.BEATEN)
 		if data.final:
 			gate_flags |= WorldStateCodec.GATE_BOSS_BEATEN
 		_bosses_beaten.append([String(data.id), snappedf(run_time, 0.1)])
@@ -2327,6 +2352,7 @@ func _spawn_boss(index: int, x: float, z: float) -> void:
 	var boss: BossDirector.Active = bosses.spawn(index, x, z, players.size())
 	if boss != null:
 		events.boss(index, RunEventCodec.BossState.ARRIVED, boss.slot)
+		voices.offer(boss.slot, VoiceLineData.Moment.ARRIVE)
 		print("[RUN] boss %s t=%.1f" % [boss.data.id, run_time])
 
 
@@ -2445,6 +2471,8 @@ func _take_loot(slot: int, peer: int) -> void:
 func _flush_events() -> void:
 	for h: HazardField.Hazard in hazards.take_made():
 		events.hazard(h)
+		if h.source >= 0 and enemies.alive[h.source] != 0:
+			voices.offer(h.source, VoiceLineData.Moment.ATTACK)
 	for key: String in bosses.take_toasts():
 		events.toast(key)
 	_update_focus()
@@ -2479,6 +2507,8 @@ func _on_run_events(data: PackedByteArray) -> void:
 			RunEventCodec.Kind.HAZARD:
 				hazards.add_remote(e.id, e.a, e.x, e.z, e.angle, e.radius, e.length, e.seconds)
 				_hazards_seen += 1
+			RunEventCodec.Kind.SAY:
+				_voice_lines_received += 1
 			RunEventCodec.Kind.LOOT:
 				loot.add_remote(e.id, e.a, e.x, e.z, e.b)
 			RunEventCodec.Kind.TAKEN:
@@ -2532,6 +2562,8 @@ func _present(e: RunEventCodec.Event) -> void:
 				GameAudio.play(&"gate_open")
 			elif e.a == RunEventCodec.Cue.SHOCKWAVE:
 				_show_shockwave(e.x, e.z)
+		RunEventCodec.Kind.SAY:
+			voices.present(e.a, e.b, e.id, e.x, e.z)
 
 
 ## Every role: the gate, the boss bar, the Formular line, markers, hints, music and the local
@@ -2635,6 +2667,7 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 		GameAudio.play(&"slam", Vector3(h.x, ground.height_at(h.x, h.z), h.z))
 	if local != null:
 		GameAudio.set_listener(local.global_position)
+		voices.update_view(delta, local.global_position)
 	if phase == Phase.RUNNING:
 		GameAudio.music(&"boss" if boss_alive else &"kirtag")
 		if not boss_alive:

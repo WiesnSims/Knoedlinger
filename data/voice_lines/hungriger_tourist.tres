@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="VoiceLineSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/voice_line_set.gd" id="1_set"]
+[ext_resource type="Script" path="res://scripts/data/voice_line_data.gd" id="2_line"]
+
+[sub_resource type="Resource" id="line_0"]
+script = ExtResource("2_line")
+text_key = "VOICE_HUNGRIGER_TOURIST_NACHSPEIS"
+sound = &"voice_hungriger_tourist_nachspeis"
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("2_line")
+text_key = "VOICE_HUNGRIGER_TOURIST_BUFFET"
+sound = &"voice_hungriger_tourist_buffet"
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("2_line")
+moment = 4
+text_key = "VOICE_HUNGRIGER_TOURIST_MMH"
+sound = &"voice_hungriger_tourist_mmh"
+
+[sub_resource type="Resource" id="line_3"]
+script = ExtResource("2_line")
+moment = 4
+text_key = "VOICE_HUNGRIGER_TOURIST_NACHSCHLAG"
+sound = &"voice_hungriger_tourist_nachschlag"
+
+[sub_resource type="Resource" id="line_4"]
+script = ExtResource("2_line")
+moment = 2
+text_key = "VOICE_HUNGRIGER_TOURIST_ZOIT"
+sound = &"voice_hungriger_tourist_zoit"
+
+[resource]
+script = ExtResource("1_set")
+lines = Array[ExtResource("2_line")]([SubResource("line_0"), SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4")])

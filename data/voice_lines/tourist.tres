@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="VoiceLineSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/voice_line_set.gd" id="1_set"]
+[ext_resource type="Script" path="res://scripts/data/voice_line_data.gd" id="2_line"]
+
+[sub_resource type="Resource" id="line_0"]
+script = ExtResource("2_line")
+text_key = "VOICE_TOURIST_SELFIE"
+sound = &"voice_tourist_selfie"
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("2_line")
+text_key = "VOICE_TOURIST_INKLUSIVE"
+sound = &"voice_tourist_inklusive"
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("2_line")
+text_key = "VOICE_TOURIST_WLAN"
+sound = &"voice_tourist_wlan"
+
+[sub_resource type="Resource" id="line_3"]
+script = ExtResource("2_line")
+text_key = "VOICE_TOURIST_SPECK"
+sound = &"voice_tourist_speck"
+
+[sub_resource type="Resource" id="line_4"]
+script = ExtResource("2_line")
+moment = 2
+text_key = "VOICE_TOURIST_TSCHUESS"
+sound = &"voice_tourist_tschuess"
+
+[sub_resource type="Resource" id="line_5"]
+script = ExtResource("2_line")
+moment = 2
+text_key = "VOICE_TOURIST_BEWERTUNG"
+sound = &"voice_tourist_bewertung"
+
+[sub_resource type="Resource" id="line_6"]
+script = ExtResource("2_line")
+moment = 3
+text_key = "VOICE_TOURIST_KNOEDL"
+sound = &"voice_tourist_knoedl"
+
+[resource]
+script = ExtResource("1_set")
+lines = Array[ExtResource("2_line")]([SubResource("line_0"), SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4"), SubResource("line_5"), SubResource("line_6")])

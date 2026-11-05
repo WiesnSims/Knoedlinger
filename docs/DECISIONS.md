@@ -1019,7 +1019,66 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   https://knoedlinger.pages.dev. Measured on production (headless Edge, RTX 3080, 500 enemies, bot, 60 s):
   161.8 fps, p95 7.9 ms, at most 99 draw calls, no console errors; `mp_test -Clients 1` passes.
 
-## 2026-11-05 – Auto-aim and longer melee reach (1.2.0)
+## Audio fix (1.1.1)
+
+- **Owner: no sound in Firefox and Edge.** Measured with a Web Audio analyser in headless Edge: the M3 preview
+  plays (peak 1.22), M4 and later, including production 1.1.0, output pure silence. Cause: since M4 part 1
+  GameAudio created the Music/Sfx/Voice buses at runtime with `AudioServer.add_bus()`; Godot's web audio
+  (sample playback) never gets those buses, so every player on them was silent. **Claude:** the buses now
+  come from `default_bus_layout.tres` (loaded at engine start); GameAudio only reports a missing bus, and
+  `tests/unit/test_audio.gd` guards it. Fixed build: menu music peak 0.20, bot run peak 0.76. Patch release 1.1.1.
+- **Owner: approved** on the preview https://fix-audio.knoedlinger.pages.dev ("sound is working"); merged into `main`
+  (e818b0c), branch `fix-audio` deleted. **Production deploy of 1.1.1** on 2026-11-05 at the owner's word: live on
+  https://knoedlinger.pages.dev. Measured on production (headless Edge, analyser on the output): menu music peak 0.25,
+  bot run peak 0.98, no console errors.
+## 2026-11-05 – Enemy voice lines (branch `enemy-voices`, planned 1.2.0)
+
+- **Owner:** enemies talk like Berghittn's "Gredn" (eSpeak NG voices with a filter per enemy, the line as
+  text over the head). Enemies only for now; voices for the player characters maybe later. Much less chatty
+  than Berghittn: at most one enemy line overall every 3–5 s.
+- **Claude:** Berghittn's pipeline is copied: `tools/audio/voices/dsp.py` as is, `voices.py` with its
+  eSpeak call, vocoder and the filters the owner approved there (Tourist, Perchte, Krampus → Oberkrampus).
+  New filters: Akten-Geist (hollow, detuned, office echo), Radler (out of breath), Rasenmäher-Roboter
+  (vocoder on a fixed 110 Hz buzz, bitcrushed), Kontrolleur (nasal), Hofrat (dry, slow, marble hall).
+  Python + eSpeak NG only on the dev machine, the OGGs are ours. Step 1 is samples for the owner
+  (`python tools/audio/voices/voices.py --samples` → `build/voice_samples/index.html`, ~25 KB per line)
+  before the full line set and the runtime (lines as data in `data/voice_lines/`, text via `tr()`,
+  picked on the host from EnemyManager events, a SAY run event for co-op, a "Gegner reden" setting).
+  Animals (Gelse, Dackel, Taube, Wildschwein) get sounds, not words.
+- **Owner (2026-11-05):** samples approved ("sounds good"), build the lines.
+- **Built (1.2.0):** 64 lines from 16 enemies plus the Riesen-Wirt, 16 voices (new: Hungriger Tourist =
+  the Tourist lower and slower, Schneemann muffled with a shiver, Gartenzwerg and Wühlmaus quick and high
+  like Berghittn's Venedigermandl, Dackel/Taube/Wildschwein as "Wuff!", "Gurr." and "Grunz!", the
+  Riesen-Wirt big and booming). Only the Gelsen and the Lawine keep quiet. 1.42 MB of OGG (.pck 3.6 →
+  5.2 MiB). Lines are data: `VoiceLineData` (moment, text key, sound, optional chance) in a `VoiceLineSet`
+  per enemy (`data/voice_lines/`, `EnemyTypeData.voice`); the Riesen-Wirt's set is loaded by path, since
+  he is no enemy type.
+- **Claude – when they talk** (numbers in `balance_data.gd`, group "Enemy voices"): one line overall every
+  2.5–4 s plus up to 1 s waiting for a moment's line before an idle one, never over the line before
+  (measured in the test: 3.5–5.0 s apart, mean 4.4 s); one line per enemy type every 10 s; only within 20 m
+  of a player. Moments: IDLE (random nearby enemy), ATTACK (its telegraph starts; 35 %), DEATH (15 %;
+  Gartenzwerg 40 %), CRUSHED (killed by a Knödl, 30 %), EAT (a Bröselfresser biting a Knödl, 40 %),
+  ARRIVE / HALF / BEATEN (bosses, always; the Kontrolleur arriving at the door, the Riesen-Wirt at
+  Sperrstund'). Bosses skip the overall gap and the reach, with their own 6 s gap; their attacks 50 %.
+- **Claude – how it shows:** the text over the head at a fixed on-screen size (about the theme's body size,
+  bold, thin shadow-coloured outline, no depth test), following the speaker; last words stay where it fell.
+  At most 2 shown (a nearer line replaces the farther one), within 25 m of the local player, as long as
+  the voice (at least 1.6 s), then a 0.4 s fade. At most 2 lines heard at once, on the Voice bus.
+  Setting "Gegner reden" (Spiel tab, on by default).
+- **Claude – co-op:** the host picks every line; a new run event SAY (u8 enemy type, u8 line, u16 slot,
+  x, z; 13 bytes) goes reliably to the clients (RunEventCodec VERSION 2), which show it at that slot.
+  The Riesen-Wirt's line is local (every machine moves its own Riesen-Wirt). `mp_test` fails when none
+  of the host's lines reach a client. Test hook `?voice_every=1` for the `voices` screenshots.
+- **Claude:** the speech text is a shader variant of its own (fixed size, no depth test) and hidden
+  Label3Ds are not warmed up, so the first line of a run froze the page for ~100 ms; ShaderWarmup now
+  builds a copy (`EnemyVoices.make_text()`). Merged `main` (1.1.1, audio buses from the layout file) into
+  the branch so the voices are heard on the web.
+- **Measured** (local, RTX 3080, after the merge): tests 179/179; browser check 138 fps / p95 9.3 ms / max
+  frame 20.7 ms / at most 104 draw calls; `mp_test -Clients 1` passes (30.8 KiB/s, 3 of 3 lines reached the client); `mp_test -Clients 3
+  -StartTime 595` passes (57.2 KiB/s with 846 enemies, every client got the same 7 of the host's 10 lines,
+  probably the 3 said before the clients had joined; not confirmed from the logs).
+
+## 2026-11-05 – Auto-aim and longer melee reach (1.3.0)
 
 - **Owner asked** how many weapons are ranged and auto-aimed, compared with Megabonk: melee felt weak because you
   die quickly up close. Counted on the 16 base weapons: 5 pick their own targets (Hagelkanone, Stempel,
@@ -1037,4 +1096,8 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   3.4 → 4.5, Kuhglocke 4.5 → 5.8, Obstler 4.6 → 5.8, Mozartkugel orbit 2.6 → 3.4, Kugel-Karussell 3.2 → 4.2,
   Nudelwalker 3.0 → 4.0, Sachertorte blast 3.0 → 3.6.
 - **Owner: no defensive bonus for melee** (damage reduction / heal on hit) for now.
-- **Version 1.2.0** (a feature; co-op needs the same version anyway since the message changed).
+- **Version 1.3.0** (a feature; `main` was already 1.2.0 with the enemy voices).
+- **Measured before the merge with the enemy voices** (autoplay Ferdl / Kirtag / Grant 1, seeds 1–10, the same
+  seeds on 1.1.0 and on this branch): level 45.3 → 46.2, kills 16.3k → 17.5k, knock-downs 23.2 → 17.5 (−25 %),
+  bosses beaten 13 → 17, Hofrat beaten 0 → 2 runs. Seeds 1–4 favoured 1.1.0 (other card picks), seeds 5–10
+  favoured the branch in 5 of 6; the bot's card luck swings a run by ±8 levels.

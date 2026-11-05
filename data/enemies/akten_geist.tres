@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
 [ext_resource type="Resource" path="res://data/enemies/formular.tres" id="2_formular"]
+[ext_resource type="Resource" path="res://data/voice_lines/akten_geist.tres" id="9_voice"]
 
 [resource]
 script = ExtResource("1_script")
@@ -22,3 +23,4 @@ spawn_weight = 0.0
 split_into = ExtResource("2_formular")
 split_count = 3
 look = &"akten"
+voice = ExtResource("9_voice")

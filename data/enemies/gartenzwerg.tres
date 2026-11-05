@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
 [ext_resource type="Resource" path="res://data/attacks/gartenzwerg_boom.tres" id="3_death"]
+[ext_resource type="Resource" path="res://data/voice_lines/gartenzwerg.tres" id="9_voice"]
 
 [resource]
 script = ExtResource("1_script")
@@ -17,3 +18,4 @@ body_color = Color(0.3, 0.45, 0.75, 1)
 head_color = Color(0.95, 0.8, 0.65, 1)
 look = &"gartenzwerg"
 death_attack = ExtResource("3_death")
+voice = ExtResource("9_voice")

@@ -45,6 +45,8 @@ const DEFAULTS: Dictionary[StringName, Variant] = {
 	&"touch_opacity": 0.6,
 	&"reduce_flashing": false,
 	&"glossary": true,
+	## Enemies say a line now and then, with the text over their head (EnemyVoices).
+	&"enemy_chatter": true,
 	## Send real runs to the online Ehrentafel.
 	&"board": true,
 	&"language": "de",
