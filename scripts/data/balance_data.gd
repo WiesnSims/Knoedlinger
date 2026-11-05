@@ -86,6 +86,8 @@ extends Resource
 @export var player_jump_buffer: float = 0.12
 ## Steepest walkable slope in degrees.
 @export var player_max_slope_degrees: float = 46.0
+## Ground up to this steep still lets the player jump off it (hop up a hillside); walls do not.
+@export var player_slope_jump_degrees: float = 80.0
 @export var player_max_hp: float = 100.0
 ## Invulnerability after a hit.
 @export var player_hurt_cooldown: float = 0.5
@@ -194,6 +196,11 @@ extends Resource
 ## The first wave starts closer, so the first level-up comes within 10 s (GAME-DESIGN.md pillar 2).
 @export var spawn_first_ring_min: float = 9.0
 @export var spawn_first_ring_max: float = 15.0
+## Spawns ahead of a player (where they run, or look while standing) lie this much farther out: the
+## camera sees the ground far ahead, so they come from the distance (EnemyManager.ring_ahead).
+@export var spawn_ring_ahead: float = 24.0
+## A player counts as running (heading = where they move, not where they face) above this speed.
+@export var spawn_heading_min_speed: float = 2.0
 @export var spawn_start_count: int = 20
 @export var spawn_count_per_minute: float = 40.0
 @export var spawn_max_count: int = 300
@@ -260,6 +267,8 @@ extends Resource
 @export var card_seconds_coop: float = 8.0
 ## A hit always does at least this much, whatever the armor.
 @export var min_hit_damage: float = 1.0
+## Armor this high takes half of every hit (Formulas.armor_share): 3 armor -23 %, 8 -44 %, 20 -67 %.
+@export var armor_half: float = 10.0
 ## A revive from an item (Marterl-Kerze) brings the player back with this share of their max HP.
 @export var item_revive_hp: float = 0.5
 

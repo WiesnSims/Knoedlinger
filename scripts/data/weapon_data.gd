@@ -12,8 +12,8 @@ extends Resource
 ## hail, snow globes). MINE: blasts where the player stood, a moment later. CHAIN: a hit that jumps
 ## from enemy to enemy.
 enum Pattern { ARC, PROJECTILE, RING, AURA, ORBIT, DROP, MINE, CHAIN }
-## How ORBIT pieces and projectiles look.
-enum Look { BALL, PIN, SPEAR }
+## How ORBIT pieces and projectiles look; FLAME: an ARC weapon shows a flame stream, not a swing.
+enum Look { BALL, PIN, SPEAR, FLAME }
 
 @export var id: StringName = &""
 ## Translation keys of the player-facing name and the deadpan one-liner on its card.

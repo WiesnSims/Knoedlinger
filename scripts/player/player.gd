@@ -26,6 +26,9 @@ var ground: Heightfield
 var spawn_point: Vector3 = Vector3.ZERO
 ## Players stay inside +-bounds on x and z.
 var bounds: float = 100.0
+## Steep slopes are jumped off only this far from the centre on x and z: the mountains round the map
+## (MapData.rim_start) stay a wall.
+var slope_jump_reach: float = INF
 ## Yaw of the camera, so "up" on the stick runs away from it (local player only).
 var camera_yaw: float = 0.0
 ## A big Knödl slows its player down (Formulas.knodl_speed_factor).
@@ -57,6 +60,9 @@ var _rising: bool = false
 ## This tick's stick, world space (x = world X, y = world Z).
 var _move: Vector2 = Vector2.ZERO
 var _schupfn_presses: int = 0
+## The last Schupfn's mouse aim (yaw) and whether it had one (keyboard and mouse only).
+var _schupfn_aim: float = 0.0
+var _schupfn_aimed: bool = false
 var _last_position: Vector3 = Vector3.ZERO
 var _look: Node3D
 var _sign: Label3D
@@ -176,7 +182,8 @@ func _physics_process(delta: float) -> void:
 	var move: Vector2 = Vector2.ZERO if stuck else _sample_move(delta)
 	_move = move
 	var on_floor: bool = is_on_floor()
-	if on_floor:
+	if on_floor or _on_steep_slope():
+		# Too steep to stand on is still firm enough to jump off: a hillside is climbed in hops.
 		_coyote = balance.player_coyote_time
 		jumps_used = 0
 		_rising = false
@@ -219,18 +226,48 @@ func _physics_process(delta: float) -> void:
 		teleport(spawn_point)
 	if move.length_squared() > 0.01:
 		rotation.y = lerp_angle(rotation.y, atan2(move.x, move.y), 1.0 - exp(-TURN_SPEED * delta))
-	var schupfn: bool = Input.is_action_just_pressed(&"schupfn") or (bot != null and _manual_timer <= 0.0 and bot.take_schupfn())
+	var pressed: bool = Input.is_action_just_pressed(&"schupfn")
+	var schupfn: bool = pressed or (bot != null and _manual_timer <= 0.0 and bot.take_schupfn())
 	if schupfn and not stuck:
 		_schupfn_presses = (_schupfn_presses + 1) & 0xFF
+		var aim: float = _mouse_aim() if pressed else NAN
+		_schupfn_aimed = not is_nan(aim)
+		if _schupfn_aimed:
+			_schupfn_aim = aim
 	_update_motion(delta)
 	_tick += 1
 	last_input.tick = _tick
 	last_input.move = move
 	last_input.buttons = InputMessage.BUTTON_JUMP if Input.is_action_pressed(&"jump") else 0
+	if _schupfn_aimed:
+		last_input.buttons |= InputMessage.BUTTON_AIM
+	last_input.aim_yaw = _schupfn_aim
 	last_input.schupfn_presses = _schupfn_presses
 	last_input.jumps = jump_count
 	last_input.position = global_position
 	last_input.yaw = rotation.y
+
+
+## Keyboard and mouse: the yaw toward the ground under the cursor, or where the camera looks while it
+## holds the pointer (mouse look); NAN on a pad or touch, which throw the way the player moves.
+func _mouse_aim() -> float:
+	if InputDevice.kind != InputDevice.Kind.KEYS:
+		return NAN
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	if camera == null:
+		return NAN
+	var toward: Vector3 = -camera.global_basis.z
+	if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		var mouse: Vector2 = get_viewport().get_mouse_position()
+		var origin: Vector3 = camera.project_ray_origin(mouse)
+		var ray: Vector3 = camera.project_ray_normal(mouse)
+		var hit: Variant = Plane(Vector3.UP, global_position.y).intersects_ray(origin, ray)
+		# Above the horizon the ray never meets the ground: its heading still says where.
+		toward = (hit as Vector3) - global_position if hit != null else ray
+	toward.y = 0.0
+	if toward.length_squared() < 0.01:
+		return NAN
+	return atan2(toward.x, toward.z)
 
 
 ## Applies a validated message from the network to a remote player.
@@ -299,6 +336,16 @@ func _fall(held: bool, delta: float) -> void:
 	velocity.y = maxf(velocity.y - gravity * delta, -max_fall)
 	if velocity.y > 0.0 and global_position.y - ground_height_at(global_position) > balance.player_height_ceiling:
 		velocity.y = 0.0
+
+
+## Sliding down ground steeper than a walk (balance.player_max_slope_degrees) but not a wall
+## (balance.player_slope_jump_degrees): counts as ground for a jump, not for running.
+func _on_steep_slope() -> bool:
+	if not is_on_wall() or velocity.y > 0.5:
+		return false
+	if maxf(absf(global_position.x), absf(global_position.z)) > slope_jump_reach:
+		return false
+	return get_wall_normal().y > cos(deg_to_rad(balance.player_slope_jump_degrees))
 
 
 ## Jump held down (keys, pad, touch); the bot always holds its jumps to the top.

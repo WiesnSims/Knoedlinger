@@ -1,8 +1,8 @@
 extends Node3D
 ## The title screen (docs/DECISIONS.md, M4 plan): the Kirtag of Unterhinterkogl slowly turning
 ## behind the menu, the logo and the entries on the left, the chosen screen on the right. Entries:
-## Spielen, Stammtisch, Aufträge, Rekorde, Almanach, Einstellungen and "Stammtisch aufmachen"
-## (co-op: the CoopScreen room). On the very first start it asks for the player's name.
+## Spielen, Stammtisch, Aufträge, Rekorde, Almanach, Einstellungen, "Was is neu?" (the patch list)
+## and "Stammtisch aufmachen" (co-op: the CoopScreen room). On the very first start it asks for the player's name.
 
 const BACKDROP_MAP: String = "res://data/maps/kirtag.tres"
 const RUN_SCENE: String = "res://scenes/run/run_world.tscn"
@@ -20,6 +20,7 @@ const ENTRIES: Array = [
 	["MENU_RECORDS", &"records", true],
 	["MENU_ALMANACH", &"almanach", true],
 	["MENU_SETTINGS", &"settings", true],
+	["MENU_PATCHES", &"patches", true],
 	["MENU_COOP", &"coop", true],
 ]
 
@@ -157,6 +158,9 @@ func _build_ui() -> void:
 	var coop := CoopScreen.new(content)
 	coop.closed.connect(_close_screen)
 	_screens[&"coop"] = coop
+	var patches := PatchNotesScreen.new()
+	patches.closed.connect(_close_screen)
+	_screens[&"patches"] = patches
 	for id: StringName in [&"stammtisch", &"quests", &"records", &"almanach"]:
 		var screen: Control
 		match id:

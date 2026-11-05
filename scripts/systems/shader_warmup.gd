@@ -220,7 +220,7 @@ func _add_effects() -> void:
 	portal_material.shader = load("res://shaders/portal.gdshader")
 	portal.material_override = portal_material
 	_add_effect(portal)
-	for path: String in ["res://shaders/pulse.gdshader", "res://shaders/swing.gdshader"]:
+	for path: String in ["res://shaders/pulse.gdshader", "res://shaders/swing.gdshader", "res://shaders/flame.gdshader"]:
 		var disc := MeshInstance3D.new()
 		disc.mesh = MeshFactory.swing_fan(TAU, 8)
 		var material := ShaderMaterial.new()

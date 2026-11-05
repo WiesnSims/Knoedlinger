@@ -4,10 +4,12 @@ extends RefCounted
 ## player owns their own movement, so the message carries the input and where it took them; the host
 ## validates the position and passes it on to the other players.
 
-const VERSION: int = 3
-const SIZE: int = 24
+const VERSION: int = 4
+const SIZE: int = 26
 const BUTTON_JUMP: int = 1
 const BUTTON_SCHUPFN: int = 2
+## The last Schupfn was aimed (mouse): throw along aim_yaw instead of the movement stick.
+const BUTTON_AIM: int = 4
 
 var tick: int = 0
 ## Movement stick, each axis -1..1 (x = world X, y = world Z).
@@ -20,6 +22,8 @@ var yaw: float = 0.0
 var schupfn_presses: int = 0
 ## Counts jumps (wraps at 256): every n-th makes Kevin's shockwave on the host.
 var jumps: int = 0
+## Where the last Schupfn aims (same yaw as `yaw`), used while BUTTON_AIM is set.
+var aim_yaw: float = 0.0
 
 
 func to_bytes() -> PackedByteArray:
@@ -36,7 +40,16 @@ func to_bytes() -> PackedByteArray:
 	data.encode_u16(20, roundi(fposmod(yaw, TAU) / TAU * 65535.0))
 	data.encode_u8(22, schupfn_presses & 0xFF)
 	data.encode_u8(23, jumps & 0xFF)
+	data.encode_u16(24, roundi(fposmod(aim_yaw, TAU) / TAU * 65535.0))
 	return data
+
+
+## The flat direction a Schupfn goes: the aim when it was aimed, else the movement stick (the Knödl
+## then falls back to the way the player faces).
+func throw_direction() -> Vector3:
+	if buttons & BUTTON_AIM:
+		return Vector3(sin(aim_yaw), 0.0, cos(aim_yaw))
+	return Vector3(move.x, 0.0, move.y)
 
 
 ## Returns null for anything that is not a valid message.
@@ -51,6 +64,7 @@ static func from_bytes(data: PackedByteArray) -> InputMessage:
 	message.yaw = data.decode_u16(20) / 65535.0 * TAU
 	message.schupfn_presses = data.decode_u8(22)
 	message.jumps = data.decode_u8(23)
+	message.aim_yaw = data.decode_u16(24) / 65535.0 * TAU
 	if not message.position.is_finite():
 		return null
 	return message

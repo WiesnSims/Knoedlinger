@@ -38,6 +38,8 @@ const CHARACTER_DIR: String = "res://data/characters"
 const CLIENT_SLOTS: int = 1024
 const MAX_PLAYERS: int = 4
 const WARMUP_SECONDS: float = 3.0
+## Map chests show their price over them up to this far away (and only while on screen).
+const CHEST_PRICE_REACH: float = 45.0
 ## Seconds after a respawn in which the host accepts any pose from that player (they teleported).
 const RESPAWN_GRACE: float = 1.5
 ## The bot walks to Brösel closer than this before following its waypoints.
@@ -164,6 +166,8 @@ var _weapon_rng := RandomNumberGenerator.new()
 var _riesen_wirt: Node3D
 ## The first frame after a solo pause carries the paused time; it is left out of the frame stats.
 var _resumed: bool = false
+## Solo without the bot: nothing runs until the player first moves (_start_held).
+var _start_hold: bool = false
 ## The Tab screen or the pause menu holds the solo pause (not the Speisekarte).
 var _panel_paused: bool = false
 ## The pointer was captured last frame (the browser lets go of it on Esc without telling the game).
@@ -361,6 +365,8 @@ func _ready() -> void:
 		voices.enemies = enemies
 		enemies.ring_min = balance.spawn_first_ring_min
 		enemies.ring_max = balance.spawn_first_ring_max
+		enemies.ring_ahead = balance.spawn_ring_ahead
+		_start_hold = not NetworkManager.is_online() and not _bot and _forced_enemies == 0 and _seconds <= 0.0
 		enemies.speed_mult = grant.enemy_speed
 		_update_wave()
 		if _forced_enemies > 0:
@@ -478,7 +484,31 @@ func _process(delta: float) -> void:
 		_finish()
 
 
+## Where a player is going, for the spawn ring: the way they run, or the way they face standing.
+func _heading(player: Player) -> Vector2:
+	var moving := Vector2(player.motion_velocity.x, player.motion_velocity.z)
+	if moving.length() > balance.spawn_heading_min_speed:
+		return moving.normalized()
+	var facing: Vector3 = player.facing_direction()
+	return Vector2(facing.x, facing.z)
+
+
+## Solo: the clock, the spawns and the crowd wait for the player's first step (or jump, or Schupfn),
+## so a run never starts behind their back while they find the keys.
+func _start_held() -> bool:
+	if not _start_hold:
+		return false
+	if Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down").length_squared() > 0.0 			or Input.is_action_pressed(&"jump") or Input.is_action_pressed(&"schupfn"):
+		_start_hold = false
+	return _start_hold
+
+
 func _host_frame(delta: float) -> void:
+	if _start_held():
+		# The family's crumbs lie there already; the key hints wait with the run.
+		brosel.draw()
+		hud.hold_intro()
+		return
 	if phase != Phase.ENDED:
 		run_time += delta
 	_wave_timer -= delta
@@ -508,6 +538,9 @@ func _host_frame(delta: float) -> void:
 		for peer: int in players:
 			peers.append(peer)
 			targets.append(players[peer].global_position)
+	enemies.target_heading.resize(peers.size())
+	for k: int in peers.size():
+		enemies.target_heading[k] = _heading(players[peers[k]])
 	var knodl_peers: Array[int] = []
 	var knodl_targets := PackedVector4Array()
 	for peer: int in knodls:
@@ -563,8 +596,7 @@ func _host_frame(delta: float) -> void:
 			state.schupfn_seen = presses
 			# Co-op: Schupfn in a Riesenknödl lets go; a throw toward a teammate is a pass.
 			if not state.downed and not state.choosing and not coop.schupfn_splits(peer) and not knodl.merged_away:
-				var move: Vector2 = player.last_input.move
-				var aim: Array = coop.pass_aim(peer, Vector3(move.x, 0.0, move.y))
+				var aim: Array = coop.pass_aim(peer, player.last_input.throw_direction())
 				if knodl.schupfn(aim[0]) and knodl.state == Knodl.State.THROWN:
 					knodl.pass_target = aim[1]
 					if aim[1] != 0:
@@ -1338,6 +1370,8 @@ func _report(delta: float) -> void:
 			"knodl": snappedf(knodl.knodl_mass, 0.1) if knodl != null else 0.0,
 			"draws": int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)),
 			"players": players.size(),
+			"pos": [snappedf(players[NetworkManager.local_id()].global_position.x, 0.1),
+					snappedf(players[NetworkManager.local_id()].global_position.z, 0.1)] if players.has(NetworkManager.local_id()) else [],
 			"menu": speisekarte.is_shown(),
 			"draws_peak": _draws_peak,
 			"peak_with": _draws_peak_what,
@@ -1827,6 +1861,7 @@ func _spawn_player(peer_id: int, local: bool) -> Player:
 	player.setup(peer_id, local, balance, who, bot)
 	player.ground = ground
 	player.bounds = map.half_size
+	player.slope_jump_reach = map.rim_start
 	player.spawn_point = _spawn_position(peer_id)
 	add_child(player)
 	player.teleport(player.spawn_point)
@@ -2452,6 +2487,23 @@ func _collect_loot(delta: float) -> void:
 								LootField.chest_rarity(value))
 
 
+## The price over every map chest in view and within CHEST_PRICE_REACH, so the player sees from afar
+## whether they can afford it (accent: yes, muted: not yet).
+func _mark_chest_prices(from: Vector3) -> void:
+	var state: PlayerState = states.get(NetworkManager.local_id())
+	if state == null or state.build == null:
+		return
+	var view: Rect2 = get_viewport().get_visible_rect()
+	for slot: int in loot.capacity:
+		if loot.alive[slot] == 0 or loot.kinds[slot] != LootField.Kind.CHEST:
+			continue
+		var at: Vector3 = loot.position_of(slot) + Vector3(0.0, 1.6, 0.0)
+		if from.distance_to(at) > CHEST_PRICE_REACH or camera.is_position_behind(at) 				or not view.has_point(camera.unproject_position(at)):
+			continue
+		var price: int = _chest_price(slot, state)
+		hud.marker(camera, at, tr("HUD_CHEST_MARKER") % price, "accent" if state.build.gold >= price else "muted")
+
+
 ## What a map chest costs this player: its base price, dearer for every chest they opened.
 func _chest_price(slot: int, state: PlayerState) -> int:
 	var opened: int = state.chests_opened if state != null else 0
@@ -2619,6 +2671,7 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 				hud.marker(camera, at, tr("HUD_WAKE_MARKER") % [_mate_name(peer), roundi(far)], "accent")
 			elif far > 25.0 or off_screen:
 				hud.marker(camera, at, "%s · %d m" % [_mate_name(peer), roundi(far)], "rarity_1")
+		_mark_chest_prices(from)
 	hud.end_markers()
 	var hint: String = ""
 	var chest: int = loot.nearest(LootField.Kind.CHEST, from.x, from.z)

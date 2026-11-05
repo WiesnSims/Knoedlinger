@@ -50,6 +50,8 @@ $scenes = @(
     # Then back, Spielen, "Auf geht's!": the run started from the menu.
     # The meta screens of a fresh profile: Stammtisch, Aufträge, Rekorde, Almanach, then Spielen.
     @{ Id = 'meta'; Query = 'mute=1&debug=0'; At = '12,15,18,21,23,26,29'; Press = 'type:Resi+Enter,ArrowDown+Enter,Escape+ArrowDown+Enter,Escape+ArrowDown+Enter,ArrowRight,Escape+ArrowDown+Enter,Escape+ArrowUp+ArrowUp+ArrowUp+ArrowUp+Enter' },
+    # 1.4.0: the patch list ("Was is neu?", the seventh entry), at the top and scrolled down.
+    @{ Id = 'patches'; Query = 'mute=1&debug=0'; At = '12,15,17'; Press = 'type:Resi+Enter,ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+Enter,PageDown+PageDown' },
     @{ Id = 'title'; Query = 'mute=1&debug=0'; At = '12,15,18,21,26,34,44'; Press = ',type:Resi+Enter,Enter,Escape+ArrowDown+Enter,Escape+ArrowUp+Enter+Enter,,' }
 )
 try {
