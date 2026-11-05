@@ -1018,3 +1018,18 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   `movement` deleted. **Production deploy of 1.1.0** on 2026-11-05 at the owner's word: live on
   https://knoedlinger.pages.dev. Measured on production (headless Edge, RTX 3080, 500 enemies, bot, 60 s):
   161.8 fps, p95 7.9 ms, at most 99 draw calls, no console errors; `mp_test -Clients 1` passes.
+
+## 2026-11-05 – Enemy voice lines (branch `enemy-voices`, planned 1.2.0)
+
+- **Owner:** enemies talk like Berghittn's "Gredn" (eSpeak NG voices with a filter per enemy, the line as
+  text over the head). Enemies only for now; voices for the player characters maybe later. Much less chatty
+  than Berghittn: at most one enemy line overall every 3–5 s.
+- **Claude:** Berghittn's pipeline is copied: `tools/audio/voices/dsp.py` as is, `voices.py` with its
+  eSpeak call, vocoder and the filters the owner approved there (Tourist, Perchte, Krampus → Oberkrampus).
+  New filters: Akten-Geist (hollow, detuned, office echo), Radler (out of breath), Rasenmäher-Roboter
+  (vocoder on a fixed 110 Hz buzz, bitcrushed), Kontrolleur (nasal), Hofrat (dry, slow, marble hall).
+  Python + eSpeak NG only on the dev machine, the OGGs are ours. Step 1 is samples for the owner
+  (`python tools/audio/voices/voices.py --samples` → `build/voice_samples/index.html`, ~25 KB per line)
+  before the full line set and the runtime (lines as data in `data/voice_lines/`, text via `tr()`,
+  picked on the host from EnemyManager events, a SAY run event for co-op, a "Gegner reden" setting).
+  Animals (Gelse, Dackel, Taube, Wildschwein) get sounds, not words.
