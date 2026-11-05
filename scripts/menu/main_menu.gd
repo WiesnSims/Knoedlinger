@@ -1,8 +1,9 @@
 extends Node3D
 ## The title screen (docs/DECISIONS.md, M4 plan): the Kirtag of Unterhinterkogl slowly turning
 ## behind the menu, the logo and the entries on the left, the chosen screen on the right. Entries:
-## Spielen, Stammtisch, Aufträge, Rekorde, Almanach, Einstellungen, "Was is neu?" (the patch list)
+## Spielen, Stammtisch, Aufträge, Ehrentafel, Almanach, Einstellungen, "Was is neu?" (the patch list)
 ## and "Stammtisch aufmachen" (co-op: the CoopScreen room). On the very first start it asks for the player's name.
+## While no screen is open, the top of die Ehrentafel sits bottom right (BoardTop, 1.3.2).
 
 const BACKDROP_MAP: String = "res://data/maps/kirtag.tres"
 const RUN_SCENE: String = "res://scenes/run/run_world.tscn"
@@ -38,6 +39,7 @@ var _name_edit: LineEdit
 var _left: Control
 var _area: CenterContainer
 var _starting: bool = false
+var _board_top: BoardTop
 
 
 func _ready() -> void:
@@ -177,6 +179,15 @@ func _build_ui() -> void:
 	for id: StringName in _screens:
 		_screens[id].visible = false
 		area.add_child(_screens[id])
+	_board_top = BoardTop.new(content)
+	_board_top.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT, Control.PRESET_MODE_MINSIZE)
+	_board_top.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_board_top.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_board_top.offset_right = -MARGIN
+	_board_top.offset_bottom = -MARGIN
+	_board_top.open_pressed.connect(func() -> void: _open(&"records"))
+	root.add_child(_board_top)
+	_board_top.fetch()
 	_build_name_prompt(root)
 
 
@@ -192,6 +203,7 @@ func _open(id: StringName) -> void:
 	for key: StringName in _screens:
 		_screens[key].visible = key == id
 	_current = id
+	_board_top.hold(true)
 	var screen: Control = _screens[id]
 	if screen.has_method(&"refresh"):
 		screen.call(&"refresh")
@@ -213,6 +225,7 @@ func _close_screen() -> void:
 	var index: int = ENTRIES.map(func(def: Array) -> StringName: return def[1]).find(_current)
 	_screens[_current].visible = false
 	_current = &""
+	_board_top.hold(false)
 	if index >= 0:
 		_entries[index].grab_focus()
 

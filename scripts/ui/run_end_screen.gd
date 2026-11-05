@@ -12,9 +12,10 @@ signal menu_pressed
 const WIDTH: float = 400.0
 ## Milliseconds before the pad's A / B count on this screen.
 const PAD_ARM_MS: int = 1000
-## Summary key, label key, how to show it.
+## Summary key, label key, how to show it ("time_past": a time, only shown when there was any).
 const ROWS: Array = [
-	["time", "END_STAT_TIME", "time"], ["level", "END_STAT_LEVEL", "int"], ["kills", "END_STAT_KILLS", "int"],
+	["time", "END_STAT_TIME", "time"], ["overtime", "END_STAT_OVERTIME", "time_past"],
+	["level", "END_STAT_LEVEL", "int"], ["kills", "END_STAT_KILLS", "int"],
 	["gold", "END_STAT_GOLD", "int"], ["best_knodl_mass", "END_STAT_KNODL", "int"],
 	["cash_in_total", "END_STAT_CASH_INS", "int"], ["bosses_beaten", "END_STAT_BOSSES", "count"],
 	["stempel", "END_STAT_STEMPEL", "int"], ["deaths", "END_STAT_DOWNED", "int"],
@@ -111,13 +112,15 @@ func show_result(summary: Dictionary, can_restart: bool, build: PlayerBuild = nu
 	for child: Node in _grid.get_children():
 		child.queue_free()
 	for row_def: Array in ROWS:
+		if row_def[2] == "time_past" and float(summary.get(row_def[0], 0.0)) < 1.0:
+			continue
 		var name: Label = UiStyle.label(&"LabelMuted", tr(row_def[1]))
 		name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_grid.add_child(name)
 		var raw: Variant = summary.get(row_def[0], 0)
 		var text: String = ""
 		match row_def[2]:
-			"time":
+			"time", "time_past":
 				var seconds: int = int(float(raw))
 				text = "%d:%02d" % [floori(seconds / 60.0), seconds % 60]
 			"count":

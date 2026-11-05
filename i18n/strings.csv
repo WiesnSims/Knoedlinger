@@ -102,10 +102,9 @@ WIRT_SIGN_OPEN,Offen · Knödl bitte do eina!
 WIRT_SIGN_SERVED,Mahlzeit! (%s)
 WIRT_SIGN_CLOSED,Ruhetag
 TOAST_MAHLZEIT,Mahlzeit!
-TOAST_SPERRSTUND,Sperrstund'! Ab nach Haus!
+TOAST_SPERRSTUND,Sperrstund'! Gezählt is – jetzt kommen d' Stammgast-Geister. Nachspielzeit!
 NOTICE_0,Des is ja nur a Bröserl! (Knödl z'klein)
 NOTICE_1,Do hamma heut scho gessn.
-HUD_SPERRSTUND,Sperrstund'!
 HUD_WIRT_MARKER,Wirtshaus · %d m
 SIGN_BACK_SOON,Bin glei wieder da
 END_AGAIN,Nochmal!
@@ -197,7 +196,7 @@ GAME_SUBTITLE,Bis zur Sperrstund'!
 MENU_PLAY,Spielen
 MENU_STAMMTISCH,Stammtisch
 MENU_QUESTS,Aufträge
-MENU_RECORDS,Rekorde
+MENU_RECORDS,Ehrentafel
 MENU_ALMANACH,Almanach
 MENU_SETTINGS,Einstellungen
 MENU_COOP,Stammtisch aufmachen
@@ -375,7 +374,7 @@ META_EFFECT_KNODL_START,+%d %% Startknödl
 META_EFFECT_REVIVES,+%d Nachschlag
 QUESTS_TITLE,Aufträge vom Gemeindeamt
 QUEST_DONE,Gestempelt
-RECORDS_TITLE,Rekorde
+RECORDS_TITLE,Ehrentafel
 RECORDS_NONE,Do warst no ned.
 REC_TIME,Zeit
 REC_WINS,Gwonnen
@@ -383,7 +382,7 @@ REC_LEVEL,Level
 REC_KILLS,Gegner
 REC_KNODL,Knödl
 REC_SCHILLING,Schilling
-RECORDS_OWN,Eigene
+RECORDS_OWN,Eigene Rekorde
 RECORDS_BOARD,Ehrentafel
 ALMANACH_TITLE,Almanach
 ALM_FAMILY,Familie
@@ -423,6 +422,9 @@ BOARD_ALL,Ewig
 BOARD_WEEK,Diese Woche
 BOARD_LOADING,Der Wirt schaut nach …
 BOARD_OFFLINE,Die Ehrentafel is grad ned erreichbar.
+BOARD_TOP_TITLE,Ehrentafel
+BOARD_TOP_LINE,De bestn %d · %s · allein
+BOARD_TOP_OPEN,Ganze Ehrentafel
 BOARD_EMPTY,Do steht no kana drauf. Sei du da Erste!
 BOARD_RESULT_0,umgfoin
 BOARD_RESULT_1,Sperrstund'
@@ -878,6 +880,8 @@ VOICE_RIESEN_WIRT_HAM,Und jetzt olle ham!
 MENU_PATCHES,Was is neu?
 PATCHES_TITLE,Was is neu?
 PATCHES_VERSION,Version %s
+PATCH_1_3_2_01,"Die Ehrentafel steht jetzt gleich im Hauptmenü: de bestn 5 vom Kirtag, a Klick zeigt de ganze Tafel."
+PATCH_1_3_2_02,"„Rekorde“ heißt jetzt „Ehrentafel“ und zeigt zuerst de Bestenliste, de eigenen Rekorde san da zweite Reiter."
 PATCH_1_3_1_01,Obstler-Flammenwerfer: spuckt jetzt sichtbar Feuer – und hat a neues Bildl.
 PATCH_1_3_1_02,"Schupfn: Da Knödl fliagt dorthin, wo die Maus hinzeigt (Gamepad und Touch: in Gehrichtung)."
 PATCH_1_3_1_03,Nach da Speisekarte geht's gleich weiter: a gedrückte Taste muass ma nimmer neu drücken.
@@ -898,3 +902,28 @@ PATCH_1_1_0_03,"Fliegende Gegner steigen dir nach, wenn du in da Luft bist."
 PATCH_1_0_0_01,"De erste Version: alle 8 Knödlinger, 3 Karten, 16 Waffen."
 PATCH_1_0_0_02,Familienausflug: Co-op mit bis zu 4 Leut über an Raumcode.
 PATCH_1_0_0_03,"D' Ehrentafel: Rekorde online, für alle zum Anschaun."
+HUD_OVERTIME,+%d:%02d
+END_STAT_OVERTIME,Nachspielzeit
+TOAST_THROWN_OUT,Aussegschmissn! Des wor's …
+TOAST_GEIST_GRANTIG,D' Stammgäst wern grantig! Renn!
+ENEMY_GEIST,Stammgast-Geist
+DESC_ENEMY_GEIST,Sitzt seit 1848 am Stammtisch. Von ana Sperrstund' hat er nie wos ghört.
+ENEMY_GEIST_GRANTIG,Grantiger Stammgast
+DESC_ENEMY_GEIST_GRANTIG,Sei Krügerl is leer. Des nimmt er persönlich.
+VOICE_GEIST_STAMMPLATZ,Mei Stammplatzl …
+VOICE_GEIST_KRUEGERL,Oa Krügerl geht no!
+VOICE_GEIST_HAM,Wer geht'n do scho ham?
+VOICE_GEIST_MORGEN,I kumm morgen wieder …
+VOICE_GEIST_GRANTIG_PLATZ,Wer sitzt auf mein Platz?!
+VOICE_GEIST_GRANTIG_SPERRSTUND,Sperrstund' gibt's ned!
+VOICE_GEIST_GRANTIG_ZAHLN,Zahln tu i nächste Wochn …
+QUEST_NACHSPIELZEIT,Nachspielzeit
+DESC_QUEST_NACHSPIELZEIT,Halt nach der Sperrstund' 1 Minute durch.
+QUEST_SPERRSTUND_IGNORIERT,Sperrstund' ignoriert
+DESC_QUEST_SPERRSTUND_IGNORIERT,Halt nach der Sperrstund' 3 Minuten durch.
+QUEST_OMA_BLEIBT_SITZEN,Oma bleibt sitzen
+DESC_QUEST_OMA_BLEIBT_SITZEN,Halt mit Oma Resi nach der Sperrstund' 3 Minuten durch.
+PATCH_1_3_2_03,"Neu: Nachspielzeit! Um 15:00 steht's Ergebnis fest – dann kommen d' Stammgast-Geister, immer schneller, bis da Letzte umfoit."
+PATCH_1_3_2_04,"Ab 17:00 wern s' grantig: rote Geister, de fast mit an Schlag umhaun."
+PATCH_1_3_2_05,"Jede Sekund' Nachspielzeit bringt Schilling, zählt auf da Ehrentafel und für drei neue Aufträg'."
+PATCH_1_3_2_06,"Ab da Sperrstund' san olle Wirtshäuser zua – und wer umfoit, bleibt liegn."

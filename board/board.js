@@ -13,8 +13,9 @@ export const LIST_SIZE = 50;
 export const NAME_MAX = 16;
 export const MAX_PLAYERS = 4;
 export const RESULTS = { LOST: 0, CLOSED: 1, WON: 2 };
-// A run lasts 15:00 plus the Sperrstund' sweep; a little more to be safe.
-export const MAX_RUN_SECONDS = 960;
+// A run lasts 15:00 plus at most 10:00 of Nachspielzeit (balance overtime_max_seconds); a minute more
+// to be safe.
+export const MAX_RUN_SECONDS = 1560;
 export const MAX_GRANT = 4;
 // A ticket is good this long after the run started (s), and is removed a while after that.
 export const TICKET_LIFE = 3 * 3600;

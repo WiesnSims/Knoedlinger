@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/voice_lines/geist.tres" id="9_voice"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"geist"
+name_key = "ENEMY_GEIST"
+desc_key = "DESC_ENEMY_GEIST"
+max_hp = 6.0
+speed = 5.0
+radius = 0.42
+contact_damage = 8.0
+brosel_xp = 1
+knockback_factor = 0.6
+model_scale = 1.0
+body_color = Color(0.94, 0.95, 0.98, 1)
+head_color = Color(0.95, 0.72, 0.2, 1)
+flying = true
+air_reach = 8.0
+spawn_weight = 0.0
+look = &"geist"
+voice = ExtResource("9_voice")
+stays_at_sperrstund = true

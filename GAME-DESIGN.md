@@ -140,7 +140,8 @@ Camera: third-person chase cam, about 50° pitch, 14 m distance, follows movemen
 | 8:00 | Event: Touristenbus arrives (wave from one direction) |
 | 10:00 | Mini-boss 2; *Formular* appears: collect 3 Stempel on the map to unlock the boss gate (Megabonk-style goal) |
 | 12:00 at latest | Boss fight at the Gemeindeamt (forced if gate not opened) |
-| 15:00 | Sperrstund': the Wirt with the broom spawns, unkillable, run ends as victory if you survived the boss |
+| 15:00 | Sperrstund': the result is settled (victory if you beat the boss). The Wirt with the broom spawns, unkillable, and sweeps the crowd out; then the **Nachspielzeit** (Megabonk's Final Swarm): endless Stammgast-Geister that fly through walls, faster and harder every 30 s, until everyone is down. Down is out, the Wirtshäuser are shut |
+| 17:00 | Grantige Stammgast-Geister (red, near one-shot) join; every second of Nachspielzeit pays Schilling, counts on the Ehrentafel and for quests |
 
 ### XP and levelling
 
@@ -234,7 +235,7 @@ A third build layer next to weapons and stats, like Megabonk's items: passive ge
 | Kontrolleur | Blocks the Wirtshaus door until killed | Knödl cash-in blocker |
 | Hungriger Tourist | **Bröselfresser** elite, eats a lot | Knödl threat |
 
-**Bosses:** Oberkrampus (mini, 5:00), Die Lawine (mini, 10:00 on the ski map — a chasing wall you outrun), Der Hofrat der Unterwelt (main boss: stamps ABGELEHNT zones, spawns queues), Der Riesen-Wirt (Sperrstund' entity, unkillable).
+**Bosses:** Oberkrampus (mini, 5:00), Die Lawine (mini, 10:00 on the ski map — a chasing wall you outrun), Der Hofrat der Unterwelt (main boss: stamps ABGELEHNT zones, spawns queues), Der Riesen-Wirt (Sperrstund' entity, unkillable). **Nachspielzeit:** Stammgast-Geist (white, from 15:00) and Grantiger Stammgast (red, from 17:00).
 
 ### Maps (each about 300 × 300 m, hand-built with random chest/Wirt placement)
 
