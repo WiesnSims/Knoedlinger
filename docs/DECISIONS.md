@@ -978,3 +978,6 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   (HUD, co-op handshake, Ehrentafel entries all read it via `NetworkManager`).
 - **Claude: co-op keeps the exact version match**, patch numbers included: a fix can change the simulation, and
   host and clients must run the same build. A player with an old tab open reloads to join.
+- **Production deploy of 1.0.0** on 2026-11-05: `main` 1932e0e is live on https://knoedlinger.pages.dev. Measured on
+  production (headless Edge, RTX 3080, 500 enemies, bot, 60 s): 173.5 fps, p95 7 ms, at most 99 draw calls, no
+  console errors. `mp_test -Clients 1` passes and still refuses an old-version client.
