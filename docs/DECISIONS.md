@@ -1018,3 +1018,23 @@ GAME-DESIGN.md says what the game is; this file says how we got there and the ex
   `movement` deleted. **Production deploy of 1.1.0** on 2026-11-05 at the owner's word: live on
   https://knoedlinger.pages.dev. Measured on production (headless Edge, RTX 3080, 500 enemies, bot, 60 s):
   161.8 fps, p95 7.9 ms, at most 99 draw calls, no console errors; `mp_test -Clients 1` passes.
+
+## 2026-11-05 – Auto-aim and longer melee reach (1.2.0)
+
+- **Owner asked** how many weapons are ranged and auto-aimed, compared with Megabonk: melee felt weak because you
+  die quickly up close. Counted on the 16 base weapons: 5 pick their own targets (Hagelkanone, Stempel,
+  Schneekugel, Krampusrute, Würstel), 4 are ranged but only shot the way the player moves (Skistöcke, Zither,
+  Tablett, Alphorn), 7 work close (Kochlöffel, Watschn, Mozartkugel, Sachertorte, Schaufel, Kuhglocke, Obstler);
+  none home. In Megabonk, aiming is a global setting (closest target / smart targeting) and ranged weapons aim
+  themselves. Kiting away from the horde used to fire every arc and shot away from it.
+- **Owner: ARC and PROJECTILE weapons aim at the nearest enemy** within their reach (ARC: reach × area; shots: how
+  far they fly, a boomerang half of that; same height check as the arc), else the way the player faces
+  (`WeaponSystem.aim_at_nearest`). The heading travels as one byte per weapon in the build rows (world state
+  codec version 6, weapon row 13 bytes), so every machine draws the swing and the shots the same way. A second
+  swing (amount 2) still goes the opposite way.
+- **Owner: more reach for the close weapons** (+30–40 %; area multiplies reach, so each area level is now worth
+  more metres too): Kochlöffel 2.4 → 3.3, Schneeschaufel 3.2 → 4.3, Watschn-Aura 2.6 → 3.5, Watschn-Baum
+  3.4 → 4.5, Kuhglocke 4.5 → 5.8, Obstler 4.6 → 5.8, Mozartkugel orbit 2.6 → 3.4, Kugel-Karussell 3.2 → 4.2,
+  Nudelwalker 3.0 → 4.0, Sachertorte blast 3.0 → 3.6.
+- **Owner: no defensive bonus for melee** (damage reduction / heal on hit) for now.
+- **Version 1.2.0** (a feature; co-op needs the same version anyway since the message changed).

@@ -243,10 +243,12 @@ func test_the_mirror_rebuilds_the_same_stats() -> void:
 	build.add_item(_item(&"sparbuch"))
 	build.set_chests_opened(3)
 	build.weapons[0].fires = 99
+	build.weapons[0].aim = 201
 	var mirror := PlayerBuild.new(catalog)
 	assert_true(mirror.mirror(build.weapon_rows(), build.passive_rows(), build.item_rows(), 12, 2, 1, 3))
 	assert_eq(mirror.weapons[0].level, 3)
 	assert_eq(mirror.weapons[0].fires, 99)
+	assert_eq(mirror.weapons[0].aim, 201, "the aim byte comes along")
 	for m: int in PlayerBuild.WEAPON_MODS.size():
 		assert_almost_eq(mirror.weapons[0].mods[m], build.weapons[0].mods[m], 0.001)
 	assert_almost_eq(mirror.stat(&"move_speed"), build.stat(&"move_speed"), 0.001)
@@ -254,7 +256,7 @@ func test_the_mirror_rebuilds_the_same_stats() -> void:
 	assert_eq(mirror.stat(&"extra_jumps"), 1.0)
 	assert_eq(mirror.items.size(), 2)
 	assert_eq(mirror.gold, 12)
-	assert_false(mirror.mirror(PackedInt32Array([200, 1, 0, 0, 0, 0, 0, 0]), PackedInt32Array(), PackedInt32Array(), 0, 0, 0, 0),
+	assert_false(mirror.mirror(PackedInt32Array([200, 1, 0, 0, 0, 0, 0, 0, 0]), PackedInt32Array(), PackedInt32Array(), 0, 0, 0, 0),
 			"unknown weapon")
 	assert_false(mirror.mirror(PackedInt32Array(), PackedInt32Array(), PackedInt32Array([200, 1]), 0, 0, 0, 0), "unknown item")
 

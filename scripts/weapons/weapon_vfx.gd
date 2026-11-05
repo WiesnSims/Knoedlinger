@@ -85,12 +85,13 @@ func sync(build: PlayerBuild, run_time: float, delta: float, shots: ProjectilePo
 		match weapon.pattern:
 			WeaponData.Pattern.ARC:
 				if fired:
-					(effect.nodes[0] as SwingVfx).play(area)
+					var yaw: float = owned.aim * TAU / 256.0
+					(effect.nodes[0] as SwingVfx).play(area, yaw)
 					if Formulas.weapon_amount(weapon, owned.mods) >= 2:
-						(effect.nodes[1] as SwingVfx).play(area)
+						(effect.nodes[1] as SwingVfx).play(area, yaw)
 			WeaponData.Pattern.PROJECTILE:
 				if fired and shots != null:
-					WeaponSystem.fire_shots(weapon, origin, player.facing_direction(),
+					WeaponSystem.fire_shots(weapon, origin, WeaponSystem.aim_direction(owned.aim),
 							Formulas.weapon_amount(weapon, owned.mods), area, 0.0, shots)
 			WeaponData.Pattern.RING:
 				var ring: Node3D = effect.nodes[0]

@@ -18,19 +18,19 @@ extends RefCounted
 ##   s8 best merged cash-in tier | u16 characters woken with the Knödl (bit = GameContent index)
 ##   then, with FLAG_SECOND, the second Knödl (Doppelportion): 3 x f32 position | 4 x s16 rotation |
 ##   f32 radius; then per weapon u8 index | u8 level | u8 fire counter | 4 x u16 mod * 1000 (damage, rate, area,
-##   crit) | u8 extra pieces, per passive u8 index | u8 level | u16 bonus * 100, and per item
+##   crit) | u8 extra pieces | u8 aim, per passive u8 index | u8 level | u16 bonus * 100, and per item
 ##   u8 index | u8 count.
 
-const VERSION: int = 5
+const VERSION: int = 6
 const HEADER_SIZE: int = 31
 const WIRT_SIZE: int = 2
 const PLAYER_SIZE: int = 71
 const SECOND_SIZE: int = 24
-const WEAPON_SIZE: int = 12
+const WEAPON_SIZE: int = 13
 const PASSIVE_SIZE: int = 4
 const ITEM_SIZE: int = 2
 ## Ints per weapon row (PlayerBuild.weapon_rows()).
-const WEAPON_ROW: int = 8
+const WEAPON_ROW: int = 9
 const FLAG_DOWNED: int = 1
 const FLAG_CHOOSING: int = 2
 const FLAG_OUT: int = 4
@@ -207,6 +207,7 @@ static func encode(frame: Frame) -> PackedByteArray:
 			for m: int in 4:
 				data.encode_u16(o + 3 + m * 2, clampi(e.weapons[w + 3 + m], 0, 0xFFFF))
 			data.encode_u8(o + 11, clampi(roundi(e.weapons[w + 7] / 1000.0), 0, 255))
+			data.encode_u8(o + 12, e.weapons[w + 8] & 0xFF)
 			o += WEAPON_SIZE
 		for k: int in passive_count:
 			data.encode_u8(o, e.passives[k * 3])
@@ -311,7 +312,7 @@ static func decode(data: PackedByteArray) -> Frame:
 		for w: int in weapon_count:
 			e.weapons.append_array([data.decode_u8(o), data.decode_u8(o + 1), data.decode_u8(o + 2),
 					data.decode_u16(o + 3), data.decode_u16(o + 5), data.decode_u16(o + 7), data.decode_u16(o + 9),
-					data.decode_u8(o + 11) * 1000])
+					data.decode_u8(o + 11) * 1000, data.decode_u8(o + 12)])
 			o += WEAPON_SIZE
 		for p: int in passive_count:
 			e.passives.append_array([data.decode_u8(o), data.decode_u8(o + 1), data.decode_u16(o + 2)])

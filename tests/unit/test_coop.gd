@@ -64,7 +64,7 @@ func test_world_state_carries_the_coop_fields() -> void:
 		e.has_second = peer == 1234567
 		e.second_position = Vector3(1.0, 2.0, -3.0)
 		e.second_radius = 0.42
-		e.weapons = PackedInt32Array([0, 3, 7, 100, 0, 0, 0, 0])
+		e.weapons = PackedInt32Array([0, 3, 7, 100, 0, 0, 0, 0, 0])
 		frame.entries.append(e)
 	var data: PackedByteArray = WorldStateCodec.encode(frame)
 	var back: WorldStateCodec.Frame = WorldStateCodec.decode(data)

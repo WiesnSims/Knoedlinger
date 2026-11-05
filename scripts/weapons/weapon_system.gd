@@ -1,13 +1,15 @@
 class_name WeaponSystem
 extends RefCounted
 ## Fires every player's weapons on the host (auto-attack: GAME-DESIGN.md pillar 1) and applies the
-## damage through EnemyManager's grid. Patterns: ARC (melee arc or cone in facing direction, a second
-## one behind from amount 2), PROJECTILE (piercing shots in facing direction, boomerangs come back),
+## damage through EnemyManager's grid. Patterns: ARC (melee arc or cone toward the aim, a second
+## one behind from amount 2), PROJECTILE (piercing shots toward the aim, boomerangs come back),
 ## RING (a shockwave all around), AURA (hurts everything close at every tick), ORBIT (pieces circling
 ## the player), DROP (impacts on enemies nearby), MINE (blasts where the player stood, later) and
 ## CHAIN (a hit jumping from enemy to enemy). Hits can burn and slow (WeaponData "On hit").
 ## Every timed attack bumps the weapon's fire counter, which every machine turns into the effect;
-## orbit pieces need none (everyone places them from the run time).
+## orbit pieces need none (everyone places them from the run time). ARC and PROJECTILE aim at the
+## nearest enemy within their reach (else the way the player faces) and keep that heading in the
+## weapon's aim byte, so every machine draws the swing or the shots the same way.
 
 ## Below the player's hand: where shots start and orbit pieces fly.
 const SHOT_HEIGHT: float = 1.0
@@ -39,6 +41,10 @@ static func update(build: PlayerBuild, player: Player, enemies: EnemyManager, pr
 		var origin: Vector3 = player.global_position
 		var facing: Vector3 = player.facing_direction()
 		var amount: int = Formulas.weapon_amount(weapon, owned.mods)
+		if weapon.pattern == WeaponData.Pattern.ARC or weapon.pattern == WeaponData.Pattern.PROJECTILE:
+			facing = aim_at_nearest(origin, facing, enemies, aim_reach(weapon, area, build.stat(&"duration")),
+					weapon.height_reach)
+			owned.aim = aim_byte(facing)
 		match weapon.pattern:
 			WeaponData.Pattern.ARC:
 				arc_hit(weapon, origin, facing, enemies, hit_damage, area)
@@ -58,6 +64,52 @@ static func update(build: PlayerBuild, player: Player, enemies: EnemyManager, pr
 			WeaponData.Pattern.CHAIN:
 				chain_hit(owned, origin, enemies, hit_damage, area, amount, build.stat(&"duration"))
 		owned.fires = (owned.fires + 1) & 0xFF
+
+
+## How far an ARC or PROJECTILE weapon looks for a target: its reach, or how far its shots fly
+## (a boomerang turns at half its lifetime).
+static func aim_reach(weapon: WeaponData, area: float, duration: float) -> float:
+	if weapon.pattern == WeaponData.Pattern.ARC:
+		return weapon.reach * area
+	var reach: float = weapon.projectile_speed * weapon.projectile_lifetime * (1.0 + duration)
+	return reach * 0.5 if weapon.boomerang else reach
+
+
+## Auto-aim: the flat direction from `origin` to the nearest living enemy within `reach` (and within
+## `height_reach` of the ground below), or `facing` when there is none.
+static func aim_at_nearest(origin: Vector3, facing: Vector3, enemies: EnemyManager, reach: float,
+		height_reach: float) -> Vector3:
+	var grid: SpatialHash = enemies.grid
+	var found: int = grid.query(origin.x, origin.z, reach + 0.8)
+	var best: int = -1
+	var best_sq: float = INF
+	for k: int in found:
+		var j: int = grid.results[k]
+		if enemies.alive[j] == 0:
+			continue
+		var dx: float = enemies.pos_x[j] - origin.x
+		var dz: float = enemies.pos_z[j] - origin.z
+		var d_sq: float = dx * dx + dz * dz
+		var limit: float = reach + enemies.radius[j]
+		if d_sq >= best_sq or d_sq > limit * limit or d_sq < 0.0001:
+			continue
+		if absf(enemies.ground_at(enemies.pos_x[j], enemies.pos_z[j]) - origin.y) > height_reach:
+			continue
+		best = j
+		best_sq = d_sq
+	if best < 0:
+		return facing
+	return Vector3(enemies.pos_x[best] - origin.x, 0.0, enemies.pos_z[best] - origin.z).normalized()
+
+
+## A flat direction as one byte (256 steps around, the same yaw as Player.rotation.y), and back.
+static func aim_byte(direction: Vector3) -> int:
+	return posmod(roundi(atan2(direction.x, direction.z) / TAU * 256.0), 256)
+
+
+static func aim_direction(aim: int) -> Vector3:
+	var yaw: float = aim * TAU / 256.0
+	return Vector3(sin(yaw), 0.0, cos(yaw))
 
 
 ## Damages every enemy inside the arc in front of `origin`. Returns how many were hit.
