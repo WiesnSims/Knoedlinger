@@ -4,7 +4,7 @@
 // tickets need the local one).
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanName, maxKills, weekStart, FALLBACK_NAME, TICKETS_PER_HOUR } from '../board.js';
+import { cleanName, dailyMap, dailyOpen, maxKills, weekStart, FALLBACK_NAME, TICKETS_PER_HOUR } from '../board.js';
 import { startBoard } from './local.mjs';
 
 let base = process.env.BOARD_URL;
@@ -117,4 +117,19 @@ test('too many tickets from one address are refused', async () => {
 		statuses.push((await post('ticket', { mode: 'solo', map: 'kirtag' }, '10.9.9.9')).status);
 	}
 	assert.equal(statuses.at(-1), 429);
+});
+
+test('die Tageskarte: its own board, only today\'s card, solo only', async () => {
+	assert.equal(dailyMap(Date.UTC(2026, 10, 6, 15)), 'daily_20261106');
+	assert.ok(dailyOpen('daily_20261105', Date.UTC(2026, 10, 6, 0, 30)), 'just after midnight yesterday\'s card still counts');
+	assert.ok(!dailyOpen('daily_20261105', Date.UTC(2026, 10, 6, 2)));
+	const today = dailyMap();
+	assert.equal((await post('ticket', { mode: 'daily', map: 'daily_20200101' })).status, 400, 'an old day');
+	assert.equal((await post('ticket', { mode: 'daily', map: 'kirtag' })).status, 400, 'a map is no day');
+	assert.equal((await post('ticket', { mode: 'solo', map: today })).status, 400, 'a day is no map');
+	const two = await post('entry', { ticket: await ticket('daily', today), ...run({ names: ['Tagesgast', 'Zweiter'] }) });
+	assert.equal(two.status, 400, 'one name only');
+	assert.equal((await post('entry', { ticket: await ticket('daily', today), ...run({ names: ['Tagesgast'] }) })).status, 200);
+	assert.ok((await list('daily', today)).some((e) => e.names[0] === 'Tagesgast'));
+	assert.equal((await list('solo', today)).length, 0);
 });

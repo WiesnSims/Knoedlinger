@@ -38,6 +38,11 @@ func start_run(mode: String, map: String) -> void:
 		_ticket = str(reply["ticket"])
 
 
+## This run does not count (a Tageskarte practice run): no ticket left over from an earlier run.
+func forget() -> void:
+	_ticket = ""
+
+
 ## Sends the run (keys as board/board.js takes them; the ticket is added here). Emits ranked or
 ## not_ranked. The ticket counts once.
 func submit(entry: Dictionary) -> void:

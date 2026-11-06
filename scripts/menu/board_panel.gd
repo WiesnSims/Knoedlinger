@@ -2,9 +2,11 @@ class_name BoardPanel
 extends VBoxContainer
 ## Die Ehrentafel in the Rekorde screen: the top 50 of a map, solo or with the family, all time or
 ## this week (Board.fetch). One row per run: place, name(s), Knödlinger, result and Grant level, time,
-## level, kills, biggest Knödl; the player's own entries in the accent.
+## level, kills, biggest Knödl; the player's own entries in the accent. With a fixed mode and map
+## (the Tageskarte's board of the day) it has no filter pills and a shorter list.
 
 const LIST_HEIGHT: float = 320.0
+const FIXED_LIST_HEIGHT: float = 200.0
 const COLUMNS: Array = [["#", 40.0], ["", 136.0], ["", 112.0], ["", 152.0], ["REC_TIME", 64.0], ["REC_LEVEL", 56.0],
 	["REC_KILLS", 64.0], ["REC_KNODL", 56.0]]
 
@@ -17,9 +19,14 @@ var _grid: GridContainer
 var _status: Label
 
 
-func _init(p_content: GameContent) -> void:
+func _init(p_content: GameContent, fixed_mode: String = "", fixed_map: String = "") -> void:
 	content = p_content
 	theme_type_variation = &"Gap16"
+	if fixed_mode != "":
+		_mode = fixed_mode
+		_map = StringName(fixed_map)
+		_build_list(FIXED_LIST_HEIGHT)
+		return
 	# Two rows (maps, then mode and period): in one row they were wider than the menu's free area.
 	var maps := UiStyle.hbox()
 	add_child(maps)
@@ -45,8 +52,17 @@ func _init(p_content: GameContent) -> void:
 	_pill(periods, "period:week", tr("BOARD_WEEK"), func() -> void:
 		_period = "week"
 		fetch())
+	_build_list(LIST_HEIGHT)
+
+
+## Shows another fixed map key (the Tageskarte after midnight).
+func set_map(map: String) -> void:
+	_map = StringName(map)
+
+
+func _build_list(height: float) -> void:
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(0.0, LIST_HEIGHT)
+	scroll.custom_minimum_size = Vector2(0.0, height)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	add_child(scroll)
 	_grid = GridContainer.new()

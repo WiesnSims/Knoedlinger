@@ -406,6 +406,11 @@ extends Resource
 @export var heal_drop_chance: float = 0.0015
 @export var heal_amount: float = 35.0
 
+@export_group("Tageskarte (Daily Kirtag)")
+## The day's Grant level is drawn from this range (indices into GameContent.grants; 1 = Normal).
+@export var daily_grant_min: int = 1
+@export var daily_grant_max: int = 2
+
 @export_group("Death")
 ## Solo: knocked down = the run is over, the end screen comes after this pause.
 @export var death_screen_delay: float = 2.5

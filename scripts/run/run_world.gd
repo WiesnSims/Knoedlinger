@@ -258,6 +258,9 @@ func _ready() -> void:
 	_start_mass = LaunchArgs.get_float("knodl_mass", -1.0)
 	_respawn = LaunchArgs.get_flag("respawn", false) or _autoplay
 	balance = load("res://data/balance.tres")
+	# `daily=1`: today's Tageskarte straight from the command line or URL (tests).
+	if LaunchArgs.get_flag("daily", false) and RunSetup.daily == "" and not RunSetup.from_room:
+		RunSetup.use_daily(GameContent.load_default(), balance, Daily.today())
 	map = _load_map(RunSetup.map_id())
 	wave = map.wave if map.wave != null else load(WAVE_PATH)
 	catalog = load(CATALOG_PATH)
@@ -434,8 +437,15 @@ func _ready() -> void:
 	GameAudio.music(map.music if map != null else &"kirtag")
 	GameAudio.bark(&"servas")
 	# Die Ehrentafel: a ticket for this run (only real runs from the menu; Board decides).
+	# The Tageskarte: only the day's first try gets a ticket (a restart is practice).
 	if host:
-		Board.start_run("coop" if NetworkManager.is_online() else "solo", String(map.id))
+		if RunSetup.daily == "":
+			Board.start_run("coop" if NetworkManager.is_online() else "solo", String(map.id))
+		elif RunSetup.daily_counts:
+			Board.start_run("daily", Daily.board_map(RunSetup.daily))
+		else:
+			Board.forget()
+		RunSetup.daily_counts = false
 		Board.ranked.connect(_on_ranked)
 	print("[RUN] role=%s map=%s character=%s enemies=%s seconds=%s bot=%s bake_ms=%d adapter=%s" % [
 		_role(), map.id, character.id, _forced_enemies if _forced_enemies > 0 else "wave", _seconds, _bot,
@@ -466,7 +476,7 @@ func _exit_tree() -> void:
 
 
 func _on_ranked(rank: int, week_rank: int, _id: int) -> void:
-	end_screen.show_rank(rank, week_rank)
+	end_screen.show_rank(rank, week_rank, RunSetup.daily != "")
 
 
 func _process(delta: float) -> void:
@@ -1608,7 +1618,7 @@ func _run_summary() -> Dictionary:
 		"brosel_alive": brosel.active_count, "result": Result.keys()[result], "stempel": stempel_found,
 		"hofrat_beaten": (gate_flags & WorldStateCodec.GATE_BOSS_BEATEN) != 0, "bosses_beaten": _bosses_beaten.duplicate(),
 		"character": String(character.id), "map": String(map.id), "grant": grant_index,
-		"overtime": snappedf(overtime_seconds(), 0.1)}
+		"overtime": snappedf(overtime_seconds(), 0.1), "daily": RunSetup.daily}
 	var boss_ids: Array = []
 	for beaten: Array in _bosses_beaten:
 		boss_ids.append(beaten[0])
@@ -2324,7 +2334,9 @@ func _record_profile(outcome: String) -> void:
 	var summary: Dictionary = _run_summary()
 	summary["result"] = outcome
 	_reward = Profile.record_run(summary)
-	Profile.remember_choice(character.id, map.id, grant_index)
+	# A Tageskarte run leaves the player's own choice on the Play screen alone.
+	if RunSetup.daily == "":
+		Profile.remember_choice(character.id, map.id, grant_index)
 	if outcome != "QUIT" and NetworkManager.is_host():
 		Board.submit({
 			"names": _board_names(), "characters": _board_characters(), "result": outcome,

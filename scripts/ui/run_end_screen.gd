@@ -109,6 +109,10 @@ func show_result(summary: Dictionary, can_restart: bool, build: PlayerBuild = nu
 	var outcome: String = str(summary.get("result", "WON"))
 	_title.text = tr("END_TITLE_%s" % outcome)
 	_line.text = tr("END_%s" % outcome)
+	var daily: String = str(summary.get("daily", ""))
+	if daily != "":
+		_line.text += "
+" + tr("END_DAILY") % Daily.date_text(daily)
 	for child: Node in _grid.get_children():
 		child.queue_free()
 	for row_def: Array in ROWS:
@@ -148,9 +152,9 @@ func set_button_labels(again_key: String, menu_key: String) -> void:
 	_menu.set_label(tr(menu_key))
 
 
-func show_rank(rank: int, week_rank: int) -> void:
+func show_rank(rank: int, week_rank: int, daily: bool = false) -> void:
 	if _rank_label != null and is_instance_valid(_rank_label):
-		_rank_label.text = tr("END_BOARD_RANK") % [rank, week_rank]
+		_rank_label.text = tr("END_BOARD_RANK_DAILY") % rank if daily else tr("END_BOARD_RANK") % [rank, week_rank]
 		_rank_label.visible = true
 
 

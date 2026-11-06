@@ -140,7 +140,42 @@ func progress(quest: QuestData) -> float:
 			return float(best.get("grant_win", -1))
 		&"coop":
 			return float((stats.get("coop", {}) as Dictionary).get(filter, 0))
+		&"daily_streak":
+			return float((data["daily"] as Dictionary).get("best_streak", 0))
+		&"daily_days":
+			return float((data["daily"] as Dictionary).get("days", 0))
 	return 0.0
+
+
+## Die Tageskarte: the day was already played (its first try is used up).
+func daily_played(day: String) -> bool:
+	return str((data["daily"] as Dictionary).get("last", "")) == day
+
+
+## Days in a row with a Tageskarte run, as it stands on `day` (0 once a day was missed).
+func daily_streak(day: String) -> int:
+	var daily: Dictionary = data["daily"]
+	var last: String = str(daily.get("last", ""))
+	return int(daily.get("streak", 0)) if last == day or last == Daily.day_before(day) else 0
+
+
+func daily_best_streak() -> int:
+	return int((data["daily"] as Dictionary).get("best_streak", 0))
+
+
+## A Tageskarte run of `day` starts. The first one of the day counts (for the board and the streak)
+## and is noted at once, so leaving or reloading never gives a second first try. True if it counts.
+func start_daily(day: String) -> bool:
+	if daily_played(day):
+		return false
+	var daily: Dictionary = data["daily"]
+	var streak: int = int(daily.get("streak", 0)) + 1 if str(daily.get("last", "")) == Daily.day_before(day) else 1
+	daily["streak"] = streak
+	daily["best_streak"] = maxi(int(daily.get("best_streak", 0)), streak)
+	daily["days"] = int(daily.get("days", 0)) + 1
+	daily["last"] = day
+	_save()
+	return true
 
 
 func record(character: StringName, map: StringName) -> Dictionary:
@@ -332,6 +367,7 @@ func _fresh() -> Dictionary:
 		"stats": {"kills": {}, "cash_ins": [0, 0, 0, 0], "runs": 0, "wins": {}, "bosses": {}, "stempel": 0},
 		"best": {"level": {}, "knodl": 0.0, "survive": 0.0, "boss_no_throw": {}, "grant_win": -1, "overtime": {}},
 		"found": {}, "records": {}, "last": {},
+		"daily": {"last": "", "streak": 0, "best_streak": 0, "days": 0},
 	}
 
 

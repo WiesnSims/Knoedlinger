@@ -1,7 +1,7 @@
 extends Node3D
 ## The title screen (docs/DECISIONS.md, M4 plan): the Kirtag of Unterhinterkogl slowly turning
 ## behind the menu, the logo and the entries on the left, the chosen screen on the right. Entries:
-## Spielen, Stammtisch, Aufträge, Ehrentafel, Almanach, Einstellungen, "Was is neu?" (the patch list)
+## Spielen, Tageskarte (the daily run, 1.4), Stammtisch, Aufträge, Ehrentafel, Almanach, Einstellungen, "Was is neu?" (the patch list)
 ## and "Stammtisch aufmachen" (co-op: the CoopScreen room). On the very first start it asks for the player's name.
 ## While no screen is open, the top of die Ehrentafel sits bottom right (BoardTop, 1.3.2).
 
@@ -16,6 +16,7 @@ const MARGIN: float = 64.0
 ## [label key, screen id, enabled].
 const ENTRIES: Array = [
 	["MENU_PLAY", &"play", true],
+	["MENU_DAILY", &"daily", true],
 	["MENU_STAMMTISCH", &"stammtisch", true],
 	["MENU_QUESTS", &"quests", true],
 	["MENU_RECORDS", &"records", true],
@@ -154,6 +155,10 @@ func _build_ui() -> void:
 	play.start_pressed.connect(_start_run)
 	play.closed.connect(_close_screen)
 	_screens[&"play"] = play
+	var daily := DailyScreen.new(content)
+	daily.start_pressed.connect(func() -> void: _start_daily(daily.day()))
+	daily.closed.connect(_close_screen)
+	_screens[&"daily"] = daily
 	var settings := SettingsPanel.new()
 	settings.closed.connect(_close_screen)
 	_screens[&"settings"] = settings
@@ -240,7 +245,26 @@ func _start_run(character: StringName, map: StringName, grant: int) -> void:
 	RunSetup.character = String(character)
 	RunSetup.map = String(map)
 	RunSetup.grant = grant
+	RunSetup.seed = -1
+	RunSetup.daily = ""
+	RunSetup.from_room = false
 	Profile.remember_choice(character, map, grant)
+	_go_to_run()
+
+
+## Die Tageskarte: today's card, solo; only the day's first try goes onto its board.
+func _start_daily(day: String) -> void:
+	if _starting:
+		return
+	_starting = true
+	if Lobby.is_active():
+		Lobby.leave()
+	RunSetup.use_daily(content, load("res://data/balance.tres"), day)
+	RunSetup.daily_counts = Profile.start_daily(day)
+	_go_to_run()
+
+
+func _go_to_run() -> void:
 	RunSetup.from_menu = true
 	GameAudio.set_music_speed(1.0)
 	# The loading screen first: building the map takes a moment, and the run shows the same screen

@@ -7,8 +7,10 @@
 //     GET  /api/board/list?mode=solo|coop&map=<id>&range=all|week          -> {entries: [...]}
 // Order: result (won 2 > Sperrstund' survived 1 > knocked out 0), then Grant level, then time, then
 // kills. A browser game cannot stop cheating; the tickets only make a faked result harder.
+// Die Tageskarte (1.4): mode 'daily', map 'daily_<YYYYMMDD>' (UTC), solo only; a ticket only for
+// today's card (or yesterday's, for a run started just before midnight).
 
-export const MODES = ['solo', 'coop'];
+export const MODES = ['solo', 'coop', 'daily'];
 export const LIST_SIZE = 50;
 export const NAME_MAX = 16;
 export const MAX_PLAYERS = 4;
@@ -24,6 +26,7 @@ export const TICKETS_PER_HOUR = 30;
 const TIME_SLACK = 30;
 const MAX_TEXT = 48;
 const MAP_PATTERN = /^[a-z0-9_]{1,24}$/;
+const DAILY_PATTERN = /^daily_\d{8}$/;
 // Swear words and worse (after folding look-alike digits): such a name becomes "Knödlinger".
 const BANNED = [
 	'fuck', 'cunt', 'shit', 'bitch', 'nigg', 'fagg', 'retard', 'hitler', 'nazi', 'fotze', 'wichs',
@@ -64,6 +67,18 @@ export function weekStart(now = Date.now()) {
 	return Math.floor(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate() - sinceMonday) / 1000);
 }
 
+// The Tageskarte's board key of a UTC day ("daily_20261106").
+export function dailyMap(now = Date.now()) {
+	const day = new Date(now);
+	const pad = (n) => String(n).padStart(2, '0');
+	return `daily_${day.getUTCFullYear()}${pad(day.getUTCMonth() + 1)}${pad(day.getUTCDate())}`;
+}
+
+// A daily ticket is for today's card, or yesterday's in the first hour after midnight.
+export function dailyOpen(map, now = Date.now()) {
+	return DAILY_PATTERN.test(map) && (map === dailyMap(now) || map === dailyMap(now - 3600 * 1000));
+}
+
 // Printable, trimmed, at most NAME_MAX characters; a banned word turns it into FALLBACK_NAME.
 export function cleanName(value) {
 	const name = [...String(value ?? '').replace(/[\p{C}]/gu, '').trim()].slice(0, NAME_MAX).join('').trim();
@@ -93,8 +108,11 @@ function ident(value) {
 }
 
 async function ticket(env, request, body) {
-	if (!MODES.includes(body.mode) || !ident(body.map)) {
+	if (!MODES.includes(body.mode) || !ident(body.map) || (body.mode === 'daily') !== DAILY_PATTERN.test(body.map)) {
 		return json({ error: 'mode' }, 400);
+	}
+	if (body.mode === 'daily' && !dailyOpen(body.map)) {
+		return json({ error: 'day' }, 400);
 	}
 	const now = seconds();
 	const ip = await hash(request.headers.get('CF-Connecting-IP') || 'local');
@@ -126,7 +144,7 @@ async function entry(env, body) {
 	const mode = found.mode;
 	const names = Array.isArray(body.names) ? body.names.slice(0, MAX_PLAYERS).map(cleanName) : [];
 	const characters = Array.isArray(body.characters) ? body.characters.slice(0, MAX_PLAYERS).map(ident) : [];
-	const players = mode === 'solo' ? 1 : names.length;
+	const players = mode === 'coop' ? names.length : 1;
 	const result = Object.hasOwn(RESULTS, body.result) ? RESULTS[body.result] : null;
 	const grant = int(body.grant, MAX_GRANT);
 	const time = int(body.time, MAX_RUN_SECONDS);

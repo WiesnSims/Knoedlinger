@@ -1077,3 +1077,18 @@ QUEST_PENSIONSANTRITT,Pensionsantritt
 DESC_QUEST_PENSIONSANTRITT,Erreich Level 40 in einer Runde.
 QUEST_SCHNECKENZAUN,Schneckenzaun
 DESC_QUEST_SCHNECKENZAUN,Erledig 1.000 Weinbergschnecken.
+MENU_DAILY,Tageskarte
+DAILY_TITLE,Tageskarte
+DAILY_DATE,"Heit, %s – für alle gleich"
+DAILY_MAP,Wo: %s
+DAILY_GRANT,Wie grantig: %s
+DAILY_FIRST,Da erste Versuch heit kummt auf die Ehrentafel vom Tag. Den gibt's nur oamal.
+DAILY_PRACTICE,"Heit scho gspült – jetzt nur mehr zum Üben. Morgen gibt's a neue Kartn."
+DAILY_STREAK,Tage hintereinand: %d · Rekord: %d
+DAILY_BOARD,Ehrentafel vom Tag
+END_DAILY,Tageskarte vom %s
+END_BOARD_RANK_DAILY,Tageskarte: Platz %d
+QUEST_STAMMKUNDSCHAFT,Stammkundschaft
+DESC_QUEST_STAMMKUNDSCHAFT,Spiel die Tageskarte 7 Tage hintereinand.
+QUEST_ABONNEMENT,Abonnement
+DESC_QUEST_ABONNEMENT,Spiel die Tageskarte an 30 Tagen.
