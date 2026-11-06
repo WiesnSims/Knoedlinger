@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/character_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/weapons/fiakerpeitsche.tres" id="2_weapon"]
+[ext_resource type="Resource" path="res://data/knodl/topfenknoedl.tres" id="3_sort"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"mitzi"
+name_key = "CHARACTER_MITZI"
+role_key = "ROLE_MITZI"
+trait_key = "TRAIT_MITZI"
+start_weapon = ExtResource("2_weapon")
+knodl_sort = ExtResource("3_sort")
+trait_effects = Dictionary[StringName, float]({&"trot": 0.2})
+coat_color = Color(0.2, 0.23, 0.32, 1)
+trouser_color = Color(0.36, 0.3, 0.24, 1)
+hat_color = Color(0.12, 0.12, 0.14, 1)

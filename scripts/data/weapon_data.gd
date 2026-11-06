@@ -33,6 +33,14 @@ enum Look { BALL, PIN, SPEAR, FLAME }
 @export var arc_degrees: float = 140.0
 ## Only enemies whose feet are within this height of the player's are hit.
 @export var height_reach: float = 2.0
+## ARC: hits in the last `tip_length` metres of the reach deal `tip_multiplier` times the damage
+## (Fiakerpeitsche: the crack of the whip's tip).
+@export var tip_length: float = 0.0
+@export var tip_multiplier: float = 1.0
+## RING: first pulls every enemy in reach toward the player at `pull_speed` for `pull_seconds`,
+## then the ring goes off where the pull started (Steirische Harmonika: squeeze, then blast).
+@export var pull_seconds: float = 0.0
+@export var pull_speed: float = 0.0
 ## Shots or orbiting pieces per attack.
 @export var amount: int = 1
 

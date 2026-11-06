@@ -88,6 +88,8 @@ var meta: Dictionary[StringName, float] = {}
 var extra_cards: int = 0
 ## Host: damage from Onkel Ferdl's Grant (it grows with every hit taken).
 var grant_damage: float = 0.0
+## Host: attack speed from Opa Hias standing still ("Hat eh Zeit"), 0 while he moves.
+var trait_rate: float = 0.0
 var weapon_slots: int = 2
 var passive_slots: int = 4
 var evolution_level: int = 8
@@ -309,6 +311,7 @@ func recompute() -> void:
 		if stats.has(key):
 			stats[key] += meta[key]
 	stats[&"damage"] += grant_damage
+	stats[&"rate"] += trait_rate
 
 
 ## Client: takes the host's view of this build (from the world state): rows as weapon_rows(),

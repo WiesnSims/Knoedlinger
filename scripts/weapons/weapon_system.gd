@@ -21,11 +21,12 @@ static func update(build: PlayerBuild, player: Player, enemies: EnemyManager, pr
 	for owned: PlayerBuild.OwnedWeapon in build.weapons:
 		var weapon: WeaponData = owned.data
 		owned.impacts.clear()
-		if weapon.pattern == WeaponData.Pattern.MINE:
-			_tick_mines(owned, enemies, delta, Formulas.weapon_area(weapon, owned.mods, build.stat(&"area")),
-					Formulas.weapon_damage(weapon, owned.mods, build.stat(&"damage")), build.stat(&"duration"))
 		var area: float = Formulas.weapon_area(weapon, owned.mods, build.stat(&"area"))
 		var damage: float = Formulas.weapon_damage(weapon, owned.mods, build.stat(&"damage"))
+		if weapon.pattern == WeaponData.Pattern.MINE:
+			_tick_mines(owned, enemies, delta, area, damage, build.stat(&"duration"))
+		elif not owned.mines.is_empty():
+			_tick_pulls(owned, enemies, delta, area, damage)
 		var crit: float = Formulas.weapon_crit(weapon, owned.mods, build.stat(&"crit"))
 		if weapon.pattern == WeaponData.Pattern.ORBIT:
 			orbit_hit(owned, player.global_position, enemies, run_time, area, damage, crit, build.stat(&"move_speed"), rng)
@@ -53,7 +54,10 @@ static func update(build: PlayerBuild, player: Player, enemies: EnemyManager, pr
 			WeaponData.Pattern.PROJECTILE:
 				fire_shots(weapon, origin, facing, amount, area, hit_damage, projectiles, build.stat(&"duration"))
 			WeaponData.Pattern.RING, WeaponData.Pattern.AURA:
-				ring_hit(weapon, origin, enemies, hit_damage, weapon.reach * area)
+				if weapon.pull_seconds > 0.0:
+					owned.mines.append(Vector3(origin.x, origin.z, weapon.pull_seconds))
+				else:
+					ring_hit(weapon, origin, enemies, hit_damage, weapon.reach * area)
 			WeaponData.Pattern.DROP:
 				drop_hit(owned, origin, enemies, hit_damage, area, amount, rng, build.stat(&"duration"))
 			WeaponData.Pattern.MINE:
@@ -140,7 +144,10 @@ static func arc_hit(weapon: WeaponData, origin: Vector3, facing: Vector3, enemie
 			continue
 		if absf(enemies.ground_at(enemies.pos_x[j], enemies.pos_z[j]) - origin.y) > weapon.height_reach:
 			continue
-		apply_hit(weapon, enemies, j, damage, to.x * weapon.knockback, to.y * weapon.knockback)
+		var amount: float = damage
+		if weapon.tip_length > 0.0 and d > reach_base - weapon.tip_length * area:
+			amount *= weapon.tip_multiplier
+		apply_hit(weapon, enemies, j, amount, to.x * weapon.knockback, to.y * weapon.knockback)
 		hit += 1
 	return hit
 
@@ -211,6 +218,31 @@ static func _tick_mines(owned: PlayerBuild.OwnedWeapon, enemies: EnemyManager, d
 			continue
 		owned.impacts.append(Vector2(mine.x, mine.y))
 		blast(owned.data, enemies, mine.x, mine.y, owned.data.impact_radius * area, damage, duration)
+		owned.mines.remove_at(k)
+
+
+## RING with a pull (Harmonika): while a pull runs, enemies in reach are drawn toward where it
+## started; when it ends, the ring goes off there. The pulls wait in `mines` like mines do.
+static func _tick_pulls(owned: PlayerBuild.OwnedWeapon, enemies: EnemyManager, delta: float, area: float,
+		damage: float) -> void:
+	var weapon: WeaponData = owned.data
+	var radius: float = weapon.reach * area
+	var k: int = 0
+	while k < owned.mines.size():
+		var pull: Vector3 = owned.mines[k]
+		pull.z -= delta
+		if pull.z > 0.0:
+			owned.mines[k] = pull
+			for j: int in enemies_near(enemies, pull.x, pull.y, radius):
+				var to := Vector2(pull.x - enemies.pos_x[j], pull.y - enemies.pos_z[j])
+				var d: float = to.length()
+				if d > 1.0:
+					var step: float = minf(weapon.pull_speed * delta, d - 1.0)
+					enemies.shove(j, enemies.pos_x[j] + to.x / d * step, enemies.pos_z[j] + to.y / d * step)
+			k += 1
+			continue
+		owned.impacts.append(Vector2(pull.x, pull.y))
+		ring_hit(weapon, Vector3(pull.x, enemies.ground_at(pull.x, pull.y), pull.y), enemies, damage, radius)
 		owned.mines.remove_at(k)
 
 

@@ -967,3 +967,47 @@ PATCH_1_4_0_01,"Neue Karte: Heuriger in den Weinbergen. Fünf Terrassen, zwei Ke
 PATCH_1_4_0_02,"Neue Gegner: Weinbergschnecke (ihr Schleim bremst), Star-Schwarm (pickt Brösel und dann dein Knödl) und Wespen (mögen nur süße Knödl)."
 PATCH_1_4_0_03,Neuer Zwischengegner um 10:00 am Heurigen: Der Sturm. Zieht ois an und schleudert's in an Wirbel wieder raus. Schwere Knödl bleiben liegen.
 PATCH_1_4_0_04,"Jede Karte hat jetzt ihre eigene Musik: Schrammel-Techno, Après-Ski und a Wienerlied-Beat."
+PATCH_1_4_0_05,"Drei neue Knödlinger: Opa Hias, der Schrebergärtner (Gartenschlauch, greift im Stehn schneller an), Cousine Mitzi, die Fiakerin (Fiakerpeitsche, wird im Trab schneller) und Steffi, die Winzerin (Steirische Harmonika, jedes Wirtshaus serviert ihr zwamal)."
+PATCH_1_4_0_06,"Zwei neue Knödlsorten: der Serviettenknödl walzt a doppelt so breite Spur, der Topfenknödl is nach am Schupfn gleich wieder da."
+PATCH_1_4_0_07,"Freischalten: Opa Hias mit am Sieg im Gemeindebau-Hof, Cousine Mitzi mit 2 Minuten Nachspielzeit, Steffi mit am Sieg beim Heurigen. Ihre Waffen kommen mit Level 15 auf die Speisekarte. Dazu zwölf neue Aufträge."
+WEAPON_GARTENSCHLAUCH,Gartenschlauch
+DESC_WEAPON_GARTENSCHLAUCH,"Gießt die Paradeiser. Und schwemmt alles weg, was drübersteigt."
+WEAPON_FIAKERPEITSCHE,Fiakerpeitsche
+DESC_WEAPON_FIAKERPEITSCHE,"Knallt nur ganz vorn richtig. Die Ross wissen des."
+WEAPON_STEIRISCHE_HARMONIKA,Steirische Harmonika
+DESC_WEAPON_STEIRISCHE_HARMONIKA,"Zieht alle zam, dann drückt's alle weg. Wie a Zeltfest."
+KNODL_SERVIETTEN,Serviettenknödl
+KNODL_TOPFEN,Topfenknödl
+CHARACTER_HIAS,Opa Hias
+ROLE_HIAS,Schrebergärtner
+TRAIT_HIAS,"Hat eh Zeit: nach 1 Sekunde Stillstehn greift er um 25 % schneller an. Sein Serviettenknödl walzt a doppelt so breite Spur, dreht si aber gmüatlich."
+CHARACTER_MITZI,Cousine Mitzi
+ROLE_MITZI,Fiakerin
+TRAIT_MITZI,"Trab: nach 2 Sekunden schnurgerade rennen 20 % schneller, und ihr Knödl haut 20 % fester zua. A scharfe Kurvn, und's is vorbei. Ihr Topfenknödl is gleich wieder da."
+CHARACTER_STEFFI,Steffi
+ROLE_STEFFI,Winzerin
+TRAIT_STEFFI,"Ausg'steckt: jedes Wirtshaus serviert ihr zwamal."
+QUEST_SCHREBERGARTEN,Schrebergarten
+DESC_QUEST_SCHREBERGARTEN,Gewinn a Runde im Gemeindebau-Hof.
+QUEST_FIAKERFAHRT,Fiakerfahrt
+DESC_QUEST_FIAKERFAHRT,Überleb 2 Minuten Nachspielzeit in einer Runde.
+QUEST_AUSGSTECKT,Ausg'steckt is
+DESC_QUEST_AUSGSTECKT,Gewinn a Runde beim Heurigen.
+QUEST_HIAS_40,Gartenzwergmeister
+DESC_QUEST_HIAS_40,Erreich Level 40 mit Opa Hias.
+QUEST_MITZI_40,Fiakerkönigin
+DESC_QUEST_MITZI_40,Erreich Level 40 mit Cousine Mitzi.
+QUEST_STEFFI_40,Weinkönigin
+DESC_QUEST_STEFFI_40,Erreich Level 40 mit Steffi.
+QUEST_HIAS_SIEG,Ernte eingfahren
+DESC_QUEST_HIAS_SIEG,Gewinn a Runde mit Opa Hias.
+QUEST_MITZI_SIEG,Rundfahrt
+DESC_QUEST_MITZI_SIEG,Gewinn a Runde mit Cousine Mitzi.
+QUEST_STEFFI_SIEG,Prost
+DESC_QUEST_STEFFI_SIEG,Gewinn a Runde mit Steffi.
+QUEST_GIESSDIENST,Gießdienst
+DESC_QUEST_GIESSDIENST,Erreich Level 15 mit Opa Hias.
+QUEST_FIAKERPRUEFUNG,Fiakerprüfung
+DESC_QUEST_FIAKERPRUEFUNG,Erreich Level 15 mit Cousine Mitzi.
+QUEST_MUSIKANTENSTAMMTISCH,Musikantenstammtisch
+DESC_QUEST_MUSIKANTENSTAMMTISCH,Erreich Level 15 mit Steffi.

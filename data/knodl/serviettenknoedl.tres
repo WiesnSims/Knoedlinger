@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="KnodlSortData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/knodl_sort_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"serviettenknoedl"
+name_key = "KNODL_SERVIETTEN"
+width = 2.0
+turn_rate = 2.0
+lateral_grip = 5.0
+color = Color(0.93, 0.87, 0.7, 1)
+crumb_color = Color(0.78, 0.64, 0.42, 1)
+fleck_color = Color(0.32, 0.52, 0.22, 1)

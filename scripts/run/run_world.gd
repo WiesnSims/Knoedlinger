@@ -164,6 +164,8 @@ var _respawn_grace: Dictionary[int, float] = {}
 var _notice_timers: Dictionary[int, float] = {}
 var _seen_life: Dictionary[int, int] = {}
 var _seen_served: Dictionary[int, bool] = {}
+## Host: Wirtshaus spots that have served Steffi a second time.
+var _second_serves: Dictionary[int, bool] = {}
 var _weapon_rng := RandomNumberGenerator.new()
 var _riesen_wirt: Node3D
 ## The first frame after a solo pause carries the paused time; it is left out of the frame stats.
@@ -945,7 +947,7 @@ func _check_wirtshaeuser(delta: float) -> void:
 		if state.downed or knodl.merged_away:
 			continue
 		for wirt: Wirtshaus in wirtshaeuser:
-			if not wirt.open or wirt.served or not wirt.touches(knodl.global_position, knodl.radius, balance.wirtshaus_door_radius):
+			if not wirt.open or not _serves(wirt, peer) or not wirt.touches(knodl.global_position, knodl.radius, balance.wirtshaus_door_radius):
 				continue
 			if _guarded(wirt):
 				if not _notice_timers.has(peer):
@@ -962,9 +964,19 @@ func _check_wirtshaeuser(delta: float) -> void:
 			break
 
 
+## Host: whether this Wirtshaus still serves this player. Each serves once per run; one that has
+## served already serves Steffi once more ("Ausg'steckt", trait_effects[&"serves_twice"]).
+func _serves(wirt: Wirtshaus, peer: int) -> bool:
+	if not wirt.served:
+		return true
+	return character_of(peer).trait_effects.has(&"serves_twice") and not _second_serves.has(wirt.spot)
+
+
 func _cash_in(peer: int, wirt: Wirtshaus, tier: int) -> void:
 	var state: PlayerState = states[peer]
 	var knodl: Knodl = knodls[peer]
+	if wirt.served:
+		_second_serves[wirt.spot] = true
 	wirt.set_state(true, true, tier)
 	state.cash_ins[tier] += 1
 	var gold: int = roundi(knodl.knodl_mass * balance.wirtshaus_gold_per_mass) if tier == 0 else 0
@@ -2081,6 +2093,13 @@ func _update_traits(delta: float) -> void:
 				state.build.banishes += 1
 			else:
 				_coffee_break(player.global_position)
+		if effects.has(&"idle_rate"):
+			var rate: float = effects[&"idle_rate"] if player.still_time >= balance.idle_seconds and not state.downed else 0.0
+			if rate != state.build.trait_rate:
+				state.build.trait_rate = rate
+				state.build.recompute()
+		if effects.has(&"trot") and knodls.has(peer):
+			(knodls[peer] as Knodl).damage_bonus = player.trot_bonus()
 		if effects.has(&"jump_wave"):
 			var jumps: int = player.jump_count if peer == NetworkManager.local_id() else player.last_input.jumps
 			var seen: int = _jumps_seen.get(peer, jumps)

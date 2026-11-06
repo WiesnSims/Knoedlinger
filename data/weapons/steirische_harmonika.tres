@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/steirische_harmonika.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"steirische_harmonika"
+name_key = "WEAPON_STEIRISCHE_HARMONIKA"
+desc_key = "DESC_WEAPON_STEIRISCHE_HARMONIKA"
+pattern = 2
+cooldown = 2.6
+damage = 5.0
+knockback = 16.0
+reach = 8.0
+pull_seconds = 0.6
+pull_speed = 6.0
+color = Color(0.8, 0.68, 1, 1)
+level_mods = Dictionary[StringName, float]({&"damage": 0.33, &"rate": 0.12, &"area": 0.12})
+max_amount = 1
+icon = ExtResource("9_icon")

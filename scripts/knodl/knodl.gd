@@ -56,6 +56,10 @@ var spikes: float = 0.0
 var slope_bonus: float = 0.0
 ## Seconds until Schupfn works again.
 var cooldown: float = 0.0
+## A Serviettenknödl's rolling direction (flat, either way along it; KnodlSortData.turn_rate).
+var heading: Vector3 = Vector3.FORWARD
+## Its holder's extra contact damage (Cousine Mitzi's Trab), set by RunWorld every frame.
+var damage_bonus: float = 0.0
 ## Stats for tests and the balance log.
 var throws: int = 0
 var crushed: int = 0
@@ -78,6 +82,8 @@ var _remote_position: Vector3 = Vector3.ZERO
 var _remote_rotation: Quaternion = Quaternion.IDENTITY
 var _speed: float = 0.0
 var _last_position: Vector3 = Vector3.ZERO
+## A Serviettenknödl's roll around its own axis, for the look.
+var _spin: float = 0.0
 
 
 func setup(p_owner: int, p_balance: BalanceData, p_sort: KnodlSortData, p_holder: Player, p_simulated: bool) -> void:
@@ -241,7 +247,7 @@ func schupfn(direction: Vector3) -> bool:
 			linear_velocity = direction * balance.knodl_throw_speed * sort.throw_distance_mult + carry * 0.5 \
 					+ Vector3.UP * balance.knodl_throw_lift
 			state = State.THROWN
-			cooldown = balance.knodl_cooldown
+			cooldown = full_cooldown()
 			_stuck_timer = 0.0
 			throw_age = 0.0
 			pass_target = 0
@@ -269,14 +275,15 @@ func take_shed() -> int:
 func crush(enemies: EnemyManager, delta: float = 0.0) -> int:
 	var centre: Vector3 = global_position
 	var speed: float = linear_velocity.length()
-	var damage: float = Formulas.knodl_contact_damage(speed, radius, balance, sort.contact_damage_mult)
+	var damage: float = Formulas.knodl_contact_damage(speed, radius, balance, sort.contact_damage_mult) 			* (1.0 + damage_bonus)
 	# Bergab-Gesetz: rolling downhill hits harder.
 	if slope_bonus > 0.0 and speed > 1.0:
 		var ahead: Vector3 = centre + linear_velocity / speed
 		if enemies.ground_at(centre.x, centre.z) - enemies.ground_at(ahead.x, ahead.z) > 0.12:
 			damage *= 1.0 + slope_bonus
 	var grid: SpatialHash = enemies.grid
-	var found: int = grid.query(centre.x, centre.z, radius + 0.8)
+	var side: float = radius * sort.width
+	var found: int = grid.query(centre.x, centre.z, side + 0.8)
 	var kills: int = 0
 	var bottom: float = centre.y - radius
 	var top: float = centre.y + radius
@@ -293,7 +300,8 @@ func crush(enemies: EnemyManager, delta: float = 0.0) -> int:
 		var dz: float = ez - centre.z
 		var reach: float = radius + enemies.radius[j]
 		var d_sq: float = dx * dx + dz * dz
-		if d_sq >= reach * reach:
+		var solid: bool = d_sq < reach * reach
+		if not solid and not _in_strip(dx, dz, reach, side + enemies.radius[j]):
 			continue
 		var gy: float = enemies.ground_at(ex, ez)
 		if bottom > gy + balance.enemy_contact_height or top < gy:
@@ -301,7 +309,7 @@ func crush(enemies: EnemyManager, delta: float = 0.0) -> int:
 		var d: float = sqrt(d_sq)
 		var away := Vector2(dx, dz) / d if d > 0.001 else push_dir
 		# The Knödl is solid: nobody stands inside it (a fast Kaspressknödl goes right through).
-		if not (sort.pierce and speed > 3.0):
+		if solid and not (sort.pierce and speed > 3.0):
 			enemies.shove(j, centre.x + away.x * reach, centre.z + away.y * reach)
 		if sort.trail_slow > 0.0 and speed > 1.0:
 			enemies.slow(j, 1.0 - sort.trail_slow, 1.5)
@@ -317,6 +325,20 @@ func crush(enemies: EnemyManager, delta: float = 0.0) -> int:
 			_wobble = minf(_wobble + 0.1, 1.0)
 	crushed += kills
 	return kills
+
+
+## A Serviettenknödl's wide strip: inside the ellipse `along` deep on its heading, `across` wide.
+func _in_strip(dx: float, dz: float, along: float, across: float) -> bool:
+	if sort.width <= 1.0:
+		return false
+	var a: float = (dx * heading.x + dz * heading.z) / along
+	var c: float = (dx * heading.z - dz * heading.x) / across
+	return a * a + c * c < 1.0
+
+
+## The full Schupfn cooldown for this sort (a Topfenknödl's is shorter).
+func full_cooldown() -> float:
+	return balance.knodl_cooldown * sort.cooldown_mult
 
 
 ## Client: the host's latest state for this Knödl.
@@ -355,6 +377,29 @@ func _process(delta: float) -> void:
 		_wobble = maxf(_wobble - delta * 2.5, 0.0)
 	_material.set_shader_parameter(&"wobble", _wobble)
 	_material.set_shader_parameter(&"fade", _view_fade())
+	if sort.turn_rate > 0.0:
+		_place_roll(delta)
+
+
+## A Serviettenknödl looks like a roll lying across its heading and spinning about its long axis,
+## whatever the ball under it does (the body stays a sphere for Jolt).
+func _place_roll(delta: float) -> void:
+	var moved: Vector3 = linear_velocity if simulated else (global_position - _last_position) / maxf(delta, 0.0001)
+	moved.y = 0.0
+	if not simulated and moved.length() > 0.5:
+		heading = _turned(heading, moved, sort.turn_rate * delta)
+	_spin += moved.dot(heading) / maxf(radius, 0.1) * delta
+	var look := Basis.looking_at(heading, Vector3.UP)
+	_visual.global_basis = look * Basis(Vector3.RIGHT, -_spin) * Basis.from_scale(Vector3(radius * sort.width, radius, radius))
+
+
+## `from` turned toward `toward` (or its back, a roll has no front) by at most `step` radians.
+static func _turned(from: Vector3, toward: Vector3, step: float) -> Vector3:
+	var want: Vector3 = toward.normalized()
+	if want.dot(from) < 0.0:
+		want = -want
+	var angle: float = from.signed_angle_to(want, Vector3.UP)
+	return from.rotated(Vector3.UP, clampf(angle, -step, step)).normalized()
 
 
 ## Dithers the Knödl away while it fills the camera or sits between the camera and its player, so
@@ -460,6 +505,13 @@ func _integrate_forces(body: PhysicsDirectBodyState3D) -> void:
 			v.z = lerpf(v.z, roll.z, minf(3.0 * dt, 1.0))
 	if state != State.REELING:
 		v += wind * dt
+		if sort.turn_rate > 0.0:
+			# A roll: it turns slowly toward where it is pulled and hardly slides sideways.
+			var flat := Vector3(v.x, 0.0, v.z)
+			if flat.length() > 0.5:
+				heading = _turned(heading, flat, sort.turn_rate * dt)
+			var sideways: Vector3 = flat - heading * flat.dot(heading)
+			v -= sideways * (1.0 - exp(-sort.lateral_grip * dt))
 	var max_speed: float = balance.knodl_max_speed * sort.roll_speed_mult
 	if v.length() > max_speed:
 		v = v.normalized() * max_speed
@@ -468,5 +520,5 @@ func _integrate_forces(body: PhysicsDirectBodyState3D) -> void:
 
 func _start_reel() -> void:
 	state = State.REELING
-	_reel_timer = balance.knodl_reel_time / maxf(string_mult, 0.5)
+	_reel_timer = balance.knodl_reel_time * sort.reel_time_mult / maxf(string_mult, 0.5)
 	_stuck_timer = 0.0

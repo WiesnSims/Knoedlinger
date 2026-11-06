@@ -217,7 +217,7 @@ func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: Bala
 		# Most runs stay below 4x the start radius; the disc fills its ring there.
 		_knodl.knodl_size = inverse_lerp(balance.knodl_base_radius, balance.knodl_base_radius * 4.0, knodl.radius)
 		_knodl.hollow = knodl.state != Knodl.State.ATTACHED
-		_knodl.ring = knodl.cooldown / maxf(balance.knodl_cooldown, 0.01)
+		_knodl.ring = knodl.cooldown / maxf(knodl.full_cooldown(), 0.01)
 	if state.downed:
 		toast(downed_text if downed_text != "" else tr(downed_key), 0.2)
 

@@ -95,12 +95,15 @@ func sync(build: PlayerBuild, run_time: float, delta: float, shots: ProjectilePo
 							Formulas.weapon_amount(weapon, owned.mods), area, 0.0, shots)
 			WeaponData.Pattern.RING:
 				var ring: Node3D = effect.nodes[0]
-				var t: float = effect.time / RING_SECONDS
+				# A pulling ring (Harmonika) first closes in over the pull, then goes off as usual.
+				var t: float = (effect.time - weapon.pull_seconds) / RING_SECONDS
 				ring.visible = t < 1.0
 				if ring.visible:
+					var grow: float = lerpf(0.35, 1.0, sqrt(t)) if t >= 0.0 \
+							else lerpf(1.0, 0.35, effect.time / weapon.pull_seconds)
 					ring.global_position = origin + Vector3(0.0, GROUND_LIFT, 0.0)
-					ring.scale = Vector3.ONE * weapon.reach * area * lerpf(0.35, 1.0, sqrt(t))
-					effect.material.set_shader_parameter(&"progress", t)
+					ring.scale = Vector3.ONE * weapon.reach * area * grow
+					effect.material.set_shader_parameter(&"progress", maxf(t, 0.0))
 			WeaponData.Pattern.AURA:
 				var disc: Node3D = effect.nodes[0]
 				disc.global_position = origin + Vector3(0.0, GROUND_LIFT, 0.0)

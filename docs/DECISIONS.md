@@ -1576,3 +1576,52 @@ the second tab.
   +1.4 MiB OGG. The Kirtag keeps its track; the boss and Sperrstund' tracks stay shared.
 - Not done in Part 1: map traits on the map select (1.3, P3) – slides to later as planned.
 - **Owner approved Part 1 on 2026-11-06.** Next: Part 2 (the family) on `v1-4`.
+
+## 2026-11-06 – 1.4 Part 2: the family (branch `v1-4`)
+
+- **Owner: "continue with 1.4 part 2".** Three new Knödlinger, two Knödl sorts, twelve Aufträge (114 → 126).
+- **Claude: the three start weapons come forward from Part 3** – a Knödlinger cannot be played without one.
+  Part 3 keeps the Krapfen-Kanone, the two stats, the evolutions and the items. The new weapons are appended
+  to the catalog and offered to everyone on the Speisekarte (like every other start weapon):
+  - **Gartenschlauch** (ARC with the stream look, water blue): 0.4 s, 1.6 damage, 6 m, 45°, knockback 7,
+    wet = 70 % speed for 2 s.
+  - **Fiakerpeitsche** (ARC): 1.0 s, 3.5 damage, 7 m, 26°, 10 % crit; the last metre (`tip_length`) hits ×3
+    (`tip_multiplier`); a second lash behind from amount 2.
+  - **Steirische Harmonika** (RING): 2.6 s, 5 damage, 8 m; `pull_seconds` 0.6 at `pull_speed` 6 m/s draws
+    everything in reach toward where it started, then the ring goes off there (knockback 16). The pulls wait
+    in the weapon's mine list; the ring effect closes in during the pull, then plays outward as usual.
+- **Knödl sorts (new `KnodlSortData` fields):**
+  - **Topfenknödl:** `reel_time_mult` 0.33 (1.5 s → 0.5 s), `cooldown_mult` 0.5 (4 s → 2 s; the HUD ring
+    uses the sort's cooldown), contact damage ×0.75, sweet (Wespen).
+  - **Serviettenknödl:** a roll, not a ball. `width` 2: hits a strip twice its radius to each side (an
+    ellipse on its heading; only the round core shoves enemies aside). `turn_rate` 2 rad/s: its heading
+    turns slowly toward where it is pulled (a roll has no front, so rolling backwards needs no turn);
+    `lateral_grip` 5/s: sideways speed dies off. Jolt still rolls a sphere; the look is a stretched roll
+    laid across the heading and spinning about its long axis (clients take the heading from its movement).
+- **Traits (`trait_effects`, timings in `balance_data.gd` → "Character traits"):**
+  - **Opa Hias, Schrebergärtner** – Gartenschlauch, Serviettenknödl. "Hat eh Zeit" (`idle_rate` 0.25):
+    after `idle_seconds` 1 s below `idle_speed` 0.4 m/s, +25 % attack speed (`PlayerBuild.trait_rate`,
+    host). Unlock: **Schrebergarten** – win on the Gemeindebau-Hof.
+  - **Cousine Mitzi, Fiakerin** – Fiakerpeitsche, Topfenknödl. "Trab" (`trot` 0.2): after `trot_seconds`
+    2 s at 60 % of run speed or more without turning more than 35° off her line (the line follows a gentle
+    curve), +20 % speed (her own machine) and +20 % Knödl contact damage (host, `Knodl.damage_bonus`).
+    Every machine counts it from `motion_velocity`, so nothing new goes over the network; the 2× momentum
+    cap already covers the pose check. Unlock: **Fiakerfahrt** – 2 minutes of Nachspielzeit in one run.
+  - **Steffi, Winzerin** – Steirische Harmonika, Marillenknödl. "Ausg'steckt" (`serves_twice`): a
+    Wirtshaus that has served once (anyone) serves her once more (host `_second_serves`). Unlock:
+    **Ausg'steckt is** – win on the Heuriger.
+  - `_40` / `_sieg` Aufträge for all three (300 / 200 Schilling).
+- **Claude: no per-character barks.** The barks are shared lines (`bark_*.ogg`), not per character; family
+  voices stay task 5.7 (P3). Portraits are drawn from the character colours (straw hat, Melone, Buschen
+  green), so the family nose comes for free; the Almanach lists the new characters and weapons by itself.
+- **Play screen:** 11 cards in 4 columns no longer fit at 1280×720 (the start button fell off the screen).
+  The cards now always take two rows: up to 6 columns, 112 px wide once there are more than 4.
+- **Checks:** 202 GUT tests (new `test_family.gd`: whip tip, Harmonika pull then blast, both sorts, Trab,
+  standing still, unlocks), web export (.pck 7.4 MiB), browser check (default and `character=hias`: 180 fps,
+  103 draw calls), `ui_shots -Only meta,coop,title`, `mp_test -Clients 1`.
+- **Owner: everything new is locked behind an Auftrag** (asked first for a Part 7 "ask about unlocks", then
+  withdrew it). So the three new weapons follow the start-weapon rule (Stempel, Obstler, Tablett): they reach
+  everyone's Speisekarte once their Knödlinger reaches level 15 – **Gießdienst** (Hias → Gartenschlauch),
+  **Fiakerprüfung** (Mitzi → Fiakerpeitsche), **Musikantenstammtisch** (Steffi → Harmonika), 100 Schilling
+  each; the character still starts with it. Aufträge 114 → 126. Parts 3 and 6.7 lock their new content too.
+  Note: in this plan 6.2 is "Knödl folgt brav"; no task covered the unlocks, so this is the standing rule.

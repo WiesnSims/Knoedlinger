@@ -324,6 +324,17 @@ extends Resource
 @export var jump_wave_radius: float = 4.5
 @export var jump_wave_damage: float = 6.0
 @export var jump_wave_knockback: float = 14.0
+## Opa Hias's "Hat eh Zeit": standing still (slower than idle_speed m/s) this long gives the
+## attack speed in his trait_effects[&"idle_rate"].
+@export var idle_speed: float = 0.4
+@export var idle_seconds: float = 1.0
+## Cousine Mitzi's "Trab": running straight at trot_min_speed of the run speed or more for
+## trot_seconds gives trait_effects[&"trot"] as speed and Knödl damage; turning further than
+## trot_turn_degrees from the line resets it (the line follows a curve at trot_follow per second).
+@export var trot_seconds: float = 2.0
+@export var trot_min_speed: float = 0.6
+@export var trot_turn_degrees: float = 35.0
+@export var trot_follow: float = 1.5
 
 @export_group("Kontrolleur")
 ## From this minute on, a Kontrolleur stands at every open Wirtshaus that has not served yet; it

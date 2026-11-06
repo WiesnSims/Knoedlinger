@@ -21,6 +21,16 @@ extends Resource
 @export var flatness: float = 1.0
 ## Grammelknödl: enemies near its greasy trail slow down to (1 - trail_slow) of their speed.
 @export var trail_slow: float = 0.0
+## Topfenknödl: the reel-in takes this share of balance.knodl_reel_time, the Schupfn cooldown this
+## share of balance.knodl_cooldown.
+@export var reel_time_mult: float = 1.0
+@export var cooldown_mult: float = 1.0
+## Serviettenknödl: a roll, not a ball. It hits a strip `width` times its radius to each side, only
+## rolls along its own heading (sideways speed dies off at `lateral_grip` per second) and turns that
+## heading toward where it is pulled at `turn_rate` radians per second (0 = a ball, no heading).
+@export var width: float = 1.0
+@export var turn_rate: float = 0.0
+@export var lateral_grip: float = 0.0
 ## Sweet dough: Wespen go for it (EnemyTypeData.sweet_tooth).
 @export var sweet: bool = false
 ## Too heavy for Der Sturm to pull in (BossData.pull_radius).
