@@ -1972,4 +1972,16 @@ the second tab.
   - B2 (candidate, same): the centre banner ("Z'wenig Gold fürs Kistl!") can cross an enemy line for a
     moment.
 - **Balance (A):** none yet.
-- **Small changes (C):** none yet.
+- **Small changes (C):**
+  - C1 (owner, 2026-11-06): the **Krapfen-Kanone bounces between enemies** instead of hopping along one line,
+    and its upgrades can raise the number of bounces (owner asked whether the size stat should do that).
+    Claude's plan: each Krapfen lands, splashes its jam, then jumps to the nearest enemy within a range, like
+    the Wiener Würstel's chain (pattern 7, `chain_range`); start 3 bounces. More bounces come from a new
+    weapon level mod "+1 Sprung" on its Speisekarte cards (`level_mods`, with a cap), **not** from area:
+    area already rolls on its cards and keeps growing the jam splash. Co-op: today clients replay the shot
+    from the fire counter, which only works because the hops follow the aim; bouncing to enemies needs the
+    host to send each bounce target (a small reliable run event) so every machine draws the same arcs.
+    Faschingsdienstag (its evolution) bounces the same way. Checks: `mp_test -Clients 1` and `-Coop` for the
+    sync, ui_shots for the new card text, a 10:00 damage measurement against the 6.5 numbers.
+- Taskboard for the owner: https://claude.ai/artifact/NUU2WXcPqcVtBSzAeXB3ww (mirrors these lists; updated
+  in the same session as any change here).
