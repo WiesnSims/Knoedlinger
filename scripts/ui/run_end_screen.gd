@@ -4,7 +4,9 @@ extends CanvasLayer
 ## GAME-DESIGN.md "run ends as victory if you survived the boss"), closed (Sperrstund' but the Hofrat
 ## still sits in his Amt) or lost (knocked out). A title, one line, the numbers as a two-column list,
 ## the final build beside it. In solo "Nochmal!" starts a new run; online the host decides (M6).
-## Schilling and the 25 % Knödl payout are saved from M4 on.
+## Schilling and the 25 % Knödl payout are saved from M4 on. A second tab, the Run-Abrechnung (1.4
+## task 5.4), bills the damage: per weapon, the Knödl and the extras (share and kills), and what
+## knocked the player down most often. Left / Right (LB / RB) switch the tabs.
 
 signal again_pressed
 signal menu_pressed
@@ -21,10 +23,17 @@ const ROWS: Array = [
 	["stempel", "END_STAT_STEMPEL", "int"], ["deaths", "END_STAT_DOWNED", "int"],
 ]
 
+## Run-Abrechnung columns: label key, width.
+const BILL_COLUMNS: Array = [["", 168.0], ["BILL_DAMAGE", 72.0], ["BILL_SHARE", 56.0], ["BILL_KILLS", 64.0]]
+
 var _shown: Control
 var _title: Label
 var _line: Label
 var _grid: GridContainer
+## The Run-Abrechnung tab and the two tab pills.
+var _bill: VBoxContainer
+var _numbers_pill: ActionPill
+var _bill_pill: ActionPill
 ## What the Profile paid: Schilling, quests stamped, a new Grant level.
 var _reward_box: VBoxContainer
 ## "Ehrentafel: Platz 12 · diese Woche 3", once the board answered.
@@ -62,10 +71,24 @@ func _ready() -> void:
 	_line = UiStyle.label(&"LabelMuted")
 	_line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	heading.add_child(_line)
+	var tabs := UiStyle.hbox()
+	column.add_child(tabs)
+	_numbers_pill = ActionPill.new("", &"shoulder_left")
+	_numbers_pill.set_label(tr("END_TAB_NUMBERS"))
+	_numbers_pill.toggle_mode = true
+	_numbers_pill.pressed.connect(func() -> void: _show_bill(false))
+	tabs.add_child(_numbers_pill)
+	_bill_pill = ActionPill.new("", &"shoulder_right")
+	_bill_pill.set_label(tr("END_TAB_BILL"))
+	_bill_pill.toggle_mode = true
+	_bill_pill.pressed.connect(func() -> void: _show_bill(true))
+	tabs.add_child(_bill_pill)
 	_grid = GridContainer.new()
 	_grid.columns = 2
 	_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(_grid)
+	_bill = UiStyle.vbox()
+	column.add_child(_bill)
 	_reward_box = UiStyle.vbox(&"Tight")
 	column.add_child(_reward_box)
 	_again = ActionPill.new("Enter", &"ui_accept")
@@ -134,6 +157,8 @@ func show_result(summary: Dictionary, can_restart: bool, build: PlayerBuild = nu
 		var value: Label = UiStyle.label(&"LabelSmall", text)
 		value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		_grid.add_child(value)
+	_fill_bill(summary)
+	_show_bill(false)
 	_inventory.visible = build != null and balance != null
 	if _inventory.visible:
 		_inventory.show_build(build, balance)
@@ -158,8 +183,94 @@ func show_rank(rank: int, week_rank: int, daily: bool = false) -> void:
 		_rank_label.visible = true
 
 
+func _show_bill(on: bool) -> void:
+	_numbers_pill.set_pressed_no_signal(not on)
+	_bill_pill.set_pressed_no_signal(on)
+	_grid.visible = not on
+	_bill.visible = on
+
+
+## The Run-Abrechnung from the summary's damage_by_source / kills_by_source / downed_by.
+func _fill_bill(summary: Dictionary) -> void:
+	for child: Node in _bill.get_children():
+		child.queue_free()
+	var damage: Dictionary = summary.get("damage_by_source", {})
+	var kills: Dictionary = summary.get("kills_by_source", {})
+	var total: float = 0.0
+	for key: Variant in damage:
+		total += float(damage[key])
+	var grid := GridContainer.new()
+	grid.columns = BILL_COLUMNS.size()
+	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bill.add_child(grid)
+	for def: Array in BILL_COLUMNS:
+		grid.add_child(_bill_cell(tr(def[0]) if def[0] != "" else "", def[1], &"LabelMuted", def[0] != ""))
+	var order: Array = damage.keys()
+	order.sort_custom(func(a: Variant, b: Variant) -> bool: return float(damage[a]) > float(damage[b]))
+	var catalog: UpgradeCatalog = load("res://data/catalog/catalog.tres")
+	for key: Variant in order:
+		var name: String = tr("BILL_KNODL") if key == "knodl" else tr("BILL_EXTRA") if key == "extra" else str(key)
+		for weapon: WeaponData in catalog.weapons:
+			if String(weapon.id) == str(key):
+				name = tr(weapon.name_key)
+		grid.add_child(_bill_cell(name, BILL_COLUMNS[0][1], &"LabelSmall", false))
+		grid.add_child(_bill_cell(short_number(float(damage[key])), BILL_COLUMNS[1][1], &"LabelSmall", true))
+		grid.add_child(_bill_cell("%d %%" % roundi(100.0 * float(damage[key]) / maxf(total, 0.001)), BILL_COLUMNS[2][1],
+				&"LabelSmall", true))
+		grid.add_child(_bill_cell(str(int(kills.get(key, 0))), BILL_COLUMNS[3][1], &"LabelSmall", true))
+	grid.visible = not order.is_empty()
+	if order.is_empty():
+		_bill.add_child(UiStyle.label(&"LabelMuted", tr("BILL_NONE")))
+	# The most frequent knock-down cause.
+	var downed: Dictionary = summary.get("downed_by", {})
+	var worst: String = ""
+	for cause: Variant in downed:
+		if worst == "" or int(downed[cause]) > int(downed[worst]):
+			worst = str(cause)
+	var line: Label
+	if worst == "":
+		line = UiStyle.label(&"LabelMuted", tr("BILL_NEVER_DOWN"))
+	else:
+		var who: String = tr("BILL_ATTACK")
+		for enemy: EnemyTypeData in GameContent.load_default().enemies:
+			if String(enemy.id) == worst:
+				who = tr(enemy.name_key)
+		line = UiStyle.label(&"LabelMuted", tr("BILL_DOWN_BY") % [who, int(downed[worst])])
+	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	line.custom_minimum_size = Vector2(WIDTH - 48.0, 0.0)
+	_bill.add_child(line)
+
+
+## 950, 12,3k, 4,5 Mio.
+static func short_number(value: float) -> String:
+	if value < 10000.0:
+		return str(roundi(value))
+	if value < 1000000.0:
+		return ("%.1fk" % (value / 1000.0)).replace(".", ",")
+	return ("%.1f Mio" % (value / 1000000.0)).replace(".", ",")
+
+
+func _bill_cell(text: String, width: float, variation: StringName, right: bool) -> Label:
+	var label: Label = UiStyle.label(variation, text)
+	label.custom_minimum_size = Vector2(width, 0.0)
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	if right:
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	return label
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
+		return
+	var tab_key: InputEventKey = event as InputEventKey
+	if tab_key != null and tab_key.pressed and not tab_key.echo \
+			and (tab_key.physical_keycode == KEY_LEFT or tab_key.physical_keycode == KEY_RIGHT):
+		get_viewport().set_input_as_handled()
+		_show_bill(tab_key.physical_keycode == KEY_RIGHT)
+		return
+	if event.is_action_pressed(&"shoulder_left") or event.is_action_pressed(&"shoulder_right"):
+		get_viewport().set_input_as_handled()
+		_show_bill(event.is_action_pressed(&"shoulder_right"))
 		return
 	var key: InputEventKey = event as InputEventKey
 	var pad: InputEventJoypadButton = event as InputEventJoypadButton

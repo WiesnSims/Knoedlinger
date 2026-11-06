@@ -241,6 +241,10 @@ var _knodl_state_last: Dictionary[int, int] = {}
 var _bell_timers: Dictionary[int, float] = {}
 ## Host: enemy types whose arrive_toast was shown this run.
 var _arrived: Dictionary[int, bool] = {}
+## Run-Abrechnung (1.4 task 5.4), host: damage source id -> [peer, kind, id]; kind is "weapon" (id =
+## weapon id), "knodl" or "extra" (items, traits, reflects). EnemyManager counts per id.
+var _sources: Array = []
+var _source_ids: Dictionary[String, int] = {}
 const SHOCKWAVES: int = 8
 const SHOCKWAVE_SECONDS: float = 0.4
 
@@ -610,6 +614,8 @@ func _host_frame(delta: float) -> void:
 	for t: int in peers.size():
 		var state: PlayerState = states[peers[t]]
 		var hit: float = Formulas.hit_damage(enemies.touch_damage[t] * damage_mult, state.build.stat(&"armor"), balance)
+		if enemies.touch_type[t] >= 0:
+			state.last_cause = types[enemies.touch_type[t]].id
 		var hp_before: float = state.hp
 		if not _god and phase != Phase.ENDED and state.hurt(hit, balance):
 			on_downed(peers[t])
@@ -639,10 +645,17 @@ func _host_frame(delta: float) -> void:
 					if aim[1] != 0:
 						print("[RUN] pass-throw peer=%d to=%d t=%.1f" % [peer, aim[1], run_time])
 		if not state.downed and not state.choosing:
+			for owned: PlayerBuild.OwnedWeapon in state.build.weapons:
+				if owned.source < 0:
+					owned.source = _source(peer, "weapon", String(owned.data.id))
 			WeaponSystem.update(state.build, player, enemies, projectiles, run_time, delta, _weapon_rng, balance)
+			enemies.source = -1
+			projectiles.source = -1
+		knodl.damage_source = _source(peer, "knodl", "knodl")
 		if not knodl.merged_away:
 			knodl.crush(enemies, delta)
 		if seconds.has(peer):
+			seconds[peer].damage_source = knodl.damage_source
 			seconds[peer].crush(enemies, delta)
 	projectiles.update(delta, enemies)
 	hazards.update(delta)
@@ -1145,6 +1158,8 @@ func on_downed(peer: int) -> void:
 		events.toast("TOAST_REVIVED")
 		return
 	state.downed_times.append(run_time)
+	if state.last_cause != &"":
+		state.downed_by[state.last_cause] = state.downed_by.get(state.last_cause, 0) + 1
 	# Nachspielzeit: down is out for good (no respawn, no teammate, the Wirtshäuser are shut). When the
 	# last one falls, a moment of slow motion, then the end screen.
 	if phase == Phase.SPERRSTUND:
@@ -1688,6 +1703,7 @@ func _run_summary() -> Dictionary:
 		summary["knodl_kills"] = knodl.crushed
 		summary["auto_returns"] = knodl.auto_returns
 	if enemies != null:
+		summary.merge(_reckoning(id), true)
 		summary["kills"] = enemies.kills
 		summary["brosel_merges"] = brosel.merges
 		summary["cards_picked"] = level_flow.picks
@@ -1705,6 +1721,7 @@ func _shared_summary(peer: int) -> Dictionary:
 		by_type[String(enemy_id)] = _kills_by_type[enemy_id]
 	shared["kills"] = enemies.kills
 	shared["kills_by_type"] = by_type
+	shared.merge(_reckoning(peer), true)
 	var state: PlayerState = states.get(peer)
 	if state != null:
 		shared["deaths"] = state.deaths
@@ -2130,7 +2147,7 @@ func _update_traits(delta: float) -> void:
 				if count % every == 0:
 					var at: Vector3 = player.global_position
 					var damage: float = balance.jump_wave_damage * (1.0 + state.build.stat(&"damage"))
-					_ring_damage(at, balance.jump_wave_radius * (1.0 + state.build.stat(&"area")), damage, balance.jump_wave_knockback)
+					_ring_damage(at, balance.jump_wave_radius * (1.0 + state.build.stat(&"area")), damage, balance.jump_wave_knockback, peer)
 					events.cue(RunEventCodec.Cue.SHOCKWAVE, at.x, at.z)
 			timers[&"jumps"] = count
 			_jumps_seen[peer] = jumps
@@ -2154,7 +2171,7 @@ func _reflect_hit(peer: int, taken: float) -> void:
 			continue
 		var at: Vector3 = players[peer].global_position
 		var reach: float = owned.data.reach * Formulas.weapon_area(owned.data, owned.mods, build.stat(&"area"))
-		_ring_damage(at, reach, damage, owned.data.knockback)
+		_ring_damage(at, reach, damage, owned.data.knockback, peer)
 		events.cue(RunEventCodec.Cue.SHOCKWAVE, at.x, at.z)
 
 
@@ -2165,8 +2182,9 @@ func _coffee_break(at: Vector3) -> void:
 		enemies.slow(enemies.grid.results[k], 0.0, balance.coffee_seconds)
 
 
-## Damages and pushes every enemy within `radius` of `at` (Kevin's shockwave).
-func _ring_damage(at: Vector3, radius: float, damage: float, knockback: float) -> void:
+## Damages and pushes every enemy within `radius` of `at` (Kevin's shockwave); `peer`'s extra damage.
+func _ring_damage(at: Vector3, radius: float, damage: float, knockback: float, peer: int = 0) -> void:
+	enemies.source = _source(peer, "extra", "extra") if players.has(peer) else -1
 	var found: int = enemies.grid.query(at.x, at.z, radius)
 	for k: int in found:
 		var j: int = enemies.grid.results[k]
@@ -2175,6 +2193,7 @@ func _ring_damage(at: Vector3, radius: float, damage: float, knockback: float) -
 			continue
 		away = away.normalized() if away.length() > 0.01 else Vector2.RIGHT
 		enemies.damage(j, damage, away.x * knockback, away.y * knockback)
+	enemies.source = -1
 
 
 ## Every role: a ring that grows and fades where a shockwave went off (a few, reused in turn).
@@ -2233,7 +2252,7 @@ func _update_item_effects(delta: float) -> void:
 			if last == Knodl.State.THROWN and knodl.state != Knodl.State.THROWN and build.effect(&"knodl_burst") > 0.0:
 				var at: Vector3 = knodl.global_position
 				var damage: float = balance.powidl_damage * knodl.radius * (1.0 + build.stat(&"damage"))
-				_ring_damage(at, knodl.radius + balance.powidl_radius, damage, 10.0)
+				_ring_damage(at, knodl.radius + balance.powidl_radius, damage, 10.0, peer)
 				knodl.set_knodl_mass(knodl.knodl_mass * (1.0 - balance.powidl_cost))
 				events.cue(RunEventCodec.Cue.SHOCKWAVE, at.x, at.z)
 			_knodl_state_last[peer] = knodl.state
@@ -2244,7 +2263,7 @@ func _update_item_effects(delta: float) -> void:
 			if _bell_timers[peer] >= balance.bell_seconds:
 				_bell_timers[peer] = 0.0
 				var at: Vector3 = player.global_position
-				_ring_damage(at, balance.bell_radius * (1.0 + build.stat(&"area")), balance.bell_damage * (1.0 + build.stat(&"damage")), 12.0)
+				_ring_damage(at, balance.bell_radius * (1.0 + build.stat(&"area")), balance.bell_damage * (1.0 + build.stat(&"damage")), 12.0, peer)
 				events.cue(RunEventCodec.Cue.SHOCKWAVE, at.x, at.z)
 				GameAudio.play(&"gate_open", at)
 
@@ -2278,8 +2297,11 @@ func _update_second_knodl(peer: int, wanted: bool, where: Vector3 = Vector3.INF)
 ## Host: Schweizerkracher blasts at a few of this frame's kills.
 func _kill_blasts() -> void:
 	var chance: float = 0.0
+	var holder: int = 0
 	for peer: int in states:
 		chance += states[peer].build.effect(&"kill_blast")
+		if holder == 0 and states[peer].build.effect(&"kill_blast") > 0.0:
+			holder = peer
 	if chance <= 0.0:
 		return
 	var blasts: int = 0
@@ -2289,7 +2311,7 @@ func _kill_blasts() -> void:
 		blasts += 1
 		var x: float = enemies.kill_x[k]
 		var z: float = enemies.kill_z[k]
-		_ring_damage(Vector3(x, 0.0, z), balance.kracher_radius, balance.kracher_damage, 8.0)
+		_ring_damage(Vector3(x, 0.0, z), balance.kracher_radius, balance.kracher_damage, 8.0, holder)
 		events.cue(RunEventCodec.Cue.SHOCKWAVE, x, z)
 
 
@@ -2304,6 +2326,37 @@ func _lock_content(build: PlayerBuild) -> void:
 	for k: int in catalog.items.size():
 		if not Profile.is_unlocked(&"item", catalog.items[k].id):
 			build.locked[Card.Kind.ITEM * 256 + k] = true
+
+
+## Host: the damage source id of a player's weapon, Knödl or extras (Run-Abrechnung).
+func _source(peer: int, kind: String, id: String) -> int:
+	var key: String = "%d|%s|%s" % [peer, kind, id]
+	var found: int = _source_ids.get(key, -1)
+	if found < 0:
+		found = _sources.size()
+		_sources.append([peer, kind, id])
+		_source_ids[key] = found
+	return found
+
+
+## Host: one player's Run-Abrechnung: damage and kills per weapon (by weapon id), by the Knödl and by
+## extras, and what knocked them down how often (enemy id -> n).
+func _reckoning(peer: int) -> Dictionary:
+	var damage: Dictionary = {}
+	var kills: Dictionary = {}
+	for id: int in mini(_sources.size(), enemies.dealt.size()):
+		var entry: Array = _sources[id]
+		if int(entry[0]) != peer:
+			continue
+		var key: String = str(entry[2])
+		damage[key] = snappedf(float(damage.get(key, 0.0)) + enemies.dealt[id], 0.1)
+		kills[key] = int(kills.get(key, 0)) + enemies.source_kills[id]
+	var downed: Dictionary = {}
+	var state: PlayerState = states.get(peer)
+	if state != null:
+		for cause: StringName in state.downed_by:
+			downed[String(cause)] = state.downed_by[cause]
+	return {"damage_by_source": damage, "kills_by_source": kills, "downed_by": downed}
 
 
 ## Host: the Schilling a player's run is worth so far (GAME-DESIGN.md: gold, cash-ins, and 25 % of the
@@ -2445,6 +2498,7 @@ func _resolve_hazards() -> void:
 				if at.y - ground.height_at(at.x, at.z) > balance.hazard_dodge_height:
 					continue
 				if HazardField.contains(h, at.x, at.z, balance.player_radius):
+					state.last_cause = types[enemies.type[h.source]].id if h.source >= 0 else &"attack"
 					if state.hurt(Formulas.hit_damage(attack.damage * grant.enemy_damage, state.build.stat(&"armor"), balance), balance):
 						on_downed(peer)
 		if attack.dash and h.source >= 0:

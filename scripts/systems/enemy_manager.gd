@@ -107,8 +107,17 @@ var kills: int = 0
 var contacts: int = 0
 ## Per target of the last update(): the highest contact damage of any enemy touching it this frame.
 var touch_damage: PackedFloat32Array = PackedFloat32Array()
+## Per target of the last update(): the type of the enemy behind touch_damage (-1 = none).
+var touch_type: PackedInt32Array = PackedInt32Array()
 ## Per Knödl of the last update(): the mass Bröselfresser bit off it this frame.
 var knodl_bites: PackedFloat32Array = PackedFloat32Array()
+## Run-Abrechnung (1.4 task 5.4): who dealt the damage. A caller sets `source` (a small id RunWorld
+## hands out per player and weapon) before it hurts enemies; burns keep the source that lit them.
+## `dealt` and `source_kills` are indexed by source and count only the damage an enemy really took.
+var source: int = -1
+var dealt: PackedFloat32Array = PackedFloat32Array()
+var source_kills: PackedInt32Array = PackedInt32Array()
+var burn_source: PackedInt32Array = PackedInt32Array()
 
 var _rng := RandomNumberGenerator.new()
 var _frame: int = 0
@@ -148,6 +157,8 @@ func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: in
 		array.fill(0.0)
 		set(name, array)
 	controlled.resize(capacity)
+	burn_source.resize(capacity)
+	burn_source.fill(-1)
 	controlled.fill(0)
 	for t: EnemyTypeData in types:
 		_eats.append(1 if t.eats_knodl else 0)
@@ -190,6 +201,8 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 	var target_total: int = targets.size()
 	touch_damage.resize(target_total)
 	touch_damage.fill(0.0)
+	touch_type.resize(target_total)
+	touch_type.fill(-1)
 	var knodl_total: int = knodls.size()
 	knodl_bites.resize(knodl_total)
 	knodl_bites.fill(0.0)
@@ -225,9 +238,11 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 			knodl_timer[i] -= delta
 		if burn_timer[i] > 0.0:
 			burn_timer[i] -= delta
-			hp[i] -= burn_dps[i] * delta
-			if hp[i] <= 0.0:
-				damage(i, 0.0)
+			var held: int = source
+			source = burn_source[i]
+			var burned: bool = damage(i, burn_dps[i] * delta, 0.0, 0.0, false)
+			source = held
+			if burned:
 				continue
 		var slowed: float = pace
 		if slow_timer[i] > 0.0:
@@ -354,6 +369,7 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 				var hurt: float = types[type[i]].contact_damage
 				if hurt > touch_damage[best]:
 					touch_damage[best] = hurt
+					touch_type[best] = type[i]
 				vx = 0.0
 				vz = 0.0
 				if distance > 0.001:
@@ -415,12 +431,21 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 	_rebuild_grid()
 
 
-## Returns true when this hit killed the enemy. (kx, kz) is a knockback velocity to add.
-func damage(slot: int, amount: float, kx: float = 0.0, kz: float = 0.0) -> bool:
+## Returns true when this hit killed the enemy. (kx, kz) is a knockback velocity to add. The damage
+## counts for `source` (Run-Abrechnung). A burn tick does not flash.
+func damage(slot: int, amount: float, kx: float = 0.0, kz: float = 0.0, flashes: bool = true) -> bool:
 	if alive[slot] == 0:
 		return false
+	if source >= 0:
+		if source >= dealt.size():
+			dealt.resize(source + 1)
+			source_kills.resize(source + 1)
+		dealt[source] += clampf(amount, 0.0, maxf(hp[slot], 0.0))
+		if hp[slot] > 0.0 and hp[slot] <= amount:
+			source_kills[source] += 1
 	hp[slot] -= amount
-	flash[slot] = 1.0
+	if flashes:
+		flash[slot] = 1.0
 	if kx != 0.0 or kz != 0.0:
 		var factor: float = types[type[slot]].knockback_factor
 		kb_x[slot] += kx * factor
@@ -484,6 +509,8 @@ func slow(slot: int, mult: float, seconds: float) -> void:
 func burn(slot: int, dps: float, seconds: float) -> void:
 	if alive[slot] == 0:
 		return
+	if burn_timer[slot] <= 0.0 or dps >= burn_dps[slot]:
+		burn_source[slot] = source
 	burn_dps[slot] = maxf(burn_dps[slot] if burn_timer[slot] > 0.0 else 0.0, dps)
 	burn_timer[slot] = maxf(burn_timer[slot], seconds)
 

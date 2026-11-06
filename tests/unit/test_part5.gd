@@ -79,3 +79,43 @@ func test_the_streak_aufgaben_are_stamped_after_a_run() -> void:
 	var ids: Array = (reward["quests"] as Array).map(func(q: QuestData) -> StringName: return q.id)
 	assert_has(ids, &"stammkundschaft", "7 days in a row")
 	assert_does_not_have(ids, &"abonnement", "30 days are still to come")
+
+
+# --- Run-Abrechnung (5.4) --------------------------------------------------------------------------
+
+func _manager() -> EnemyManager:
+	var types: Array[EnemyTypeData] = [load("res://data/enemies/tourist.tres")]
+	var manager := EnemyManager.new(balance, types, 16, 5)
+	manager.populate(4, PackedVector3Array([Vector3.ZERO]))
+	return manager
+
+
+func test_damage_counts_for_its_source_and_only_what_the_enemy_had() -> void:
+	var manager: EnemyManager = _manager()
+	var hp: float = manager.hp[0]
+	manager.source = 2
+	manager.damage(0, hp * 0.5)
+	manager.damage(0, hp * 10.0)
+	assert_almost_eq(manager.dealt[2], hp, 0.01, "overkill does not count")
+	assert_eq(manager.source_kills[2], 1)
+	manager.source = -1
+	manager.damage(1, 1.0)
+	assert_eq(manager.dealt.size(), 3, "no source, no count")
+
+
+func test_a_burn_counts_for_whoever_lit_it() -> void:
+	var manager: EnemyManager = _manager()
+	manager.source = 1
+	manager.burn(0, manager.hp[0] * 2.0, 3.0)
+	manager.source = -1
+	var hp: float = manager.hp[0]
+	for k: int in 120:
+		manager.update(1.0 / 60.0, PackedVector3Array([Vector3(200.0, 0.0, 200.0)]))
+	assert_almost_eq(manager.dealt[1], hp, 0.01)
+	assert_eq(manager.source_kills[1], 1)
+
+
+func test_the_bill_shows_numbers_short() -> void:
+	assert_eq(RunEndScreen.short_number(950.0), "950")
+	assert_eq(RunEndScreen.short_number(12345.0), "12,3k")
+	assert_eq(RunEndScreen.short_number(4500000.0), "4,5 Mio")

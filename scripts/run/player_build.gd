@@ -40,6 +40,8 @@ class OwnedWeapon:
 	var aim: int = 0
 	# Host only.
 	var timer: float = 0.0
+	## Run-Abrechnung: its damage source id (EnemyManager.source; RunWorld hands it out).
+	var source: int = -1
 	## Continuous weapons: per enemy slot, the run time from which it may be hit again.
 	var hit_until: PackedFloat32Array = PackedFloat32Array()
 	## MINE: laid mines (x, z, seconds left). DROP / MINE / CHAIN: where it hit this frame, for the

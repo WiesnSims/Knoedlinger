@@ -1092,3 +1092,14 @@ QUEST_STAMMKUNDSCHAFT,Stammkundschaft
 DESC_QUEST_STAMMKUNDSCHAFT,Spiel die Tageskarte 7 Tage hintereinand.
 QUEST_ABONNEMENT,Abonnement
 DESC_QUEST_ABONNEMENT,Spiel die Tageskarte an 30 Tagen.
+END_TAB_NUMBERS,Zahlen
+END_TAB_BILL,Abrechnung
+BILL_DAMAGE,Schaden
+BILL_SHARE,Anteil
+BILL_KILLS,Erledigt
+BILL_KNODL,Da Knödl
+BILL_EXTRA,Sonstiges
+BILL_ATTACK,an Angriff
+BILL_NONE,Ka Schaden gmacht. Gemütlich.
+BILL_NEVER_DOWN,Ned oamal umgfoin. Respekt.
+BILL_DOWN_BY,Am öftesten umgfoin durch: %s (%d×)

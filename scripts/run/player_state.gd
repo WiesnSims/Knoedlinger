@@ -59,6 +59,10 @@ var schilling: int = 0
 var level_times: PackedFloat32Array = PackedFloat32Array()
 ## Run time of every knock-down.
 var downed_times: PackedFloat32Array = PackedFloat32Array()
+## Run-Abrechnung (host): the enemy type whose touch or attack hurt last, and what knocked this
+## player down how often (enemy id -> n).
+var last_cause: StringName = &""
+var downed_by: Dictionary[StringName, int] = {}
 
 
 func _init(p_peer_id: int = 1, p_max_hp: float = 100.0, p_build: PlayerBuild = null) -> void:

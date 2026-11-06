@@ -32,6 +32,9 @@ var _last_hit: PackedInt32Array = PackedInt32Array()
 ## Boomerangs: the lifetime left at which they turn (-1 = never); the weapon whose statuses apply.
 var _turn_at: PackedFloat32Array = PackedFloat32Array()
 var _weapons: Array[WeaponData] = []
+## Run-Abrechnung: the damage source of each shot (EnemyManager.source), taken from `source` when fired.
+var source: int = -1
+var _source: PackedInt32Array = PackedInt32Array()
 ## Lobbed shots: seconds between landings (0 = a plain shot) and the time since the last one.
 var _hop_every: PackedFloat32Array = PackedFloat32Array()
 var _hop_t: PackedFloat32Array = PackedFloat32Array()
@@ -62,6 +65,8 @@ func setup(p_balance: BalanceData, p_capacity: int, p_ground: Heightfield = null
 	_pierce.resize(capacity)
 	_weapons.resize(capacity)
 	_last_hit.resize(capacity)
+	_source.resize(capacity)
+	_source.fill(-1)
 	_free.resize(capacity)
 	for i: int in capacity:
 		_free[i] = capacity - 1 - i
@@ -116,6 +121,7 @@ func fire_shot(x: float, z: float, vx: float, vz: float, lifetime: float, damage
 	_last_hit[slot] = -1
 	_turn_at[slot] = lifetime * 0.5 if boomerang else -1.0
 	_weapons[slot] = weapon
+	_source[slot] = source
 	_hop_every[slot] = lifetime / hops if hops > 0 else 0.0
 	_hop_t[slot] = 0.0
 	_hop_height[slot] = weapon.hop_height if weapon != null else 0.0
@@ -147,6 +153,8 @@ func update(delta: float, enemies: EnemyManager) -> void:
 		var z: float = _z[i] + _vz[i] * delta
 		_x[i] = x
 		_z[i] = z
+		if grid != null:
+			enemies.source = _source[i]
 		if _hop_every[i] > 0.0:
 			_hop_t[i] += delta
 			if _hop_t[i] >= _hop_every[i]:
@@ -181,6 +189,8 @@ func update(delta: float, enemies: EnemyManager) -> void:
 				_release(i)
 				break
 			_pierce[i] -= 1
+	if enemies != null:
+		enemies.source = -1
 	_draw()
 
 

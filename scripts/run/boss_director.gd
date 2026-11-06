@@ -145,7 +145,10 @@ func touch_damage(targets: PackedVector3Array, out: PackedFloat32Array) -> void:
 		for t: int in targets.size():
 			var p: Vector3 = targets[t]
 			if (p.x - x) * (p.x - x) + (p.z - z) * (p.z - z) < reach * reach and absf(p.y - gy) < balance.enemy_contact_height + 1.0:
-				out[t] = maxf(out[t], boss.data.enemy.contact_damage)
+				if boss.data.enemy.contact_damage > out[t]:
+					out[t] = boss.data.enemy.contact_damage
+					if t < enemies.touch_type.size():
+						enemies.touch_type[t] = enemies.type[boss.slot]
 
 
 func is_boss_slot(slot: int) -> bool:

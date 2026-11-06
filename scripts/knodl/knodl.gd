@@ -60,6 +60,8 @@ var cooldown: float = 0.0
 var heading: Vector3 = Vector3.FORWARD
 ## Its holder's extra contact damage (Cousine Mitzi's Trab), set by RunWorld every frame.
 var damage_bonus: float = 0.0
+## Run-Abrechnung: its damage source id (EnemyManager.source), host.
+var damage_source: int = -1
 ## Stats for tests and the balance log.
 var throws: int = 0
 var crushed: int = 0
@@ -273,6 +275,7 @@ func take_shed() -> int:
 ## Host: hurts and pushes every enemy it touches (a Kaspressknödl cuts through them, a
 ## Grammelknödl's trail slows them). Returns how many it killed.
 func crush(enemies: EnemyManager, delta: float = 0.0) -> int:
+	enemies.source = damage_source
 	var centre: Vector3 = global_position
 	var speed: float = linear_velocity.length()
 	var damage: float = Formulas.knodl_contact_damage(speed, radius, balance, sort.contact_damage_mult) 			* (1.0 + damage_bonus)
@@ -324,6 +327,7 @@ func crush(enemies: EnemyManager, delta: float = 0.0) -> int:
 				kills += 1
 			_wobble = minf(_wobble + 0.1, 1.0)
 	crushed += kills
+	enemies.source = -1
 	return kills
 
 

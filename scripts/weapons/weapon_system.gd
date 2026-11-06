@@ -27,6 +27,8 @@ static func update(build: PlayerBuild, player: Player, enemies: EnemyManager, pr
 	for owned: PlayerBuild.OwnedWeapon in build.weapons:
 		var weapon: WeaponData = owned.data
 		owned.impacts.clear()
+		enemies.source = owned.source
+		projectiles.source = owned.source
 		var area: float = Formulas.weapon_area(weapon, owned.mods, build.stat(&"area"))
 		var damage: float = Formulas.weapon_damage(weapon, owned.mods, build.stat(&"damage"))
 		if weapon.pattern == WeaponData.Pattern.MINE:
