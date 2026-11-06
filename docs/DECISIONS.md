@@ -1974,8 +1974,20 @@ the second tab.
 - **Balance (A):**
   - A1 (owner, 2026-11-06): **rebalance the old weapons that measured far off** in 1.4's 6.5 test (held crowd
     of 250 at 10:00, 90 s; older-weapon average 5,824): too weak Wiener Würstel (918), Krampusrute,
-    Skistöcke; too strong Tablett-Wurf, Sachertorte-Mine (15,170). Claude offered 3 options per weapon;
-    the owner picks, then the picks are written here. Target band 4,500–7,500 in the same test (the old
+    Skistöcke; too strong Tablett-Wurf, Sachertorte-Mine (15,170). Claude offered 3 options per weapon
+    (numbers only / a mechanic / a third way); **the owner picked Claude's favourites**, all numbers are
+    starting values:
+    - Würstel **"Mit Senf"**: every chain jump splashes ~1.2 m at 50 % damage (crowd value; sets it apart
+      from the Krampusrute).
+    - Krampusrute **forks**: from the 2nd jump on, each jump splits in two (no enemy hit twice per cast).
+    - Skistöcke **two poles**: `amount` 1 → 2 side by side, pierce 2 → 4; Slalom-Gewitter checked to stay a
+      step above.
+    - Tablett-Wurf **full tray**: at most 12 hits on the way out and 12 back (pierce 99 → a per-leg cap),
+      then it flies home without hitting.
+    - Sachertorte **smaller blast**: `impact_radius` 3.6 → 2.6, damage 16 → 14.
+    - Why: the weak ones get something visible instead of bigger numbers, the strong ones are cut only in
+      big crowds, where they were too strong, so early runs feel the same. Co-op: the splash and the fork
+      are host hits drawn from the existing CHAIN impacts; the tray cap is host-side only. Target band 4,500–7,500 in the same test (the old
     weapons have different jobs, so wider than the ±10 % used for the new ones); all five re-measured
     before and after, plus autoplay with a character who starts with each (Toni for the Skistöcke, Poldi
     for the Tablett).
