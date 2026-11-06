@@ -1889,3 +1889,13 @@ the second tab.
     the armour change). No item in any run's top 4 damage sources. One run per other map: Gamskogl / Toni 6
     chests, Gemeindebau / Hias 11 (Hausmeisterin beaten), Heuriger / Steffi 6 (45 knock-downs: the Heuriger
     is the hardest map for the bot).
+- **Bot:** a Marterl within 40 m now comes before affordable chests (70 m) and Fassl (18 m): with start gold
+  `mp_test -Sites` saw the host bot buy five chests and never pray.
+- **Checks:** 241 GUT tests (new `test_part6.gd`: prices, coin value, chests bought on the wire, Fassl, proc
+  odds, hit log and target bonus, shield, Amboss and Rucksack, every item's text, DPS per pattern, the
+  ledger and the DAMAGE event), web export (.pck 7.9 MiB), browser check 160 fps / ≤ 123 draw calls and
+  165 fps / ≤ 118 with seven proc items stacked, `ui_shots` (pause, inventory, menu, shop, settings, meta,
+  late, hud: no console errors, < 150 draw calls; before shots of the old pause/Tab screens from the Part 5
+  preview in `build/shots/ui/before6`), `mp_test -Clients 1` (33.7 KiB/s at 498 enemies), `-Clients 3
+  -Coop`, `-Clients 1 -Sites`, autoplay as above.
+- Patch-list lines 16-21 for 1.4.0.

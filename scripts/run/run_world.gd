@@ -1527,6 +1527,12 @@ func _bot_goal(local: Player, knodl: Knodl) -> Vector2:
 		var heal: int = loot.nearest(LootField.Kind.HEAL, at.x, at.z)
 		if heal >= 0 and here.distance_to(Vector2(loot.xs[heal], loot.zs[heal])) < 30.0:
 			return Vector2(loot.xs[heal], loot.zs[heal])
+	# A Marterl close by first (the rarer chance), then chests it can pay, Fassl, and Der Standler once per
+	# visit when it can pay for something.
+	for k: int in sites.marterl_at.size():
+		var shrine: Vector3 = sites.marterl_at[k]
+		if sites.marterl_state[k] == RunSites.State.PLACED and here.distance_to(Vector2(shrine.x, shrine.z)) < 40.0:
+			return Vector2(shrine.x, shrine.z)
 	chest = loot.nearest(LootField.Kind.CHEST, at.x, at.z)
 	if chest >= 0 and state != null and state.build.gold >= _chest_price(chest, state) \
 			and here.distance_to(Vector2(loot.xs[chest], loot.zs[chest])) < 70.0:
@@ -1534,11 +1540,6 @@ func _bot_goal(local: Player, knodl: Knodl) -> Vector2:
 	var barrel: int = loot.nearest(LootField.Kind.FASSL, at.x, at.z)
 	if barrel >= 0 and here.distance_to(Vector2(loot.xs[barrel], loot.zs[barrel])) < 18.0:
 		return Vector2(loot.xs[barrel], loot.zs[barrel])
-	# A Marterl close by, and Der Standler once per visit when it can pay for something.
-	for k: int in sites.marterl_at.size():
-		var shrine: Vector3 = sites.marterl_at[k]
-		if sites.marterl_state[k] == RunSites.State.PLACED and here.distance_to(Vector2(shrine.x, shrine.z)) < 40.0:
-			return Vector2(shrine.x, shrine.z)
 	if sites.stand_at.is_finite() and _bot_shopped != sites.stand_visits and state != null 			and state.build.gold >= sites.price(0, 0, run_time):
 		var stall := Vector2(sites.stand_at.x, sites.stand_at.z)
 		if here.distance_to(stall) < balance.standler_radius * 0.6:
