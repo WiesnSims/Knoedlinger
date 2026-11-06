@@ -115,6 +115,88 @@ func test_a_burn_counts_for_whoever_lit_it() -> void:
 	assert_eq(manager.source_kills[1], 1)
 
 
+func test_the_reckoning_reaches_the_client_inside_the_shared_summary() -> void:
+	# The shared summary is a plain Dictionary over a reliable RPC: nested dictionaries survive it.
+	var shared: Dictionary = {"damage_by_source": {"kuhglocke": 85.9, "knodl": 17.5}, "downed_by": {"perchte": 2}}
+	var back: Variant = bytes_to_var(var_to_bytes(shared))
+	assert_eq(back, shared)
+
+
+# --- Der Standler (5.2) ------------------------------------------------------------------------------
+
+func _shop_state() -> PlayerState:
+	var build := PlayerBuild.new(load("res://data/catalog/catalog.tres"), balance)
+	return PlayerState.new(1, 100.0, build)
+
+
+func test_a_shop_offer_carries_its_prices() -> void:
+	var offer := OfferCodec.Offer.new()
+	offer.type = OfferCodec.Type.SHOP
+	offer.seq = 7
+	offer.cards = [Card.new(Card.Kind.ITEM, 3, 1, 1), Card.new(Card.Kind.ITEM, 5, 2, 1)]
+	offer.prices = PackedInt32Array([45, 70])
+	var back: OfferCodec.Offer = OfferCodec.decode_offer(OfferCodec.encode_offer(offer))
+	assert_not_null(back)
+	assert_eq(back.type, OfferCodec.Type.SHOP)
+	assert_eq(back.prices, PackedInt32Array([45, 70]))
+	assert_eq(back.cards[1].index, 5)
+	offer.type = OfferCodec.Type.OFFER
+	assert_eq(OfferCodec.decode_offer(OfferCodec.encode_offer(offer)).prices.size(), 0, "a plain offer has none")
+
+
+func test_buying_costs_gold_and_leaving_closes_the_shop() -> void:
+	var flow := LevelUpFlow.new(balance, 3)
+	var state: PlayerState = _shop_state()
+	var item: int = 0
+	var cards: Array[Card] = [Card.new(Card.Kind.ITEM, item, state.build.catalog.items[item].rarity, 1)]
+	var bought: Array = []
+	var closed: Array = []
+	flow.bought.connect(func(peer: int, card: int) -> void: bought.append([peer, card]))
+	flow.shop_closed.connect(func(peer: int) -> void: closed.append(peer))
+	flow.open_shop(1, state, cards, PackedInt32Array([40]), false)
+	assert_true(flow.is_shop(1))
+	assert_true(state.choosing)
+	var pick := OfferCodec.Choice.new()
+	pick.seq = flow._seqs[1]
+	flow.on_choice(1, OfferCodec.encode_choice(pick), state, false)
+	assert_eq(state.build.item_count(item), 0, "no gold, no item")
+	assert_true(flow.is_shop(1), "the shop stays open")
+	state.build.gold = 50
+	pick.seq = flow._seqs[1]
+	flow.on_choice(1, OfferCodec.encode_choice(pick), state, false)
+	assert_eq(state.build.item_count(item), 1)
+	assert_eq(state.build.gold, 10)
+	assert_eq(bought, [[1, 0]])
+	assert_false(state.choosing)
+	flow.open_shop(1, state, cards, PackedInt32Array([40]), false)
+	var leave := OfferCodec.Choice.new()
+	leave.seq = flow._seqs[1]
+	leave.action = OfferCodec.Action.SKIP
+	flow.on_choice(1, OfferCodec.encode_choice(leave), state, false)
+	assert_false(flow.is_shop(1))
+	assert_eq(closed, [1])
+	assert_eq(state.build.gold, 10, "leaving pays nothing")
+
+
+func test_his_prices_rise_with_every_buy_and_the_clock() -> void:
+	var sites := RunSites.new(null, balance, 1)
+	assert_eq(sites.price(0, 0, 0.0), balance.standler_prices[0])
+	assert_gt(sites.price(0, 1, 0.0), sites.price(0, 0, 0.0))
+	assert_gt(sites.price(0, 0, 600.0), sites.price(0, 0, 0.0))
+	assert_gt(sites.price(3, 0, 0.0), sites.price(0, 0, 0.0), "Hofratswürdig costs more")
+
+
+func test_a_site_event_travels() -> void:
+	var queue := RunEventCodec.Queue.new()
+	queue.site(RunSites.Site.MARTERL, 2, RunSites.State.ACTIVE, RunSites.Marterl.GIER, 12.5, -40.0)
+	var back: Array[RunEventCodec.Event] = RunEventCodec.decode(RunEventCodec.encode(queue.take()))
+	assert_eq(back.size(), 1)
+	assert_eq(back[0].kind, RunEventCodec.Kind.SITE)
+	assert_eq([back[0].a, back[0].id, back[0].c, back[0].b], [RunSites.Site.MARTERL, 2, RunSites.State.ACTIVE,
+		RunSites.Marterl.GIER])
+	assert_almost_eq(back[0].z, -40.0, 0.001)
+
+
 func test_the_bill_shows_numbers_short() -> void:
 	assert_eq(RunEndScreen.short_number(950.0), "950")
 	assert_eq(RunEndScreen.short_number(12345.0), "12,3k")

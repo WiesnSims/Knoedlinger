@@ -13,6 +13,9 @@ const ORBIT_HEIGHT: float = 9.0
 const ORBIT_SPEED: float = 0.05
 const LEFT_WIDTH: float = 320.0
 const MARGIN: float = 64.0
+## Below this UI height the left column keeps only half the margin above and below, so its nine
+## entries and the footer still fit (1280x720).
+const SHORT_HEIGHT: float = 820.0
 ## [label key, screen id, enabled].
 const ENTRIES: Array = [
 	["MENU_PLAY", &"play", true],
@@ -106,6 +109,8 @@ func _build_ui() -> void:
 	_left.offset_bottom = -MARGIN
 	_left.custom_minimum_size = Vector2(LEFT_WIDTH, 0.0)
 	root.add_child(_left)
+	root.resized.connect(func() -> void: _fit_column(root.size.y))
+	(func() -> void: _fit_column(root.size.y)).call_deferred()
 	_left.add_child(TitleLogo.new(tr("GAME_TITLE"), tr("GAME_SUBTITLE")))
 	var list := UiStyle.vbox(&"Gap4")
 	_left.add_child(list)
@@ -194,6 +199,12 @@ func _build_ui() -> void:
 	root.add_child(_board_top)
 	_board_top.fetch()
 	_build_name_prompt(root)
+
+
+func _fit_column(height: float) -> void:
+	var margin: float = MARGIN * 0.5 if height < SHORT_HEIGHT else MARGIN
+	_left.offset_top = margin
+	_left.offset_bottom = -margin
 
 
 func _update_name() -> void:

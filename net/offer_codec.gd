@@ -1,20 +1,22 @@
 class_name OfferCodec
 extends RefCounted
 ## Speisekarte messages (reliable). The host sends a player an OFFER (the cards to choose from), a
-## CHEST (cards a Wirtshaus cash-in just gave them) or a NOTICE (e.g. "this Knödl is too small for
-## the Wirt"); the player answers an offer with a Choice. Solo goes through the same messages.
+## CHEST (cards a Wirtshaus cash-in just gave them), a NOTICE (e.g. "this Knödl is too small for
+## the Wirt") or a SHOP (Der Standler's items with their prices, 1.4); the player answers an offer
+## or a shop with a Choice (PICK = buy, SKIP = leave). Solo goes through the same messages.
 ##
 ## Offer: u8 version | u8 type | u16 seq | u8 rerolls | u8 banishes | u8 pending levels |
 ##        u8 seconds to choose (0 = no limit) | u8 tier | u16 value | u8 cards | u8 chest rarity,
-##        per card u8 kind | u8 index | u8 rarity | u8 level | u8 weapon mod | u16 mod value * 1000
+##        per card u8 kind | u8 index | u8 rarity | u8 level | u8 weapon mod | u16 mod value * 1000,
+##        SHOP only: then per card u16 price
 ## Choice: u8 version | u16 seq | u8 action | u8 card
 
-const VERSION: int = 2
+const VERSION: int = 3
 const OFFER_HEADER: int = 13
 const CARD_SIZE: int = 7
 const CHOICE_SIZE: int = 5
 
-enum Type { OFFER, CHEST, NOTICE }
+enum Type { OFFER, CHEST, NOTICE, SHOP }
 enum Action { PICK, REROLL, BANISH, SKIP }
 enum Notice { TOO_SMALL, WIRT_SERVED, NO_GOLD, KONTROLLE }
 
@@ -34,6 +36,8 @@ class Offer:
 	## CHEST: the rarity it rolled.
 	var rarity: int = 0
 	var cards: Array[Card] = []
+	## SHOP: the gold each card costs.
+	var prices: PackedInt32Array = PackedInt32Array()
 
 
 class Choice:
@@ -45,7 +49,8 @@ class Choice:
 
 static func encode_offer(offer: Offer) -> PackedByteArray:
 	var data := PackedByteArray()
-	data.resize(OFFER_HEADER + offer.cards.size() * CARD_SIZE)
+	var shop: bool = offer.type == Type.SHOP
+	data.resize(OFFER_HEADER + offer.cards.size() * (CARD_SIZE + (2 if shop else 0)))
 	data.encode_u8(0, VERSION)
 	data.encode_u8(1, offer.type)
 	data.encode_u16(2, offer.seq & 0xFFFF)
@@ -66,6 +71,10 @@ static func encode_offer(offer: Offer) -> PackedByteArray:
 		data.encode_u8(o + 4, clampi(card.mod, 0, 255))
 		data.encode_u16(o + 5, clampi(roundi(card.value * 1000.0), 0, 0xFFFF))
 		o += CARD_SIZE
+	if shop:
+		for k: int in offer.cards.size():
+			data.encode_u16(o, clampi(offer.prices[k] if k < offer.prices.size() else 0, 0, 0xFFFF))
+			o += 2
 	return data
 
 
@@ -75,7 +84,8 @@ static func decode_offer(data: PackedByteArray) -> Offer:
 		return null
 	var count: int = data.decode_u8(11)
 	var type: int = data.decode_u8(1)
-	if data.size() != OFFER_HEADER + count * CARD_SIZE or type > Type.NOTICE:
+	var per_card: int = CARD_SIZE + (2 if type == Type.SHOP else 0)
+	if data.size() != OFFER_HEADER + count * per_card or type > Type.SHOP:
 		return null
 	var offer := Offer.new()
 	offer.type = type as Type
@@ -95,6 +105,10 @@ static func decode_offer(data: PackedByteArray) -> Offer:
 		offer.cards.append(Card.new(kind as Card.Kind, data.decode_u8(o + 1), data.decode_u8(o + 2), data.decode_u8(o + 3),
 				data.decode_u8(o + 4), data.decode_u16(o + 5) / 1000.0))
 		o += CARD_SIZE
+	if offer.type == Type.SHOP:
+		for k: int in count:
+			offer.prices.append(data.decode_u16(o))
+			o += 2
 	return offer
 
 

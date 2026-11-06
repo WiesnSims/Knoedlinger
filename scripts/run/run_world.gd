@@ -99,6 +99,10 @@ var gate: PortalGate
 var bosses: BossDirector
 ## Host: revives, shared XP, Knödl-Pass, Riesenknödl, Familienstreit (CoopRules).
 var coop: CoopRules
+## Der Standler and the Marterl (1.4): host logic, and their look on every machine.
+var sites: RunSites
+## The bot went to Der Standler's stall on this visit (RunSites.stand_visits).
+var _bot_shopped: int = 0
 ## Host: run events of this frame (attack marks, loot, toasts ...).
 var events := RunEventCodec.Queue.new()
 var result: Result = Result.NONE
@@ -332,6 +336,7 @@ func _ready() -> void:
 	gate = PortalGate.new()
 	add_child(gate)
 	gate.setup(map, ground)
+	sites = RunSites.new(self, balance, seed_value)
 	for spot: int in map.wirtshaus_spots.size():
 		var wirt := Wirtshaus.new()
 		add_child(wirt)
@@ -406,6 +411,9 @@ func _ready() -> void:
 		bosses.stairs = stairs
 		coop = CoopRules.new(self, balance, seed_value)
 		_place_map_chests()
+		sites.place_marterl()
+		level_flow.bought.connect(sites.on_bought)
+		level_flow.shop_closed.connect(sites.on_shop_closed)
 	else:
 		replica = EnemyReplica.new(balance, types, slots)
 		voices.replica = replica
@@ -560,6 +568,9 @@ func _host_frame(delta: float) -> void:
 		if _bus_left > 0.0:
 			ramp += wave.bus_extra
 			cap += wave.bus_extra
+		# Marterl "Gier": twice the crowd for a while.
+		ramp *= sites.crowd_mult()
+		cap = ceili(cap * sites.crowd_mult())
 		var thin: float = quality.enemy_factor(players.size() == 1)
 		ramp *= thin
 		cap = ceili(cap * thin)
@@ -682,6 +693,7 @@ func _host_frame(delta: float) -> void:
 	_collect_loot(delta)
 	level_flow.update(states, delta, NetworkManager.is_coop())
 	coop.update(delta)
+	sites.update(delta)
 	for peer: int in states:
 		states[peer].merge_partner = coop.merge_partner(peer)
 	_update_timeline(delta)
@@ -1088,7 +1100,8 @@ func _drop_brosel() -> void:
 		if coins == 0 and _loot_rng.randf() < balance.coin_drop_chance:
 			coins = 1
 		for c: int in coins:
-			_drop_loot(LootField.Kind.COIN, kx + _loot_rng.randf_range(-1.0, 1.0), kz + _loot_rng.randf_range(-1.0, 1.0), balance.coin_value)
+			_drop_loot(LootField.Kind.COIN, kx + _loot_rng.randf_range(-1.0, 1.0), kz + _loot_rng.randf_range(-1.0, 1.0),
+					balance.coin_value * sites.gold_mult())
 		if _loot_rng.randf() < balance.heal_drop_chance:
 			_drop_loot(LootField.Kind.HEAL, kx, kz, roundi(balance.heal_amount))
 	enemies.clear_kills()
@@ -1477,6 +1490,17 @@ func _bot_goal(local: Player, knodl: Knodl) -> Vector2:
 	if chest >= 0 and state != null and state.build.gold >= _chest_price(chest, state) \
 			and here.distance_to(Vector2(loot.xs[chest], loot.zs[chest])) < 40.0:
 		return Vector2(loot.xs[chest], loot.zs[chest])
+	# A Marterl close by, and Der Standler once per visit when it can pay for something.
+	for k: int in sites.marterl_at.size():
+		var shrine: Vector3 = sites.marterl_at[k]
+		if sites.marterl_state[k] == RunSites.State.PLACED and here.distance_to(Vector2(shrine.x, shrine.z)) < 40.0:
+			return Vector2(shrine.x, shrine.z)
+	if sites.stand_at.is_finite() and _bot_shopped != sites.stand_visits and state != null 			and state.build.gold >= sites.price(0, 0, run_time):
+		var stall := Vector2(sites.stand_at.x, sites.stand_at.z)
+		if here.distance_to(stall) < balance.standler_radius * 0.6:
+			_bot_shopped = sites.stand_visits
+		elif here.distance_to(stall) < 60.0:
+			return stall
 	if knodl != null and knodl.knodl_mass >= balance.bot_cash_in_mass:
 		var wirt: Wirtshaus = _nearest_open_wirtshaus(at)
 		if wirt != null and at.distance_to(wirt.mat_centre()) < BOT_WIRT_REACH:
@@ -1707,6 +1731,8 @@ func _run_summary() -> Dictionary:
 		summary["kills"] = enemies.kills
 		summary["brosel_merges"] = brosel.merges
 		summary["cards_picked"] = level_flow.picks
+		summary["standler_buys"] = sites.stand_buys
+		summary["marterl_used"] = sites.marterl_used
 	else:
 		summary.merge(_host_summary, true)
 	return summary
@@ -1872,7 +1898,7 @@ func _on_offer(data: PackedByteArray) -> void:
 		return
 	_offers_received += 1
 	match offer.type:
-		OfferCodec.Type.OFFER:
+		OfferCodec.Type.OFFER, OfferCodec.Type.SHOP:
 			_note_panel_mouse()
 			speisekarte.show_offer(offer, state.build)
 			# The host's own offer arrives deferred, after the HUD looked this frame: step back now,
@@ -1939,6 +1965,7 @@ func _on_peer_joined(peer_id: int) -> void:
 	var lying := RunEventCodec.Queue.new()
 	for slot: int in loot.all_slots():
 		lying.loot(loot.ids[slot], loot.kinds[slot], loot.xs[slot], loot.zs[slot], loot.values[slot])
+	sites.resend(lying)
 	var list: Array[RunEventCodec.Event] = lying.take()
 	while not list.is_empty():
 		NetworkManager.send_run_events_to(peer_id, RunEventCodec.encode(list.slice(0, RunEventCodec.MAX_EVENTS)))
@@ -2044,6 +2071,8 @@ func _spawn_player(peer_id: int, local: bool) -> Player:
 			for k: int in catalog.items.size():
 				if String(catalog.items[k].id) == item_id:
 					build.add_item(k)
+		# Testing: --gold=200 starts with that much gold (Der Standler's shop in the screenshots).
+		build.gold += maxi(LaunchArgs.get_int("gold", 0), 0)
 		states[peer_id] = PlayerState.new(peer_id, balance.player_max_hp, build)
 		states[peer_id].refresh_max_hp(balance.player_max_hp)
 		states[peer_id].hp = states[peer_id].max_hp
@@ -2828,6 +2857,8 @@ func _present(e: RunEventCodec.Event) -> void:
 				_show_shockwave(e.x, e.z)
 		RunEventCodec.Kind.SAY:
 			voices.present(e.a, e.b, e.id, e.x, e.z)
+		RunEventCodec.Kind.SITE:
+			sites.present(e)
 
 
 ## Every role: the gate, the boss bar, the Formular line, markers, hints, music and the local

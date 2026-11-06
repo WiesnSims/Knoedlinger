@@ -36,6 +36,7 @@ var _stage: HBoxContainer
 var _inventory: InventoryPanel
 var _stats: StatsPanel
 var _title: Label
+var _subtitle: Label
 var _pending: Label
 var _cards_box: VBoxContainer
 var _cards: Array[UpgradeCard] = []
@@ -88,7 +89,8 @@ func _ready() -> void:
 	header.add_child(titles)
 	_title = UiStyle.label(&"LabelTitle")
 	titles.add_child(_title)
-	titles.add_child(UiStyle.label(&"LabelMuted", tr("MENU_SUBTITLE")))
+	_subtitle = UiStyle.label(&"LabelMuted", tr("MENU_SUBTITLE"))
+	titles.add_child(_subtitle)
 	_pending = UiStyle.label(&"LabelAccent")
 	_pending.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	header.add_child(_pending)
@@ -175,7 +177,9 @@ func show_offer(offer: OfferCodec.Offer, build: PlayerBuild) -> void:
 	GameAudio.play(&"menu_open")
 	_banish_mode = false
 	_banish.set_pressed_no_signal(false)
-	_title.text = tr("MENU_TITLE")
+	var shop: bool = offer.type == OfferCodec.Type.SHOP
+	_title.text = tr("SHOP_TITLE") if shop else tr("MENU_TITLE")
+	_subtitle.text = tr("SHOP_SUBTITLE") if shop else tr("MENU_SUBTITLE")
 	_pending.text = tr("MENU_PENDING") % (offer.pending - 1) if offer.pending > 1 else ""
 	for card_view: UpgradeCard in _cards:
 		card_view.queue_free()
@@ -185,7 +189,9 @@ func show_offer(offer: OfferCodec.Offer, build: PlayerBuild) -> void:
 		var view := UpgradeCard.new()
 		_cards_box.add_child(view)
 		var owned: int = card.level - 1 if card.kind == Card.Kind.WEAPON or card.kind == Card.Kind.PASSIVE else 0
-		view.setup(card, k + 1, change_text(card, catalog, balance, build), owned, catalog)
+		var price: int = offer.prices[k] if shop and k < offer.prices.size() else -1
+		view.setup(card, k + 1, change_text(card, catalog, balance, build), owned, catalog, price,
+				price < 0 or build == null or build.gold >= price)
 		view.pressed.connect(_on_card.bind(k))
 		view.hovered.connect(_on_card_hovered.bind(k))
 		view.reveal(UiStyle.T_STAGGER * (k + 1))
@@ -193,9 +199,14 @@ func show_offer(offer: OfferCodec.Offer, build: PlayerBuild) -> void:
 	_show_details(-1)
 	_reroll.set_label(tr("MENU_REROLL"), str(offer.rerolls))
 	_reroll.disabled = offer.rerolls <= 0
+	_reroll.visible = not shop
 	_banish.set_label(tr("MENU_BANISH"), str(offer.banishes))
 	_banish.disabled = offer.banishes <= 0
-	_skip.set_label(tr("MENU_SKIP"), "+%d" % balance.skip_gold)
+	_banish.visible = not shop
+	if shop:
+		_skip.set_label(tr("SHOP_LEAVE"))
+	else:
+		_skip.set_label(tr("MENU_SKIP"), "+%d" % balance.skip_gold)
 	_seconds_left = offer.seconds
 	_timer_bar.visible = offer.seconds > 0
 	_timer_bar.max_value = maxf(offer.seconds, 1.0)
@@ -366,7 +377,8 @@ func _process(delta: float) -> void:
 	if auto_pick:
 		_bot_timer -= delta
 		if _bot_timer <= 0.0:
-			_answer(OfferCodec.Action.PICK, _bot_choice())
+			var pick: int = _bot_choice()
+			_answer(OfferCodec.Action.PICK if pick >= 0 else OfferCodec.Action.SKIP, maxi(pick, 0))
 
 
 func _input(event: InputEvent) -> void:
@@ -405,8 +417,15 @@ func _focus_for_pad() -> void:
 
 
 ## The bot's taste: an evolution first, then its own weapons, then anything new, at random within
-## the same appetite.
+## the same appetite. At Der Standler: the cheapest item it can pay for, or -1 (leave).
 func _bot_choice() -> int:
+	if _offer.type == OfferCodec.Type.SHOP:
+		var cheapest: int = -1
+		for k: int in _offer.prices.size():
+			if _build != null and _offer.prices[k] <= _build.gold \
+					and (cheapest < 0 or _offer.prices[k] < _offer.prices[cheapest]):
+				cheapest = k
+		return cheapest
 	var best: int = 0
 	var best_score: float = -1.0
 	for k: int in _offer.cards.size():
@@ -426,6 +445,10 @@ func _bot_choice() -> int:
 
 
 func _on_card(k: int) -> void:
+	if _offer.type == OfferCodec.Type.SHOP and _build != null and k < _offer.prices.size() \
+			and _offer.prices[k] > _build.gold:
+		GameAudio.play(&"no_gold")
+		return
 	if _banish_mode:
 		var card: Card = _offer.cards[k]
 		if card.kind == Card.Kind.WEAPON or card.kind == Card.Kind.PASSIVE:

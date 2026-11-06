@@ -411,6 +411,41 @@ extends Resource
 @export var daily_grant_min: int = 1
 @export var daily_grant_max: int = 2
 
+@export_group("Der Standler")
+## He sets up near the players at these minutes and stays this long; walking up to his stall (within
+## standler_radius) opens his shop: standler_items items per player (their own offer in co-op).
+@export var standler_minutes: PackedFloat32Array = PackedFloat32Array([3.0, 9.0])
+@export var standler_stay: float = 75.0
+@export var standler_radius: float = 3.0
+@export var standler_items: int = 3
+## He sets up this far from one of the players.
+@export var standler_distance: float = 10.0
+## Co-op: the shop closes after this long (solo pauses, no limit).
+@export var standler_shop_seconds: float = 12.0
+## An item's price by rarity (Gewöhnlich .. Hofratswürdig), times standler_price_growth for every item
+## the player already bought from him this run, times (1 + standler_price_per_minute * minute).
+@export var standler_prices: PackedInt32Array = PackedInt32Array([30, 45, 70, 110])
+@export var standler_price_growth: float = 1.3
+@export var standler_price_per_minute: float = 0.04
+
+@export_group("Marterl")
+## Wayside shrines per run (on chest spots no chest took), used once each by standing within
+## marterl_radius for marterl_pray_seconds.
+@export var marterl_count: int = 3
+@export var marterl_radius: float = 2.5
+@export var marterl_pray_seconds: float = 1.5
+## Mutprobe: this long, a ring of marterl_ring_count enemies marterl_ring_radius out every
+## marterl_ring_every seconds; then a free chest.
+@export var marterl_mutprobe_seconds: float = 30.0
+@export var marterl_ring_every: float = 5.0
+@export var marterl_ring_count: int = 16
+@export var marterl_ring_radius: float = 14.0
+## Gier: this long, the crowd and the gold from coins times marterl_gier_mult.
+@export var marterl_gier_seconds: float = 60.0
+@export var marterl_gier_mult: float = 2.0
+## Segen: free Speisekarte rounds for the one who prays.
+@export var marterl_segen_levels: int = 1
+
 @export_group("Death")
 ## Solo: knocked down = the run is over, the end screen comes after this pause.
 @export var death_screen_delay: float = 2.5

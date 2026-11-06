@@ -1103,3 +1103,18 @@ BILL_ATTACK,an Angriff
 BILL_NONE,Ka Schaden gmacht. Gemütlich.
 BILL_NEVER_DOWN,Ned oamal umgfoin. Respekt.
 BILL_DOWN_BY,Am öftesten umgfoin durch: %s (%d×)
+SHOP_TITLE,Da Standler
+SHOP_SUBTITLE,"Ois echt, ois günstig. Fast."
+SHOP_LEAVE,"Na, danke"
+SHOP_PRICE,%d Gold
+STANDLER_SIGN,Standler
+TOAST_STANDLER,Da Standler hat aufgsperrt! Schau vorbei.
+TOAST_STANDLER_GONE,Da Standler packt zam.
+MARTERL_0,Mutprobe
+MARTERL_1,Gier
+MARTERL_2,Segen
+TOAST_MARTERL_0,Mutprobe! Halt 30 Sekunden durch.
+TOAST_MARTERL_1,"Gier! Doppelt so vü Gsindl, doppelt so vü Gold."
+TOAST_MARTERL_2,Segen! A Extra-Runde auf da Speisekarte.
+TOAST_MARTERL_DONE_0,Mutprobe bestanden – a Truhn!
+TOAST_MARTERL_DONE_1,Die Gier is vorbei.

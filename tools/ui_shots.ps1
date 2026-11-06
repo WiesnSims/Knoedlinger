@@ -35,6 +35,12 @@ $scenes = @(
     # 1.3.2: Sperrstund' settles the result, then the Nachspielzeit runs until the bot falls (a fresh
     # level-1 bot lasts some 30-60 s), then the end screen with its Nachspielzeit row.
     @{ Id = 'end'; Query = "$common&start_time=891"; At = '32,100' },
+    # 1.4: the end screen's second tab, the Run-Abrechnung (damage per weapon, the knock-down cause).
+    @{ Id = 'bill'; Query = "$common&start_time=891"; At = '100'; Press = 'ArrowRight' },
+    # 1.4: Der Standler right where the bot stands (it has gold and waits on his shop), then a Marterl
+    # by the spawn (the bot prays at it: a Mutprobe with its rings).
+    @{ Id = 'shop'; Query = "$common&standler_at=2&gold=200&pick_delay=90"; At = '24,26'; Move = 'center,card' },
+    @{ Id = 'marterl'; Query = "$common&marterl_drill=0&god=1"; At = '20,30' },
     # The Nachspielzeit itself: the clock counting on past 15:00, the white Stammgast-Geister, and from
     # 17:00 the grantige red ones.
     @{ Id = 'overtime'; Query = "$common&start_time=891&god=1"; At = '30,40' },
@@ -54,13 +60,14 @@ $scenes = @(
     @{ Id = 'pause'; Query = "$common&knodl_mass=160"; At = '24,27'; Press = 'Escape,ArrowDown+Enter' },
     # M5: the touch controls (a real finger holds the stick and walks), then the three settings tabs.
     @{ Id = 'touch'; Query = "$common&knodl_mass=160&touch=1"; At = '24,30'; Touch = $true; Press = ',drag:{sx}:{sy}:{sx2}:{sy}:600' },
-    @{ Id = 'settings'; Query = 'mute=1&debug=0'; At = '12,15,17,19'; Press = 'type:Resi+Enter,ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+Enter,KeyE,KeyE' },
+    @{ Id = 'settings'; Query = 'mute=1&debug=0'; At = '12,15,17,19'; Press = 'type:Resi+Enter,ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+Enter,KeyE,KeyE' },
     # A plain start (fresh browser profile): the name prompt, the menu, Spielen, Einstellungen.
     # Then back, Spielen, "Auf geht's!": the run started from the menu.
-    # The meta screens of a fresh profile: Stammtisch, Aufträge, Ehrentafel (then Eigene Rekorde), Almanach, then Spielen.
-    @{ Id = 'meta'; Query = 'mute=1&debug=0'; At = '12,15,18,21,23,26,29'; Press = 'type:Resi+Enter,ArrowDown+Enter,Escape+ArrowDown+Enter,Escape+ArrowDown+Enter,ArrowRight,Escape+ArrowDown+Enter,Escape+ArrowUp+ArrowUp+ArrowUp+ArrowUp+Enter' },
-    # 1.3.1: the patch list ("Was is neu?", the seventh entry), at the top and scrolled down.
-    @{ Id = 'patches'; Query = 'mute=1&debug=0'; At = '12,15,17'; Press = 'type:Resi+Enter,ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+Enter,PageDown+PageDown' },
+    # The meta screens of a fresh profile: Stammtisch, Aufträge, Ehrentafel (then Eigene Rekorde), Almanach, then
+    # the Tageskarte (1.4, the second entry).
+    @{ Id = 'meta'; Query = 'mute=1&debug=0'; At = '12,15,18,21,23,26,29'; Press = 'type:Resi+Enter,ArrowDown+ArrowDown+Enter,Escape+ArrowDown+Enter,Escape+ArrowDown+Enter,ArrowRight,Escape+ArrowDown+Enter,Escape+ArrowUp+ArrowUp+ArrowUp+ArrowUp+Enter' },
+    # 1.3.1: the patch list ("Was is neu?", the eighth entry since 1.4), at the top and scrolled down.
+    @{ Id = 'patches'; Query = 'mute=1&debug=0'; At = '12,15,17'; Press = 'type:Resi+Enter,ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+Enter,PageDown+PageDown' },
     @{ Id = 'title'; Query = 'mute=1&debug=0'; At = '12,15,18,21,26,34,44'; Press = ',type:Resi+Enter,Enter,Escape+ArrowDown+Enter,Escape+ArrowUp+Enter+Enter,,' }
 )
 try {
