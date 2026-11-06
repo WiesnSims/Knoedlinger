@@ -159,6 +159,7 @@ func show_result(summary: Dictionary, can_restart: bool, build: PlayerBuild = nu
 		_grid.add_child(value)
 	_fill_bill(summary)
 	_show_bill(false)
+	_even_tabs()
 	_inventory.visible = build != null and balance != null
 	if _inventory.visible:
 		_inventory.show_build(build, balance)
@@ -188,6 +189,22 @@ func _show_bill(on: bool) -> void:
 	_bill_pill.set_pressed_no_signal(on)
 	_grid.visible = not on
 	_bill.visible = on
+
+
+## Both tabs get the taller one's height, so switching them does not move the panels. Measured over
+## two frames after layout, while the screen is still fading in.
+func _even_tabs() -> void:
+	_grid.custom_minimum_size.y = 0.0
+	_bill.custom_minimum_size.y = 0.0
+	await get_tree().process_frame
+	var numbers: float = _grid.size.y
+	var was_bill: bool = _bill.visible
+	_show_bill(true)
+	await get_tree().process_frame
+	var height: float = maxf(numbers, _bill.size.y)
+	_grid.custom_minimum_size.y = height
+	_bill.custom_minimum_size.y = height
+	_show_bill(was_bill)
 
 
 ## The Run-Abrechnung from the summary's damage_by_source / kills_by_source / downed_by.

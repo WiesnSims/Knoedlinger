@@ -1899,3 +1899,36 @@ the second tab.
   preview in `build/shots/ui/before6`), `mp_test -Clients 1` (33.7 KiB/s at 498 enemies), `-Clients 3
   -Coop`, `-Clients 1 -Sites`, autoplay as above.
 - Patch-list lines 16-21 for 1.4.0.
+
+## 2026-11-06 – 1.4 Part 7: release checks (branch `v1-4`)
+
+- **Owner: "continue with 1.4 part 7"**. Built in the `v1-4-part3` worktree (tracks `origin/v1-4`).
+- **New test flag `projectiles=<n>`** (Claude): a real run only had the weapons' 8-20 shots in flight even
+  with six projectile weapons and three Rucksäcke, so "500 enemies + 300 projectiles on the Heuriger" could
+  not be measured. The host now keeps n of the stress test's shots flying from the players (same feeder as
+  the M0 arena, "Sonstiges" damage; the pool grows by n). `browser_check -Projectiles 300` already put it in
+  the URL; the run ignored it until now.
+- **Performance (RTX 3080, headless, 500 enemies, bot plays, 60 s):** Heuriger + 300 projectiles Edge
+  140.7 fps (p95 8.5 ms, ≤ 135 draw calls, ~297 shots in flight), Firefox 116.3 fps (p95 11 ms, ≤ 126);
+  without the extra shots Kirtag 157.7 / Gamskogl 149.1 / Gemeindebau 161 / Heuriger 144 fps, ≤ 129 draw
+  calls, no console errors. Budget 60 fps / < 150 draw calls: passed on every map.
+- **Size:** `.pck` 7.92 MiB (target < 15), largest file the wasm part 9.68 MiB (limit 25).
+- **Multiplayer:** `mp_test -Clients 3 -StartTime 595 -Map heuriger` passes (Der Sturm, 238 attack marks,
+  26 loot and the same enemy lines on every client, 843 / 843 enemies, version refusal); 58.6 KiB/s per
+  client with 843 enemies (1.3: 57.2-57.5 at ~845, +1 KiB/s from Part 6's status plane; ~34 KiB/s at 500,
+  the budget's figure). `-Clients 3 -Coop` (revive, 2 passes, 6 merges, Familienstreit), `-Clients 1
+  -Sites`, `-Clients 1` pass. `browser_mp_check -Tabs 4` through a local relay: host 102 fps, clients
+  132 fps, ≤ 136 draw calls, every tab shows 4 Knödl and all 329 enemies.
+- **Tests:** 241 GUT tests pass.
+- Version stays 1.4.0; the 1.4.0 patch note (21 lines, Parts 1-6) is on top; Part 7 adds no line.
+- **ui_shots:** before = the live 1.3.2 site (`build/shots/ui/before7`: hud, busy, menu, inventory, end, the
+  maps, late), after = this build (`after7`, every scene at both sizes; `after7b` end, bill, coop after the
+  fix below). No console errors, every shot < 150 draw calls (co-op HUDs 88). The co-op step failed once
+  because `wrangler dev` could not start during an internet outage; it passed on the rerun.
+- **Fixed:** the end screen's two tabs (Zahlen / Abrechnung) had different heights, so switching moved
+  both panels by ~120 px. `RunEndScreen._even_tabs()` measures both over two frames while the screen fades
+  in and gives each the taller height.
+- **Seen, left for the owner (not new in 1.4):** an enemy line said right at the top left of the view shows
+  through the HUD's see-through panel (the label is behind the HUD, just visible); the centre banner
+  ("Z'wenig Gold fürs Kistl!") can cross an enemy line for a moment.
+- Final build: 241 tests, Heuriger 500 + 300 at 154 fps / ≤ 130 draw calls, `mp_test -Clients 1` 36.6 KiB/s.

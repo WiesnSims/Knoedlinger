@@ -131,6 +131,10 @@ var run_time: float = 0.0
 var phase: Phase = Phase.RUNNING
 
 var _forced_enemies: int = 0
+## Test flag `projectiles=<n>`: the host keeps n of the stress test's shots flying from the players (perf checks).
+var _test_shots: int = 0
+var _test_shot_budget: float = 0.0
+var _test_shot_angle: float = 0.0
 var _seconds: float = 0.0
 var _bot: bool = true
 var _god: bool = false
@@ -266,6 +270,7 @@ func _ready() -> void:
 	InputSetup.ensure_actions()
 	stats.warmup = WARMUP_SECONDS
 	_forced_enemies = maxi(LaunchArgs.get_int("enemies", 0), 0)
+	_test_shots = maxi(LaunchArgs.get_int("projectiles", 0), 0)
 	_seconds = LaunchArgs.get_float("seconds", 0.0)
 	_autoplay = LaunchArgs.get_flag("autoplay", false)
 	# A run is played by a person unless asked otherwise (the automated checks pass bot=1).
@@ -326,7 +331,7 @@ func _ready() -> void:
 	projectiles = ProjectilePool.new()
 	projectiles.name = "Projectiles"
 	add_child(projectiles)
-	projectiles.setup(balance, 400, ground)
+	projectiles.setup(balance, 400 + _test_shots, ground)
 	hazards = HazardField.new()
 	hazards.name = "Hazards"
 	add_child(hazards)
@@ -688,6 +693,8 @@ func _host_frame(delta: float) -> void:
 		if seconds.has(peer):
 			seconds[peer].damage_source = knodl.damage_source
 			seconds[peer].crush(enemies, delta)
+	if _test_shots > 0:
+		_fire_test_shots(delta)
 	projectiles.update(delta, enemies)
 	procs.after_hits()
 	hazards.update(delta)
@@ -3249,3 +3256,21 @@ func _load_character(id: String) -> CharacterData:
 		push_warning("Unknown character '%s', playing Onkel Ferdl." % id)
 		path = CHARACTER_DIR.path_join("ferdl.tres")
 	return load(path) as CharacterData
+
+
+## Test flag `projectiles=<n>`: the stress test's feeder (golden-angle spread, players in turn), so a
+## real map can be measured with 500 enemies + 300 projectiles. Counts as "Sonstiges" damage.
+func _fire_test_shots(delta: float) -> void:
+	var origins: PackedVector3Array = PackedVector3Array()
+	for peer: int in players:
+		origins.append(players[peer].global_position)
+	if origins.is_empty():
+		return
+	_test_shot_budget = minf(_test_shot_budget + balance.projectile_fire_rate * delta, float(_test_shots))
+	var fired: int = 0
+	while _test_shot_budget >= 1.0 and projectiles.active_count < _test_shots and projectiles.has_free():
+		_test_shot_budget -= 1.0
+		_test_shot_angle += 2.39996
+		var origin: Vector3 = origins[fired % origins.size()]
+		projectiles.fire(origin.x, origin.z, cos(_test_shot_angle), sin(_test_shot_angle))
+		fired += 1
