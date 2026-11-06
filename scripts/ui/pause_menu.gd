@@ -1,17 +1,19 @@
 class_name PauseMenu
 extends CanvasLayer
-## Esc in a run: "Kurz Pause" with Weiter (Esc), Einstellungen and Zum Menü. RunWorld pauses solo
-## games while it is open (`toggled`); co-op runs on, like the Speisekarte. Zum Menü ends the run
-## (`quit_pressed`).
+## Esc in a run: "Kurz Pause" with Weiter (Esc), Einstellungen and Zum Menü, and beside them the build
+## view (1.4: tiles, what the picked one does, the stats; BuildView). RunWorld pauses solo games while
+## it is open (`toggled`); co-op runs on, like the Speisekarte. Zum Menü ends the run (`quit_pressed`).
 
 signal toggled(open: bool)
 signal quit_pressed
 
-const WIDTH: float = 320.0
+const WIDTH: float = 240.0
 
 var _shown: Control
 var _menu: PanelContainer
 var _settings: SettingsPanel
+var _view: BuildView
+var _row: HBoxContainer
 var _entries: Array[Button] = []
 ## RunWorld turns it off while another full-screen panel is up or the run is over.
 var allowed: bool = true
@@ -30,9 +32,12 @@ func _ready() -> void:
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_shown.add_child(shade)
 	var centre: CenterContainer = UiStyle.centred(_shown)
+	_row = UiStyle.hbox(&"Row16")
+	centre.add_child(_row)
 	_menu = UiStyle.panel()
 	_menu.custom_minimum_size = Vector2(WIDTH, 0.0)
-	centre.add_child(_menu)
+	_menu.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_row.add_child(_menu)
 	var column := UiStyle.vbox(&"Gap16")
 	_menu.add_child(column)
 	column.add_child(UiStyle.label(&"LabelTitle", tr("PAUSE_TITLE")))
@@ -48,6 +53,8 @@ func _ready() -> void:
 		entry.focus_entered.connect(func() -> void: GameAudio.play(&"ui_hover"))
 		list.add_child(entry)
 		_entries.append(entry)
+	_view = BuildView.new()
+	_row.add_child(_view)
 	_settings = SettingsPanel.new()
 	_settings.visible = false
 	_settings.closed.connect(_close_settings)
@@ -64,7 +71,7 @@ func set_open(on: bool) -> void:
 		return
 	_shown.visible = on
 	_settings.visible = false
-	_menu.visible = true
+	_row.visible = true
 	if on:
 		_shown.modulate.a = 0.0
 		create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT) \
@@ -80,8 +87,14 @@ func _resume() -> void:
 	set_open(false)
 
 
+## Every frame while open: the build view's numbers.
+func show_player(state: PlayerState, knodl: Knodl, balance: BalanceData, ledger: DamageLedger, peer: int,
+		run_time: float) -> void:
+	_view.show_player(state, knodl, balance, ledger, peer, run_time)
+
+
 func _open_settings() -> void:
-	_menu.visible = false
+	_row.visible = false
 	_settings.refresh()
 	_settings.visible = true
 	_settings.focus_first.call_deferred()
@@ -89,7 +102,7 @@ func _open_settings() -> void:
 
 func _close_settings() -> void:
 	_settings.visible = false
-	_menu.visible = true
+	_row.visible = true
 	_entries[1].grab_focus.call_deferred()
 
 

@@ -149,3 +149,34 @@ func test_the_anvil_adds_a_second_mod_and_the_backpack_a_piece() -> void:
 	var before: int = Formulas.weapon_amount(build.weapons[0].data, build.weapons[0].mods, build.weapons[0].extra_amount)
 	build.add_item(_item(&"rucksack"))
 	assert_eq(Formulas.weapon_amount(build.weapons[0].data, build.weapons[0].mods, build.weapons[0].extra_amount), before + 1)
+
+
+func test_weapon_dps_on_paper_per_pattern() -> void:
+	var catalog: UpgradeCatalog = load("res://data/catalog/catalog.tres")
+	var build := PlayerBuild.new(catalog, balance)
+	for k: int in catalog.weapons.size():
+		var owned := PlayerBuild.OwnedWeapon.new()
+		owned.data = catalog.weapons[k]
+		var paper: Dictionary = Formulas.weapon_dps(owned, build, balance)
+		assert_gt(paper["dps"], 0.0, "%s has a DPS" % owned.data.id)
+		assert_eq(paper["per_enemy"], owned.data.pattern == WeaponData.Pattern.ORBIT)
+		if owned.data.pattern != WeaponData.Pattern.ORBIT and owned.data.burn_share <= 0.0:
+			var crit_factor: float = 1.0 + paper["crit"] * (paper["crit_mult"] - 1.0)
+			assert_almost_eq(paper["dps"], paper["damage"] * crit_factor * paper["amount"] * paper["rate"], 0.01,
+					"%s: damage × pieces × crit ÷ cooldown" % owned.data.id)
+
+
+func test_the_ledger_measures_the_last_30_seconds() -> void:
+	var ledger := DamageLedger.new()
+	for second: int in 61:
+		ledger.record(5, DamageLedger.Kind.WEAPON, 2, second * 10.0, 0, float(second))
+	assert_almost_eq(ledger.total(5, DamageLedger.Kind.WEAPON, 2), 600.0, 0.01)
+	assert_almost_eq(ledger.recent_dps(5, DamageLedger.Kind.WEAPON, 2, 60.0), 10.0, 0.5)
+	assert_eq(ledger.total(6, DamageLedger.Kind.WEAPON, 2), 0.0, "per player")
+	var queue := RunEventCodec.Queue.new()
+	queue.damage(5, DamageLedger.Kind.ITEM, 40, 1234.5, 17)
+	var back: Array[RunEventCodec.Event] = RunEventCodec.decode(RunEventCodec.encode(queue.take()))
+	assert_eq(back.size(), 1)
+	assert_eq(back[0].kind, RunEventCodec.Kind.DAMAGE)
+	assert_eq([back[0].b, back[0].a, back[0].c, back[0].id], [5, DamageLedger.Kind.ITEM, 40, 17])
+	assert_almost_eq(back[0].x, 1234.5, 0.01)

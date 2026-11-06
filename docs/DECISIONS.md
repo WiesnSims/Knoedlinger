@@ -1797,3 +1797,81 @@ the second tab.
   `-Clients 3 -Coop`, one autoplay run (Kirtag / Ferdl: 2 Standler buys, 1 Marterl, all 14,275 kills
   attributed, top knock-down cause Radler 6×).
 - Patch-list lines 12-15 for 1.4.0.
+
+## 2026-11-06 – 1.4 Part 6: changes (branch `v1-4`)
+
+- **Owner: "continue 1.4 part 6"** (interrupted once mid-session, then "continue please"). Built in the
+  `v1-4-part3` worktree (tracks `origin/v1-4`). Done: 6.6, 6.7, 6.8, 6.2, 6.3, 6.4, 6.5 (measured, see below).
+- **6.6 Gold and chests** (numbers in balance "Loot"):
+  - Price `map_chest_price` 20 × `map_chest_price_growth` 1.22 per **bought** chest (replaces the +15 step;
+    `Formulas.chest_price`). Free chests (Zweitschlüssel) do not raise it: `PlayerState.chests_bought`
+    next to `chests_opened` (Sparbuch still counts every opened one), both in the world state
+    (`WorldStateCodec` VERSION 7, PLAYER_SIZE 73 with the Federbett shield byte).
+  - `map_chest_count` 6 → 15. Maps got 6-8 more chest spots each on the bot's lanes (Kirtag 25, Gamskogl 22,
+    Gemeindebau 22, Heuriger 21: 15 chests + 3 Marterl + room to vary); only the spot lists changed.
+  - Coins: worth `coin_value` + `coin_value_per_minute` 0.33 per minute (1 at 0:00, ~5 at 12:00), drop
+    chance 0.006 → 0.01; no kill coins while 400 loot items lie around (`coin_loot_cap`; loot capacity
+    256 → 512, so boss chests and Stempel always find a slot).
+  - **Fassl** (new loot kind, appended): 5 barrels stand 14-40 m from the players (one every 8 s, far ones
+    go), walking into one or rolling the Knödl over it bursts it into 2 coins. The bot breaks those within
+    18 m. One more MultiMesh (+1 draw call).
+  - Sparbuch 0.03 → 0.015 per chest, `max_stacks` 2; Zweitschlüssel `max_stacks` 5 → 3.
+  - **Claude: `schilling_per_gold` 0.5 → 0.1** – Schilling is paid from gold earned, so the new income
+    would have paid ~10× the Schilling; at 0.1 a run pays about what it did (bot: ~360 → ~340-520).
+  - Bot: walks to an affordable chest within 70 m (was 40; players see price pills at 45 m). Autoplay JSON:
+    `gold_earned`, `chests_bought`, `chests_opened`, `chest_times`; the table shows chests and gold.
+  - Measured (5 runs each, Ferdl / Kirtag / Grant 1): first tuning (0.03 coins, 8 Fassl × 3 coins) gave
+    3,700-5,300 gold and 9-14 chests; at 0.015 / 6 × 2 still 2,700-4,900 gold with 2,300-4,400 unspent and
+    6-10 chests, first chest at 1:34-2:01 (target ~1:30). Cut again to 0.01 / 5 Fassl.
+- **6.7 Item rework** – new `ItemEffect` resource (trigger, action, chance, value, radius, seconds, cooldown,
+  cap) in `ItemData.effects`; the host runs them in `ItemProcs`:
+  - Hooks: `EnemyManager.damage()` logs weapon hits (not burn ticks, not the Knödl's spikes) for sources whose
+    owner holds on-hit items and multiplies hits by per-source target bonuses (healthy 90 %+, elite/boss,
+    standing lower); kills carry their source (`kill_source`). `prepare()` before the weapons (conditional
+    damage `PlayerBuild.cond_damage`, regen, periodic, shield share, Rodel), `after_hits()` after the
+    projectiles, `on_kills()` before the Brösel; hurt, lethal (before the Marterl-Kerze), revive, cash-in and
+    Brösel hooks. Proc damage goes out under the item's own source, which logs no hits: **procs never
+    trigger procs**. `item_proc_budget` 40 procs a frame, `item_cue_budget` 6 effects a frame. Chances stack
+    1 - (1 - p)^n, values add up, `cap` limits.
+  - **Claude: the 11 old named rules stay on `ItemData.effect`** (they are data already and work); new rules
+    use `effects`. Marterl-Kerze and Maibaumspitz got effects on top (revive blast + 2 s invulnerable;
+    +25 % against lower enemies, `max_stacks` 1).
+  - Look: frozen enemies ice blue and still, burning ones orange (shader `INSTANCE_CUSTOM.w`); the snapshot
+    got a status plane (`SnapshotCodec` VERSION 4, 6 bytes per enemy, mostly zeros). New cue SPARK (a small
+    ring) for chains, bursts, executes, wisps.
+  - 26 new items (roster 34 → 60), all as in the plan, each behind its own Auftrag: Fein Gfrorns, Kachelofen,
+    Bierdeckel, Hosenträger, Weidezaun, Distelstrauß, Jagdtrophäe, Leberkässemmel, Wetterfleck; Edel
+    Sonnwendfeuer, Blitzableiter, Scharfe Pfefferoni, Irrlichter, Stallaterne, Letzte Runde, Strichliste,
+    Rucksack (new counted stat `amount`: +1 piece for every weapon, also drawn on clients), Schutzengerl,
+    Bröselsturm, Rodel; Hofratswürdig Stehengebliebene Uhr, Amtsschimmel, Dreschflegel, Staubsauger, Amboss
+    vom Dorfschmied (a weapon card adds a second mod: the weapon's least-raised one), Federbett (shield from
+    overhealing, synced, takes hits first).
+  - **Claude, deviations:** Leberkässemmel 0.5 % per kill (3 % dropped ~450 Semmeln a run); Wetterfleck
+    has no "no knockback" (players are never knocked back) – it is +50 % Standfest and 20 % of hits heal 8;
+    Schutzengerl is 1.5 s invulnerable (6 s cooldown) without the speed boost (movement is the client's, a
+    timed buff would need its own sync). Smoke runs: Weidezaun dealt more than any weapon (4,433 in 60 s)
+    → ×0.8 every 2 s (was ×1.5 every 1 s); Pfefferoni 50 → 40 % splash.
+  - Rarity reshuffle: Doppler, Edelweiss, Gleitschirm, Spitzwegerich, Trachtenjanker (pure stats) Edel →
+    Fein. The near duplicates became rule items: Zuckerwatte (+8 % damage while moving), Kirtagsbrezn (+30 HP
+    per cash-in), Sauerkraut (2 HP/s below half HP).
+  - **Effect text from the data:** `ItemText.describe()` writes every stat, old rule and effect through
+    templates (`IFX_WHEN_*` + `IFX_DO_*`, German number format, stacked values). Used by the chest reveal
+    (effect lines under each item, "Neu!" and the one-liner for a first find; 6 s + 1.5 s per extra item,
+    max 10 s; hovering keeps it), the Speisekarte/Standler footer, the Almanach and the build view.
+- **6.8 Build view** (`BuildView`: inventory | detail panel | stats) in the Esc pause menu (beside its
+  entries, now 240 px wide) and the Tab screen. `TileGrid` tiles can be picked by mouse, tap or pad/keyboard
+  focus (accent ring); items scroll past 5 rows. Weapons: damage per hit, attacks per second, pieces, crit,
+  burn, "Theorie" DPS (`Formulas.weapon_dps`; orbits per enemy) and "Dieser Lauf" total and last-30-s DPS
+  measured. Items: effect text, chance with Stallaterne, procs and damage this run. Stat upgrades: the stat
+  now and its parts (stat upgrades, items, Stammtisch). Measured numbers: the host sends a new `DAMAGE` run
+  event (peer, source kind, index, total, procs; `RunEventCodec` VERSION 5) once a second per weapon / Knödl
+  and on change per item; every machine keeps them in `DamageLedger`.
+- **6.2 Knödl folgt brav** (Spiel tab, off by default): rides in the player's input as `BUTTON_FOLLOW`; the
+  host pulls that player's Knödl on the string toward the nearest Brösel within string reach
+  (`knodl_follow_pull` 18).
+- **6.3 Armour: `armor_half` 10 → 6** (the plan's softer option): the owner left no 1.3.1 feedback on
+  armour, and the bot wins 0-1 of 5 runs against the 4-6 / 10 target.
+- **6.4 Aufträge 143 → 173:** one per new item (26) and Truhnkönig (200 chests), Goldene Nasn (50,000 gold),
+  Wallfahrt (50 Marterl), Guter Kunde (30 Standler buys). New quest kinds `chests`, `chests_run`, `gold`,
+  `standler`, `marterl` (Profile counts them per player; clients get them in the shared summary; Standler and
+  Marterl are now counted per player).

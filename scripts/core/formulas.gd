@@ -120,6 +120,24 @@ static func armor_share(armor: float, balance: BalanceData) -> float:
 	return armor / (armor + maxf(balance.armor_half, 0.001))
 
 
+## A weapon on paper (1.4 build view, DECISIONS 6.8): damage per hit, attacks per second, pieces per
+## attack, crit chance, and the DPS = damage × pieces × (1 + crit × (crit mult - 1)) ÷ cooldown, plus
+## the burn it lights. Orbits hit each enemy every hit_interval per piece ("per enemy"). Ignores
+## misses and pierce; the build view shows the measured number next to it.
+static func weapon_dps(owned: PlayerBuild.OwnedWeapon, build: PlayerBuild, balance: BalanceData) -> Dictionary:
+	var weapon: WeaponData = owned.data
+	var damage: float = weapon_damage(weapon, owned.mods, build.stat(&"damage") + build.cond_damage)
+	var crit: float = weapon_crit(weapon, owned.mods, build.stat(&"crit"))
+	var crit_factor: float = 1.0 + crit * (weapon.crit_multiplier - 1.0)
+	var amount: int = weapon_amount(weapon, owned.mods, owned.extra_amount)
+	var orbit: bool = weapon.pattern == WeaponData.Pattern.ORBIT
+	var cooldown: float = maxf(weapon.hit_interval, 0.05) if orbit 			else weapon_cooldown(weapon, owned.mods, build.stat(&"cooldown"), balance, build.stat(&"rate"))
+	var burn: float = damage * weapon.burn_share * weapon.burn_seconds * (1.0 + build.stat(&"duration"))
+	var dps: float = (damage * crit_factor + burn) * amount / maxf(cooldown, 0.01)
+	return {"damage": damage, "rate": 1.0 / maxf(cooldown, 0.01), "amount": amount, "crit": crit,
+		"crit_mult": weapon.crit_multiplier, "dps": dps, "per_enemy": orbit, "burn": burn}
+
+
 ## What a map chest costs after `bought` paid ones: base × growth^bought (free chests do not count).
 static func chest_price(base: int, bought: int, balance: BalanceData) -> int:
 	return roundi(base * pow(maxf(balance.map_chest_price_growth, 1.0), maxi(bought, 0)))

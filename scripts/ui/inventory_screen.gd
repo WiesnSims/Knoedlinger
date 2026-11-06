@@ -1,13 +1,12 @@
 class_name InventoryScreen
 extends CanvasLayer
-## Tab (or I) opens the build and the stats side by side (InventoryPanel + StatsPanel); Tab, I or
-## Esc closes them. RunWorld pauses solo games while it is open (`toggled`), like the Speisekarte.
+## Tab (or I) opens the build view (BuildView: tiles, what the picked one does, the stats); Tab, I or
+## Esc closes it. RunWorld pauses solo games while it is open (`toggled`), like the Speisekarte.
 
 signal toggled(open: bool)
 
 var _shown: Control
-var _inventory: InventoryPanel
-var _stats: StatsPanel
+var _view: BuildView
 var _tween: Tween
 ## RunWorld turns it off while the Speisekarte or the end screen is up.
 var allowed: bool = true
@@ -28,12 +27,8 @@ func _ready() -> void:
 	_shown.add_child(shade)
 	var column := UiStyle.vbox(&"Gap16")
 	UiStyle.centred(_shown).add_child(column)
-	var row := UiStyle.hbox(&"Row32")
-	column.add_child(row)
-	_inventory = InventoryPanel.new()
-	row.add_child(_inventory)
-	_stats = StatsPanel.new()
-	row.add_child(_stats)
+	_view = BuildView.new()
+	column.add_child(_view)
 	var hint := UiStyle.hbox()
 	hint.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(hint)
@@ -48,11 +43,9 @@ func is_open() -> bool:
 	return _shown.visible
 
 
-func show_player(state: PlayerState, knodl: Knodl, balance: BalanceData) -> void:
-	if state == null or state.build == null:
-		return
-	_inventory.show_build(state.build, balance)
-	_stats.show_stats(state, knodl, balance)
+func show_player(state: PlayerState, knodl: Knodl, balance: BalanceData, ledger: DamageLedger, peer: int,
+		run_time: float) -> void:
+	_view.show_player(state, knodl, balance, ledger, peer, run_time)
 
 
 func set_open(on: bool) -> void:
@@ -68,6 +61,7 @@ func set_open(on: bool) -> void:
 		_tween.tween_property(_shown, "modulate:a", 1.0, UiStyle.T_PANEL_IN)
 		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		_view.focus_first.call_deferred()
 	toggled.emit(on)
 
 

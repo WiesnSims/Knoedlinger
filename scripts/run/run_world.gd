@@ -103,6 +103,10 @@ var coop: CoopRules
 var sites: RunSites
 ## Host: the items' rules (1.4, ItemProcs).
 var procs: ItemProcs
+## Every machine: damage per player and source (1.4 build view; the host sends DAMAGE events).
+var ledger := DamageLedger.new()
+var _ledger_timer: float = 0.0
+var _ledger_sent: Dictionary[String, Vector2] = {}
 ## The bot went to Der Standler's stall on this visit (RunSites.stand_visits).
 var _bot_shopped: int = 0
 ## Host: run events of this frame (attack marks, loot, toasts ...).
@@ -672,6 +676,13 @@ func _host_frame(delta: float) -> void:
 			enemies.source = -1
 			projectiles.source = -1
 		knodl.damage_source = _source(peer, "knodl", "knodl")
+		# Knödl folgt brav (the player's setting rides in their input): toward the nearest Brösel in reach.
+		knodl.follow_target = Vector3.INF
+		if player.last_input.buttons & InputMessage.BUTTON_FOLLOW and not state.downed:
+			var at: Vector3 = player.global_position
+			var crumb: Vector2 = brosel.nearest(at.x, at.z, knodl.max_length())
+			if crumb.is_finite():
+				knodl.follow_target = Vector3(crumb.x, 0.0, crumb.y)
 		if not knodl.merged_away:
 			knodl.crush(enemies, delta)
 		if seconds.has(peer):
@@ -703,6 +714,7 @@ func _host_frame(delta: float) -> void:
 	_check_wirtshaeuser(delta)
 	_collect_loot(delta)
 	_update_fassl(delta)
+	_send_damage(delta)
 	level_flow.update(states, delta, NetworkManager.is_coop())
 	coop.update(delta)
 	sites.update(delta)
@@ -900,7 +912,8 @@ func _on_run_ended() -> void:
 func _on_inventory_toggled(open: bool) -> void:
 	if open:
 		_note_panel_mouse()
-		inventory.show_player(states.get(NetworkManager.local_id()), knodls.get(NetworkManager.local_id()), balance)
+		inventory.show_player(states.get(NetworkManager.local_id()), knodls.get(NetworkManager.local_id()), balance,
+				ledger, NetworkManager.local_id(), run_time)
 	_hold_pause(open)
 
 
@@ -912,6 +925,9 @@ func _note_panel_mouse() -> void:
 
 
 func _on_pause_toggled(open: bool) -> void:
+	if open:
+		pause.show_player(states.get(NetworkManager.local_id()), knodls.get(NetworkManager.local_id()), balance,
+				ledger, NetworkManager.local_id(), run_time)
 	_hold_pause(open)
 
 
@@ -1396,7 +1412,9 @@ func _local_frame(delta: float) -> void:
 		if speisekarte.is_open():
 			speisekarte.show_player(state, knodl)
 		if inventory.is_open():
-			inventory.show_player(state, knodl, balance)
+			inventory.show_player(state, knodl, balance, ledger, NetworkManager.local_id(), run_time)
+		if pause.is_open():
+			pause.show_player(state, knodl, balance, ledger, NetworkManager.local_id(), run_time)
 	inventory.allowed = not speisekarte.is_open() and not pause.is_open() and phase != Phase.ENDED
 	if not inventory.allowed and inventory.is_open():
 		inventory.set_open(false)
@@ -1511,7 +1529,7 @@ func _bot_goal(local: Player, knodl: Knodl) -> Vector2:
 			return Vector2(loot.xs[heal], loot.zs[heal])
 	chest = loot.nearest(LootField.Kind.CHEST, at.x, at.z)
 	if chest >= 0 and state != null and state.build.gold >= _chest_price(chest, state) \
-			and here.distance_to(Vector2(loot.xs[chest], loot.zs[chest])) < 40.0:
+			and here.distance_to(Vector2(loot.xs[chest], loot.zs[chest])) < 70.0:
 		return Vector2(loot.xs[chest], loot.zs[chest])
 	var barrel: int = loot.nearest(LootField.Kind.FASSL, at.x, at.z)
 	if barrel >= 0 and here.distance_to(Vector2(loot.xs[barrel], loot.zs[barrel])) < 18.0:
@@ -2704,6 +2722,56 @@ func _start_bus() -> void:
 	events.bus(x, z, atan2(centre.x - x, centre.z - z))
 
 
+## Host: about once a second, every player's damage so far per weapon, item, Knödl and extras (and
+## the procs per item) as DAMAGE events, for the build view on every machine.
+func _send_damage(delta: float) -> void:
+	_ledger_timer -= delta
+	if _ledger_timer > 0.0:
+		return
+	_ledger_timer = 1.0
+	for id: int in _sources.size():
+		var entry: Array = _sources[id]
+		var peer: int = int(entry[0])
+		var name: String = str(entry[2])
+		var kind: int = DamageLedger.Kind.EXTRA
+		var index: int = 0
+		var count: int = 0
+		match str(entry[1]):
+			"weapon":
+				kind = DamageLedger.Kind.WEAPON
+				index = _weapon_index(name)
+			"item":
+				kind = DamageLedger.Kind.ITEM
+				index = _item_index(name)
+				count = procs.procs_of(peer, name)
+			"knodl":
+				kind = DamageLedger.Kind.KNODL
+		if index < 0:
+			continue
+		var total: float = enemies.dealt[id] if id < enemies.dealt.size() else 0.0
+		var key: String = DamageLedger.key(peer, kind as DamageLedger.Kind, index)
+		var now := Vector2(total, count)
+		# Weapons and the Knödl always (the 30 s window needs the samples), the rest when it changed.
+		if _ledger_sent.get(key, Vector2(-1.0, -1.0)) == now and kind == DamageLedger.Kind.ITEM:
+			continue
+		_ledger_sent[key] = now
+		events.damage(peer, kind, index, total, count)
+
+
+func _weapon_index(id: String) -> int:
+	for k: int in catalog.weapons.size():
+		if String(catalog.weapons[k].id) == id:
+			return k
+	return -1
+
+
+func _item_index(id: String) -> int:
+	for k: int in catalog.items.size():
+		if String(catalog.items[k].id) == id:
+			return k
+	return -1
+
+
 ## Host: Fassl stand around the players (a new one every few seconds, far ones go) and burst into
 ## coins when a player walks into one or a Knödl rolls over it.
 func _update_fassl(delta: float) -> void:
@@ -2964,6 +3032,8 @@ func _present(e: RunEventCodec.Event) -> void:
 			voices.present(e.a, e.b, e.id, e.x, e.z)
 		RunEventCodec.Kind.SITE:
 			sites.present(e)
+		RunEventCodec.Kind.DAMAGE:
+			ledger.record(e.b, e.a, e.c, e.x, e.id, run_time)
 
 
 ## Every role: the gate, the boss bar, the Formular line, markers, hints, music and the local

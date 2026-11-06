@@ -292,7 +292,7 @@ extends Resource
 ## A hit always does at least this much, whatever the armor.
 @export var min_hit_damage: float = 1.0
 ## Armor this high takes half of every hit (Formulas.armor_share): 3 armor -23 %, 8 -44 %, 20 -67 %.
-@export var armor_half: float = 10.0
+@export var armor_half: float = 6.0
 ## A revive from an item (Marterl-Kerze) brings the player back with this share of their max HP.
 @export var item_revive_hp: float = 0.5
 
@@ -400,12 +400,12 @@ extends Resource
 ## chance (elites and bosses drop theirs for sure).
 @export var coin_value: int = 1
 @export var coin_value_per_minute: float = 0.33
-@export var coin_drop_chance: float = 0.015
+@export var coin_drop_chance: float = 0.01
 ## No new kill coins while this many loot items lie around (boss chests and Stempel always find room).
 @export var coin_loot_cap: int = 400
 ## Fassl: barrels the player or the Knödl smashes for coins. This many stand around the players
 ## (closer than fassl_far to someone), a new one every fassl_respawn seconds, fassl_min..fassl_max m off.
-@export var fassl_count: int = 6
+@export var fassl_count: int = 5
 @export var fassl_respawn: float = 8.0
 @export var fassl_min: float = 14.0
 @export var fassl_max: float = 40.0
@@ -429,6 +429,8 @@ extends Resource
 @export var item_base_damage: float = 20.0
 ## Rodel: downhill push on the string (m/s² per copy's value).
 @export var rodel_push: float = 14.0
+## "Knödl folgt brav": the pull toward the nearest Brösel (m/s²) within the string's reach of the player.
+@export var knodl_follow_pull: float = 18.0
 ## The pop shown where a proc hit (RunEventCodec.Cue.SPARK).
 @export var spark_radius: float = 1.4
 

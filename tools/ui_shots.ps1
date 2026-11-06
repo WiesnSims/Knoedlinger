@@ -57,7 +57,9 @@ $scenes = @(
     @{ Id = 'late'; Query = "$common&pick_delay=1.5&god=1"; At = '70,71,72,73,74,110'; Press = ',,,,,Tab' },
     # Enemy lines over their heads (EnemyVoices; voice_every makes them talk often enough to catch).
     @{ Id = 'voices'; Query = "$common&knodl_mass=160&god=1&voice_every=1"; At = '26,29,32,35' },
-    @{ Id = 'pause'; Query = "$common&knodl_mass=160"; At = '24,27'; Press = 'Escape,ArrowDown+Enter' },
+    # 1.4: the pause menu with the build view: a weapon picked (its numbers), then an item (its effect),
+    # then the settings from the menu.
+    @{ Id = 'pause'; Query = "$common&knodl_mass=160&items=gfrorns,blitzableiter,amboss,rucksack,stallaterne,sparbuch"; At = '24,26,28,31'; Press = 'Escape,ArrowRight,ArrowDown+ArrowDown,Escape+Escape+ArrowDown+Enter' },
     # M5: the touch controls (a real finger holds the stick and walks), then the three settings tabs.
     @{ Id = 'touch'; Query = "$common&knodl_mass=160&touch=1"; At = '24,30'; Touch = $true; Press = ',drag:{sx}:{sy}:{sx2}:{sy}:600' },
     @{ Id = 'settings'; Query = 'mute=1&debug=0'; At = '12,15,17,19'; Press = 'type:Resi+Enter,ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+ArrowDown+Enter,KeyE,KeyE' },

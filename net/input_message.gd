@@ -10,6 +10,8 @@ const BUTTON_JUMP: int = 1
 const BUTTON_SCHUPFN: int = 2
 ## The last Schupfn was aimed (mouse): throw along aim_yaw instead of the movement stick.
 const BUTTON_AIM: int = 4
+## Not a button: the player's "Knödl folgt brav" setting (1.4), so the host steers their Knödl.
+const BUTTON_FOLLOW: int = 8
 
 var tick: int = 0
 ## Movement stick, each axis -1..1 (x = world X, y = world Z).

@@ -251,6 +251,8 @@ func _physics_process(delta: float) -> void:
 	last_input.buttons = InputMessage.BUTTON_JUMP if Input.is_action_pressed(&"jump") else 0
 	if _schupfn_aimed:
 		last_input.buttons |= InputMessage.BUTTON_AIM
+	if Settings.get_bool(&"knodl_follow"):
+		last_input.buttons |= InputMessage.BUTTON_FOLLOW
 	last_input.aim_yaw = _schupfn_aim
 	last_input.schupfn_presses = _schupfn_presses
 	last_input.jumps = jump_count

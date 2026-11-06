@@ -1289,3 +1289,28 @@ IFX_RULE_KILL_BLAST,{v} % Chance: ein Erledigter explodiert
 IFX_RULE_BELL,Glockenschlag rund um di alle {v} s
 IFX_RULE_RIESENKNODL,"Knödl doppelt so groß, verliert nie Masse"
 IFX_RULE_SECOND_KNODL,a zweiter Knödl am eigenen Spagat
+BV_TITLE,Was kann's?
+BV_HINT,"Zeig auf a Feld (Maus, Steuerkreuz oder Finger), dann steht da genau, was's kann."
+BV_DAMAGE_HIT,Schaden pro Treffer
+BV_RATE,Angriffe pro Sekunde
+BV_ORBIT_RATE,Treffer pro Sekunde und Gegner
+BV_AMOUNT,Stück pro Angriff
+BV_CRIT,Volltreffer
+BV_CRIT_VALUE,%s %% × %s
+BV_BURN,Brand pro Angriff
+BV_THEORY,Theorie: Schaden pro s
+BV_THEORY_ENEMY,Theorie: pro s und Gegner
+BV_RUN,Dieser Lauf: Schaden
+BV_RECENT,Letzte 30 s: pro s
+BV_PROCS,Ausgelöst
+BV_CHANCE_LANTERN,Chance mit Stallaterne
+BV_FROM_PASSIVES,aus Stat-Upgrades
+BV_FROM_ITEMS,aus Gegenständen
+BV_FROM_META,vom Stammtisch
+SET_KNODL_FOLLOW,Knödl folgt brav
+PATCH_1_4_0_16,"Gold und Truhn: bis zu 15 Truhn pro Lauf, die erste um 20 Gold, jede gekaufte macht die nächste teurer; Münzen werden mit der Zeit mehr wert."
+PATCH_1_4_0_17,"Fassl stehn herum: reinlaufen oder den Knödl drüberrolln, dann fallt Gold raus."
+PATCH_1_4_0_18,"26 neue Gegenstände, die was Eigenes können: einfrieren, anzünden, Blitze, Irrlichter, Schild, die Zeit anhalten und mehr. Jeder wartet hinter einem Auftrag."
+PATCH_1_4_0_19,"Gegenstände sagen jetzt genau, was sie können: in der Truhe, auf der Speisekarte und im Almanach. Eingfrorene Gegner sind blau, brennende orange."
+PATCH_1_4_0_20,"Pause und Tab zeigen dein Inventar: zeig auf a Feld und du siehst Schaden, Angriffe pro Sekunde und was die Waffe in diesem Lauf wirklich gmacht hat."
+PATCH_1_4_0_21,Neue Einstellung „Knödl folgt brav“: dein Knödl rollt von selber zu den Bröseln. Rüstung schützt mehr. 30 neue Aufträge.

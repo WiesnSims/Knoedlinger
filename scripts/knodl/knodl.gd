@@ -56,6 +56,8 @@ var spikes: float = 0.0
 var slope_bonus: float = 0.0
 ## Rodel (1.4 item): on the string, rolling downhill pushes it on and lets it go this much faster.
 var rodel: float = 0.0
+## "Knödl folgt brav" (1.4 setting, host): on the string it rolls toward this point (Brösel), INF = off.
+var follow_target: Vector3 = Vector3.INF
 ## Seconds until Schupfn works again.
 var cooldown: float = 0.0
 ## A Serviettenknödl's rolling direction (flat, either way along it; KnodlSortData.turn_rate).
@@ -519,6 +521,10 @@ func _integrate_forces(body: PhysicsDirectBodyState3D) -> void:
 			var sideways: Vector3 = flat - heading * flat.dot(heading)
 			v -= sideways * (1.0 - exp(-sort.lateral_grip * dt))
 	var max_speed: float = balance.knodl_max_speed * sort.roll_speed_mult
+	if follow_target.is_finite() and state == State.ATTACHED:
+		var toward := Vector3(follow_target.x - p.x, 0.0, follow_target.z - p.z)
+		if toward.length() > 0.3:
+			v += toward.normalized() * balance.knodl_follow_pull * dt
 	if rodel > 0.0 and state == State.ATTACHED and v.y < -0.3:
 		var flat_v := Vector3(v.x, 0.0, v.z)
 		if flat_v.length() > 0.5:

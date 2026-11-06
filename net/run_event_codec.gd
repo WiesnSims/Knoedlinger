@@ -19,11 +19,13 @@ extends RefCounted
 ##           every machine finds the stairs and draws the mark from its own copy of the map)
 ##   SITE    u8 site | u8 index | u8 state | u8 extra | f32 x | f32 z   (Der Standler and the Marterl,
 ##           RunSites: a site placed, in use, done or gone; extra = the Marterl's kind)
+##   DAMAGE  s32 peer | u8 source kind | u8 index | f32 total | u16 procs   (1.4: a player's damage so far
+##           by weapon, item, Knödl or extras, about once a second when it changed; DamageLedger)
 
-const VERSION: int = 4
+const VERSION: int = 5
 const MAX_EVENTS: int = 255
 
-enum Kind { HAZARD, LOOT, TAKEN, TOAST, BOSS, BUS, CUE, SAY, LOCK, SITE }
+enum Kind { HAZARD, LOOT, TAKEN, TOAST, BOSS, BUS, CUE, SAY, LOCK, SITE, DAMAGE }
 enum BossState { ARRIVED, BEATEN }
 ## SPARK (1.4): a small pop where an item proc hit (chain, burst, execute, wisp).
 enum Cue { STEMPEL, CHEST, COIN, HEAL, GATE_OPEN, NO_GOLD, CASH_IN, HAZARD_HIT, BOSS_HIT, BUS_HORN, SHOCKWAVE, SPARK }
@@ -149,6 +151,17 @@ class Queue:
 		e.z = z
 		events.append(e)
 
+	## Player `peer` has dealt `total` with source `kind` / `index` (DamageLedger.Kind), `procs` procs.
+	func damage(peer: int, kind: int, index: int, total: float, procs: int) -> void:
+		var e := Event.new()
+		e.kind = Kind.DAMAGE
+		e.b = peer
+		e.a = kind
+		e.c = index
+		e.x = total
+		e.id = procs
+		events.append(e)
+
 	func take() -> Array[Event]:
 		var out: Array[Event] = events
 		events = []
@@ -229,6 +242,13 @@ static func encode(events: Array[Event]) -> PackedByteArray:
 				data.encode_u8(o + 4, e.b & 0xFF)
 				data.encode_float(o + 5, e.x)
 				data.encode_float(o + 9, e.z)
+			Kind.DAMAGE:
+				data.resize(o + 13)
+				data.encode_s32(o + 1, e.b)
+				data.encode_u8(o + 5, e.a & 0xFF)
+				data.encode_u8(o + 6, e.c & 0xFF)
+				data.encode_float(o + 7, e.x)
+				data.encode_u16(o + 11, clampi(e.id, 0, 0xFFFF))
 		data.encode_u8(o, e.kind)
 	return data
 
@@ -245,7 +265,7 @@ static func decode(data: PackedByteArray) -> Array[Event]:
 			return []
 		var e := Event.new()
 		var kind: int = data.decode_u8(o)
-		if kind > Kind.SITE:
+		if kind > Kind.DAMAGE:
 			return []
 		e.kind = kind as Kind
 		var size: int = _size_of(e.kind, data, o)
@@ -301,6 +321,12 @@ static func decode(data: PackedByteArray) -> Array[Event]:
 				e.b = data.decode_u8(o + 4)
 				e.x = data.decode_float(o + 5)
 				e.z = data.decode_float(o + 9)
+			Kind.DAMAGE:
+				e.b = data.decode_s32(o + 1)
+				e.a = data.decode_u8(o + 5)
+				e.c = data.decode_u8(o + 6)
+				e.x = data.decode_float(o + 7)
+				e.id = data.decode_u16(o + 11)
 		if not (is_finite(e.x) and is_finite(e.z) and is_finite(e.angle)):
 			return []
 		out.append(e)
@@ -326,6 +352,8 @@ static func _size_of(kind: Kind, data: PackedByteArray, o: int) -> int:
 			return 13
 		Kind.CUE:
 			return 10
+		Kind.DAMAGE:
+			return 13
 		Kind.SAY:
 			return 13
 		Kind.LOCK:

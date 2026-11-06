@@ -23,8 +23,8 @@ class Held:
 var world: RunWorld
 var balance: BalanceData
 var rng := RandomNumberGenerator.new()
-## Procs this run per item id (all players), for the build view.
-var procs_by_item: Dictionary[StringName, int] = {}
+## Procs this run per "peer|item id", for the build view.
+var procs_by_item: Dictionary[String, int] = {}
 
 ## Per peer: the held effects, the build signature they were made from, kills by their weapons,
 ## executes, the last position (moving / standing still), seconds standing still, ON_LETHAL used.
@@ -250,6 +250,10 @@ func on_brosel(peer: int, count: int) -> void:
 		_fire(peer, T.ON_BROSEL, float(count))
 
 
+func procs_of(peer: int, item_id: String) -> int:
+	return procs_by_item.get("%d|%s" % [peer, item_id], 0)
+
+
 ## How many times ON_LETHAL items saved this player (the build view).
 func lethal_used(peer: int) -> int:
 	return _lethal_used.get(peer, 0)
@@ -289,7 +293,8 @@ func _act(peer: int, row: Held, slot: int, amount: float, at: Vector3) -> void:
 			return
 		at = Vector3(enemies.pos_x[slot], 0.0, enemies.pos_z[slot])
 	_budget -= 1
-	procs_by_item[row.item.id] = procs_by_item.get(row.item.id, 0) + 1
+	var counted: String = "%d|%s" % [peer, row.item.id]
+	procs_by_item[counted] = procs_by_item.get(counted, 0) + 1
 	if row.source < 0:
 		row.source = world._source(peer, "item", String(row.item.id))
 	var held_source: int = enemies.source
