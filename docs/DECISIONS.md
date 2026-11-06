@@ -1973,15 +1973,23 @@ the second tab.
     moment.
 - **Balance (A):** none yet.
 - **Small changes (C):**
-  - C1 (owner, 2026-11-06): the **Krapfen-Kanone bounces between enemies** instead of hopping along one line,
-    and its upgrades can raise the number of bounces (owner asked whether the size stat should do that).
-    Claude's plan: each Krapfen lands, splashes its jam, then jumps to the nearest enemy within a range, like
-    the Wiener Würstel's chain (pattern 7, `chain_range`); start 3 bounces. More bounces come from a new
-    weapon level mod "+1 Sprung" on its Speisekarte cards (`level_mods`, with a cap), **not** from area:
-    area already rolls on its cards and keeps growing the jam splash. Co-op: today clients replay the shot
-    from the fire counter, which only works because the hops follow the aim; bouncing to enemies needs the
-    host to send each bounce target (a small reliable run event) so every machine draws the same arcs.
-    Faschingsdienstag (its evolution) bounces the same way. Checks: `mp_test -Clients 1` and `-Coop` for the
-    sync, ui_shots for the new card text, a 10:00 damage measurement against the 6.5 numbers.
+  - C1 (owner, 2026-11-06): **Krapfen-Kanone aims into the crowd, and a shared "+1 Hupfer" upgrade.**
+    - Owner first asked for the Krapfen to bounce between enemies; Claude pointed out that is exactly the
+      Würstel's and the Krampusrute's CHAIN pattern (and the Würstel measured weakest in 6.5), so the owner
+      chose **option A**: the Krapfen keeps its straight lobbed hops (its identity: splash + jam on groups),
+      but each one is **aimed at the thickest part of the crowd** within its reach instead of the nearest
+      enemy, so the hops run through the crowd instead of beside it. Hops still follow from the aim, so
+      clients keep replaying shots from the fire counter – no network change. Faschingsdienstag the same.
+    - **New weapon level mod `bounces` ("+1 Hupfer")**, reusable by every weapon that hops or jumps:
+      Krapfen-Kanone/Faschingsdienstag = hops per Krapfen (3 at start); Wiener Würstel = jumps per sausage.
+      Data only (`level_mods` + a cap per weapon), card text "+1 Hupfer". Area keeps growing the jam splash.
+    - **Würstel split (Claude):** for CHAIN weapons `amount` is today the jump count (shown as "+1 Projektil",
+      and the Rucksack adds a jump). After C1 the jumps come from `bounces`, and `amount` means **more
+      sausages at once**, each starting at its own nearest enemy – so "+1 Projektil" and the Rucksack mean
+      the same as on every other weapon. Würstel start: 1 sausage, 3 Hupfer. **Krampusrute** is the same
+      CHAIN pattern ("Springt von Sünder zu Sünder"), so it gets the same split unless the owner says no.
+    - Checks: unit tests (aim at the densest cell, hops and jumps per `bounces`, several sausages), a 10:00
+      damage measurement for the three weapons against the 6.5 numbers (the Würstel should come up toward
+      the average, not past it), ui_shots for the card text, `mp_test -Clients 1` and `-Coop`.
 - Taskboard for the owner: https://claude.ai/artifact/NUU2WXcPqcVtBSzAeXB3ww (mirrors these lists; updated
   in the same session as any change here).
