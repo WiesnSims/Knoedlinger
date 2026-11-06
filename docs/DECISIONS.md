@@ -1625,3 +1625,7 @@ the second tab.
   **Fiakerprüfung** (Mitzi → Fiakerpeitsche), **Musikantenstammtisch** (Steffi → Harmonika), 100 Schilling
   each; the character still starts with it. Aufträge 114 → 126. Parts 3 and 6.7 lock their new content too.
   Note: in this plan 6.2 is "Knödl folgt brav"; no task covered the unlocks, so this is the standing rule.
+- **Autoplay** (Kirtag / Grant 1, seeds 1-3, so rough): Ferdl level 47, 23 knock-downs, 14.1k kills, 0 wins;
+  Hias 46 / 25 / 16.2k / 0; Mitzi 43 / 34 / 11.3k / 0 (weakest: the bot weaves, so the Trab rarely holds);
+  Steffi 54 / 12 / 21.7k / 1 win (strongest: more cash-ins = more chests). Left as is for the owner's
+  playtest; tuned with the 6.5 rebalance.
