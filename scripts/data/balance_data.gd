@@ -384,6 +384,9 @@ extends Resource
 @export var portal_radius: float = 4.5
 ## A player whose feet are higher than this above the ground jumps over an attack mark.
 @export var hazard_dodge_height: float = 1.1
+## Die Hausmeisterin locks stairs and ramps at least this high (StairLock); her gates are this tall.
+@export var stair_lock_min_height: float = 6.0
+@export var stair_gate_height: float = 3.2
 
 @export_group("Loot")
 ## Map chests per run (out of the map's chest spots), what one costs and how many items it gives.

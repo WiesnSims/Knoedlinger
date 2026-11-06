@@ -963,6 +963,21 @@ VOICE_STURM_LUSTIG,Jetzt wird's lustig!
 VOICE_STURM_DRAHN,Olle a Runde drahn!
 VOICE_STURM_TRUEB,I bin no ganz trüb!
 VOICE_STURM_VERGOREN,I bin … vergoren …
+BOSS_HAUSMEISTERIN,Die Hausmeisterin
+BOSS_HAUSMEISTERIN_INTRO,Die Hausmeisterin is do! Schuach abputzen!
+BOSS_HAUSMEISTERIN_DEFEAT,Die Hausmeisterin hat Dienstschluss.
+BOSS_HAUSMEISTERIN_SWEEP,Jetzt wird zammkehrt!
+BOSS_HAUSMEISTERIN_LOCK,Stiagnhaus zuagsperrt!
+DESC_ENEMY_HAUSMEISTERIN,"Seit 1971 im Dienst. Kehrt ois zamm, sperrt die Stiagn zua und woaß genau, wer's woar."
+STAIRS_LOCKED,Frisch gwischt!
+QUEST_HAUSORDNUNG,Hausordnung
+DESC_QUEST_HAUSORDNUNG,Besieg die Hausmeisterin.
+VOICE_HAUSMEISTERIN_HAUSORDNUNG,"Hausordnung, Paragraph eins: Ruhe im Hof!"
+VOICE_HAUSMEISTERIN_ZAMMKEHRN,Do wird jetzt zammkehrt!
+VOICE_HAUSMEISTERIN_STIAGN,Ned auf die frisch gwischte Stiagn!
+VOICE_HAUSMEISTERIN_ZEHNE,Um zehne wird zuagsperrt!
+VOICE_HAUSMEISTERIN_HAUSVERWALTUNG,I sog's da Hausverwaltung!
+VOICE_HAUSMEISTERIN_MIST,Und wer trogt jetzt in Mist owe …
 PATCH_1_4_0_01,"Neue Karte: Heuriger in den Weinbergen. Fünf Terrassen, zwei Kellergassen, Buschenschanken. Freischalten: 3 Runden gewinnen."
 PATCH_1_4_0_02,"Neue Gegner: Weinbergschnecke (ihr Schleim bremst), Star-Schwarm (pickt Brösel und dann dein Knödl) und Wespen (mögen nur süße Knödl)."
 PATCH_1_4_0_03,Neuer Zwischengegner um 10:00 am Heurigen: Der Sturm. Zieht ois an und schleudert's in an Wirbel wieder raus. Schwere Knödl bleiben liegen.
@@ -973,6 +988,7 @@ PATCH_1_4_0_07,"Freischalten: Opa Hias mit am Sieg im Gemeindebau-Hof, Cousine M
 PATCH_1_4_0_08,"Acht neue Entwicklungen: Schneepflug, Slalom-Gewitter, „Zahlen, bitte!“, Almabtrieb, Hochwasser, Viererzug, Zeltfest und Faschingsdienstag. Jede Waffe aus da Familie hat jetzt a eigene."
 PATCH_1_4_0_09,"Neue Waffe: die Krapfen-Kanone. Ihre Krapfen hupfen dreimal und lassen überall bremsende Marmelad liegen."
 PATCH_1_4_0_10,"Zwei neue Werte-Upgrades: der Seniorenteller (mehr Erfahrung aus Brösel) und die Gummistiefel (mehr Rückstoß, Schleim bremst weniger). Alles Neue schaltest über elf neue Aufträge frei."
+PATCH_1_4_0_11,"Der Gemeindebau-Hof hat sei eigene Zwischengegnerin um 10:00: die Hausmeisterin. Sie kehrt in rote Fächer und sperrt a Stiagn für 10 Sekunden zua."
 WEAPON_GARTENSCHLAUCH,Gartenschlauch
 DESC_WEAPON_GARTENSCHLAUCH,"Gießt die Paradeiser. Und schwemmt alles weg, was drübersteigt."
 WEAPON_FIAKERPEITSCHE,Fiakerpeitsche

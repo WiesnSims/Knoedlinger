@@ -30,6 +30,11 @@ class Hazard:
 	# Host only.
 	var attack: AttackData
 	var source: int = -1
+	## A mark up a flight of stairs: the height of its start (NAN = lies on the ground) and how much
+	## higher its end is; `tag` is the stairwell (StairLock), -1 for every other mark.
+	var base_y: float = NAN
+	var rise: float = 0.0
+	var tag: int = -1
 
 	func end_x() -> float:
 		return x + sin(angle) * length
@@ -98,7 +103,8 @@ func start_attack(attack: AttackData, sx: float, sz: float, tx: float, tz: float
 			var angle: float = atan2(dx, dz) if dx * dx + dz * dz > 0.0001 else _rng.randf() * TAU
 			for k: int in maxi(attack.count, 1):
 				var turn: float = (k - (attack.count - 1) * 0.5) * deg_to_rad(attack.spread)
-				_make(attack, AttackData.Shape.LINE, sx, sz, angle + turn, source)
+				_make(attack, AttackData.Shape.LINE, sx, sz, angle + turn, source,
+						attack.telegraph + k * attack.stagger if attack.stagger > 0.0 else -1.0)
 		_:
 			for k: int in maxi(attack.count, 1):
 				var cx: float = tx
@@ -135,6 +141,35 @@ func add_remote(id: int, shape: int, x: float, z: float, angle: float, radius: f
 	h.telegraph = telegraph
 	h.left = telegraph
 	hazards.append(h)
+
+
+## A LINE up a slope from `foot` to `top` (world positions of its centre line), `radius` to each
+## side. Host: `attack` decides the hit and the mark goes out (as StairLock's event); client: the
+## look only, from its own copy of the map.
+func add_slope(foot: Vector3, top: Vector3, radius: float, telegraph: float, attack: AttackData = null,
+		source: int = -1, tag: int = -1) -> Hazard:
+	if hazards.size() >= MAX_HAZARDS:
+		return null
+	var h := Hazard.new()
+	_next_id = (_next_id + 1) & 0xFFFF
+	h.id = _next_id
+	h.shape = AttackData.Shape.LINE
+	h.x = foot.x
+	h.z = foot.z
+	h.angle = atan2(top.x - foot.x, top.z - foot.z)
+	h.length = Vector2(top.x - foot.x, top.z - foot.z).length()
+	h.radius = radius
+	h.base_y = foot.y
+	h.rise = top.y - foot.y
+	h.telegraph = telegraph
+	h.left = telegraph
+	h.attack = attack
+	h.source = source
+	h.tag = tag
+	hazards.append(h)
+	if attack != null:
+		made.append(h)
+	return h
 
 
 ## Counts every mark down; the host's marks that hit this update land in `hits`.
@@ -228,6 +263,8 @@ func _draw() -> void:
 			c = cos(h.angle)
 			s = sin(h.angle)
 			y = maxf(y, maxf(_ground_y(cx, cz), _ground_y(h.end_x(), h.end_z())))
+			if not is_nan(h.base_y):
+				y = h.base_y + h.rise * 0.5
 		elif h.radius > 2.0:
 			y = maxf(y, maxf(_ground_y(h.x + h.radius * 0.7, h.z), _ground_y(h.x - h.radius * 0.7, h.z)))
 		# Rotation around Y by the line's angle, scaled to its size.
@@ -237,7 +274,8 @@ func _draw() -> void:
 		_buffer[o + 3] = cx
 		_buffer[o + 4] = 0.0
 		_buffer[o + 5] = 1.0
-		_buffer[o + 6] = 0.0
+		# A mark up the stairs leans with them.
+		_buffer[o + 6] = h.rise
 		_buffer[o + 7] = y + 0.1
 		_buffer[o + 8] = -s * sx
 		_buffer[o + 9] = 0.0

@@ -12,10 +12,11 @@
 # -StartTime 595: instead of holding -Enemies, the host plays the real timeline from that second (M3:
 # bosses, attack marks, the Formular, loot); every client must then get run events, marks and loot.
 # -Scene stress runs the M0 stress arena instead.
+# -Map gemeindebau: everyone plays that map (1.4: with -StartTime 595 the map's own 10:00 mini-boss).
 # -Lobby: everyone meets in the co-op room first (`--lobby`, the real game's path: roster, unique
 # characters, the host starts the run for all) instead of the clients dropping into a running host.
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/mp_test.ps1 [-Clients 3] [-Seconds 20] [-HostLeavesFirst]
-#        [-Scene run|stress] [-StartTime 595]
+#        [-Scene run|stress] [-StartTime 595] [-Map gemeindebau]
 param(
     [int]$Clients = 1,
     [ValidateSet('run', 'stress')][string]$Scene = 'run',
@@ -28,7 +29,8 @@ param(
     [switch]$Coop,
     [switch]$Lobby,
     [switch]$NoRejectTest,
-    [int]$StartTime = -1
+    [int]$StartTime = -1,
+    [string]$Map = ''
 )
 . "$PSScriptRoot\common.ps1"
 
@@ -52,6 +54,7 @@ if ($Lobby) {
     # The boot scene waits in the room; the Lobby autoload starts the run.
     $common = @('--headless', '--path', $Root, '--max-fps', '60', '--')
 }
+if ($Map) { $common += "--map=$Map" }
 $room = if ($Lobby) { @("--lobby=$Clients") } else { @() }
 $guest = if ($Lobby) { @('--lobby') } else { @() }
 # Each client asks for a Knoedlinger (two ask for the same one: the host hands out a free one).

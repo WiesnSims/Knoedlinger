@@ -15,11 +15,13 @@ extends RefCounted
 ##   BUS     f32 x | f32 z | f32 yaw
 ##   CUE     u8 cue | f32 x | f32 z   (a sound or effect at a place: Stempel taken, chest opened ...)
 ##   SAY     u8 enemy type | u8 line | u16 slot | f32 x | f32 z   (an enemy says a line, EnemyVoices)
+##   LOCK    u8 stairwell | u16 telegraph ms | u16 lock ms   (Die Hausmeisterin locks stairs, StairLock;
+##           every machine finds the stairs and draws the mark from its own copy of the map)
 
-const VERSION: int = 2
+const VERSION: int = 3
 const MAX_EVENTS: int = 255
 
-enum Kind { HAZARD, LOOT, TAKEN, TOAST, BOSS, BUS, CUE, SAY }
+enum Kind { HAZARD, LOOT, TAKEN, TOAST, BOSS, BUS, CUE, SAY, LOCK }
 enum BossState { ARRIVED, BEATEN }
 enum Cue { STEMPEL, CHEST, COIN, HEAL, GATE_OPEN, NO_GOLD, CASH_IN, HAZARD_HIT, BOSS_HIT, BUS_HORN, SHOCKWAVE }
 
@@ -28,7 +30,7 @@ class Event:
 	extends RefCounted
 	var kind: Kind = Kind.TOAST
 	var id: int = 0
-	## HAZARD: shape; LOOT: loot kind; BOSS: boss index; CUE: cue; SAY: enemy type.
+	## HAZARD: shape; LOOT: loot kind; BOSS: boss index; CUE: cue; SAY: enemy type; LOCK: stairwell.
 	var a: int = 0
 	## LOOT: value; BOSS: slot; TAKEN: peer; SAY: line.
 	var b: int = 0
@@ -39,7 +41,9 @@ class Event:
 	## HAZARD: angle; BUS: yaw.
 	var angle: float = 0.0
 	var radius: float = 0.0
+	## LOCK: how long the stairs stay locked.
 	var length: float = 0.0
+	## HAZARD, LOCK: the telegraph.
 	var seconds: float = 0.0
 	var text: String = ""
 
@@ -120,6 +124,15 @@ class Queue:
 		e.z = z
 		events.append(e)
 
+	## Stairwell `stairwell` gets a mark filling for `telegraph` seconds, then stays locked `seconds`.
+	func lock(stairwell: int, telegraph: float, seconds: float) -> void:
+		var e := Event.new()
+		e.kind = Kind.LOCK
+		e.a = stairwell
+		e.seconds = telegraph
+		e.length = seconds
+		events.append(e)
+
 	func take() -> Array[Event]:
 		var out: Array[Event] = events
 		events = []
@@ -187,6 +200,11 @@ static func encode(events: Array[Event]) -> PackedByteArray:
 				data.encode_u16(o + 3, e.id & 0xFFFF)
 				data.encode_float(o + 5, e.x)
 				data.encode_float(o + 9, e.z)
+			Kind.LOCK:
+				data.resize(o + 6)
+				data.encode_u8(o + 1, e.a & 0xFF)
+				data.encode_u16(o + 2, clampi(roundi(e.seconds * 1000.0), 0, 0xFFFF))
+				data.encode_u16(o + 4, clampi(roundi(e.length * 1000.0), 0, 0xFFFF))
 		data.encode_u8(o, e.kind)
 	return data
 
@@ -203,7 +221,7 @@ static func decode(data: PackedByteArray) -> Array[Event]:
 			return []
 		var e := Event.new()
 		var kind: int = data.decode_u8(o)
-		if kind > Kind.SAY:
+		if kind > Kind.LOCK:
 			return []
 		e.kind = kind as Kind
 		var size: int = _size_of(e.kind, data, o)
@@ -248,6 +266,10 @@ static func decode(data: PackedByteArray) -> Array[Event]:
 				e.id = data.decode_u16(o + 3)
 				e.x = data.decode_float(o + 5)
 				e.z = data.decode_float(o + 9)
+			Kind.LOCK:
+				e.a = data.decode_u8(o + 1)
+				e.seconds = data.decode_u16(o + 2) / 1000.0
+				e.length = data.decode_u16(o + 4) / 1000.0
 		if not (is_finite(e.x) and is_finite(e.z) and is_finite(e.angle)):
 			return []
 		out.append(e)
@@ -275,4 +297,6 @@ static func _size_of(kind: Kind, data: PackedByteArray, o: int) -> int:
 			return 10
 		Kind.SAY:
 			return 13
+		Kind.LOCK:
+			return 6
 	return -1

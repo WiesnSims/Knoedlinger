@@ -1683,3 +1683,35 @@ the second tab.
   draw calls) and with all nine new weapons at once (187 fps, 112 draw calls), `mp_test -Clients 1`,
   `ui_shots -Only menu,inventory` (the Werte panel with three more rows still fits at 1280×720).
 - Patch-list lines 08-10 for 1.4.0.
+
+## 2026-11-06 – 1.4 Part 4: Die Hausmeisterin (branch `v1-4`)
+
+- **Owner: "continue with 1.4 part 4".** Built in the `v1-4-part3` worktree (tracks `origin/v1-4`).
+- **The Gemeindebau-Hof's own mini-boss at 10:00** replaces Oberkrampus II there (the Kirtag keeps it):
+  Die Hausmeisterin, 2600 HP, speed 3.6, escort 8 Kampf-Dackel, chest 3 items, 40 gold, 3 golden bits.
+  Look: blue dotted Kittelschürze, headscarf with curlers, keys on the belt, the Besen held across.
+  Attacks in turn: Besen, Teppichklopfer, Zusperren, Besen, Teppichklopfer (pause 1.8 s):
+  - **Besen** – a fan of 5 red lines (12 m, 22° apart) that fill **one after the other** (0.12 s each), so
+    it reads as a sweep. New: `AttackData.stagger` now also works for LINE fans (0 = all at once as before).
+  - **Teppichklopfer** – 3 red circles round the target.
+  - **Zusperren** – new aim `STAIRWELL`: a red line up the whole flight of the tall stairs/ramp nearest the
+    target (within 45 m; 25 m was too short – a player in the middle of the Hof is ~40 m from every ramp, so
+    she never locked), then that flight is **locked for 10 s** (`lock_seconds`): an iron gate at its foot
+    and one at its top, sign "Frisch gwischt!". She skips the attack when no stairs are near or a lock runs.
+- **Claude: the stairwells are found, not placed.** `StairLock` takes every solid RAMP/STAIRS prop at least
+  `balance.stair_lock_min_height` (6 m) high from the map (Gemeindebau: 4 roof ramps, 2 corner stairs, 4 outer
+  stairs), so no map data changed and any later map with tall stairs works. Gates are two pooled StaticBodies
+  on LAYER_WORLD (players and Knödl); **enemies pass** – they walk the baked ground field, and they are her
+  tenants anyway. Gate height `stair_gate_height` 3.2 m. Never red (not an attack): Gemeindebau green.
+- **Claude: marks can lean.** A hazard got `base_y`/`rise`; a stairwell mark is tilted up the slope (a flat
+  mark would float at roof height). Network: a new run event **LOCK** (u8 stairwell, telegraph, lock time;
+  `RunEventCodec` VERSION 3) instead of a HAZARD – every machine builds the same mark and gates from its own
+  copy of the map and closes them when the mark hits; Sperrstund' opens them.
+- **Voices** (`voices.py`, filter "hausmeisterin": sharp, nasal, a stairwell echo): 6 lines (arrive, three
+  attack lines, half health, beaten). Auftrag **Hausordnung** – beat her (150 Schilling), 137 → 138.
+- `mp_test.ps1 -Map <id>` added (host and clients play that map) for `-StartTime 595` on a map's own boss.
+- **Checks:** 216 GUT tests (new `test_hausmeisterin.gd`), web export (.pck 7.7 MiB), browser check default and
+  `map=gemeindebau&start_time=595` (120 fps, ≤ 110 draw calls), `mp_test -Clients 1` and
+  `-StartTime 595 -Map gemeindebau` (she arrives at 10:00, locks reach the client, 38.7 KiB/s). Browser shots
+  show her, the sweep fans and the toast; the gate itself was not caught on camera (bot elsewhere).
+- Patch-list line 11 for 1.4.0.

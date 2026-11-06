@@ -304,6 +304,16 @@ def sturm(text):
     return finish(d.echo(x, 0.28, 0.35, 3, 2600), 0.35, 2.0)
 
 
+def hausmeisterin(text):
+    """Die Hausmeisterin: a sharp, nasal older woman who has said it a thousand times, in a stairwell."""
+    x, sr = speak(text, "de+f4", 150, 62)
+    x = at_pitch(x, sr, 1.05)
+    x = d.normalize(x)
+    x = d.bandpass(x, 300, 4200) + 0.9 * d.resonator(x, 1350.0, 7.0)
+    x = d.drive(d.normalize(rasp(x, 0.3)), 1.5)
+    return finish(d.echo(x, 0.12, 0.3, 3, 3000), 0.2, 1.2)
+
+
 SAMPLES = {
     "tourist": ["Nur no a Selfie!", "Is des do ois inklusive?", "Des gibt a schlechte Bewertung!"],
     "akten": ["Formular B sieben fehlt!", "Bitte ziehen Sie eine Nummer."],
@@ -317,12 +327,14 @@ SAMPLES = {
     "star": ["Brösel! Brösel!", "Mia san vü mehr!"],
     "wespe": ["Is des wos Süßes?", "Mmh, Marille!"],
     "sturm": ["Heuer is a guater Johrgang!", "Jetzt wirds lustig!"],
+    "hausmeisterin": ["Do wird jetzt zammkehrt!", "Um zehne wird zuagsperrt!"],
 }
 FILTERS = {"tourist": tourist, "akten": akten, "radler": radler, "roboter": roboter, "perchte": perchte,
            "kontrolleur": kontrolleur, "oberkrampus": oberkrampus, "hofrat": hofrat, "hungrig": hungrig,
            "schneemann": schneemann, "zwerg": zwerg, "wuehlmaus": wuehlmaus, "dackel": dackel, "taube": taube,
            "wildschwein": wildschwein, "wirt": wirt, "geist": geist,
-           "geist_grantig": geist_grantig, "schnecke": schnecke, "star": star, "wespe": wespe, "sturm": sturm}
+           "geist_grantig": geist_grantig, "schnecke": schnecke, "star": star, "wespe": wespe, "sturm": sturm,
+           "hausmeisterin": hausmeisterin}
 
 # --- every line --------------------------------------------------------------------------------------
 # (enemy id, moment, line, text shown, how eSpeak says it, voice). The game's side is data:
@@ -419,6 +431,12 @@ LINES = [
     ("sturm", "ATTACK", "drahn", "Olle a Runde drahn!", "Olle a Runde drahn!", "sturm"),
     ("sturm", "HALF", "trueb", "I bin no ganz trüb!", "I bin no ganz trüb!", "sturm"),
     ("sturm", "BEATEN", "vergoren", "I bin … vergoren …", "I bin. Vergoren.", "sturm"),
+    ("hausmeisterin", "ARRIVE", "hausordnung", "Hausordnung, Paragraph eins: Ruhe im Hof!", "Hausordnung, Paragraf eins. Ruhe im Hof!", "hausmeisterin"),
+    ("hausmeisterin", "ATTACK", "zammkehrn", "Do wird jetzt zammkehrt!", "Do wird jetzt zammkehrt!", "hausmeisterin"),
+    ("hausmeisterin", "ATTACK", "stiagn", "Ned auf die frisch gwischte Stiagn!", "Ned auf die frisch gwischte Stiagn!", "hausmeisterin"),
+    ("hausmeisterin", "ATTACK", "zehne", "Um zehne wird zuagsperrt!", "Um zehne wird zuagsperrt!", "hausmeisterin"),
+    ("hausmeisterin", "HALF", "hausverwaltung", "I sog's da Hausverwaltung!", "I sogs da Hausverwaltung!", "hausmeisterin"),
+    ("hausmeisterin", "BEATEN", "mist", "Und wer trogt jetzt in Mist owe …", "Und wer trogt jetzt in Mist owe.", "hausmeisterin"),
 ]
 
 

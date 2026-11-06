@@ -89,6 +89,8 @@ var seconds: Dictionary[int, Knodl] = {}
 var weapon_vfx: Dictionary[int, WeaponVfx] = {}
 var wirtshaeuser: Array[Wirtshaus] = []
 var hazards: HazardField
+## Die Hausmeisterin's locked stairs (every role).
+var stairs: StairLock
 ## Talking enemies: the host picks the lines, every role shows them.
 var voices: EnemyVoices
 var loot: LootField
@@ -309,6 +311,9 @@ func _ready() -> void:
 	hazards.name = "Hazards"
 	add_child(hazards)
 	hazards.setup(ground, seed_value)
+	stairs = StairLock.new()
+	add_child(stairs)
+	stairs.setup(map, balance)
 	voices = EnemyVoices.new()
 	voices.name = "EnemyVoices"
 	add_child(voices)
@@ -391,6 +396,7 @@ func _ready() -> void:
 		_scatter_start_brosel(seed_value)
 		bosses = BossDirector.new(balance, enemies, hazards, wave)
 		bosses.brosel = brosel
+		bosses.stairs = stairs
 		coop = CoopRules.new(self, balance, seed_value)
 		_place_map_chests()
 	else:
@@ -630,6 +636,7 @@ func _host_frame(delta: float) -> void:
 			seconds[peer].crush(enemies, delta)
 	projectiles.update(delta, enemies)
 	hazards.update(delta)
+	stairs.update(delta)
 	_resolve_hazards()
 	var wind := Vector3.ZERO
 	if grant.modifier == &"foehn":
@@ -779,6 +786,7 @@ func _set_phase(new_phase: Phase) -> void:
 			GameAudio.music(&"sperrstund")
 			_spawn_riesen_wirt()
 			hazards.clear()
+			stairs.release()
 		Phase.ENDED:
 			Engine.time_scale = 1.0
 			_on_run_ended()
@@ -1262,6 +1270,7 @@ func _client_frame(delta: float) -> void:
 	brosel.draw()
 	projectiles.update(delta, null)
 	hazards.update(delta)
+	stairs.update(delta)
 	for at: Vector2 in replica.recent_deaths:
 		GameAudio.play(&"kill", Vector3(at.x, ground.height_at(at.x, at.y), at.y))
 	replica.recent_deaths.clear()
@@ -2647,7 +2656,10 @@ func _take_loot(slot: int, peer: int) -> void:
 ## state.
 func _flush_events() -> void:
 	for h: HazardField.Hazard in hazards.take_made():
-		events.hazard(h)
+		if h.tag >= 0:
+			events.lock(h.tag, h.telegraph, h.attack.lock_seconds)
+		else:
+			events.hazard(h)
 		if h.source >= 0 and enemies.alive[h.source] != 0:
 			voices.offer(h.source, VoiceLineData.Moment.ATTACK)
 	for key: String in bosses.take_toasts():
@@ -2690,6 +2702,10 @@ func _on_run_events(data: PackedByteArray) -> void:
 				loot.add_remote(e.id, e.a, e.x, e.z, e.b)
 			RunEventCodec.Kind.TAKEN:
 				loot.remove(e.id)
+			RunEventCodec.Kind.LOCK:
+				if e.a < stairs.feet.size():
+					hazards.add_slope(stairs.mark_foot(e.a), stairs.mark_top(e.a), stairs.widths[e.a] * 0.5, e.seconds)
+					_hazards_seen += 1
 
 
 ## Every role: the sound, toast or look of a run event.
@@ -2699,6 +2715,11 @@ func _present(e: RunEventCodec.Event) -> void:
 		RunEventCodec.Kind.HAZARD:
 			if local != null and Vector2(e.x - local.global_position.x, e.z - local.global_position.z).length() < e.radius + e.length + 10.0:
 				GameAudio.play(&"warn", Vector3(e.x, ground.height_at(e.x, e.z), e.z))
+		RunEventCodec.Kind.LOCK:
+			stairs.lock(e.a, e.seconds, e.length)
+			print("[RUN] stairs locked %d for %.0f s t=%.1f" % [e.a, e.length, run_time])
+			if e.a < stairs.feet.size():
+				GameAudio.play(&"warn", stairs.feet[e.a])
 		RunEventCodec.Kind.TAKEN:
 			var slot: int = loot.slot_of(e.id)
 			if slot < 0:

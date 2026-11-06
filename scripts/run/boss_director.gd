@@ -40,6 +40,8 @@ var toasts: PackedStringArray = PackedStringArray()
 
 ## Host: the loose Brösel a whirlwind boss pulls in and flings out.
 var brosel: BroselField
+## Host: the stairs a STAIRWELL attack locks (Die Hausmeisterin).
+var stairs: StairLock
 
 var _type_index: Dictionary[BossData, int] = {}
 var _swirl_timer: float = 0.0
@@ -192,10 +194,19 @@ func _think(boss: Active, delta: float, targets: PackedVector3Array) -> void:
 	if boss.pause > 0.0 or boss.data.attacks.is_empty():
 		return
 	var attack: AttackData = boss.data.attacks[boss.next_attack % boss.data.attacks.size()]
-	if distance > attack.range:
-		return
-	boss.next_attack += 1
-	hazards.start_attack(attack, enemies.pos_x[slot], enemies.pos_z[slot], tx, tz, slot)
+	if attack.aim == AttackData.Aim.STAIRWELL:
+		# Up the stairs nearest the target; with none near (or one already locked) it skips its turn.
+		var well: int = stairs.nearest(tx, tz, attack.range) if stairs != null and not stairs.busy() else -1
+		boss.next_attack += 1
+		if well < 0:
+			return
+		var reach: float = stairs.widths[well] * 0.5
+		hazards.add_slope(stairs.mark_foot(well), stairs.mark_top(well), reach, attack.telegraph, attack, slot, well)
+	else:
+		if distance > attack.range:
+			return
+		boss.next_attack += 1
+		hazards.start_attack(attack, enemies.pos_x[slot], enemies.pos_z[slot], tx, tz, slot)
 	if attack.aim == AttackData.Aim.SPIRAL and boss.data.fling_speed > 0.0:
 		_fling(boss, attack.spread)
 	if attack.toast_key != "":
