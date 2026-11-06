@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_5hm7v"]
+[ext_resource type="Texture2D" path="res://assets/icons/distelstrauss.svg" id="2_0uro7"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_avdnv"]
+
+[sub_resource type="Resource" id="Resource_ofm4m"]
+script = ExtResource("1_5hm7v")
+trigger = 2
+action = 16
+value = 3.0
+radius = 1.8
+
+[resource]
+script = ExtResource("3_avdnv")
+id = &"distelstrauss"
+name_key = "ITEM_DISTELSTRAUSS"
+desc_key = "DESC_ITEM_DISTELSTRAUSS"
+rarity = 1
+effects = Array[ExtResource("1_5hm7v")]([SubResource("Resource_ofm4m")])
+icon = ExtResource("2_0uro7")
+color = Color(0.6039216, 0.41568628, 0.8392157, 1)

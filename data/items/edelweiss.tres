@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_71ltj"]
 [ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/icons/edelweiss.svg" id="2_icon"]
 
@@ -8,7 +9,10 @@ script = ExtResource("1_script")
 id = &"edelweiss"
 name_key = "ITEM_EDELWEISS"
 desc_key = "DESC_ITEM_EDELWEISS"
-rarity = 2
-stats = Dictionary[StringName, float]({&"luck": 0.05, &"crit": 0.03})
+rarity = 1
+stats = Dictionary[StringName, float]({
+&"crit": 0.03,
+&"luck": 0.05
+})
 icon = ExtResource("2_icon")
 color = Color(0.5, 0.7, 0.95, 1)

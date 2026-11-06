@@ -31,6 +31,13 @@ var gier_left: float = 0.0
 ## Host, balance log: items bought from Der Standler and Marterl used.
 var stand_buys: int = 0
 var marterl_used: int = 0
+## The same per player (their Aufträge count their own).
+var marterl_by: Dictionary[int, int] = {}
+
+
+## Items one player bought from Der Standler this run.
+func bought_by(peer: int) -> int:
+	return _stand_bought.get(peer, 0)
 
 var _rng := RandomNumberGenerator.new()
 var _stand_index: int = 0
@@ -281,6 +288,7 @@ func _update_marterl(delta: float) -> void:
 
 func _start_marterl(k: int, peer: int) -> void:
 	marterl_used += 1
+	marterl_by[peer] = marterl_by.get(peer, 0) + 1
 	world.events.site(Site.MARTERL, k, State.ACTIVE, marterl_kind[k], marterl_at[k].x, marterl_at[k].z)
 	match marterl_kind[k]:
 		Marterl.MUTPROBE:

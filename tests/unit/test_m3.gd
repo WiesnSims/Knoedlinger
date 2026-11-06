@@ -76,6 +76,10 @@ func test_the_kirtag_map_is_complete() -> void:
 	assert_gte(map.stempel_spots.size(), balance.stempel_count)
 	assert_gte(map.chest_spots.size(), balance.map_chest_count)
 	assert_gt(map.structures.size(), 50)
+	# 1.4: the chests and the Marterl share the spots, every map has room for both.
+	for id: String in ["kirtag", "gamskogl", "gemeindebau", "heuriger"]:
+		var other: MapData = load("res://data/maps/%s.tres" % id)
+		assert_gte(other.chest_spots.size(), balance.map_chest_count + balance.marterl_count + 2, id)
 	var terrain: Heightfield = Heightfield.bake_terrain(map)
 	var ground: Heightfield = Heightfield.bake_ground(map, terrain)
 	# Chests stand on the ground, not on a roof or inside a wall.

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_00ssl"]
+[ext_resource type="Texture2D" path="res://assets/icons/letzte_runde.svg" id="2_e6qm0"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_micoj"]
+
+[sub_resource type="Resource" id="Resource_w5uni"]
+script = ExtResource("1_00ssl")
+trigger = 7
+action = 12
+value = 0.5
+
+[resource]
+script = ExtResource("3_micoj")
+id = &"letzte_runde"
+name_key = "ITEM_LETZTE_RUNDE"
+desc_key = "DESC_ITEM_LETZTE_RUNDE"
+rarity = 2
+effects = Array[ExtResource("1_00ssl")]([SubResource("Resource_w5uni")])
+max_stacks = 2
+icon = ExtResource("2_e6qm0")
+color = Color(0.8509804, 0.46666667, 0.2901961, 1)

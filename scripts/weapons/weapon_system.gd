@@ -30,7 +30,7 @@ static func update(build: PlayerBuild, player: Player, enemies: EnemyManager, pr
 		enemies.source = owned.source
 		projectiles.source = owned.source
 		var area: float = Formulas.weapon_area(weapon, owned.mods, build.stat(&"area"))
-		var damage: float = Formulas.weapon_damage(weapon, owned.mods, build.stat(&"damage"))
+		var damage: float = Formulas.weapon_damage(weapon, owned.mods, build.stat(&"damage") + build.cond_damage)
 		if weapon.pattern == WeaponData.Pattern.MINE:
 			_tick_mines(owned, enemies, delta, area, damage, build.stat(&"duration"))
 		elif not owned.mines.is_empty():
@@ -49,7 +49,7 @@ static func update(build: PlayerBuild, player: Player, enemies: EnemyManager, pr
 		var hit_damage: float = damage * (weapon.crit_multiplier if rng.randf() < crit else 1.0)
 		var origin: Vector3 = player.global_position
 		var facing: Vector3 = player.facing_direction()
-		var amount: int = Formulas.weapon_amount(weapon, owned.mods)
+		var amount: int = Formulas.weapon_amount(weapon, owned.mods, owned.extra_amount)
 		if weapon.pattern == WeaponData.Pattern.ARC or weapon.pattern == WeaponData.Pattern.PROJECTILE:
 			facing = aim_at_nearest(origin, facing, enemies, aim_reach(weapon, area, build.stat(&"duration")),
 					weapon.height_reach)
@@ -345,7 +345,7 @@ static func orbit_hit(owned: PlayerBuild.OwnedWeapon, origin: Vector3, enemies: 
 	if owned.hit_until.size() != enemies.capacity:
 		owned.hit_until.resize(enemies.capacity)
 		owned.hit_until.fill(0.0)
-	var count: int = Formulas.weapon_amount(weapon, owned.mods)
+	var count: int = Formulas.weapon_amount(weapon, owned.mods, owned.extra_amount)
 	var piece_radius: float = weapon.projectile_radius * area
 	var grid: SpatialHash = enemies.grid
 	var hit: int = 0

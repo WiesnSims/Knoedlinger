@@ -184,7 +184,10 @@ func _spots() -> void:
 	_map.chest_spots = PackedVector2Array([Vector2(-36.0, -4.0), Vector2(36.0, -4.0), Vector2(56.0, 8.0), Vector2(-56.0, -8.0),
 		Vector2(8.0, 56.0), Vector2(-8.0, -54.0), Vector2(80.0, 62.0), Vector2(-60.0, 60.0), Vector2(60.0, -66.0),
 		Vector2(-80.0, -60.0), Vector2(100.0, -40.0), Vector2(-100.0, 40.0), Vector2(20.0, 92.0), Vector2(-30.0, -86.0),
-		Vector2(0.0, -124.0), Vector2(-118.0, -64.0), Vector2(116.0, -70.0)])
+		Vector2(0.0, -124.0), Vector2(-118.0, -64.0), Vector2(116.0, -70.0),
+		# 1.4: ~15 chests a run (plus the Marterl) need more spots, on the bot's lanes.
+		Vector2(30.0, 60.0), Vector2(60.0, 30.0), Vector2(90.0, 0.0), Vector2(30.0, -40.0), Vector2(-30.0, -50.0),
+		Vector2(-90.0, 0.0), Vector2(-60.0, 30.0), Vector2(-30.0, 60.0)])
 	for at: Vector2 in _map.stempel_spots:
 		_check_free(at, "stempel")
 	for at: Vector2 in _map.chest_spots:

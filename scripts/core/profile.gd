@@ -144,6 +144,10 @@ func progress(quest: QuestData) -> float:
 			return float((data["daily"] as Dictionary).get("best_streak", 0))
 		&"daily_days":
 			return float((data["daily"] as Dictionary).get("days", 0))
+		&"chests", &"gold", &"standler", &"marterl":
+			return float(stats.get(String(quest.kind), 0))
+		&"chests_run":
+			return float(best.get("chests_run", 0))
 	return 0.0
 
 
@@ -240,6 +244,11 @@ func record_run(run: Dictionary) -> Dictionary:
 	for k: int in mini(run_tiers.size(), 4):
 		tiers[k] = int(tiers[k]) + int(run_tiers[k])
 	stats["stempel"] = int(stats.get("stempel", 0)) + int(run.get("stempel", 0))
+	# 1.4: map chests, gold earned, Der Standler and the Marterl, over all runs.
+	for pair: Array in [["chests", "chests_opened"], ["gold", "gold_earned"], ["standler", "standler_buys"],
+			["marterl", "marterl_used"]]:
+		stats[pair[0]] = int(stats.get(pair[0], 0)) + int(run.get(pair[1], 0))
+	best["chests_run"] = maxi(int(best.get("chests_run", 0)), int(run.get("chests_opened", 0)))
 	# Co-op deeds (CoopRules, counted per player): {runs, revives, passes, ...: n}.
 	var coop: Dictionary = run.get("coop", {})
 	if not coop.is_empty():

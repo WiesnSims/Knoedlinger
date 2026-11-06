@@ -1122,3 +1122,170 @@ PATCH_1_4_0_12,"Neu im Menü: die Tageskarte. Jeden Tag a Knödlinger, a Karte u
 PATCH_1_4_0_13,"Um 3:00 und 9:00 sperrt da Standler in deiner Nähe auf: drei Items um Gold, jeder Kauf macht des nächste teurer. Im Familienausflug hat jeder sei eigenes Angebot."
 PATCH_1_4_0_14,"Marterl am Wegesrand: stell di hin und es gilt. Mutprobe (30 Sekunden durchhalten, dann a Truhn), Gier (doppelt so vü Gegner und Gold) oder Segen (a Extra-Runde auf da Speisekarte)."
 PATCH_1_4_0_15,"Nach da Runde gibt's jetzt a Abrechnung: wie vü Schaden jede Waffe und da Knödl gmacht ham, und wer di am öftesten umghaut hat."
+ITEM_GFRORNS,Gfrorns
+DESC_ITEM_GFRORNS,"Ein Eis am Stiel. Wer's abkriegt, steht still."
+QUEST_SCHNEEBALLSCHLACHT,Schneeballschlacht
+DESC_QUEST_SCHNEEBALLSCHLACHT,Besieg insgesamt 400 Schneemänner.
+ITEM_KACHELOFEN,Kachelofen
+DESC_ITEM_KACHELOFEN,"Wer still sitzt, wird warm. Hat die Oma immer gsagt."
+QUEST_GEISTERSTUNDE,Geisterstunde
+DESC_QUEST_GEISTERSTUNDE,Besieg insgesamt 1.000 Stammgast-Geister.
+ITEM_BIERDECKEL,Bierdeckel
+DESC_ITEM_BIERDECKEL,Der erste Strich zählt doppelt.
+QUEST_ANSCHREIBEN,Anschreiben
+DESC_QUEST_ANSCHREIBEN,Mach in einem Lauf 8 Truhn auf.
+ITEM_HOSENTRAEGER,Hosenträger
+DESC_ITEM_HOSENTRAEGER,"Hält die Hosn oben, auch im Flug."
+QUEST_VOGELFREI,Vogelfrei
+DESC_QUEST_VOGELFREI,Besieg insgesamt 2.000 Stare.
+ITEM_WEIDEZAUN,Weidezaun
+DESC_ITEM_WEIDEZAUN,"Wer di anrempelt, kriegt an Schlag."
+QUEST_SAUSTALL,Saustall
+DESC_QUEST_SAUSTALL,Besieg insgesamt 500 Wildschweine.
+ITEM_DISTELSTRAUSS,Distelstrauß
+DESC_ITEM_DISTELSTRAUSS,"Schön anzschaun, schiach zum Angreifen."
+QUEST_HUNDSTAGE,Hundstage
+DESC_QUEST_HUNDSTAGE,Besieg insgesamt 3.000 Kampf-Dackel.
+ITEM_JAGDTROPHAEE,Jagdtrophäe
+DESC_ITEM_JAGDTROPHAEE,Für die Großen. Hängt dann im Stüberl.
+QUEST_TROPHAEENWAND,Trophäenwand
+DESC_QUEST_TROPHAEENWAND,Besieg insgesamt 300 Perchten.
+ITEM_LEBERKAESSEMMEL,Leberkässemmel
+DESC_ITEM_LEBERKAESSEMMEL,Fallt manchmal vom Himmel. Warm.
+QUEST_JAUSE,Jause
+DESC_QUEST_JAUSE,Kauf beim Standler insgesamt 5 Sachen.
+ITEM_SONNWENDFEUER,Sonnwendfeuer
+DESC_ITEM_SONNWENDFEUER,Manchmal fangt's Feuer. Brandschutz is woanders.
+QUEST_SONNWENDE,Sonnwende
+DESC_QUEST_SONNWENDE,Besieg insgesamt 1.000 Gartenzwerge.
+ITEM_BLITZABLEITER,Blitzableiter
+DESC_ITEM_BLITZABLEITER,Leitet ab. Meistens auf die anderen.
+QUEST_GEWITTERNACHT,Gewitternacht
+DESC_QUEST_GEWITTERNACHT,Besieg den Sturm insgesamt 3-mal.
+ITEM_PFEFFERONI,Scharfe Pfefferoni
+DESC_ITEM_PFEFFERONI,Brennt zweimal. Einmal beim Feind.
+QUEST_SCHARF,Ordentlich scharf
+DESC_QUEST_SCHARF,Besieg insgesamt 1.500 Wespen.
+ITEM_IRRLICHTER,Irrlichter
+DESC_ITEM_IRRLICHTER,Aus manchem Feind steigt ein Licht und sucht den nächsten.
+QUEST_IRRLICHT,Irrlicht
+DESC_QUEST_IRRLICHT,Überlebe in einem Lauf 3 Minuten Nachspielzeit.
+ITEM_STALLATERNE,Stallaterne
+DESC_ITEM_STALLATERNE,"Mehr Licht, mehr Glück. Sagt der Bauer."
+QUEST_ANDACHT,Andacht
+DESC_QUEST_ANDACHT,Bet insgesamt 10-mal bei einem Marterl.
+ITEM_LETZTE_RUNDE,Letzte Runde
+DESC_ITEM_LETZTE_RUNDE,"Je schlechter's geht, desto gfährlicher wirst."
+QUEST_ZWEIHUNDERTTAUSEND,Zweihunderttausend
+DESC_QUEST_ZWEIHUNDERTTAUSEND,Besieg insgesamt 200.000 Gegner.
+ITEM_STRICHLISTE,Strichliste
+DESC_ITEM_STRICHLISTE,Jeder Strich macht di a bisserl stärker.
+QUEST_STRICHERL,Stricherl um Stricherl
+DESC_QUEST_STRICHERL,Besieg insgesamt 20.000 Touristen-Zombies.
+ITEM_RUCKSACK,Rucksack
+DESC_ITEM_RUCKSACK,Da geht no was eini. Ein Schuss mehr für alles.
+QUEST_SCHATZSUCHER,Schatzsucher
+DESC_QUEST_SCHATZSUCHER,Mach insgesamt 50 Truhn auf.
+ITEM_SCHUTZENGERL,Schutzengerl
+DESC_ITEM_SCHUTZENGERL,Nach einem Treffer kurz unverwundbar. Dann Pause.
+QUEST_HAUSFRIEDEN,Hausfrieden
+DESC_QUEST_HAUSFRIEDEN,Besieg die Hausmeisterin insgesamt 3-mal.
+ITEM_BROESELSTURM,Bröselsturm
+DESC_ITEM_BROESELSTURM,"Was zum Knödl fliegt, schneidet am Spagat mit."
+QUEST_BROESELBERG,Bröselberg
+DESC_QUEST_BROESELBERG,Roll in einem Lauf einen Knödl mit 3.000 Masse.
+ITEM_WETTERFLECK,Wetterfleck
+DESC_ITEM_WETTERFLECK,"Rinnt alles ab. Fester Tritt, und mancher Treffer heilt sogar."
+QUEST_REGENWETTER,Regenwetter
+DESC_QUEST_REGENWETTER,Besieg insgesamt 1.000 Weinbergschnecken.
+ITEM_RODEL,Rodel
+DESC_ITEM_RODEL,Bergab lauft der Knödl wie von selber.
+QUEST_RODELPARTIE,Rodelpartie
+DESC_QUEST_RODELPARTIE,Gewinn insgesamt 3 Läufe auf der Gamskogl-Piste.
+ITEM_UHR,Stehengebliebene Uhr
+DESC_ITEM_UHR,Einmal pro Lauf bleibt die Zeit stehn statt du liegen.
+QUEST_UEBERSTUNDEN,Überstunden
+DESC_QUEST_UEBERSTUNDEN,Überlebe in einem Lauf 5 Minuten Nachspielzeit.
+ITEM_AMTSSCHIMMEL,Amtsschimmel
+DESC_ITEM_AMTSSCHIMMEL,Manchmal wird einer einfach abgelegt. Für immer.
+QUEST_AKTENVERMERK,Aktenvermerk
+DESC_QUEST_AKTENVERMERK,Besieg insgesamt 5.000 Akten-Geister.
+ITEM_DRESCHFLEGEL,Dreschflegel
+DESC_ITEM_DRESCHFLEGEL,"Selten, aber dann ordentlich."
+QUEST_HOFRAT_ZWANZIG,Hofrat in Pension
+DESC_QUEST_HOFRAT_ZWANZIG,Besieg den Hofrat insgesamt 20-mal.
+ITEM_STAUBSAUGER,Staubsauger
+DESC_ITEM_STAUBSAUGER,Alle 45 Sekunden kommen alle Brösel zum Knödl.
+QUEST_GROSSPUTZ,Großputz
+DESC_QUEST_GROSSPUTZ,Kehr insgesamt 50-mal in einem Wirtshaus ein.
+ITEM_AMBOSS,Amboss vom Dorfschmied
+DESC_ITEM_AMBOSS,Jede Waffenkarte bringt noch an Bonus dazu.
+QUEST_MEISTERBRIEF,Meisterbrief
+DESC_QUEST_MEISTERBRIEF,Erreich in einem Lauf Level 60.
+ITEM_FEDERBETT,Federbett
+DESC_ITEM_FEDERBETT,"Was zu viel gheilt is, wird zur Tuchent. Bis zur halben Gsundheit."
+QUEST_HEURIGENSTAMMGAST,Heurigen-Stammgast
+DESC_QUEST_HEURIGENSTAMMGAST,Gewinn insgesamt 3 Läufe beim Heurigen.
+QUEST_TRUHNKOENIG,Truhnkönig
+DESC_QUEST_TRUHNKOENIG,Mach insgesamt 200 Truhn auf.
+QUEST_GOLDENE_NASN,Goldene Nasn
+DESC_QUEST_GOLDENE_NASN,Verdien insgesamt 50.000 Gold.
+QUEST_WALLFAHRT,Wallfahrt
+DESC_QUEST_WALLFAHRT,Bet insgesamt 50-mal bei einem Marterl.
+QUEST_GUTER_KUNDE,Guter Kunde
+DESC_QUEST_GUTER_KUNDE,Kauf beim Standler insgesamt 30 Sachen.
+TOAST_SAVED,Die Zeit is stehnblieben. Du ned.
+IFX_WHEN_ON_HIT_CHANCE,{c} % beim Treffer:
+IFX_WHEN_ON_HIT,Bei jedem Treffer:
+IFX_WHEN_ON_KILL_CHANCE,{c} % bei einem Erledigten:
+IFX_WHEN_ON_KILL,Bei jedem Erledigten:
+IFX_WHEN_ON_HURT_CHANCE,"{c} %, wenn du was abkriegst:"
+IFX_WHEN_ON_HURT,"Wenn du was abkriegst:"
+IFX_WHEN_ON_LETHAL,Einmal pro Lauf statt umfallen:
+IFX_WHEN_ON_REVIVE,Beim Aufstehn:
+IFX_WHEN_PERIODIC,Alle {cd} s:
+IFX_WHEN_LOW_HP,Unter halber Gsundheit:
+IFX_WHEN_STANDING_STILL,Nach {s} s Stillstehn:
+IFX_WHEN_MOVING,Beim Gehen:
+IFX_WHEN_AIRBORNE,In da Luft:
+IFX_WHEN_TARGET_HEALTHY,Gegen fast unverletzte Gegner:
+IFX_WHEN_TARGET_ELITE,Gegen Elite und Bosse:
+IFX_WHEN_TARGET_BELOW,Gegen Gegner unter dir:
+IFX_WHEN_ON_CASHIN,Beim Einkehren:
+IFX_WHEN_ON_BROSEL,Wenn dein Knödl Brösel schluckt:
+IFX_DO_FREEZE,{s} s eingfroren
+IFX_DO_BURN,"brennt ({v} % vom Treffer pro s, {s} s)"
+IFX_DO_BLAST,Explosion mit {v} % vom Treffer in {r} m
+IFX_DO_CHAIN,"Blitz springt auf {n} weitere ({v} % vom Treffer)"
+IFX_DO_WISP,a Irrlicht trifft den Nächsten in {r} m ({v} Schaden)
+IFX_DO_EXECUTE,der Gegner is sofort erledigt (keine Bosse)
+IFX_DO_BIG_HIT,{v}-facher Schaden
+IFX_DO_HEAL,+{v} HP
+IFX_DO_HEAL_SHARE,+{v} % der max. HP
+IFX_DO_REGEN,+{v} HP pro Sekunde
+IFX_DO_SHIELD,Heilung über die max. HP wird a Schild (bis {v} % der max. HP)
+IFX_DO_INVULNERABLE,{s} s unverwundbar
+IFX_DO_TIME_STOP,alle Gegner in {r} m stehn {s} s still
+IFX_DO_DAMAGE,+{v} % Schaden
+IFX_DO_DAMAGE_UPTO,bis +{v} % Schaden (je weniger HP)
+IFX_DO_DAMAGE_PER_KILL,"+{v} % Schaden pro 100 Erledigte (max. +{max} %)"
+IFX_DO_DAMAGE_PER_EXECUTE,"+{v} % Schaden pro Abgelegtem (max. +{max} %)"
+IFX_DO_SHOCK,Stromschlag mit {v} Schaden in {r} m
+IFX_DO_THORNS,Gegner neben dir kriegen {v}-fach zurück
+IFX_DO_PROC_CHANCE,+{v} % auf jede Chance von Gegenständen
+IFX_DO_EXTRA_ROLL,Waffenkarten bringen {v} Bonus mehr
+IFX_DO_PULL_BROSEL,alle Brösel in {r} m fliegen zu deinem Knödl
+IFX_DO_DROP_FOOD,a Semmel fallt runter (+{v} HP)
+IFX_DO_STRING_CUT,der Spagat schneidet ({v} Schaden pro Brösel)
+IFX_DO_RODEL,Knödl am Spagat bergab +{v} % schneller
+IFX_COOLDOWN,(höchstens alle {cd} s)
+IFX_RULE_FREE_CHEST,{v} % Chance: die Truhn is gratis
+IFX_RULE_DAMAGE_PER_CHEST,+{v} % Schaden pro offener Truhn
+IFX_RULE_REVIVE,{v}× pro Lauf wieder aufstehn
+IFX_RULE_KNODL_SPIKES,Gegner picken am Knödl: {v} Schaden pro s
+IFX_RULE_KNODL_BURST,Schupfn endet mit einer Explosion (kost Masse)
+IFX_RULE_KNODL_SLOPE,+{v} % Knödl-Schaden bergab
+IFX_RULE_KILL_BLAST,{v} % Chance: ein Erledigter explodiert
+IFX_RULE_BELL,Glockenschlag rund um di alle {v} s
+IFX_RULE_RIESENKNODL,"Knödl doppelt so groß, verliert nie Masse"
+IFX_RULE_SECOND_KNODL,a zweiter Knödl am eigenen Spagat

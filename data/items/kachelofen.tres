@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_i5cj4"]
+[ext_resource type="Texture2D" path="res://assets/icons/kachelofen.svg" id="2_wvglq"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_2iyna"]
+
+[sub_resource type="Resource" id="Resource_2sqmf"]
+script = ExtResource("1_i5cj4")
+trigger = 8
+action = 8
+value = 4.0
+seconds = 1.0
+
+[resource]
+script = ExtResource("3_2iyna")
+id = &"kachelofen"
+name_key = "ITEM_KACHELOFEN"
+desc_key = "DESC_ITEM_KACHELOFEN"
+rarity = 1
+effects = Array[ExtResource("1_i5cj4")]([SubResource("Resource_2sqmf")])
+icon = ExtResource("2_wvglq")
+color = Color(0.8509804, 0.46666667, 0.2901961, 1)

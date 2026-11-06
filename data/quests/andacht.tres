@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_2suoo"]
+
+[resource]
+script = ExtResource("1_2suoo")
+id = &"andacht"
+title_key = "QUEST_ANDACHT"
+desc_key = "DESC_QUEST_ANDACHT"
+kind = &"marterl"
+target = 10.0
+reward_schilling = 250
+unlock_kind = &"item"
+unlock_id = &"stallaterne"

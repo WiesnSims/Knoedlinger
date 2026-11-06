@@ -176,8 +176,23 @@ func _describe(entry: Array) -> void:
 	var known: bool = entry[4]
 	_name.text = tr(entry[2]) if known else tr("ALM_UNKNOWN")
 	_line.text = tr(entry[3]) if known else tr("ALM_UNKNOWN_LINE")
+	# Items: what they do, from their data (ItemText), once found.
+	if known and entry[0] == &"item":
+		var item: ItemData = _item_of(entry[1])
+		if item != null:
+			_line.text = "
+".join(ItemText.describe(item, 1, load("res://data/balance.tres"))) + "
+" + _line.text
 	var quest: QuestData = Profile.unlocking_quest(entry[0], entry[1])
 	_extra.text = tr("ALM_LOCKED") % tr(quest.title_key) if quest != null else ""
+
+
+func _item_of(id: StringName) -> ItemData:
+	var catalog: UpgradeCatalog = load("res://data/catalog/catalog.tres")
+	for item: ItemData in catalog.items:
+		if item.id == id:
+			return item
+	return null
 
 
 ## An enemy as a small drawn badge (they have no icons): its body and head colours, a dark

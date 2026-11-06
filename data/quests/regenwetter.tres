@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_5p270"]
+
+[resource]
+script = ExtResource("1_5p270")
+id = &"regenwetter"
+title_key = "QUEST_REGENWETTER"
+desc_key = "DESC_QUEST_REGENWETTER"
+filter = &"weinbergschnecke"
+target = 1000.0
+reward_schilling = 150
+unlock_kind = &"item"
+unlock_id = &"wetterfleck"

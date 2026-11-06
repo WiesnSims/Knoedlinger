@@ -147,7 +147,7 @@ func test_every_quest_and_upgrade_is_known() -> void:
 	var catalog: UpgradeCatalog = load("res://data/catalog/catalog.tres")
 	var kinds: Array[StringName] = [&"kills", &"cash_ins", &"level", &"wins", &"runs", &"bosses", &"boss_no_throw",
 		&"stempel", &"knodl", &"survive", &"overtime", &"schilling", &"items", &"grant_win", &"coop",
-		&"daily_streak", &"daily_days"]
+		&"daily_streak", &"daily_days", &"chests", &"chests_run", &"gold", &"standler", &"marterl"]
 	for quest: QuestData in Profile.content.quests:
 		assert_true(kinds.has(quest.kind), "%s: kind %s" % [quest.id, quest.kind])
 		for key: String in [quest.title_key, quest.desc_key]:

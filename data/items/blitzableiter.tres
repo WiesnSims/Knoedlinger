@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_yvyoh"]
+[ext_resource type="Texture2D" path="res://assets/icons/blitzableiter.svg" id="2_thlsn"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_q2f3v"]
+
+[sub_resource type="Resource" id="Resource_tx37u"]
+script = ExtResource("1_yvyoh")
+action = 3
+chance = 0.12
+value = 0.6
+radius = 6.0
+cap = 3.0
+
+[resource]
+script = ExtResource("3_q2f3v")
+id = &"blitzableiter"
+name_key = "ITEM_BLITZABLEITER"
+desc_key = "DESC_ITEM_BLITZABLEITER"
+rarity = 2
+effects = Array[ExtResource("1_yvyoh")]([SubResource("Resource_tx37u")])
+icon = ExtResource("2_thlsn")
+color = Color(0.2901961, 0.6392157, 1, 1)

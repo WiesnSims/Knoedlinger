@@ -208,7 +208,10 @@ func _spots() -> void:
 	_map.chest_spots = PackedVector2Array([Vector2(-20.0, 60.0), Vector2(24.0, 50.0), _polar(HILL, 120.0, 67.5),
 		_polar(HILL, 20.0, 54.0), _polar(HILL, 250.0, 40.5), _polar(HILL, 75.0, 28.0), _polar(HILL, 150.0, 15.0),
 		Vector2(92.0, 40.0), Vector2(-95.0, 34.0), Vector2(-100.0, -60.0), Vector2(100.0, -60.0), Vector2(30.0, -115.0),
-		Vector2(-80.0, 108.0), Vector2(80.0, 108.0)])
+		Vector2(-80.0, 108.0), Vector2(80.0, 108.0),
+		# 1.4: ~15 chests a run (plus the Marterl) need more spots, on the bot's lanes.
+		Vector2(0.0, 86.0), Vector2(58.0, 18.0), Vector2(19.0, -21.0), Vector2(0.0, -30.0), Vector2(-19.0, -21.0),
+		Vector2(-58.0, 18.0), Vector2(-40.0, 96.0)])
 	_map.bot_waypoints = PackedVector2Array([Vector2(0.0, 86.0), _polar(HILL, 45.0, LANE_FROM), _polar(HILL, 45.0, LANE_TO),
 		_polar(HILL, 90.0, 10.0), _polar(HILL, 135.0, LANE_TO), _polar(HILL, 135.0, LANE_FROM), Vector2(-95.0, 56.0),
 		Vector2(-40.0, 96.0), Vector2(40.0, 96.0), Vector2(92.0, 62.0), _polar(HILL, 0.0, 80.0), _polar(HILL, 180.0, 80.0)])

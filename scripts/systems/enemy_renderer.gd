@@ -81,7 +81,8 @@ func setup(types: Array[EnemyTypeData], capacity: int, ground: Heightfield = nul
 ## else holds it, otherwise every write would copy it.
 func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFloat32Array,
 		yaw: PackedFloat32Array, type: PackedByteArray, radius: PackedFloat32Array,
-		flash: PackedFloat32Array, phase: PackedFloat32Array) -> void:
+		flash: PackedFloat32Array, phase: PackedFloat32Array, status: PackedByteArray = PackedByteArray()) -> void:
+	var has_status: bool = status.size() >= mini(slots, _capacity)
 	var used: int = mini(slots, _capacity)
 	var ground: Heightfield = _ground
 	var has_ground: bool = ground != null
@@ -126,7 +127,7 @@ func draw(slots: int, alive: PackedByteArray, x: PackedFloat32Array, z: PackedFl
 			buffer[o + 16] = phase[i]
 			buffer[o + 17] = flash[i] * flash_mult
 			buffer[o + 18] = flyer
-			buffer[o + 19] = 0.0
+			buffer[o + 19] = float(status[i]) if has_status else 0.0
 			o += STRIDE
 		_meshes[t].buffer = buffer
 		_meshes[t].visible_instance_count = o / STRIDE

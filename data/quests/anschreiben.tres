@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_utmdd"]
+
+[resource]
+script = ExtResource("1_utmdd")
+id = &"anschreiben"
+title_key = "QUEST_ANSCHREIBEN"
+desc_key = "DESC_QUEST_ANSCHREIBEN"
+kind = &"chests_run"
+target = 8.0
+reward_schilling = 150
+unlock_kind = &"item"
+unlock_id = &"bierdeckel"

@@ -11,10 +11,11 @@ extends RefCounted
 const STATS: Array[StringName] = [
 	&"damage", &"area", &"cooldown", &"move_speed", &"max_hp", &"regen", &"armor", &"crit", &"pickup",
 	&"jump_height", &"extra_jumps", &"string_length", &"luck", &"gold", &"knodl_guard", &"rate", &"duration",
-	&"glide", &"xp_gain", &"knockback", &"sure_footing",
+	&"glide", &"xp_gain", &"knockback", &"sure_footing", &"amount",
 ]
-## Counted per level, never scaled by rarity (half a jump makes no sense).
-const COUNT_STATS: Array[StringName] = [&"extra_jumps", &"knodl_guard"]
+## Counted per level, never scaled by rarity (half a jump makes no sense). `amount`: extra pieces
+## for every weapon (Rucksack).
+const COUNT_STATS: Array[StringName] = [&"extra_jumps", &"knodl_guard", &"amount"]
 ## What a weapon level card can roll (WeaponData.level_mods); the index is the mod's id on the wire.
 const WEAPON_MODS: Array[StringName] = [&"damage", &"rate", &"area", &"crit", &"amount"]
 const MOD_AMOUNT: int = 4
@@ -38,6 +39,8 @@ class OwnedWeapon:
 	var fires: int = 0
 	## ARC / PROJECTILE: the heading of the last attack (WeaponSystem.aim_byte), for every machine's effect.
 	var aim: int = 0
+	## Pieces on top from the build (the `amount` stat: Rucksack), set by recompute().
+	var extra_amount: int = 0
 	# Host only.
 	var timer: float = 0.0
 	## Run-Abrechnung: its damage source id (EnemyManager.source; RunWorld hands it out).
@@ -78,6 +81,9 @@ var stats: Dictionary[StringName, float] = {}
 ## EFFECTS -> summed effect_value of the items held.
 var effects: Dictionary[StringName, float] = {}
 var gold: int = 0
+## Host: damage from item conditions this frame (ItemProcs: airborne, low HP, kills counted ...), on
+## top of stat(&"damage") for weapons; not part of `stats` because it changes every frame.
+var cond_damage: float = 0.0
 var rerolls: int = 0
 var banishes: int = 0
 ## Map chests this player opened (Sparbuch: damage per chest).
@@ -235,6 +241,10 @@ func apply(card: Card, balance: BalanceData) -> float:
 				owned.level += 1
 				if card.mod >= 0 and card.mod < WEAPON_MODS.size():
 					owned.mods[card.mod] += card.value
+				# Amboss vom Dorfschmied: every weapon card brings one more bonus, on the weapon's
+				# weakest other mod.
+				for extra: int in roundi(ItemProcs.total(self, ItemEffect.Action.EXTRA_ROLL)):
+					_extra_mod(owned, card.mod, bonus)
 		Card.Kind.PASSIVE:
 			var owned: OwnedPassive = owned_passive(card.index)
 			if owned == null:
@@ -316,6 +326,29 @@ func recompute() -> void:
 			stats[key] += meta[key]
 	stats[&"damage"] += grant_damage
 	stats[&"rate"] += trait_rate
+	for owned: OwnedWeapon in weapons:
+		owned.extra_amount = roundi(stats[&"amount"])
+
+
+## Host: one more weapon mod (Amboss): the weapon's level mod it has gained least of so far, other
+## than `skip` and no piece past its max_amount, at its base gain times `bonus`.
+func _extra_mod(owned: OwnedWeapon, skip: int, bonus: float) -> void:
+	var best: int = -1
+	var best_share: float = INF
+	for key: StringName in owned.data.level_mods:
+		var mod: int = WEAPON_MODS.find(key)
+		if mod < 0 or mod == skip:
+			continue
+		if mod == MOD_AMOUNT and Formulas.weapon_amount(owned.data, owned.mods) >= owned.data.max_amount:
+			continue
+		var share: float = owned.mods[mod] / maxf(owned.data.level_mods[key], 0.001)
+		if share < best_share:
+			best_share = share
+			best = mod
+	if best < 0:
+		return
+	var base: float = owned.data.level_mods[WEAPON_MODS[best]]
+	owned.mods[best] += maxf(floorf(base * bonus), 1.0) if best == MOD_AMOUNT else base * bonus
 
 
 ## Client: takes the host's view of this build (from the world state): rows as weapon_rows(),

@@ -1,5 +1,6 @@
 // Fodder animation in the vertex shader (CLAUDE.md): waddle, bob and squash, no skeletons.
-// Per instance: INSTANCE_CUSTOM.x = phase (radians), .y = hit flash 0..1, .z = 1 for flyers.
+// Per instance: INSTANCE_CUSTOM.x = phase (radians), .y = hit flash 0..1, .z = 1 for flyers,
+// .w = status bits (1 frozen: ice blue and still, 2 burning: orange glow; EnemyManager.STATUS_*).
 shader_type spatial;
 render_mode cull_back, diffuse_lambert, specular_disabled;
 
@@ -7,6 +8,8 @@ uniform float waddle_speed = 9.0;
 uniform float waddle_angle = 0.12;
 uniform float bob_height = 0.06;
 uniform vec3 flash_color : source_color = vec3(1.0, 1.0, 1.0);
+uniform vec3 frozen_color : source_color = vec3(0.6, 0.85, 1.0);
+uniform vec3 burning_color : source_color = vec3(1.0, 0.55, 0.15);
 // Debugging only: 1 shows the vertex colour unlit, 2 the normal, 3 the instance custom data.
 uniform int debug_view = 0;
 // See-through (ChaseCamera, like shaders/world_props.gdshader): enemies between the camera and the
@@ -24,6 +27,8 @@ float bayer4(vec2 p) {
 }
 
 varying float flash;
+varying float frozen;
+varying float burning;
 varying vec3 debug_custom;
 
 vec3 srgb_to_linear(vec3 c) {
@@ -32,7 +37,11 @@ vec3 srgb_to_linear(vec3 c) {
 
 void vertex() {
 	float phase = INSTANCE_CUSTOM.x;
-	float t = TIME * waddle_speed + phase;
+	float bits = INSTANCE_CUSTOM.w;
+	frozen = mod(bits, 2.0) > 0.5 ? 1.0 : 0.0;
+	burning = bits > 1.5 ? 1.0 : 0.0;
+	// A frozen enemy stands still: no waddle.
+	float t = (TIME * waddle_speed) * (1.0 - frozen) + phase;
 	float flyer = INSTANCE_CUSTOM.z;
 	// Walkers rock side to side around their feet; flyers bob up and down faster.
 	float angle = sin(t) * waddle_angle * (1.0 - flyer);
@@ -52,7 +61,11 @@ void vertex() {
 
 void fragment() {
 	// Vertex colours are authored in sRGB; lighting works in linear.
-	ALBEDO = mix(srgb_to_linear(COLOR.rgb), flash_color, flash);
+	vec3 base = srgb_to_linear(COLOR.rgb);
+	base = mix(base, frozen_color, frozen * 0.6);
+	base = mix(base, burning_color, burning * (0.35 + 0.15 * sin(TIME * 14.0)));
+	ALBEDO = mix(base, flash_color, flash);
+	EMISSION = burning_color * burning * 0.25;
 	ROUGHNESS = 1.0;
 	float depth = -VERTEX.z;
 	float hide = 1.0 - clamp((depth - 0.5) / near_fade, 0.0, 1.0);

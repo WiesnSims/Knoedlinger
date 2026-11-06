@@ -91,8 +91,9 @@ static func weapon_crit(weapon: WeaponData, mods: PackedFloat32Array, crit_stat:
 
 
 ## Shots or pieces per attack: the base amount plus the amount mod, at most max_amount.
-static func weapon_amount(weapon: WeaponData, mods: PackedFloat32Array) -> int:
-	return mini(weapon.amount + roundi(mods[PlayerBuild.MOD_AMOUNT]), maxi(weapon.max_amount, weapon.amount))
+## `extra`: pieces from the build (Rucksack), on top of the weapon's own cap.
+static func weapon_amount(weapon: WeaponData, mods: PackedFloat32Array, extra: int = 0) -> int:
+	return mini(weapon.amount + roundi(mods[PlayerBuild.MOD_AMOUNT]), maxi(weapon.max_amount, weapon.amount)) + maxi(extra, 0)
 
 
 ## Where piece `k` of `count` of an orbiting weapon is, relative to the player (x, z). Host and
@@ -117,6 +118,16 @@ static func hit_damage(amount: float, armor: float, balance: BalanceData) -> flo
 static func armor_share(armor: float, balance: BalanceData) -> float:
 	armor = maxf(armor, 0.0)
 	return armor / (armor + maxf(balance.armor_half, 0.001))
+
+
+## What a map chest costs after `bought` paid ones: base × growth^bought (free chests do not count).
+static func chest_price(base: int, bought: int, balance: BalanceData) -> int:
+	return roundi(base * pow(maxf(balance.map_chest_price_growth, 1.0), maxi(bought, 0)))
+
+
+## Gold in one coin at a run time: balance.coin_value plus coin_value_per_minute for every minute.
+static func coin_value(seconds: float, balance: BalanceData) -> int:
+	return maxi(roundi(balance.coin_value + balance.coin_value_per_minute * maxf(seconds, 0.0) / 60.0), 1)
 
 
 ## Wirtshaus tier for a Knödl mass: -1 below S, then 0 = S, 1 = M, 2 = L, 3 = XL.

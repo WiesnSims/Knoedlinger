@@ -1,14 +1,23 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_t2x0f"]
 [ext_resource type="Texture2D" path="res://assets/icons/sauerkraut.svg" id="2_icon"]
+
+[sub_resource type="Resource" id="Resource_6qdml"]
+script = ExtResource("1_t2x0f")
+trigger = 7
+action = 8
+value = 2.0
 
 [resource]
 script = ExtResource("1_script")
 id = &"sauerkraut"
 name_key = "ITEM_SAUERKRAUT"
 desc_key = "DESC_ITEM_SAUERKRAUT"
-rarity = 0
-stats = Dictionary[StringName, float]({&"max_hp": 15.0})
+rarity = 1
+stats = Dictionary[StringName, float]({
+&"max_hp": 5.0
+})
+effects = Array[ExtResource("1_t2x0f")]([SubResource("Resource_6qdml")])
 icon = ExtResource("2_icon")
-color = Color(0.85, 0.75, 0.5, 1)

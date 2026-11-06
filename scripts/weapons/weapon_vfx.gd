@@ -87,13 +87,13 @@ func sync(build: PlayerBuild, run_time: float, delta: float, shots: ProjectilePo
 			WeaponData.Pattern.ARC:
 				if fired:
 					var yaw: float = owned.aim * TAU / 256.0
-					var swings: int = mini(Formulas.weapon_amount(weapon, owned.mods), effect.nodes.size())
+					var swings: int = mini(Formulas.weapon_amount(weapon, owned.mods, owned.extra_amount), effect.nodes.size())
 					for k: int in swings:
 						(effect.nodes[k] as SwingVfx).play(area, yaw + WeaponSystem.arc_turn(k, swings))
 			WeaponData.Pattern.PROJECTILE:
 				if fired and shots != null:
 					WeaponSystem.fire_shots(weapon, origin, WeaponSystem.aim_direction(owned.aim),
-							Formulas.weapon_amount(weapon, owned.mods), area, 0.0, shots, build.stat(&"duration"))
+							Formulas.weapon_amount(weapon, owned.mods, owned.extra_amount), area, 0.0, shots, build.stat(&"duration"))
 				if weapon.hops > 0:
 					if fired:
 						_add_landings(effect, owned, origin, area, build.stat(&"duration"))
@@ -127,7 +127,7 @@ func sync(build: PlayerBuild, run_time: float, delta: float, shots: ProjectilePo
 func _place_orbit(effect: Effect, owned: PlayerBuild.OwnedWeapon, build: PlayerBuild, origin: Vector3,
 		run_time: float, area: float) -> void:
 	var weapon: WeaponData = owned.data
-	var count: int = mini(Formulas.weapon_amount(weapon, owned.mods), effect.multimesh.instance_count)
+	var count: int = mini(Formulas.weapon_amount(weapon, owned.mods, owned.extra_amount), effect.multimesh.instance_count)
 	var size: float = weapon.projectile_radius * area * 2.0
 	var spin: float = run_time * 6.0
 	for k: int in count:
@@ -159,7 +159,7 @@ func _add_client_sparks(effect: Effect, owned: PlayerBuild.OwnedWeapon, origin: 
 	var weapon: WeaponData = owned.data
 	var rng := RandomNumberGenerator.new()
 	rng.seed = owned.fires * 7919 + owned.index
-	var amount: int = Formulas.weapon_amount(weapon, owned.mods)
+	var amount: int = Formulas.weapon_amount(weapon, owned.mods, owned.extra_amount)
 	var here := Vector2(origin.x, origin.z)
 	match weapon.pattern:
 		WeaponData.Pattern.DROP:
@@ -183,7 +183,7 @@ func _add_client_sparks(effect: Effect, owned: PlayerBuild.OwnedWeapon, origin: 
 ## A lobbed weapon (hops): a splash ring where each shot will land, each when it gets there.
 func _add_landings(effect: Effect, owned: PlayerBuild.OwnedWeapon, origin: Vector3, area: float, duration: float) -> void:
 	var weapon: WeaponData = owned.data
-	var amount: int = Formulas.weapon_amount(weapon, owned.mods)
+	var amount: int = Formulas.weapon_amount(weapon, owned.mods, owned.extra_amount)
 	var facing: Vector3 = WeaponSystem.aim_direction(owned.aim)
 	var every: float = weapon.projectile_lifetime * (1.0 + duration) / weapon.hops
 	for k: int in amount:

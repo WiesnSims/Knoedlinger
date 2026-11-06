@@ -93,6 +93,8 @@ var attack_z: PackedFloat32Array = PackedFloat32Array()
 var kill_type: PackedInt32Array = PackedInt32Array()
 ## Slot of each enemy in the kill list.
 var kill_slot: PackedInt32Array = PackedInt32Array()
+## Per kill: the source that dealt the last hit (ItemProcs: on-kill items).
+var kill_source: PackedInt32Array = PackedInt32Array()
 
 ## Slots that spawned / died since the last take_events(), for the network's reliable events.
 var spawned: PackedInt32Array = PackedInt32Array()
@@ -118,6 +120,17 @@ var source: int = -1
 var dealt: PackedFloat32Array = PackedFloat32Array()
 var source_kills: PackedInt32Array = PackedInt32Array()
 var burn_source: PackedInt32Array = PackedInt32Array()
+## Items (1.4 task 6.7, ItemProcs): by source, 1 = log its hits for on-hit procs (hit_slot,
+## hit_source, hit_amount; burn ticks and other unflashed damage are not hits), and its bonus
+## against some targets: x = healthy (90 % HP+), y = elites and bosses, z = standing lower than
+## w (the owner's feet). The bonus multiplies the hit before it lands.
+var proc_source := PackedByteArray()
+var source_bonus := PackedVector4Array()
+var hit_slot := PackedInt32Array()
+var hit_source := PackedInt32Array()
+var hit_amount := PackedFloat32Array()
+## Per type: 1 for elites (they drop gold) and bosses.
+var elite := PackedByteArray()
 
 var _rng := RandomNumberGenerator.new()
 var _frame: int = 0
@@ -165,6 +178,7 @@ func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: in
 		_bites.append(t.bite_per_second)
 		_attacks.append(t.attack)
 		_split_type.append(types.find(t.split_into) if t.split_into != null else -1)
+		elite.append(1 if t.boss or t.gold_drop > 0 else 0)
 		_air_reach.append(t.air_reach)
 		_sweet.append(1 if t.sweet_tooth else 0)
 		_peck.append(t.eats_brosel)
@@ -436,6 +450,18 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 func damage(slot: int, amount: float, kx: float = 0.0, kz: float = 0.0, flashes: bool = true) -> bool:
 	if alive[slot] == 0:
 		return false
+	if source >= 0 and source < source_bonus.size():
+		var bonus: Vector4 = source_bonus[source]
+		if bonus.x > 0.0 and hp[slot] >= max_hp[slot] * 0.9:
+			amount *= 1.0 + bonus.x
+		if bonus.y > 0.0 and elite[type[slot]] != 0:
+			amount *= 1.0 + bonus.y
+		if bonus.z > 0.0 and ground_at(pos_x[slot], pos_z[slot]) < bonus.w - 0.8:
+			amount *= 1.0 + bonus.z
+	if flashes and source >= 0 and source < proc_source.size() and proc_source[source] != 0:
+		hit_slot.append(slot)
+		hit_source.append(source)
+		hit_amount.append(amount)
 	if source >= 0:
 		if source >= dealt.size():
 			dealt.resize(source + 1)
@@ -464,6 +490,7 @@ func damage(slot: int, amount: float, kx: float = 0.0, kz: float = 0.0, flashes:
 	kill_xp.append(types[type[slot]].brosel_xp)
 	kill_type.append(type[slot])
 	kill_slot.append(slot)
+	kill_source.append(source)
 	controlled[slot] = 0
 	var split: int = _split_type[type[slot]]
 	if split >= 0:
@@ -555,6 +582,30 @@ func shove(slot: int, x: float, z: float) -> void:
 
 
 ## HP as 0..SnapshotCodec.HP_MAX for the snapshot (3 bits).
+## Status bits for the look (1 = frozen or stunned, 2 = burning), also sent to clients.
+const STATUS_FROZEN: int = 1
+const STATUS_BURNING: int = 2
+
+
+func status_of(slot: int) -> int:
+	var bits: int = 0
+	if slow_timer[slot] > 0.0 and slow_mult[slot] <= 0.05:
+		bits |= STATUS_FROZEN
+	if burn_timer[slot] > 0.0:
+		bits |= STATUS_BURNING
+	return bits
+
+
+## Every slot's status_of() (0 for the dead), for the renderer and the snapshot.
+func statuses() -> PackedByteArray:
+	var out := PackedByteArray()
+	out.resize(capacity)
+	for i: int in capacity:
+		if alive[i] != 0 and (slow_timer[i] > 0.0 or burn_timer[i] > 0.0):
+			out[i] = status_of(i)
+	return out
+
+
 func hp_bucket(slot: int) -> int:
 	return clampi(ceili(hp[slot] / max_hp[slot] * SnapshotCodec.HP_MAX), 0, SnapshotCodec.HP_MAX)
 
@@ -573,6 +624,7 @@ func clear_kills() -> void:
 	kill_xp.clear()
 	kill_type.clear()
 	kill_slot.clear()
+	kill_source.clear()
 
 
 func _spawn(slot: int, targets: PackedVector3Array) -> void:

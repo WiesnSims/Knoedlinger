@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_ia376"]
+
+[resource]
+script = ExtResource("1_ia376")
+id = &"sonnwende"
+title_key = "QUEST_SONNWENDE"
+desc_key = "DESC_QUEST_SONNWENDE"
+filter = &"gartenzwerg"
+target = 1000.0
+reward_schilling = 250
+unlock_kind = &"item"
+unlock_id = &"sonnwendfeuer"

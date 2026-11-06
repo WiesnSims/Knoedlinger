@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_qhmg8"]
 [ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/icons/doppler.svg" id="2_icon"]
 
@@ -8,7 +9,9 @@ script = ExtResource("1_script")
 id = &"doppler"
 name_key = "ITEM_DOPPLER"
 desc_key = "DESC_ITEM_DOPPLER"
-rarity = 2
-stats = Dictionary[StringName, float]({&"damage": 0.1})
+rarity = 1
+stats = Dictionary[StringName, float]({
+&"damage": 0.1
+})
 icon = ExtResource("2_icon")
 color = Color(0.42, 0.66, 0.42, 1)

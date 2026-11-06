@@ -89,9 +89,35 @@
 [ext_resource type="Resource" path="res://data/items/doppelportion.tres" id="i_doppelportion"]
 [ext_resource type="Resource" path="res://data/items/spielhahnfeder.tres" id="i_spielhahnfeder"]
 [ext_resource type="Resource" path="res://data/items/gleitschirm.tres" id="i_gleitschirm"]
+[ext_resource type="Resource" path="res://data/items/gfrorns.tres" id="i_gfrorns"]
+[ext_resource type="Resource" path="res://data/items/kachelofen.tres" id="i_kachelofen"]
+[ext_resource type="Resource" path="res://data/items/bierdeckel.tres" id="i_bierdeckel"]
+[ext_resource type="Resource" path="res://data/items/hosentraeger.tres" id="i_hosentraeger"]
+[ext_resource type="Resource" path="res://data/items/weidezaun.tres" id="i_weidezaun"]
+[ext_resource type="Resource" path="res://data/items/distelstrauss.tres" id="i_distelstrauss"]
+[ext_resource type="Resource" path="res://data/items/jagdtrophaee.tres" id="i_jagdtrophaee"]
+[ext_resource type="Resource" path="res://data/items/leberkaessemmel.tres" id="i_leberkaessemmel"]
+[ext_resource type="Resource" path="res://data/items/sonnwendfeuer.tres" id="i_sonnwendfeuer"]
+[ext_resource type="Resource" path="res://data/items/blitzableiter.tres" id="i_blitzableiter"]
+[ext_resource type="Resource" path="res://data/items/pfefferoni.tres" id="i_pfefferoni"]
+[ext_resource type="Resource" path="res://data/items/irrlichter.tres" id="i_irrlichter"]
+[ext_resource type="Resource" path="res://data/items/stallaterne.tres" id="i_stallaterne"]
+[ext_resource type="Resource" path="res://data/items/letzte_runde.tres" id="i_letzte_runde"]
+[ext_resource type="Resource" path="res://data/items/strichliste.tres" id="i_strichliste"]
+[ext_resource type="Resource" path="res://data/items/rucksack.tres" id="i_rucksack"]
+[ext_resource type="Resource" path="res://data/items/schutzengerl.tres" id="i_schutzengerl"]
+[ext_resource type="Resource" path="res://data/items/broeselsturm.tres" id="i_broeselsturm"]
+[ext_resource type="Resource" path="res://data/items/wetterfleck.tres" id="i_wetterfleck"]
+[ext_resource type="Resource" path="res://data/items/rodel.tres" id="i_rodel"]
+[ext_resource type="Resource" path="res://data/items/uhr.tres" id="i_uhr"]
+[ext_resource type="Resource" path="res://data/items/amtsschimmel.tres" id="i_amtsschimmel"]
+[ext_resource type="Resource" path="res://data/items/dreschflegel.tres" id="i_dreschflegel"]
+[ext_resource type="Resource" path="res://data/items/staubsauger.tres" id="i_staubsauger"]
+[ext_resource type="Resource" path="res://data/items/amboss.tres" id="i_amboss"]
+[ext_resource type="Resource" path="res://data/items/federbett.tres" id="i_federbett"]
 
 [resource]
 script = ExtResource("1_script")
 weapons = Array[ExtResource("2_weapon")]([ExtResource("w_schneeschaufel"), ExtResource("w_kochloeffel"), ExtResource("w_skistoecke"), ExtResource("w_kuhglocke"), ExtResource("w_watschn_aura"), ExtResource("w_mozartkugel_orbit"), ExtResource("w_omas_nudelwalker"), ExtResource("w_kugel_karussell"), ExtResource("w_tablett"), ExtResource("w_obstler"), ExtResource("w_stempel"), ExtResource("w_alphorn"), ExtResource("w_hagelkanone"), ExtResource("w_schneekugel"), ExtResource("w_wuerstel"), ExtResource("w_zither"), ExtResource("w_krampusrute"), ExtResource("w_sachertorte"), ExtResource("w_jodel_apokalypse"), ExtResource("w_jahrhundert_unwetter"), ExtResource("w_amtsweg"), ExtResource("w_schnapsbrennerei"), ExtResource("w_watschn_baum"), ExtResource("w_gartenschlauch"), ExtResource("w_fiakerpeitsche"), ExtResource("w_steirische_harmonika"), ExtResource("w_krapfen_kanone"), ExtResource("w_schneepflug"), ExtResource("w_slalom_gewitter"), ExtResource("w_zahlen_bitte"), ExtResource("w_almabtrieb"), ExtResource("w_hochwasser"), ExtResource("w_viererzug"), ExtResource("w_zeltfest"), ExtResource("w_faschingsdienstag")])
 passives = Array[ExtResource("3_passive")]([ExtResource("p_lederhosn"), ExtResource("p_brettljause"), ExtResource("p_kraeuterlimo"), ExtResource("p_strickpullover"), ExtResource("p_pensionistenausweis"), ExtResource("p_gamsbart_hut"), ExtResource("p_spagat_hanf"), ExtResource("p_wanderkarte"), ExtResource("p_bergkas"), ExtResource("p_jagatee"), ExtResource("p_hufeisen"), ExtResource("p_kruegerl"), ExtResource("p_kaffeehaus_zeitung"), ExtResource("p_bausparvertrag"), ExtResource("p_seniorenteller"), ExtResource("p_gummistiefel")])
-items = Array[ExtResource("4_item")]([ExtResource("i_omas_rezept"), ExtResource("i_haferlschuhe"), ExtResource("i_gluecksschwein"), ExtResource("i_zweitschluessel"), ExtResource("i_sparbuch"), ExtResource("i_marterl_kerze"), ExtResource("i_lebkuchenherz"), ExtResource("i_kirtagsbrezn"), ExtResource("i_zuckerwatte"), ExtResource("i_schiessbudenrose"), ExtResource("i_goldhaube"), ExtResource("i_doppler"), ExtResource("i_edelweiss"), ExtResource("i_rosenkranz"), ExtResource("i_trachtenjanker"), ExtResource("i_sauerkraut"), ExtResource("i_kracherl"), ExtResource("i_zirbenschnaps"), ExtResource("i_holundersaft"), ExtResource("i_spitzwegerich"), ExtResource("i_feldstecher"), ExtResource("i_sonntagsgwand"), ExtResource("i_wetterhahn"), ExtResource("i_kuckucksuhr"), ExtResource("i_maibaumspitz"), ExtResource("i_broeselbutter"), ExtResource("i_powidl"), ExtResource("i_bergab_gesetz"), ExtResource("i_schweizerkracher"), ExtResource("i_kirchenglocke"), ExtResource("i_riesenknodl"), ExtResource("i_doppelportion"), ExtResource("i_spielhahnfeder"), ExtResource("i_gleitschirm")])
+items = Array[ExtResource("4_item")]([ExtResource("i_omas_rezept"), ExtResource("i_haferlschuhe"), ExtResource("i_gluecksschwein"), ExtResource("i_zweitschluessel"), ExtResource("i_sparbuch"), ExtResource("i_marterl_kerze"), ExtResource("i_lebkuchenherz"), ExtResource("i_kirtagsbrezn"), ExtResource("i_zuckerwatte"), ExtResource("i_schiessbudenrose"), ExtResource("i_goldhaube"), ExtResource("i_doppler"), ExtResource("i_edelweiss"), ExtResource("i_rosenkranz"), ExtResource("i_trachtenjanker"), ExtResource("i_sauerkraut"), ExtResource("i_kracherl"), ExtResource("i_zirbenschnaps"), ExtResource("i_holundersaft"), ExtResource("i_spitzwegerich"), ExtResource("i_feldstecher"), ExtResource("i_sonntagsgwand"), ExtResource("i_wetterhahn"), ExtResource("i_kuckucksuhr"), ExtResource("i_maibaumspitz"), ExtResource("i_broeselbutter"), ExtResource("i_powidl"), ExtResource("i_bergab_gesetz"), ExtResource("i_schweizerkracher"), ExtResource("i_kirchenglocke"), ExtResource("i_riesenknodl"), ExtResource("i_doppelportion"), ExtResource("i_spielhahnfeder"), ExtResource("i_gleitschirm"), ExtResource("i_gfrorns"), ExtResource("i_kachelofen"), ExtResource("i_bierdeckel"), ExtResource("i_hosentraeger"), ExtResource("i_weidezaun"), ExtResource("i_distelstrauss"), ExtResource("i_jagdtrophaee"), ExtResource("i_leberkaessemmel"), ExtResource("i_sonnwendfeuer"), ExtResource("i_blitzableiter"), ExtResource("i_pfefferoni"), ExtResource("i_irrlichter"), ExtResource("i_stallaterne"), ExtResource("i_letzte_runde"), ExtResource("i_strichliste"), ExtResource("i_rucksack"), ExtResource("i_schutzengerl"), ExtResource("i_broeselsturm"), ExtResource("i_wetterfleck"), ExtResource("i_rodel"), ExtResource("i_uhr"), ExtResource("i_amtsschimmel"), ExtResource("i_dreschflegel"), ExtResource("i_staubsauger"), ExtResource("i_amboss"), ExtResource("i_federbett")])

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_5fico"]
+
+[resource]
+script = ExtResource("1_5fico")
+id = &"scharf"
+title_key = "QUEST_SCHARF"
+desc_key = "DESC_QUEST_SCHARF"
+filter = &"wespe"
+target = 1500.0
+reward_schilling = 250
+unlock_kind = &"item"
+unlock_id = &"pfefferoni"

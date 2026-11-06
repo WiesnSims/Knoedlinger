@@ -299,7 +299,7 @@ extends Resource
 @export_group("Meta")
 ## Schilling a run pays (GAME-DESIGN.md: gold, cash-ins, 25 % of the Knödl when knocked out):
 ## per gold picked up, per cash-in by tier S..XL, the Knödl share, a win bonus, +10 % per extra player.
-@export var schilling_per_gold: float = 0.5
+@export var schilling_per_gold: float = 0.1
 @export var schilling_per_cash_in: PackedFloat32Array = PackedFloat32Array([5.0, 15.0, 40.0, 100.0])
 @export var schilling_knodl_share: float = 0.25
 @export var schilling_win_bonus: float = 100.0
@@ -390,21 +390,47 @@ extends Resource
 
 @export_group("Loot")
 ## Map chests per run (out of the map's chest spots), what one costs and how many items it gives.
-@export var map_chest_count: int = 6
-@export var map_chest_price: int = 25
-## Every map chest a player opens makes their next one this much dearer.
-@export var map_chest_price_step: int = 15
+@export var map_chest_count: int = 15
+@export var map_chest_price: int = 20
+## Every map chest a player buys makes their next one this much dearer (times; free chests do not count).
+@export var map_chest_price_growth: float = 1.22
 @export var map_chest_items: int = 1
 @export var chest_pickup_radius: float = 2.0
-## Gold per coin; any kill drops a coin with this chance (elites and bosses drop theirs for sure).
+## Gold per coin, plus this much for every minute on the clock (rounded); any kill drops a coin with this
+## chance (elites and bosses drop theirs for sure).
 @export var coin_value: int = 1
-@export var coin_drop_chance: float = 0.006
+@export var coin_value_per_minute: float = 0.33
+@export var coin_drop_chance: float = 0.015
+## No new kill coins while this many loot items lie around (boss chests and Stempel always find room).
+@export var coin_loot_cap: int = 400
+## Fassl: barrels the player or the Knödl smashes for coins. This many stand around the players
+## (closer than fassl_far to someone), a new one every fassl_respawn seconds, fassl_min..fassl_max m off.
+@export var fassl_count: int = 6
+@export var fassl_respawn: float = 8.0
+@export var fassl_min: float = 14.0
+@export var fassl_max: float = 40.0
+@export var fassl_far: float = 90.0
+## Coins in a Fassl (each worth what a kill coin is worth at that time) and how close breaks it.
+@export var fassl_coins: int = 2
+@export var fassl_break_radius: float = 1.6
 ## Coins this close fly to the player (times the Wanderkarte bonus); picked up within the radius.
 @export var coin_magnet_range: float = 4.0
 @export var coin_pickup_radius: float = 1.2
 ## A Gulasch drops with this chance per kill and heals this much.
 @export var heal_drop_chance: float = 0.0015
 @export var heal_amount: float = 35.0
+
+@export_group("Item effects (1.4)")
+## Most item procs one frame handles (all players) and most proc effects it shows.
+@export var item_proc_budget: int = 40
+@export var item_cue_budget: int = 6
+## What item effects with their own damage (wisps, shock rings, the Spagat cut) start from, times
+## the effect's value and the player's damage.
+@export var item_base_damage: float = 20.0
+## Rodel: downhill push on the string (m/s² per copy's value).
+@export var rodel_push: float = 14.0
+## The pop shown where a proc hit (RunEventCodec.Cue.SPARK).
+@export var spark_radius: float = 1.4
 
 @export_group("Tageskarte (Daily Kirtag)")
 ## The day's Grant level is drawn from this range (indices into GameContent.grants; 1 = Normal).

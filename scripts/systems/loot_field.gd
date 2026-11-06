@@ -1,13 +1,13 @@
 class_name LootField
 extends Node3D
 ## Things lying around the Kirtag that a player picks up by walking over them: gold coins, chests
-## (map chests cost gold, boss chests are free), the Stempel of the Formular quest and a Gulasch
-## that heals. The host owns them and says who took what; clients mirror them from run events.
+## (map chests cost gold, boss chests are free), the Stempel of the Formular quest, a Gulasch
+## that heals and Fassl (barrels) that the player or the Knödl smashes for coins. The host owns them and says who took what; clients mirror them from run events.
 ## A few hundred at most, each kind drawn with one MultiMesh.
 
-enum Kind { COIN, CHEST, BOSS_CHEST, STEMPEL, HEAL }
+enum Kind { COIN, CHEST, BOSS_CHEST, STEMPEL, HEAL, FASSL }
 
-const CAPACITY: int = 256
+const CAPACITY: int = 512
 ## Transform 12 + instance colour 4 (always white; see EnemyRenderer for why colours are on).
 const STRIDE: int = 16
 ## BOSS_CHEST value: items in the low byte, this bit = evolutions first.
@@ -322,6 +322,12 @@ static func _mesh_for(kind: int) -> ArrayMesh:
 			parts.append(MeshFactory._part(MeshFactory._cylinder(0.42, 0.3, 0.3, 12), Transform3D(Basis(), Vector3(0.0, 0.15, 0.0)), Color(0.95, 0.95, 0.92)))
 			parts.append(MeshFactory._part(MeshFactory._cylinder(0.38, 0.38, 0.04, 12), Transform3D(Basis(), Vector3(0.0, 0.29, 0.0)), Color(0.55, 0.3, 0.15)))
 			parts.append(MeshFactory._part(MeshFactory._sphere(0.18), Transform3D(Basis(), Vector3(0.18, 0.35, 0.1)), Color(0.9, 0.72, 0.45)))
+		Kind.FASSL:
+			# A wine barrel on end with two iron hoops and a gold coin on the lid.
+			parts.append(MeshFactory._part(MeshFactory._cylinder(0.5, 0.42, 1.1, 12), Transform3D(Basis(), Vector3(0.0, 0.55, 0.0)), wood.lightened(0.1)))
+			for y: float in [0.25, 0.85]:
+				parts.append(MeshFactory._part(MeshFactory._cylinder(0.52, 0.5, 0.08, 12), Transform3D(Basis(), Vector3(0.0, y, 0.0)), Color(0.3, 0.3, 0.32)))
+			parts.append(MeshFactory._part(MeshFactory._cylinder(0.2, 0.2, 0.06, 10), Transform3D(Basis(), Vector3(0.0, 1.12, 0.0)), gold))
 	for part: Dictionary in parts:
 		part["color"] = (part["color"] as Color).srgb_to_linear()
 	return MeshFactory.merge(parts)

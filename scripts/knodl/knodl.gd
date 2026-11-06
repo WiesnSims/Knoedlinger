@@ -54,6 +54,8 @@ var wind: Vector3 = Vector3.ZERO
 ## extra contact damage rolling downhill (Bergab-Gesetz, +100 % per copy).
 var spikes: float = 0.0
 var slope_bonus: float = 0.0
+## Rodel (1.4 item): on the string, rolling downhill pushes it on and lets it go this much faster.
+var rodel: float = 0.0
 ## Seconds until Schupfn works again.
 var cooldown: float = 0.0
 ## A Serviettenknödl's rolling direction (flat, either way along it; KnodlSortData.turn_rate).
@@ -517,6 +519,11 @@ func _integrate_forces(body: PhysicsDirectBodyState3D) -> void:
 			var sideways: Vector3 = flat - heading * flat.dot(heading)
 			v -= sideways * (1.0 - exp(-sort.lateral_grip * dt))
 	var max_speed: float = balance.knodl_max_speed * sort.roll_speed_mult
+	if rodel > 0.0 and state == State.ATTACHED and v.y < -0.3:
+		var flat_v := Vector3(v.x, 0.0, v.z)
+		if flat_v.length() > 0.5:
+			v += flat_v.normalized() * balance.rodel_push * rodel * dt
+		max_speed *= 1.0 + rodel
 	if v.length() > max_speed:
 		v = v.normalized() * max_speed
 	body.linear_velocity = v

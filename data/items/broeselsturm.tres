@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_d6a5d"]
+[ext_resource type="Texture2D" path="res://assets/icons/broeselsturm.svg" id="2_w6c4v"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_xeph4"]
+
+[sub_resource type="Resource" id="Resource_eh523"]
+script = ExtResource("1_d6a5d")
+trigger = 15
+action = 21
+value = 0.5
+radius = 1.2
+cooldown = 0.25
+
+[resource]
+script = ExtResource("3_xeph4")
+id = &"broeselsturm"
+name_key = "ITEM_BROESELSTURM"
+desc_key = "DESC_ITEM_BROESELSTURM"
+rarity = 2
+effects = Array[ExtResource("1_d6a5d")]([SubResource("Resource_eh523")])
+knodl = true
+icon = ExtResource("2_w6c4v")
+color = Color(0.8784314, 0.627451, 0.3764706, 1)

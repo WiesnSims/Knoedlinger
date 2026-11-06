@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_abgxq"]
+[ext_resource type="Texture2D" path="res://assets/icons/strichliste.svg" id="2_npc84"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_anydy"]
+
+[sub_resource type="Resource" id="Resource_1cl5h"]
+script = ExtResource("1_abgxq")
+trigger = 6
+action = 13
+value = 0.0001
+cap = 0.5
+
+[resource]
+script = ExtResource("3_anydy")
+id = &"strichliste"
+name_key = "ITEM_STRICHLISTE"
+desc_key = "DESC_ITEM_STRICHLISTE"
+rarity = 2
+effects = Array[ExtResource("1_abgxq")]([SubResource("Resource_1cl5h")])
+max_stacks = 1
+icon = ExtResource("2_npc84")
+color = Color(0.9647059, 0.94509804, 0.8627451, 1)

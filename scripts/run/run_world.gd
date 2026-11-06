@@ -101,6 +101,8 @@ var bosses: BossDirector
 var coop: CoopRules
 ## Der Standler and the Marterl (1.4): host logic, and their look on every machine.
 var sites: RunSites
+## Host: the items' rules (1.4, ItemProcs).
+var procs: ItemProcs
 ## The bot went to Der Standler's stall on this visit (RunSites.stand_visits).
 var _bot_shopped: int = 0
 ## Host: run events of this frame (attack marks, loot, toasts ...).
@@ -198,6 +200,8 @@ var _bus_done: bool = false
 var _lose_timer: float = -1.0
 var _no_gold_timers: Dictionary[int, float] = {}
 var _loot_rng := RandomNumberGenerator.new()
+## Host: seconds until the next Fassl may stand up.
+var _fassl_timer: float = 0.0
 ## Run events waiting for the next send to the clients.
 var _outgoing: Array[RunEventCodec.Event] = []
 ## The boss in the HUD bar: BossDirector.list index (or NO_BOSS), its body's slot and HP.
@@ -240,6 +244,7 @@ var _shockwaves: Array[MeshInstance3D] = []
 var _shockwave_materials: Array[ShaderMaterial] = []
 var _shockwave_times: PackedFloat32Array = PackedFloat32Array()
 var _shockwave_next: int = 0
+var _shockwave_sizes: PackedFloat32Array = PackedFloat32Array()
 ## Host: each Knödl's state last frame (a Schupfn ending sets off the Powidl), the bell clocks.
 var _knodl_state_last: Dictionary[int, int] = {}
 var _bell_timers: Dictionary[int, float] = {}
@@ -249,7 +254,7 @@ var _arrived: Dictionary[int, bool] = {}
 ## weapon id), "knodl" or "extra" (items, traits, reflects). EnemyManager counts per id.
 var _sources: Array = []
 var _source_ids: Dictionary[String, int] = {}
-const SHOCKWAVES: int = 8
+const SHOCKWAVES: int = 16
 const SHOCKWAVE_SECONDS: float = 0.4
 
 
@@ -337,6 +342,7 @@ func _ready() -> void:
 	add_child(gate)
 	gate.setup(map, ground)
 	sites = RunSites.new(self, balance, seed_value)
+	procs = ItemProcs.new(self, balance, seed_value)
 	for spot: int in map.wirtshaus_spots.size():
 		var wirt := Wirtshaus.new()
 		add_child(wirt)
@@ -633,6 +639,9 @@ func _host_frame(delta: float) -> void:
 		if state.hp < hp_before:
 			_on_hurt(peers[t])
 			_reflect_hit(peers[t], hp_before - state.hp)
+			procs.on_hurt(peers[t], hp_before - state.hp)
+	procs.tick(delta)
+	procs.prepare(delta)
 	for peer: int in players:
 		var state: PlayerState = states[peer]
 		var player: Player = players[peer]
@@ -669,6 +678,7 @@ func _host_frame(delta: float) -> void:
 			seconds[peer].damage_source = knodl.damage_source
 			seconds[peer].crush(enemies, delta)
 	projectiles.update(delta, enemies)
+	procs.after_hits()
 	hazards.update(delta)
 	stairs.update(delta)
 	_resolve_hazards()
@@ -686,11 +696,13 @@ func _host_frame(delta: float) -> void:
 	_update_traits(delta)
 	_update_item_effects(delta)
 	_send_guards()
+	procs.on_kills()
 	_kill_blasts()
 	_drop_brosel()
 	_feed_knodls(delta)
 	_check_wirtshaeuser(delta)
 	_collect_loot(delta)
+	_update_fassl(delta)
 	level_flow.update(states, delta, NetworkManager.is_coop())
 	coop.update(delta)
 	sites.update(delta)
@@ -703,7 +715,7 @@ func _host_frame(delta: float) -> void:
 	stats.add_system("brosel", t3 - t2)
 	_update_air_targets()
 	renderer.draw(enemies.capacity, enemies.alive, enemies.pos_x, enemies.pos_z, enemies.yaw, enemies.type,
-			enemies.radius, enemies.flash, enemies.phase)
+			enemies.radius, enemies.flash, enemies.phase, enemies.statuses())
 	slime.update(delta, enemies.capacity, enemies.alive, enemies.pos_x, enemies.pos_z, enemies.type)
 	brosel.draw()
 	var t4: int = Time.get_ticks_usec()
@@ -1022,6 +1034,7 @@ func _cash_in(peer: int, wirt: Wirtshaus, tier: int) -> void:
 		_second_serves[wirt.spot] = true
 	wirt.set_state(true, true, tier)
 	state.cash_ins[tier] += 1
+	procs.on_cashin(peer)
 	var gold: int = roundi(knodl.knodl_mass * balance.wirtshaus_gold_per_mass) if tier == 0 else 0
 	if tier == 2:
 		state.build.rerolls += balance.wirtshaus_l_rerolls
@@ -1097,11 +1110,11 @@ func _drop_brosel() -> void:
 		for piece: int in Formulas.split_into_brosel(enemies.kill_xp[k], balance):
 			brosel.drop(kx, kz, piece, true)
 		var coins: int = types[enemies.kill_type[k]].gold_drop
-		if coins == 0 and _loot_rng.randf() < balance.coin_drop_chance:
+		if coins == 0 and _loot_rng.randf() < balance.coin_drop_chance and loot.count < balance.coin_loot_cap:
 			coins = 1
 		for c: int in coins:
 			_drop_loot(LootField.Kind.COIN, kx + _loot_rng.randf_range(-1.0, 1.0), kz + _loot_rng.randf_range(-1.0, 1.0),
-					balance.coin_value * sites.gold_mult())
+					Formulas.coin_value(run_time, balance) * sites.gold_mult())
 		if _loot_rng.randf() < balance.heal_drop_chance:
 			_drop_loot(LootField.Kind.HEAL, kx, kz, roundi(balance.heal_amount))
 	enemies.clear_kills()
@@ -1152,6 +1165,7 @@ func _feed_knodls(delta: float) -> void:
 		var state: PlayerState = states[peer]
 		var knodl: Knodl = knodls[peer]
 		state.add_xp(credit.x, balance, run_time)
+		procs.on_brosel(peer, ceili(credit.y))
 		coop.share_xp(peer, credit.x)
 		knodl.add_knodl_mass(credit.y * balance.knodl_mass_per_xp)
 		state.best_knodl_mass = maxf(state.best_knodl_mass, knodl.knodl_mass)
@@ -1161,6 +1175,12 @@ func _feed_knodls(delta: float) -> void:
 
 func on_downed(peer: int) -> void:
 	var state: PlayerState = states[peer]
+	# Stehengebliebene Uhr and the like: the hit that would knock them down does not (once).
+	if procs != null and phase != Phase.SPERRSTUND and procs.on_lethal(peer):
+		state.deaths -= 1
+		events.toast("TOAST_SAVED")
+		print("[RUN] saved by an item peer=%d t=%.1f" % [peer, run_time])
+		return
 	# Marterl-Kerze (per copy) and the Stammtisch's Nachschlag: back up at once with half the HP.
 	if state.revives_used < roundi(state.build.effect(&"revive") + state.build.meta.get(&"revives", 0.0)):
 		state.revives_used += 1
@@ -1169,6 +1189,7 @@ func on_downed(peer: int) -> void:
 		state.downed_timer = 0.0
 		state.hp = state.max_hp * balance.item_revive_hp
 		events.toast("TOAST_REVIVED")
+		procs.on_revive(peer)
 		return
 	state.downed_times.append(run_time)
 	if state.last_cause != &"":
@@ -1288,6 +1309,8 @@ func _world_frame() -> WorldStateCodec.Frame:
 		e.rerolls = state.build.rerolls
 		e.banishes = state.build.banishes
 		e.chests_opened = state.chests_opened
+		e.chests_bought = state.chests_bought
+		e.shield = state.shield / maxf(state.max_hp, 1.0)
 		e.schilling = _schilling_of(peer)
 		e.weapons = state.build.weapon_rows()
 		e.passives = state.build.passive_rows()
@@ -1303,7 +1326,7 @@ func _client_frame(delta: float) -> void:
 	replica.update(Time.get_ticks_msec(), delta)
 	_update_air_targets()
 	renderer.draw(replica.capacity, replica.alive, replica.x, replica.z, replica.yaw, replica.type,
-			replica.radius, replica.flash, replica.phase)
+			replica.radius, replica.flash, replica.phase, replica.status)
 	slime.update(delta, replica.capacity, replica.alive, replica.x, replica.z, replica.type)
 	brosel.draw()
 	projectiles.update(delta, null)
@@ -1490,6 +1513,9 @@ func _bot_goal(local: Player, knodl: Knodl) -> Vector2:
 	if chest >= 0 and state != null and state.build.gold >= _chest_price(chest, state) \
 			and here.distance_to(Vector2(loot.xs[chest], loot.zs[chest])) < 40.0:
 		return Vector2(loot.xs[chest], loot.zs[chest])
+	var barrel: int = loot.nearest(LootField.Kind.FASSL, at.x, at.z)
+	if barrel >= 0 and here.distance_to(Vector2(loot.xs[barrel], loot.zs[barrel])) < 18.0:
+		return Vector2(loot.xs[barrel], loot.zs[barrel])
 	# A Marterl close by, and Der Standler once per visit when it can pay for something.
 	for k: int in sites.marterl_at.size():
 		var shrine: Vector3 = sites.marterl_at[k]
@@ -1676,6 +1702,10 @@ func _run_summary() -> Dictionary:
 		summary["damage_taken"] = snappedf(state.damage_taken, 0.1)
 		summary["best_knodl_mass"] = snappedf(state.best_knodl_mass, 0.1)
 		summary["gold"] = state.build.gold
+		summary["gold_earned"] = state.build.gold_earned
+		summary["chests_bought"] = state.chests_bought
+		summary["chests_opened"] = state.chests_opened
+		summary["chest_times"] = Array(state.chest_times).map(func(t: float) -> int: return roundi(t))
 		summary["cash_ins"] = Array(state.cash_ins)
 		var total: int = 0
 		for count: int in state.cash_ins:
@@ -1731,8 +1761,8 @@ func _run_summary() -> Dictionary:
 		summary["kills"] = enemies.kills
 		summary["brosel_merges"] = brosel.merges
 		summary["cards_picked"] = level_flow.picks
-		summary["standler_buys"] = sites.stand_buys
-		summary["marterl_used"] = sites.marterl_used
+		summary["standler_buys"] = sites.bought_by(id)
+		summary["marterl_used"] = sites.marterl_by.get(id, 0)
 	else:
 		summary.merge(_host_summary, true)
 	return summary
@@ -1759,6 +1789,11 @@ func _shared_summary(peer: int) -> Dictionary:
 		shared["cash_in_total"] = total
 		shared["mass_eaten"] = snappedf(state.mass_eaten_by_enemies, 0.1)
 		shared["damage_taken"] = snappedf(state.damage_taken, 0.1)
+		shared["gold_earned"] = state.build.gold_earned
+		shared["chests_opened"] = state.chests_opened
+		shared["chest_times"] = Array(state.chest_times).map(func(t: float) -> int: return roundi(t))
+		shared["standler_buys"] = sites.bought_by(peer)
+		shared["marterl_used"] = sites.marterl_by.get(peer, 0)
 	var knodl: Knodl = knodls.get(peer)
 	if knodl != null:
 		shared["throws"] = knodl.throws
@@ -1856,6 +1891,8 @@ func _on_world_state(data: PackedByteArray) -> void:
 		state.life = e.life
 		state.pending_levels = e.pending_levels
 		state.chests_opened = e.chests_opened
+		state.chests_bought = e.chests_bought
+		state.shield = e.shield * state.max_hp
 		state.schilling = e.schilling
 		if not state.build.mirror(e.weapons, e.passives, e.items, e.gold, e.rerolls, e.banishes, e.chests_opened):
 			push_warning("World state names an item this build does not know.")
@@ -2226,7 +2263,9 @@ func _ring_damage(at: Vector3, radius: float, damage: float, knockback: float, p
 
 
 ## Every role: a ring that grows and fades where a shockwave went off (a few, reused in turn).
-func _show_shockwave(x: float, z: float) -> void:
+func _show_shockwave(x: float, z: float, radius: float = -1.0) -> void:
+	if radius < 0.0:
+		radius = balance.jump_wave_radius
 	if _shockwaves.is_empty():
 		for k: int in SHOCKWAVES:
 			var ring := MeshInstance3D.new()
@@ -2243,11 +2282,15 @@ func _show_shockwave(x: float, z: float) -> void:
 			_shockwaves.append(ring)
 			_shockwave_materials.append(material)
 			_shockwave_times.append(SHOCKWAVE_SECONDS)
+			_shockwave_sizes.append(balance.jump_wave_radius)
 	var k: int = _shockwave_next
 	_shockwave_next = (_shockwave_next + 1) % SHOCKWAVES
 	_shockwaves[k].global_position = Vector3(x, ground.height_at(x, z) + 0.15, z)
 	_shockwave_times[k] = 0.0
-	GameAudio.play(&"slam", _shockwaves[k].global_position)
+	_shockwave_sizes[k] = radius
+	# Item sparks are small and many: only the big rings slam.
+	if radius >= balance.jump_wave_radius:
+		GameAudio.play(&"slam", _shockwaves[k].global_position)
 
 
 func _move_shockwave(delta: float) -> void:
@@ -2256,7 +2299,7 @@ func _move_shockwave(delta: float) -> void:
 		var t: float = _shockwave_times[k] / SHOCKWAVE_SECONDS
 		_shockwaves[k].visible = t < 1.0
 		if t < 1.0:
-			_shockwaves[k].scale = Vector3.ONE * balance.jump_wave_radius * lerpf(0.3, 1.0, sqrt(t))
+			_shockwaves[k].scale = Vector3.ONE * _shockwave_sizes[k] * lerpf(0.3, 1.0, sqrt(t))
 			_shockwave_materials[k].set_shader_parameter(&"progress", t)
 
 
@@ -2528,8 +2571,11 @@ func _resolve_hazards() -> void:
 					continue
 				if HazardField.contains(h, at.x, at.z, balance.player_radius):
 					state.last_cause = types[enemies.type[h.source]].id if h.source >= 0 else &"attack"
+					var hp_before: float = state.hp
 					if state.hurt(Formulas.hit_damage(attack.damage * grant.enemy_damage, state.build.stat(&"armor"), balance), balance):
 						on_downed(peer)
+					if state.hp < hp_before:
+						procs.on_hurt(peer, hp_before - state.hp)
 		if attack.dash and h.source >= 0:
 			if bosses.is_boss_slot(h.source):
 				bosses.on_hit(h)
@@ -2658,6 +2704,59 @@ func _start_bus() -> void:
 	events.bus(x, z, atan2(centre.x - x, centre.z - z))
 
 
+## Host: Fassl stand around the players (a new one every few seconds, far ones go) and burst into
+## coins when a player walks into one or a Knödl rolls over it.
+func _update_fassl(delta: float) -> void:
+	if phase != Phase.RUNNING:
+		return
+	var positions: PackedVector3Array = _player_positions()
+	if positions.is_empty():
+		return
+	var standing: int = 0
+	for slot: int in loot.capacity:
+		if loot.alive[slot] == 0 or loot.kinds[slot] != LootField.Kind.FASSL:
+			continue
+		var x: float = loot.xs[slot]
+		var z: float = loot.zs[slot]
+		var near: float = INF
+		var breaker: int = 0
+		for peer: int in players:
+			var at: Vector3 = players[peer].global_position
+			var d: float = Vector2(at.x - x, at.z - z).length()
+			near = minf(near, d)
+			if d < balance.fassl_break_radius and not states[peer].downed:
+				breaker = peer
+		for peer: int in knodls:
+			var ball: Knodl = knodls[peer]
+			if Vector2(ball.global_position.x - x, ball.global_position.z - z).length() < ball.radius + 0.5:
+				breaker = peer
+		if breaker != 0:
+			_take_loot(slot, breaker)
+			for c: int in balance.fassl_coins:
+				var angle: float = TAU * c / maxi(balance.fassl_coins, 1)
+				_drop_loot(LootField.Kind.COIN, x + cos(angle) * 1.2, z + sin(angle) * 1.2,
+						Formulas.coin_value(run_time, balance) * sites.gold_mult())
+		elif near > balance.fassl_far:
+			_take_loot(slot, 0)
+		else:
+			standing += 1
+	_fassl_timer -= delta
+	if standing >= balance.fassl_count or _fassl_timer > 0.0 or loot.count >= balance.coin_loot_cap:
+		return
+	_fassl_timer = balance.fassl_respawn if standing > 0 else 0.0
+	# Somewhere flat a little off one player, about as high as they stand (not up on a roof).
+	var centre: Vector3 = positions[_loot_rng.randi_range(0, positions.size() - 1)]
+	var half: float = map.half_size - 4.0
+	for attempt: int in 6:
+		var angle: float = _loot_rng.randf() * TAU
+		var reach: float = _loot_rng.randf_range(balance.fassl_min, balance.fassl_max)
+		var x: float = clampf(centre.x + cos(angle) * reach, -half, half)
+		var z: float = clampf(centre.z + sin(angle) * reach, -half, half)
+		if ground.slope_at(x, z) < 0.3 and absf(ground.height_at(x, z) - centre.y) < 2.5:
+			_drop_loot(LootField.Kind.FASSL, x, z, 0)
+			return
+
+
 ## Host: players walking over loot: coins, Gulasch, Stempel, chests (map chests cost gold).
 func _collect_loot(delta: float) -> void:
 	for peer: int in _no_gold_timers.keys():
@@ -2700,8 +2799,10 @@ func _collect_loot(delta: float) -> void:
 							# Zweitschlüssel vom Gemeindeamt: sometimes the chest is open anyway.
 							if _loot_rng.randf() >= state.build.effect(&"free_chest"):
 								state.build.gold -= price
+								state.chests_bought += 1
 							var rarity: int = LootField.chest_rarity(loot.values[slot])
 							state.chests_opened += 1
+							state.chest_times.append(run_time)
 							state.build.set_chests_opened(state.chests_opened)
 							_take_loot(slot, peer)
 							level_flow.give_chest(peer, state, CHEST_TIER_MAP, balance.map_chest_items, false, 0, rarity)
@@ -2733,10 +2834,9 @@ func _mark_chest_prices(from: Vector3) -> void:
 		hud.marker(camera, at, tr("HUD_CHEST_MARKER") % price, "accent" if state.build.gold >= price else "muted")
 
 
-## What a map chest costs this player: its base price, dearer for every chest they opened.
+## What a map chest costs this player: its base price, dearer for every chest they bought.
 func _chest_price(slot: int, state: PlayerState) -> int:
-	var opened: int = state.chests_opened if state != null else 0
-	return LootField.chest_low(loot.values[slot]) + balance.map_chest_price_step * opened
+	return Formulas.chest_price(LootField.chest_low(loot.values[slot]), state.chests_bought if state != null else 0, balance)
 
 
 func _take_loot(slot: int, peer: int) -> void:
@@ -2827,6 +2927,9 @@ func _present(e: RunEventCodec.Event) -> void:
 					GameAudio.play(&"heal", at)
 				LootField.Kind.STEMPEL:
 					GameAudio.play(&"stempel", at)
+				LootField.Kind.FASSL:
+					if e.b != 0:
+						GameAudio.play(&"knodl_hit", at)
 				_:
 					GameAudio.play(&"chest", at)
 		RunEventCodec.Kind.TOAST:
@@ -2855,6 +2958,8 @@ func _present(e: RunEventCodec.Event) -> void:
 				GameAudio.play(&"gate_open")
 			elif e.a == RunEventCodec.Cue.SHOCKWAVE:
 				_show_shockwave(e.x, e.z)
+			elif e.a == RunEventCodec.Cue.SPARK:
+				_show_shockwave(e.x, e.z, balance.spark_radius)
 		RunEventCodec.Kind.SAY:
 			voices.present(e.a, e.b, e.id, e.x, e.z)
 		RunEventCodec.Kind.SITE:

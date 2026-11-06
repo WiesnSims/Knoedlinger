@@ -23,6 +23,11 @@ extends Resource
 ##                  family_win, knodl_revive_<character id>)
 ##   daily_streak   Tageskarte runs on days in a row (the best streak)
 ##   daily_days     days with a Tageskarte run
+##   chests         map chests opened over all runs (1.4)
+##   chests_run     map chests opened in one run
+##   gold           gold earned over all runs
+##   standler       items bought from Der Standler over all runs
+##   marterl        Marterl prayed at over all runs
 
 @export var id: StringName = &""
 @export var title_key: String = ""

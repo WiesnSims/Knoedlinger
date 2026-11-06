@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_l1p6b"]
+[ext_resource type="Texture2D" path="res://assets/icons/weidezaun.svg" id="2_dohcg"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_iabku"]
+
+[sub_resource type="Resource" id="Resource_ltaro"]
+script = ExtResource("1_l1p6b")
+trigger = 2
+action = 15
+value = 0.8
+radius = 6.0
+cooldown = 2.0
+
+[resource]
+script = ExtResource("3_iabku")
+id = &"weidezaun"
+name_key = "ITEM_WEIDEZAUN"
+desc_key = "DESC_ITEM_WEIDEZAUN"
+rarity = 1
+effects = Array[ExtResource("1_l1p6b")]([SubResource("Resource_ltaro")])
+icon = ExtResource("2_dohcg")
+color = Color(1, 0.7882353, 0.2901961, 1)

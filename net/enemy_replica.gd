@@ -27,6 +27,8 @@ var type: PackedByteArray = PackedByteArray()
 var radius: PackedFloat32Array = PackedFloat32Array()
 var flash: PackedFloat32Array = PackedFloat32Array()
 var phase: PackedFloat32Array = PackedFloat32Array()
+## EnemyManager.STATUS_* bits from the newest snapshot (frozen / burning tint).
+var status: PackedByteArray = PackedByteArray()
 var alive_count: int = 0
 
 # Stats.
@@ -80,6 +82,7 @@ func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: in
 	alive.resize(capacity)
 	alive.fill(0)
 	type.resize(capacity)
+	status.resize(capacity)
 	_prev_shown.resize(capacity)
 	_prev_shown.fill(0)
 	_prev_hp.resize(capacity)
@@ -200,6 +203,7 @@ func update(now_ms: int, delta: float) -> void:
 			flash[i] = maxf(flash[i] - delta * 6.0, 0.0)
 		alive[i] = 1
 		type[i] = tp
+		status[i] = b.status[i] if i < b.status.size() else 0
 		radius[i] = types[tp].radius if tp < types.size() else 0.4
 		x[i] = nx
 		z[i] = nz

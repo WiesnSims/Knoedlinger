@@ -13,7 +13,12 @@ extends CanvasLayer
 ## The answer for the host (OfferCodec.Choice bytes).
 signal answered(data: PackedByteArray)
 
-const CHEST_SECONDS: float = 3.5
+## The chest reveal stays this long, longer per extra item (up to CHEST_SECONDS_MAX); hovering it
+## keeps it up. Items say what they do (ItemText) so there is something to read.
+const CHEST_SECONDS: float = 6.0
+const CHEST_SECONDS_PER_ITEM: float = 1.5
+const CHEST_SECONDS_MAX: float = 10.0
+const CHEST_TILE_WIDTH: float = 224.0
 const MENU_WIDTH: float = 560.0
 const FOOTER_HEIGHT: float = 64.0
 ## Seconds before the pad's focus lands on the first row.
@@ -238,11 +243,20 @@ func show_chest(offer: OfferCodec.Offer) -> void:
 	if offer.value > 0:
 		_chest_items.add_child(_chest_tile(load(UiStyle.ICON_GOLD), tr("CHEST_GOLD") % offer.value, "", &"TileEvolution"))
 	for card: Card in offer.cards:
+		var lines := PackedStringArray()
+		var subtitle: String = level_text(card)
+		if card.kind == Card.Kind.ITEM and card.index < catalog.items.size():
+			var item: ItemData = catalog.items[card.index]
+			lines = ItemText.describe(item, maxi(card.level, 1), balance)
+			# A first find: "Neu!" and its one-liner below the numbers.
+			if not Profile.is_found(&"item", item.id):
+				subtitle = tr("CARD_NEW")
+				lines.append(tr(item.desc_key))
 		_chest_items.add_child(_chest_tile(UiStyle.card_icon(card, catalog), card_name(card, catalog),
-				level_text(card), UiStyle.rarity_variation("Tile", card)))
+				subtitle, UiStyle.rarity_variation("Tile", card), lines))
 	_chest_panel.visible = true
 	_chest_panel.modulate.a = 1.0
-	_chest_timer = CHEST_SECONDS
+	_chest_timer = minf(CHEST_SECONDS + CHEST_SECONDS_PER_ITEM * maxi(offer.cards.size() - 1, 0), CHEST_SECONDS_MAX)
 
 
 ## The host took the offer away (co-op time ran out and it picked).
@@ -307,8 +321,7 @@ static func card_details(card: Card, p_catalog: UpgradeCatalog, p_balance: Balan
 		Card.Kind.ITEM:
 			var item: ItemData = p_catalog.items[card.index]
 			line = TranslationServer.translate(item.desc_key)
-			for key: StringName in item.stats:
-				meta.append(stat_text(key, item.stats[key]))
+			meta.append_array(ItemText.describe(item, maxi(card.level, 1), p_balance))
 		Card.Kind.GOLD:
 			line = TranslationServer.translate("CARD_GOLD_DESC") % p_balance.fallback_gold
 		Card.Kind.HEAL:
@@ -365,7 +378,9 @@ static func stat_text(key: StringName, value: float) -> String:
 
 func _process(delta: float) -> void:
 	if _chest_timer > 0.0:
-		_chest_timer -= delta
+		# Hovering the reveal keeps it (time to read).
+		if not _chest_panel.get_global_rect().has_point(_chest_panel.get_global_mouse_position()):
+			_chest_timer -= delta
 		_chest_panel.modulate.a = clampf(_chest_timer / 0.5, 0.0, 1.0)
 		if _chest_timer <= 0.0:
 			_chest_panel.visible = false
@@ -513,7 +528,8 @@ func _answer(action: OfferCodec.Action, card: int) -> void:
 	answered.emit(OfferCodec.encode_choice(choice))
 
 
-func _chest_tile(icon: Texture2D, title: String, subtitle: String, variation: StringName) -> VBoxContainer:
+func _chest_tile(icon: Texture2D, title: String, subtitle: String, variation: StringName,
+		lines: PackedStringArray = PackedStringArray()) -> VBoxContainer:
 	var tile := UiStyle.vbox()
 	var frame: PanelContainer = UiStyle.panel(variation)
 	frame.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -526,4 +542,12 @@ func _chest_tile(icon: Texture2D, title: String, subtitle: String, variation: St
 		var sub: Label = UiStyle.label(&"LabelChange", subtitle)
 		sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		tile.add_child(sub)
+	for k: int in lines.size():
+		# The effect lines; a new item's one-liner (the last line then) is muted.
+		var muted: bool = k == lines.size() - 1 and subtitle == tr("CARD_NEW") and lines.size() > 1
+		var text: Label = UiStyle.label(&"LabelMuted" if muted else &"LabelSmall", lines[k])
+		text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		text.custom_minimum_size.x = CHEST_TILE_WIDTH
+		tile.add_child(text)
 	return tile

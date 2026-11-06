@@ -15,16 +15,17 @@ extends RefCounted
 ##   u16 gold | u8 banishes | u8 weapons | u8 passives | u8 chests opened | u8 items | u16 Schilling |
 ##   u8 revive progress (/255) | u8 seconds until out (255 = none) | s32 merge partner (0 = none) |
 ##   co-op deeds: u8 revives given | u8 passes | u8 catches | u8 merges | u8 Familienstreit catches |
-##   s8 best merged cash-in tier | u16 characters woken with the Knödl (bit = GameContent index)
+##   s8 best merged cash-in tier | u16 characters woken with the Knödl (bit = GameContent index) |
+##   u8 chests bought | u8 shield (/255 of max HP, Federbett)
 ##   then, with FLAG_SECOND, the second Knödl (Doppelportion): 3 x f32 position | 4 x s16 rotation |
 ##   f32 radius; then per weapon u8 index | u8 level | u8 fire counter | 4 x u16 mod * 1000 (damage, rate, area,
 ##   crit) | u8 extra pieces | u8 aim, per passive u8 index | u8 level | u16 bonus * 100, and per item
 ##   u8 index | u8 count.
 
-const VERSION: int = 6
+const VERSION: int = 7
 const HEADER_SIZE: int = 31
 const WIRT_SIZE: int = 2
-const PLAYER_SIZE: int = 71
+const PLAYER_SIZE: int = 73
 const SECOND_SIZE: int = 24
 const WEAPON_SIZE: int = 13
 const PASSIVE_SIZE: int = 4
@@ -65,6 +66,9 @@ class Entry:
 	var rerolls: int = 0
 	var banishes: int = 0
 	var chests_opened: int = 0
+	var chests_bought: int = 0
+	## Shield as a share of max HP (0..1).
+	var shield: float = 0.0
 	## What the run pays this player so far (shown on their end screen).
 	var schilling: int = 0
 	## PlayerBuild.weapon_rows() / passive_rows() / item_rows().
@@ -187,6 +191,8 @@ static func encode(frame: Frame) -> PackedByteArray:
 		data.encode_u8(o + 67, clampi(e.streit_catches, 0, 255))
 		data.encode_s8(o + 68, clampi(e.merged_tier, -1, 3))
 		data.encode_u16(o + 69, e.knodl_revive_mask & 0xFFFF)
+		data.encode_u8(o + 71, clampi(e.chests_bought, 0, 255))
+		data.encode_u8(o + 72, clampi(roundi(e.shield * 255.0), 0, 255))
 		o += PLAYER_SIZE
 		if e.has_second:
 			data.encode_float(o, e.second_position.x)
@@ -293,6 +299,8 @@ static func decode(data: PackedByteArray) -> Frame:
 		e.streit_catches = data.decode_u8(o + 67)
 		e.merged_tier = data.decode_s8(o + 68)
 		e.knodl_revive_mask = data.decode_u16(o + 69)
+		e.chests_bought = data.decode_u8(o + 71)
+		e.shield = data.decode_u8(o + 72) / 255.0
 		if not e.knodl_position.is_finite() or not is_finite(e.hp) or not is_finite(e.knodl_mass):
 			return null
 		o += PLAYER_SIZE

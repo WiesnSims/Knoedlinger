@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_msk50"]
+
+[resource]
+script = ExtResource("1_msk50")
+id = &"zweihunderttausend"
+title_key = "QUEST_ZWEIHUNDERTTAUSEND"
+desc_key = "DESC_QUEST_ZWEIHUNDERTTAUSEND"
+target = 200000.0
+reward_schilling = 250
+unlock_kind = &"item"
+unlock_id = &"letzte_runde"

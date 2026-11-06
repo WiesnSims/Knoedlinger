@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_b0wwb"]
+[ext_resource type="Texture2D" path="res://assets/icons/rucksack.svg" id="2_66kxy"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_1wa5o"]
+
+[resource]
+script = ExtResource("3_1wa5o")
+id = &"rucksack"
+name_key = "ITEM_RUCKSACK"
+desc_key = "DESC_ITEM_RUCKSACK"
+rarity = 2
+stats = Dictionary[StringName, float]({
+&"amount": 1.0
+})
+max_stacks = 2
+icon = ExtResource("2_66kxy")
+color = Color(0.6039216, 0.41568628, 0.22745098, 1)

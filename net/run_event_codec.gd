@@ -25,7 +25,8 @@ const MAX_EVENTS: int = 255
 
 enum Kind { HAZARD, LOOT, TAKEN, TOAST, BOSS, BUS, CUE, SAY, LOCK, SITE }
 enum BossState { ARRIVED, BEATEN }
-enum Cue { STEMPEL, CHEST, COIN, HEAL, GATE_OPEN, NO_GOLD, CASH_IN, HAZARD_HIT, BOSS_HIT, BUS_HORN, SHOCKWAVE }
+## SPARK (1.4): a small pop where an item proc hit (chain, burst, execute, wisp).
+enum Cue { STEMPEL, CHEST, COIN, HEAL, GATE_OPEN, NO_GOLD, CASH_IN, HAZARD_HIT, BOSS_HIT, BUS_HORN, SHOCKWAVE, SPARK }
 
 
 class Event:

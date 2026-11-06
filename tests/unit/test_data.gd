@@ -144,7 +144,7 @@ func test_items_are_known_to_the_game() -> void:
 			assert_true(PlayerBuild.STATS.has(stat), "%s: unknown stat %s" % [item.id, stat])
 		if item.effect != &"":
 			assert_true(PlayerBuild.EFFECTS.has(item.effect), "%s: unknown effect %s" % [item.id, item.effect])
-		assert_false(item.stats.is_empty() and item.effect == &"", "%s does something" % item.id)
+		assert_false(item.stats.is_empty() and item.effect == &"" and item.effects.is_empty(), "%s does something" % item.id)
 	for r: int in 4:
 		assert_gt(per_rarity[r], 0, "every chest rarity has items (rarity %d)" % r)
 

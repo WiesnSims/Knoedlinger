@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_3tl1e"]
+
+[resource]
+script = ExtResource("1_3tl1e")
+id = &"stricherl"
+title_key = "QUEST_STRICHERL"
+desc_key = "DESC_QUEST_STRICHERL"
+filter = &"tourist"
+target = 20000.0
+reward_schilling = 250
+unlock_kind = &"item"
+unlock_id = &"strichliste"

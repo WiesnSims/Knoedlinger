@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_n4hgv"]
+
+[resource]
+script = ExtResource("1_n4hgv")
+id = &"irrlicht"
+title_key = "QUEST_IRRLICHT"
+desc_key = "DESC_QUEST_IRRLICHT"
+kind = &"overtime"
+target = 3.0
+reward_schilling = 250
+unlock_kind = &"item"
+unlock_id = &"irrlichter"

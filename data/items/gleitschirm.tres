@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_4me6j"]
 [ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/icons/gleitschirm.svg" id="2_icon"]
 
@@ -8,8 +9,10 @@ script = ExtResource("1_script")
 id = &"gleitschirm"
 name_key = "ITEM_GLEITSCHIRM"
 desc_key = "DESC_ITEM_GLEITSCHIRM"
-rarity = 2
-stats = Dictionary[StringName, float]({&"glide": 0.5})
+rarity = 1
+stats = Dictionary[StringName, float]({
+&"glide": 0.5
+})
 max_stacks = 3
 icon = ExtResource("2_icon")
 color = Color(0.91, 0.64, 0.23, 1)

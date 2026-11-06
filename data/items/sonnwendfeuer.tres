@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_dmbcc"]
+[ext_resource type="Texture2D" path="res://assets/icons/sonnwendfeuer.svg" id="2_rrvkn"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_gvo3n"]
+
+[sub_resource type="Resource" id="Resource_thhhe"]
+script = ExtResource("1_dmbcc")
+action = 1
+chance = 0.15
+value = 0.4
+seconds = 3.0
+
+[resource]
+script = ExtResource("3_gvo3n")
+id = &"sonnwendfeuer"
+name_key = "ITEM_SONNWENDFEUER"
+desc_key = "DESC_ITEM_SONNWENDFEUER"
+rarity = 2
+effects = Array[ExtResource("1_dmbcc")]([SubResource("Resource_thhhe")])
+icon = ExtResource("2_rrvkn")
+color = Color(1, 0.5411765, 0.22745098, 1)
