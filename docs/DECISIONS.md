@@ -1715,3 +1715,15 @@ the second tab.
   `-StartTime 595 -Map gemeindebau` (she arrives at 10:00, locks reach the client, 38.7 KiB/s). Browser shots
   show her, the sweep fans and the toast; the gate itself was not caught on camera (bot elsewhere).
 - Patch-list line 11 for 1.4.0.
+
+### 1.4: preview builds have everything unlocked (owner, 2026-11-06)
+- **Owner:** a preview build, made only for playtest and approval, should have everything unlocked from the
+  start – content that is unlocked late is hard to test.
+- **Claude: decided at runtime by the page's address, not at build time**, because the same `build/web` goes
+  to production after a merge. `Profile.unlock_all` is on when the host ends in `.knoedlinger.pages.dev`
+  (branch aliases and per-deploy hash URLs), off on `knoedlinger.pages.dev` itself, localhost and desktop/
+  headless runs. URL option `unlock_all=0|1` forces it either way.
+- It only changes the answers of `is_unlocked`, `unlocking_quest` and `grant_unlocked` (all characters, maps,
+  weapons, stats, items, Knödl and every Grant level); the save is not touched, so quests still count, stamp and
+  pay, and a win still raises the saved Grant level. Stammtisch ranks (incl. weapon slots 3 and 4) stay bought
+  with Schilling, so balance in a playtest stays honest. Console line `[PROFILE] preview build: everything unlocked`.
