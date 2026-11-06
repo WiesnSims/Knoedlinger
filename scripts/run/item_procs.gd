@@ -221,8 +221,7 @@ func on_lethal(peer: int) -> bool:
 	var copies: int = 0
 	for row: Held in _held.get(peer, []):
 		if row.effect.trigger == T.ON_LETHAL:
-			copies = maxi(copies, row.item.max_stacks if row.item.max_stacks > 0 else row.count)
-			copies = mini(copies, row.count)
+			copies = maxi(copies, row.count)
 	if used >= copies:
 		return false
 	_lethal_used[peer] = used + 1

@@ -1875,3 +1875,17 @@ the second tab.
   Wallfahrt (50 Marterl), Guter Kunde (30 Standler buys). New quest kinds `chests`, `chests_run`, `gold`,
   `standler`, `marterl` (Profile counts them per player; clients get them in the shared summary; Standler and
   Marterl are now counted per player).
+- **6.5 Rebalance (measured):**
+  - New weapons against the 15 older start weapons in a held crowd of 250 at 10:00 (90 s, Ferdl + the
+    weapon, `start_time=600`; at 0:00 fodder dies to one hit, so the counter measures coverage, not damage).
+    Older ones average 5,824 but range 918 (Würstel) to 15,170 (Sachertorte). Base damage: Gartenschlauch
+    1.6 → 2.7 (5,603, −4 %), Fiakerpeitsche 3.5 → 6.6 (6,138 / 5,403 on two seeds), Steirische Harmonika
+    5.0 → 2.1 (its pull makes it coverage-bound and noisy: +44 % … −36 % between 2.4 and 1.8),
+    Krapfen-Kanone 5.0 → 5.9 (6,250, +7 %). **Not touched (outside 6.5's "new weapons"), for the owner:**
+    Würstel, Krampusrute and Skistöcke measure far below, Tablett and Sachertorte far above.
+  - Autoplay after everything (Ferdl / Kirtag / Grant 1, 5 runs): 10-14 chests, gold earned 1,381-3,895
+    (500-2,300 left unspent: the bot only walks to chests it sees), first chest 0:55-2:53, Schilling
+    191-587, knock-downs 16-29, wins 1/5 (target 4-6 / 10 not reached; left to the owner's playtest after
+    the armour change). No item in any run's top 4 damage sources. One run per other map: Gamskogl / Toni 6
+    chests, Gemeindebau / Hias 11 (Hausmeisterin beaten), Heuriger / Steffi 6 (45 knock-downs: the Heuriger
+    is the hardest map for the bot).
