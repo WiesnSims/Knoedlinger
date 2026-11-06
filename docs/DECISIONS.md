@@ -1932,3 +1932,44 @@ the second tab.
   through the HUD's see-through panel (the label is behind the HUD, just visible); the centre banner
   ("Z'wenig Gold fürs Kistl!") can cross an enemy line for a moment.
 - Final build: 241 tests, Heuriger 500 + 300 at 154 fps / ≤ 130 draw calls, `mp_test -Clients 1` 36.6 KiB/s.
+
+## 1.4.0 – released (2026-11-06)
+
+- **Owner: playtest approved, "push to production".** `v1-4` merged into `main` (392b5b4, same tree as the
+  checked 66274af; `main` had not moved since 1.3.2, so the full Part 7 suite stands). The patch note's date
+  06.11.2026 is the release day already; version 1.4.0.
+- **Production deploy of 1.4.0** at the owner's word: https://knoedlinger.pages.dev serves the Part 7 build
+  (with the board Functions). Live browser check (headless Edge, RTX 3080, 500 enemies, bot, 60 s): 173 fps,
+  p95 7.1 ms, at most 118 draw calls, no console errors; `/api/board` answers. Relay and D1 unchanged.
+- Branch `v1-4` deleted (local and GitHub) with the finished worktrees `v1-4`, `v1-4-part3`,
+  `v1-4-gold-plan`, `v1-4-item-plan`.
+
+## 2026-11-06 – Plan for 1.4.1 (branch `v1-4-1`, not started)
+
+- **Owner asked** for a plan for the next update 1.4.1: bug fixes, balance and other small changes. The
+  concrete items are added here over time; the lists start (nearly) empty.
+- **Claude: what belongs in 1.4.1** – a patch release (CLAUDE.md versioning): fixes, balance numbers, small
+  UI/quality-of-life changes and test/tool fixes. No new maps, characters, weapons, enemies or items, and no
+  save or network format change that breaks 1.4.0 players beyond the normal version refusal; those go to
+  1.5 (the Kurort map and its content already wait there).
+- **How it runs:**
+  - The owner adds items ("add to 1.4.1: …"); Claude appends them below with the next free id (B = bug,
+    A = balance, C = small change), what was seen and where, and asks only when the wanted result is unclear.
+  - Work starts only when the owner says so ("go with 1.4.1", or a named batch). Branch `v1-4-1` from `main`;
+    the first session sets `application/config/version` to 1.4.1 and opens a 1.4.1 patch note on top of the
+    patch list (`data/patch_notes/patch_notes.tres` + `PATCH_1_4_1_*` in `i18n/strings.csv`), one line per
+    player-visible item.
+  - Every batch: tests, web export, browser check, `mp_test -Clients 1` (plus `-Coop` / `-StartTime 595`
+    / `-Sites` when the item touches co-op, the timeline or the sites), `ui_shots` before/after for UI
+    items, autoplay before/after for balance items (numbers in this log), preview
+    `deploy_preview.ps1 -Branch v1-4-1`, then report and stop.
+  - Owner playtests the preview; production only on the owner's word: merge into `main`, deploy, live
+    browser check, delete the branch, pull the owner's checkout. A blocking bug in production can ship
+    alone as 1.4.1 (the rest then moves to 1.4.2).
+- **Bugs (B):**
+  - B1 (candidate, seen in 1.4 Part 7, not new in 1.4): an enemy line said right at the top left of the
+    view shows through the HUD's see-through corner panel.
+  - B2 (candidate, same): the centre banner ("Z'wenig Gold fürs Kistl!") can cross an enemy line for a
+    moment.
+- **Balance (A):** none yet.
+- **Small changes (C):** none yet.
