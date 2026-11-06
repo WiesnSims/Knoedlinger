@@ -8,10 +8,10 @@ const WIDTH: float = 280.0
 ## Group title key, then the rows: [stat key or special id, label key].
 const GROUPS: Array = [
 	["STATS_SURVIVE", [[&"max_hp", "STAT_MAX_HP"], [&"regen", "STAT_REGEN"], [&"armor", "STAT_ARMOR"]]],
-	["STATS_ATTACK", [[&"damage", "STAT_DAMAGE"], [&"crit", "STAT_CRIT"], [&"cooldown", "STAT_COOLDOWN"], [&"area", "STAT_AREA"]]],
-	["STATS_MOVE", [[&"move_speed", "STAT_MOVE_SPEED"], [&"jump_height", "STAT_JUMP_HEIGHT"], [&"extra_jumps", "STAT_EXTRA_JUMPS"], [&"glide", "STAT_GLIDE"]]],
+	["STATS_ATTACK", [[&"damage", "STAT_DAMAGE"], [&"crit", "STAT_CRIT"], [&"cooldown", "STAT_COOLDOWN"], [&"area", "STAT_AREA"], [&"knockback", "STAT_KNOCKBACK"]]],
+	["STATS_MOVE", [[&"move_speed", "STAT_MOVE_SPEED"], [&"jump_height", "STAT_JUMP_HEIGHT"], [&"extra_jumps", "STAT_EXTRA_JUMPS"], [&"glide", "STAT_GLIDE"], [&"sure_footing", "STAT_SURE_FOOTING"]]],
 	["STATS_KNODL", [[&"knodl_mass", "STATS_KNODL_MASS"], [&"knodl_size", "STATS_KNODL_SIZE"], [&"string_length", "STAT_STRING_LENGTH"], [&"pickup", "STAT_PICKUP"]]],
-	["STATS_LUCK", [[&"luck", "STAT_LUCK"], [&"gold", "STAT_GOLD"]]],
+	["STATS_LUCK", [[&"luck", "STAT_LUCK"], [&"gold", "STAT_GOLD"], [&"xp_gain", "STAT_XP_GAIN"]]],
 ]
 
 var _values: Dictionary[StringName, Label] = {}

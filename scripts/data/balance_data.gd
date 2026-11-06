@@ -313,6 +313,10 @@ extends Resource
 @export var slime_radius: float = 0.9
 @export var kontrolle_elite_mult: float = 2.0
 
+@export_group("Stats")
+## Most of a slowing ground's slow the sure_footing stat (Gummistiefel) can take away.
+@export var sure_footing_cap: float = 0.8
+
 @export_group("Character traits")
 ## Onkel Ferdl's Grant stops at this much extra damage.
 @export var grant_cap: float = 0.3

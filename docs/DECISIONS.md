@@ -1633,3 +1633,53 @@ the second tab.
   per part** (each still gets its preview and checks); the owner does one final playtest of the whole 1.4
   before approving the production deploy. **Every part starts in a new session**, so a session builds one
   part, pushes it to the preview and stops.
+
+## 2026-11-06 – 1.4 Part 3: weapons, stats, evolutions (branch `v1-4`)
+
+- **Owner: "continue with 1.4 part 3".** Built in a new worktree branch from `origin/v1-4` (the `v1-4`
+  worktree was still locked by the Part 2 session) and pushed back to `v1-4`.
+- **Claude: the Part 3 items stay in 6.7.** Leberkässemmel, Wetterfleck and Rodel (and "two with visible
+  effects") were taken over by the item rework (6.7 lists them), so Part 3 is weapons, stats and evolutions.
+- **Every family start weapon now evolves** (weapon at the evolution level + its stat; data in
+  `data/weapons/`, numbers are starting values, evolutions about 2-3× their base like the old ones):
+  - **Schneepflug** = Schneeschaufel + Bergkas: ARC 200°, 6.5 m, 7.5 damage, 0.9 s, knockback 18, slows to
+    50 % for 1.5 s (snowed in).
+  - **Slalom-Gewitter** = Skistöcke + Krügerl: 3 spears (up to 9), 0.55 s, 4.5 damage, pierce 6, 15 % crit.
+  - **"Zahlen, bitte!"** = Tablett-Wurf + Kaffeehaus-Zeitung: 8 boomerang trays 45° apart (a full ring),
+    9 damage, 1.3 s.
+  - **Almabtrieb** = Kuhglocke + Hufeisen: ring 9 m, 9 damage, 1.8 s, knockback 20, stuns 0.8 s.
+  - P2 ones, all built: **Hochwasser** = Gartenschlauch + Gummistiefel (four streams round about, 8 m, 0.35 s,
+    slow 50 % for 2.5 s), **Viererzug** = Fiakerpeitsche + Spagat aus Hanf (four lashes, 9 m, tip ×3 on the
+    last 1.5 m), **Zeltfest** = Steirische Harmonika + Wanderkarte (pull 13 m for 0.8 s at 9 m/s, then 11
+    damage), **Faschingsdienstag** = Krapfen-Kanone + Seniorenteller (3 Krapfen, up to 8, 5 hops, 2.3 m jam
+    splash slowing to 40 % for 2 s).
+- **ARC with more swings:** `amount` swings now share the circle evenly (`WeaponSystem.arc_turn`; two =
+  front and back as before), so Viererzug and Hochwasser need no new pattern. One SwingVfx per possible swing.
+- **Krapfen-Kanone (new weapon):** Claude: the plan's "3 bounces" became **3 hops along its line** rather
+  than bounces from enemy to enemy – clients replay shots from the fire counter without knowing where the
+  host's enemies are, so a shot that picks its next target would fly differently on every machine. A lobbed
+  shot (`WeaponData.hops`, `hop_height`) hits nothing in the air and splashes `impact_radius` with the
+  weapon's statuses at each landing; the landings follow from the aim, so the host's pool and every client
+  draw the same arcs and the same jam splashes (WeaponVfx rings, delayed like mines). 1.5 s, 5 damage, 1.6 m
+  splash, 12 m/s over 1.2 s (4.8 m per hop), slows to 60 % for 1.5 s, up to 5 Krapfen. Apricot jam colour
+  (nothing friendly in Krampus red).
+- **Two new stats** (appended to `PlayerBuild.STATS` and the catalog, so save indices stay):
+  - **Seniorenteller** `xp_gain` +10 % per level: all XP a player gets (Brösel and the co-op share) is
+    multiplied in `PlayerState.add_xp`.
+  - **Gummistiefel** `knockback` +15 % and `sure_footing` +12 % per level. Knockback: `WeaponSystem.knock`
+    is set per player while their weapons fire (lobbed shots carry it). Sure footing takes that share off a
+    slowing ground (the snail slime): `slow' = 1 − (1 − slow) × (1 − footing)`, capped at
+    `balance.sure_footing_cap` 0.8. Rows in the Werte panel: Rückstoß, Standfest, Erfahrung.
+- **Locked behind Aufträge (owner rule)** – 11 new, 126 → 137. `PlayerBuild.evolutions_ready()` now skips an
+  evolution that is still locked, so it is never offered (not even from an evolution chest):
+  Winterdienst / Slalomkönig / Oberkellner / Viehscheid / Hochwasserschutz / Vierspänner / Bierzelt = level 30
+  with Ferdl / Toni / Poldi / Vroni / Hias / Mitzi / Steffi → that character's evolution (200 Schilling);
+  Germteig (a 1000-mass Knödl) → Krapfen-Kanone; Wespensommer (2000 Wespen) → Faschingsdienstag;
+  Pensionsantritt (level 40) → Seniorenteller; Schneckenzaun (1000 Weinbergschnecken) → Gummistiefel.
+  The four old evolutions stay open as before.
+- **Checks:** 210 GUT tests (new `test_evolutions_1_4.gd`: every start weapon evolves, new content has text,
+  icon and an Auftrag, locked evolutions never ready, four lashes, the Krapfen splashes only where it lands
+  and lands every hop, XP gain, knockback), web export (.pck 7.5 MiB), browser check default (180 fps, 102
+  draw calls) and with all nine new weapons at once (187 fps, 112 draw calls), `mp_test -Clients 1`,
+  `ui_shots -Only menu,inventory` (the Werte panel with three more rows still fits at 1280×720).
+- Patch-list lines 08-10 for 1.4.0.

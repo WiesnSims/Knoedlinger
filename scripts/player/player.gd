@@ -35,6 +35,8 @@ var camera_yaw: float = 0.0
 var speed_factor: float = 1.0
 ## Slowing ground under the local player (the Weinbergschnecke's slime, SlimeTrail); 1 = none.
 var ground_slow: float = 1.0
+## Share of a ground slow the build takes away (sure_footing stat, Gummistiefel; capped by balance).
+var stat_sure_footing: float = 0.0
 ## Knocked down: cannot move (host state, see PlayerState).
 var downed: bool = false
 ## Choosing from the Speisekarte in co-op: stands still under a sign (host state).

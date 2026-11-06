@@ -1,6 +1,8 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/passives/kaffeehaus_zeitung.tres" id="2_evolves_with"]
+[ext_resource type="Resource" path="res://data/weapons/zahlen_bitte.tres" id="2_evolution"]
 [ext_resource type="Texture2D" path="res://assets/icons/tablett.svg" id="9_icon"]
 
 [resource]
@@ -22,3 +24,5 @@ color = Color(0.85, 0.87, 0.92, 1)
 icon = ExtResource("9_icon")
 level_mods = Dictionary[StringName, float]({&"damage": 0.3, &"rate": 0.12, &"area": 0.12, &"amount": 1.0})
 max_amount = 4
+evolves_with = ExtResource("2_evolves_with")
+evolution = ExtResource("2_evolution")

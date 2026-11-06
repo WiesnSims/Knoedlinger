@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/passives/seniorenteller.tres" id="2_evolves_with"]
+[ext_resource type="Resource" path="res://data/weapons/faschingsdienstag.tres" id="2_evolution"]
+[ext_resource type="Texture2D" path="res://assets/icons/krapfen_kanone.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"krapfen_kanone"
+name_key = "WEAPON_KRAPFEN_KANONE"
+desc_key = "DESC_WEAPON_KRAPFEN_KANONE"
+pattern = 1
+cooldown = 1.5
+damage = 5.0
+knockback = 4.0
+projectile_speed = 12.0
+projectile_lifetime = 1.2
+hops = 3
+hop_height = 1.6
+impact_radius = 1.6
+spread_degrees = 18.0
+slow_mult = 0.6
+slow_seconds = 1.5
+color = Color(1, 0.72, 0.3, 1)
+evolves_with = ExtResource("2_evolves_with")
+evolution = ExtResource("2_evolution")
+icon = ExtResource("9_icon")
+level_mods = Dictionary[StringName, float]({&"damage": 0.3, &"rate": 0.12, &"area": 0.12, &"amount": 1.0})
+max_amount = 5

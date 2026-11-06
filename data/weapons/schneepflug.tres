@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/schneepflug.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"schneepflug"
+name_key = "WEAPON_SCHNEEPFLUG"
+desc_key = "DESC_WEAPON_SCHNEEPFLUG"
+pattern = 0
+cooldown = 0.9
+damage = 7.5
+reach = 6.5
+arc_degrees = 200.0
+knockback = 18.0
+slow_mult = 0.5
+slow_seconds = 1.5
+color = Color(0.85, 0.95, 1.0, 1)
+is_evolution = true
+icon = ExtResource("9_icon")
+level_mods = Dictionary[StringName, float]({&"damage": 0.3, &"rate": 0.1, &"area": 0.12, &"amount": 1.0})
+max_amount = 2

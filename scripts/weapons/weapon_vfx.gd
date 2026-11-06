@@ -1,10 +1,11 @@
 class_name WeaponVfx
 extends Node3D
 ## Shows one player's weapons on every machine, from their (mirrored) build alone: swing fans for
-## ARC, a growing ring for RING, a glowing disc that pulses for AURA, circling pieces for ORBIT,
+## ARC (one per swing), a growing ring for RING, a glowing disc that pulses for AURA, circling pieces for ORBIT,
 ## on clients the shots of PROJECTILE weapons (the host's pool already shows its real ones), and
 ## impact rings and chain bolts for DROP, MINE and CHAIN (the host shows where it really hit; clients
-## draw them around the player from the fire counter, cosmetic only). A
+## draw them around the player from the fire counter, cosmetic only), and the splash of every
+## landing of a lobbed shot (known from the aim, so the same everywhere). A
 ## weapon's fire counter changing means "it just attacked"; orbit pieces are placed from the run
 ## time like on the host. Effects are built once per weapon and replayed (no instantiate() per
 ## attack).
@@ -15,7 +16,7 @@ const AURA_FILL: float = 0.12
 ## Height of effects above the player's feet.
 const GROUND_LIFT: float = 0.15
 ## Impacts and bolts per weapon at once, and how long each shows.
-const SPARKS: int = 32
+const SPARKS: int = 64
 const IMPACT_SECONDS: float = 0.4
 const BOLT_SECONDS: float = 0.18
 
@@ -86,13 +87,17 @@ func sync(build: PlayerBuild, run_time: float, delta: float, shots: ProjectilePo
 			WeaponData.Pattern.ARC:
 				if fired:
 					var yaw: float = owned.aim * TAU / 256.0
-					(effect.nodes[0] as SwingVfx).play(area, yaw)
-					if Formulas.weapon_amount(weapon, owned.mods) >= 2:
-						(effect.nodes[1] as SwingVfx).play(area, yaw)
+					var swings: int = mini(Formulas.weapon_amount(weapon, owned.mods), effect.nodes.size())
+					for k: int in swings:
+						(effect.nodes[k] as SwingVfx).play(area, yaw + WeaponSystem.arc_turn(k, swings))
 			WeaponData.Pattern.PROJECTILE:
 				if fired and shots != null:
 					WeaponSystem.fire_shots(weapon, origin, WeaponSystem.aim_direction(owned.aim),
-							Formulas.weapon_amount(weapon, owned.mods), area, 0.0, shots)
+							Formulas.weapon_amount(weapon, owned.mods), area, 0.0, shots, build.stat(&"duration"))
+				if weapon.hops > 0:
+					if fired:
+						_add_landings(effect, owned, origin, area, build.stat(&"duration"))
+					_draw_sparks(effect, weapon, delta)
 			WeaponData.Pattern.RING:
 				var ring: Node3D = effect.nodes[0]
 				# A pulling ring (Harmonika) first closes in over the pull, then goes off as usual.
@@ -175,6 +180,19 @@ func _add_client_sparks(effect: Effect, owned: PlayerBuild.OwnedWeapon, origin: 
 				last = next
 
 
+## A lobbed weapon (hops): a splash ring where each shot will land, each when it gets there.
+func _add_landings(effect: Effect, owned: PlayerBuild.OwnedWeapon, origin: Vector3, area: float, duration: float) -> void:
+	var weapon: WeaponData = owned.data
+	var amount: int = Formulas.weapon_amount(weapon, owned.mods)
+	var facing: Vector3 = WeaponSystem.aim_direction(owned.aim)
+	var every: float = weapon.projectile_lifetime * (1.0 + duration) / weapon.hops
+	for k: int in amount:
+		var angle: float = WeaponSystem.shot_angle(weapon, facing, k, amount)
+		var step := Vector2(sin(angle), cos(angle)) * weapon.projectile_speed * every
+		for hop: int in range(1, weapon.hops + 1):
+			_ring(effect, Vector2(origin.x, origin.z) + step * hop, weapon.impact_radius * area, every * hop)
+
+
 func _ring(effect: Effect, at: Vector2, radius: float, delay: float) -> void:
 	var spark := Spark.new()
 	spark.at = Vector3(at.x, player.ground_height_at(Vector3(at.x, 0.0, at.y)) + GROUND_LIFT, at.y)
@@ -232,9 +250,9 @@ func _build(owned: PlayerBuild.OwnedWeapon) -> Effect:
 	effect.seen_fires = owned.fires
 	match weapon.pattern:
 		WeaponData.Pattern.ARC:
-			for behind: bool in [false, true]:
+			for k: int in maxi(2, maxi(weapon.max_amount, weapon.amount)):
 				var swing := SwingVfx.new()
-				swing.setup(player, weapon, behind)
+				swing.setup(player, weapon)
 				add_child(swing)
 				effect.nodes.append(swing)
 		WeaponData.Pattern.RING, WeaponData.Pattern.AURA:
@@ -275,7 +293,9 @@ func _build(owned: PlayerBuild.OwnedWeapon) -> Effect:
 			pieces.custom_aabb = AABB(Vector3(-1000.0, -50.0, -1000.0), Vector3(2000.0, 200.0, 2000.0))
 			add_child(pieces)
 			effect.nodes.append(pieces)
-		WeaponData.Pattern.DROP, WeaponData.Pattern.MINE, WeaponData.Pattern.CHAIN:
+		WeaponData.Pattern.DROP, WeaponData.Pattern.MINE, WeaponData.Pattern.CHAIN, WeaponData.Pattern.PROJECTILE:
+			if weapon.pattern == WeaponData.Pattern.PROJECTILE and weapon.hops <= 0:
+				return effect
 			# Rings lie flat (the fan mesh); a chain bolt is a thin box along +Z.
 			var sparks := MultiMeshInstance3D.new()
 			sparks.name = "Sparks_%s" % weapon.id

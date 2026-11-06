@@ -970,6 +970,9 @@ PATCH_1_4_0_04,"Jede Karte hat jetzt ihre eigene Musik: Schrammel-Techno, Après
 PATCH_1_4_0_05,"Drei neue Knödlinger: Opa Hias, der Schrebergärtner (Gartenschlauch, greift im Stehn schneller an), Cousine Mitzi, die Fiakerin (Fiakerpeitsche, wird im Trab schneller) und Steffi, die Winzerin (Steirische Harmonika, jedes Wirtshaus serviert ihr zwamal)."
 PATCH_1_4_0_06,"Zwei neue Knödlsorten: der Serviettenknödl walzt a doppelt so breite Spur, der Topfenknödl is nach am Schupfn gleich wieder da."
 PATCH_1_4_0_07,"Freischalten: Opa Hias mit am Sieg im Gemeindebau-Hof, Cousine Mitzi mit 2 Minuten Nachspielzeit, Steffi mit am Sieg beim Heurigen. Ihre Waffen kommen mit Level 15 auf die Speisekarte. Dazu zwölf neue Aufträge."
+PATCH_1_4_0_08,"Acht neue Entwicklungen: Schneepflug, Slalom-Gewitter, „Zahlen, bitte!“, Almabtrieb, Hochwasser, Viererzug, Zeltfest und Faschingsdienstag. Jede Waffe aus da Familie hat jetzt a eigene."
+PATCH_1_4_0_09,"Neue Waffe: die Krapfen-Kanone. Ihre Krapfen hupfen dreimal und lassen überall bremsende Marmelad liegen."
+PATCH_1_4_0_10,"Zwei neue Werte-Upgrades: der Seniorenteller (mehr Erfahrung aus Brösel) und die Gummistiefel (mehr Rückstoß, Schleim bremst weniger). Alles Neue schaltest über elf neue Aufträge frei."
 WEAPON_GARTENSCHLAUCH,Gartenschlauch
 DESC_WEAPON_GARTENSCHLAUCH,"Gießt die Paradeiser. Und schwemmt alles weg, was drübersteigt."
 WEAPON_FIAKERPEITSCHE,Fiakerpeitsche
@@ -1011,3 +1014,50 @@ QUEST_FIAKERPRUEFUNG,Fiakerprüfung
 DESC_QUEST_FIAKERPRUEFUNG,Erreich Level 15 mit Cousine Mitzi.
 QUEST_MUSIKANTENSTAMMTISCH,Musikantenstammtisch
 DESC_QUEST_MUSIKANTENSTAMMTISCH,Erreich Level 15 mit Steffi.
+WEAPON_KRAPFEN_KANONE,Krapfen-Kanone
+DESC_WEAPON_KRAPFEN_KANONE,Hupft dreimal. Und überall bleibt Marmelad picken.
+WEAPON_SCHNEEPFLUG,Schneepflug
+DESC_WEAPON_SCHNEEPFLUG,Der Winterdienst kommt. Zum ersten Mal pünktlich.
+WEAPON_SLALOM_GEWITTER,Slalom-Gewitter
+DESC_WEAPON_SLALOM_GEWITTER,"Torlauf, nur dass die Tore zurückschlagen."
+WEAPON_ZAHLEN_BITTE,"„Zahlen, bitte!“"
+DESC_WEAPON_ZAHLEN_BITTE,Der Ober kommt. Mit allen Tabletts auf einmal.
+WEAPON_ALMABTRIEB,Almabtrieb
+DESC_WEAPON_ALMABTRIEB,"Die Küh kommen hoam. Wer im Weg steht, hat Pech."
+WEAPON_HOCHWASSER,Hochwasser
+DESC_WEAPON_HOCHWASSER,Der Schrebergarten steht unter Wasser. Die Nachbarn a.
+WEAPON_VIERERZUG,Viererzug
+DESC_WEAPON_VIERERZUG,"Vier Peitschen, vier Richtungen, null Geduld."
+WEAPON_ZELTFEST,Zeltfest
+DESC_WEAPON_ZELTFEST,Alle zammrucken! Und dann alle wieder auseinand.
+WEAPON_FASCHINGSDIENSTAG,Faschingsdienstag
+DESC_WEAPON_FASCHINGSDIENSTAG,Krapfen für alle. Ob sie wollen oder ned.
+PASSIVE_SENIORENTELLER,Seniorenteller
+DESC_PASSIVE_SENIORENTELLER,"Kleine Portion, große Lebenserfahrung."
+PASSIVE_GUMMISTIEFEL,Gummistiefel
+DESC_PASSIVE_GUMMISTIEFEL,Gatsch? Wurscht. Schleim? A wurscht.
+STAT_XP_GAIN,Erfahrung
+STAT_KNOCKBACK,Rückstoß
+STAT_SURE_FOOTING,Standfest
+QUEST_WINTERDIENST,Winterdienst
+DESC_QUEST_WINTERDIENST,Erreich Level 30 mit Onkel Ferdl.
+QUEST_SLALOMKOENIG,Slalomkönig
+DESC_QUEST_SLALOMKOENIG,Erreich Level 30 mit Cousin Toni.
+QUEST_OBERKELLNER,Oberkellner
+DESC_QUEST_OBERKELLNER,Erreich Level 30 mit Herrn Poldi.
+QUEST_VIEHSCHEID,Viehscheid
+DESC_QUEST_VIEHSCHEID,Erreich Level 30 mit Tante Vroni.
+QUEST_HOCHWASSERSCHUTZ,Hochwasserschutz
+DESC_QUEST_HOCHWASSERSCHUTZ,Erreich Level 30 mit Opa Hias.
+QUEST_VIERSPAENNER,Vierspänner
+DESC_QUEST_VIERSPAENNER,Erreich Level 30 mit Cousine Mitzi.
+QUEST_BIERZELT,Bierzelt
+DESC_QUEST_BIERZELT,Erreich Level 30 mit Steffi.
+QUEST_GERMTEIG,Germteig
+DESC_QUEST_GERMTEIG,Lass dein Knödl auf 1.000 Masse wachsen.
+QUEST_WESPENSOMMER,Wespensommer
+DESC_QUEST_WESPENSOMMER,Erledig 2.000 Wespen.
+QUEST_PENSIONSANTRITT,Pensionsantritt
+DESC_QUEST_PENSIONSANTRITT,Erreich Level 40 in einer Runde.
+QUEST_SCHNECKENZAUN,Schneckenzaun
+DESC_QUEST_SCHNECKENZAUN,Erledig 1.000 Weinbergschnecken.

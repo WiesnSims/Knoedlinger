@@ -1287,6 +1287,7 @@ func _local_frame(delta: float) -> void:
 		player.stat_jump_height = build.stat(&"jump_height")
 		player.stat_extra_jumps = roundi(build.stat(&"extra_jumps"))
 		player.stat_glide = build.stat(&"glide")
+		player.stat_sure_footing = minf(build.stat(&"sure_footing"), balance.sure_footing_cap)
 		var peer_knodl: Knodl = knodls.get(peer)
 		if peer_knodl != null:
 			peer_knodl.string_mult = 1.0 + build.stat(&"string_length")
@@ -2845,7 +2846,7 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 	for h: HazardField.Hazard in hazards.struck:
 		GameAudio.play(&"slam", Vector3(h.x, ground.height_at(h.x, h.z), h.z))
 	if local != null:
-		local.ground_slow = slime.speed_factor(local.global_position)
+		local.ground_slow = 1.0 - (1.0 - slime.speed_factor(local.global_position)) * (1.0 - local.stat_sure_footing)
 		GameAudio.set_listener(local.global_position)
 		voices.update_view(delta, local.global_position)
 	if phase == Phase.RUNNING:

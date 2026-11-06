@@ -87,6 +87,8 @@ func hurt(amount: float, balance: BalanceData) -> bool:
 func add_xp(amount: float, balance: BalanceData, run_time: float = 0.0) -> int:
 	if amount <= 0.0:
 		return 0
+	if build != null:
+		amount *= 1.0 + build.stat(&"xp_gain")
 	xp += amount
 	var new_level: int = Formulas.level_for_xp(xp, balance)
 	var gained: int = new_level - level

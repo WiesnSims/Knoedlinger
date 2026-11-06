@@ -53,6 +53,12 @@ enum Look { BALL, PIN, SPEAR, FLAME }
 @export var projectile_radius: float = 0.35
 ## Angle between neighbouring shots when several fly at once.
 @export var spread_degrees: float = 8.0
+## Lobbed shots (Krapfen-Kanone): the shot hops along its line instead of hitting in flight and
+## lands `hops` times over its lifetime, each landing a splash of impact_radius with the weapon's
+## statuses. The landings follow from the aim alone, so every machine draws them the same.
+@export var hops: int = 0
+## How high a hop goes, in metres.
+@export var hop_height: float = 1.6
 
 @export_group("Orbit")
 @export var orbit_radius: float = 2.6

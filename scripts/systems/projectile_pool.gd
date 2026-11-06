@@ -32,6 +32,10 @@ var _last_hit: PackedInt32Array = PackedInt32Array()
 ## Boomerangs: the lifetime left at which they turn (-1 = never); the weapon whose statuses apply.
 var _turn_at: PackedFloat32Array = PackedFloat32Array()
 var _weapons: Array[WeaponData] = []
+## Lobbed shots: seconds between landings (0 = a plain shot) and the time since the last one.
+var _hop_every: PackedFloat32Array = PackedFloat32Array()
+var _hop_t: PackedFloat32Array = PackedFloat32Array()
+var _hop_height: PackedFloat32Array = PackedFloat32Array()
 ## Stack of free slots; _free_top is how many are on it.
 var _free: PackedInt32Array = PackedInt32Array()
 var _free_top: int = 0
@@ -49,7 +53,8 @@ func setup(p_balance: BalanceData, p_capacity: int, p_ground: Heightfield = null
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_alive.resize(capacity)
 	_alive.fill(0)
-	for array_name: String in ["_x", "_z", "_vx", "_vz", "_life", "_damage", "_radius", "_knockback", "_turn_at"]:
+	for array_name: String in ["_x", "_z", "_vx", "_vz", "_life", "_damage", "_radius", "_knockback", "_turn_at",
+			"_hop_every", "_hop_t", "_hop_height"]:
 		var array := PackedFloat32Array()
 		array.resize(capacity)
 		array.fill(0.0)
@@ -90,8 +95,10 @@ func fire(x: float, z: float, dir_x: float, dir_z: float) -> bool:
 
 ## Fires one shot from (x, z) with velocity (vx, vz). False when the pool is full.
 ## A boomerang turns round after half its lifetime; `weapon` adds its on-hit statuses (burn, slow).
+## A lobbed shot (`hops` > 0) hits nothing in flight: it lands `hops` times over its lifetime and
+## splashes `radius` around each landing.
 func fire_shot(x: float, z: float, vx: float, vz: float, lifetime: float, damage: float, radius: float,
-		pierce: int, knockback: float, boomerang: bool = false, weapon: WeaponData = null) -> bool:
+		pierce: int, knockback: float, boomerang: bool = false, weapon: WeaponData = null, hops: int = 0) -> bool:
 	if _free_top == 0:
 		return false
 	_free_top -= 1
@@ -109,6 +116,12 @@ func fire_shot(x: float, z: float, vx: float, vz: float, lifetime: float, damage
 	_last_hit[slot] = -1
 	_turn_at[slot] = lifetime * 0.5 if boomerang else -1.0
 	_weapons[slot] = weapon
+	_hop_every[slot] = lifetime / hops if hops > 0 else 0.0
+	_hop_t[slot] = 0.0
+	_hop_height[slot] = weapon.hop_height if weapon != null else 0.0
+	if hops > 0:
+		# Half a hop to spare, so float drift never ends it before its last landing.
+		_life[slot] = lifetime + _hop_every[slot] * 0.5
 	active_count += 1
 	return true
 
@@ -134,6 +147,16 @@ func update(delta: float, enemies: EnemyManager) -> void:
 		var z: float = _z[i] + _vz[i] * delta
 		_x[i] = x
 		_z[i] = z
+		if _hop_every[i] > 0.0:
+			_hop_t[i] += delta
+			if _hop_t[i] >= _hop_every[i]:
+				_hop_t[i] -= _hop_every[i]
+				if grid != null:
+					hits += 1
+					WeaponSystem.blast(_weapons[i], enemies, x, z, _radius[i], _damage[i], 0.0, _knockback[i])
+				if _life[i] < _hop_every[i]:
+					_release(i)
+			continue
 		if grid == null:
 			continue
 		var reach: float = _radius[i]
@@ -179,6 +202,9 @@ func _draw() -> void:
 		var s: float = _vx[i] / speed if speed > 0.001 else 0.0
 		var c: float = _vz[i] / speed if speed > 0.001 else 1.0
 		var y: float = HEIGHT + (ground.height_at(_x[i], _z[i]) if has_ground else 0.0)
+		if _hop_every[i] > 0.0:
+			var p: float = _hop_t[i] / _hop_every[i]
+			y += 4.0 * p * (1.0 - p) * _hop_height[i] - HEIGHT * 0.6
 		_buffer[o] = c
 		_buffer[o + 1] = 0.0
 		_buffer[o + 2] = s

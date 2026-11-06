@@ -1,6 +1,8 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/passives/spagat_hanf.tres" id="2_evolves_with"]
+[ext_resource type="Resource" path="res://data/weapons/viererzug.tres" id="2_evolution"]
 [ext_resource type="Texture2D" path="res://assets/icons/fiakerpeitsche.svg" id="9_icon"]
 
 [resource]
@@ -21,3 +23,5 @@ color = Color(0.92, 0.85, 0.65, 1)
 level_mods = Dictionary[StringName, float]({&"damage": 0.3, &"rate": 0.12, &"area": 0.1, &"crit": 0.1, &"amount": 1.0})
 max_amount = 2
 icon = ExtResource("9_icon")
+evolves_with = ExtResource("2_evolves_with")
+evolution = ExtResource("2_evolution")

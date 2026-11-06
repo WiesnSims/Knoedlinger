@@ -11,7 +11,7 @@ extends RefCounted
 const STATS: Array[StringName] = [
 	&"damage", &"area", &"cooldown", &"move_speed", &"max_hp", &"regen", &"armor", &"crit", &"pickup",
 	&"jump_height", &"extra_jumps", &"string_length", &"luck", &"gold", &"knodl_guard", &"rate", &"duration",
-	&"glide",
+	&"glide", &"xp_gain", &"knockback", &"sure_footing",
 ]
 ## Counted per level, never scaled by rarity (half a jump makes no sense).
 const COUNT_STATS: Array[StringName] = [&"extra_jumps", &"knodl_guard"]
@@ -211,6 +211,8 @@ func evolutions_ready() -> Array[Vector2i]:
 			continue
 		var partner: int = catalog.passives.find(data.evolves_with)
 		var evolution: int = catalog.weapons.find(data.evolution)
+		if locked.has(Card.Kind.WEAPON * 256 + evolution):
+			continue
 		if partner >= 0 and evolution >= 0 and owned_passive(partner) != null:
 			ready.append(Vector2i(slot, evolution))
 	return ready
