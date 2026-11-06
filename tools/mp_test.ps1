@@ -13,10 +13,13 @@
 # bosses, attack marks, the Formular, loot); every client must then get run events, marks and loot.
 # -Scene stress runs the M0 stress arena instead.
 # -Map gemeindebau: everyone plays that map (1.4: with -StartTime 595 the map's own 10:00 mini-boss).
+# -Sites (1.4): Der Standler sets up by the host at 0:10 (--standler_at), everyone starts with gold, and a
+# Marterl (Gier) stands at the spawn (--marterl_drill); every client must see the stall and a client's
+# bot must buy from him (a SHOP offer answered through the host).
 # -Lobby: everyone meets in the co-op room first (`--lobby`, the real game's path: roster, unique
 # characters, the host starts the run for all) instead of the clients dropping into a running host.
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File tools/mp_test.ps1 [-Clients 3] [-Seconds 20] [-HostLeavesFirst]
-#        [-Scene run|stress] [-StartTime 595] [-Map gemeindebau]
+#        [-Scene run|stress] [-StartTime 595] [-Map gemeindebau] [-Sites]
 param(
     [int]$Clients = 1,
     [ValidateSet('run', 'stress')][string]$Scene = 'run',
@@ -30,7 +33,8 @@ param(
     [switch]$Lobby,
     [switch]$NoRejectTest,
     [int]$StartTime = -1,
-    [string]$Map = ''
+    [string]$Map = '',
+    [switch]$Sites
 )
 . "$PSScriptRoot\common.ps1"
 
@@ -55,6 +59,10 @@ if ($Lobby) {
     $common = @('--headless', '--path', $Root, '--max-fps', '60', '--')
 }
 if ($Map) { $common += "--map=$Map" }
+if ($Sites) {
+    $common += @('--standler_at=10', '--gold=400', '--marterl_drill=1')
+    if ($Seconds -lt 40) { $Seconds = 40 }
+}
 $room = if ($Lobby) { @("--lobby=$Clients") } else { @() }
 $guest = if ($Lobby) { @('--lobby') } else { @() }
 # Each client asks for a Knoedlinger (two ask for the same one: the host hands out a free one).
@@ -210,4 +218,13 @@ if ($hostResult -and $hostResult.net) {
         $hostResult.net.kib_per_s_out, $hostResult.snapshot_bytes_avg, $hostResult.frame.frame_ms_p95)
 }
 Write-Host "process logs: $runDir"
-Complete-Script -Name "mp_test -Clients $Clients$(if ($Coop) { ' -Coop' } elseif ($Lobby) { ' -Lobby' })$(if ($HostLeavesFirst) { ' -HostLeavesFirst' })$(if ($StartTime -ge 0) { " -StartTime $StartTime" })" -Log $log -Failures $failures
+if ($Sites) {
+    if (-not (Select-String -Path $hostRun.Log -Pattern 'Standler sold peer=(?!1 )' -Quiet)) {
+        $failures += 'sites: no client bought from Der Standler'
+    }
+    foreach ($run in $runs) {
+        if (-not (Select-String -Path $run.Log -Pattern 'Standler at' -Quiet)) { $failures += "$($run.Name): never saw Der Standler" }
+        if (-not (Select-String -Path $run.Log -Pattern 'Marterl 0' -Quiet)) { $failures += "$($run.Name): never saw the Marterl used" }
+    }
+}
+Complete-Script -Name "mp_test -Clients $Clients$(if ($Coop) { ' -Coop' } elseif ($Lobby) { ' -Lobby' })$(if ($HostLeavesFirst) { ' -HostLeavesFirst' })$(if ($StartTime -ge 0) { " -StartTime $StartTime" })$(if ($Sites) { ' -Sites' })" -Log $log -Failures $failures

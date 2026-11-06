@@ -1118,3 +1118,7 @@ TOAST_MARTERL_1,"Gier! Doppelt so vü Gsindl, doppelt so vü Gold."
 TOAST_MARTERL_2,Segen! A Extra-Runde auf da Speisekarte.
 TOAST_MARTERL_DONE_0,Mutprobe bestanden – a Truhn!
 TOAST_MARTERL_DONE_1,Die Gier is vorbei.
+PATCH_1_4_0_12,"Neu im Menü: die Tageskarte. Jeden Tag a Knödlinger, a Karte und a Grant-Stufe, für alle gleich. Nur da erste Versuch kummt auf die Ehrentafel vom Tag. Zwa neue Aufträge fürs Dranbleiben."
+PATCH_1_4_0_13,"Um 3:00 und 9:00 sperrt da Standler in deiner Nähe auf: drei Items um Gold, jeder Kauf macht des nächste teurer. Im Familienausflug hat jeder sei eigenes Angebot."
+PATCH_1_4_0_14,"Marterl am Wegesrand: stell di hin und es gilt. Mutprobe (30 Sekunden durchhalten, dann a Truhn), Gier (doppelt so vü Gegner und Gold) oder Segen (a Extra-Runde auf da Speisekarte)."
+PATCH_1_4_0_15,"Nach da Runde gibt's jetzt a Abrechnung: wie vü Schaden jede Waffe und da Knödl gmacht ham, und wer di am öftesten umghaut hat."

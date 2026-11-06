@@ -1727,3 +1727,73 @@ the second tab.
   weapons, stats, items, Knödl and every Grant level); the save is not touched, so quests still count, stamp and
   pay, and a win still raises the saved Grant level. Stammtisch ranks (incl. weapon slots 3 and 4) stay bought
   with Schilling, so balance in a playtest stays honest. Console line `[PROFILE] preview build: everything unlocked`.
+
+## 2026-11-06 – 1.4 Part 5: features (branch `v1-4`)
+
+- **Owner: "continue with 1.4 part 5"** (the session was cut once by a power loss before anything was
+  written). Built in the `v1-4-part3` worktree (tracks `origin/v1-4`). Done: 5.1 (P1), 5.2, 5.3, 5.4 (P2).
+  **Claude: 5.5 co-op pings and 5.7 family voices (both P3) slide to 1.5**, as the plan allows for P3.
+- **5.1 Die Tageskarte (Daily Kirtag)** – a menu entry under "Spielen" (`DailyScreen`):
+  - `Daily.pick(day)`: Knödlinger, map, Grant level (`daily_grant_min/max` 1-2: Normal or Grantig) and seed
+    follow from the **UTC** date ("YYYYMMDD", the same for everyone from midnight UTC), hashed with Godot's
+    stable `String.hash()`. Claude: **any Knödlinger and any map can come up, locked or not** – the
+    Tageskarte is a taste and unlocks nothing; the Speisekarte still only offers unlocked weapons/items.
+    (Picking only unlocked content would differ per player, and the board needs the same card for all.)
+  - **First try counts:** `Profile.start_daily(day)` notes the day when the run *starts* (leaving or a
+    reload never gives a second first try); only that run asks for a board ticket. "Nochmal!" after it is
+    practice (no ticket; `Board.forget()` drops any stale one). Solo only. A Tageskarte run does not
+    overwrite the Play screen's last choice.
+  - **Board:** a third mode `daily` in `board/board.js`, map key `daily_<YYYYMMDD>` – no D1 migration. A
+    daily ticket is only given for today's key (or yesterday's in the first hour after midnight UTC), one
+    name only. The screen lists the day's top 50 (BoardPanel with a fixed mode). The first try is enforced
+    on the client only (a browser game cannot stop a cleared save; an IP rule would block households).
+  - **Streak Aufträge** (kinds `daily_streak`, `daily_days`): **Stammkundschaft** – 7 days in a row (300 S),
+    **Abonnement** – 30 days (500 S). Aufträge 138 → 140. Flag `daily=1` (`daily_day=YYYYMMDD` pins the day).
+- **5.4 Run-Abrechnung** – built before the Standler because it measures everything after it:
+  - Host counter in `EnemyManager`: callers set `source` (a small id, `RunWorld._source(peer, kind, id)`, per
+    player × weapon / Knödl / "extra" = item rings, traits, reflects) before they hurt enemies; `dealt` and
+    `source_kills` count only the HP an enemy really lost (no overkill). Shots carry their source
+    (`ProjectilePool`), burns keep the one that lit them. Clients get their numbers in the existing run-end
+    summary (`_shared_summary`), so nothing new goes over the network during the run (6.8 adds the live sync).
+  - Knock-down cause: the enemy type whose touch or attack mark hurt last (`PlayerState.last_cause`).
+  - End screen: tabs "Zahlen" / "Abrechnung" (Left/Right, LB/RB): damage, share and kills per weapon, the
+    Knödl and "Sonstiges", and "Am öftesten umgfoin durch: …". Autoplay JSON gets `damage_by_source`,
+    `kills_by_source`, `downed_by`, `standler_buys`, `marterl_used`.
+- **5.2 Der Standler** (`RunSites`, numbers in balance "Der Standler"):
+  - Sets up at 3:00 and 9:00, `standler_distance` 10 m from one player, stays 75 s: a stall with a green and
+    white awning and a sign seen through walls (no edge arrow, the owner's 6.6 rule). Walking within 3 m opens
+    his shop – the Speisekarte with a new offer type `SHOP` (prices after the cards, `OfferCodec` VERSION 3):
+    3 items per player (**own offer per co-op player**), buy = PICK (the host checks the gold), "Na, danke" =
+    leave (the shop stays shut until they step away). Level-ups wait while it is open; solo pauses, co-op
+    has 12 s. Bought items leave that player's counter.
+  - Price = by rarity 30 / 45 / 70 / 110 × 1.3 per item already bought from him × (1 + 4 % per minute).
+    **Gold income is still the 1.3 one** (bot: ~0-10 gold at 5:00, a few hundred by the end), so few buys
+    for now; the plan tunes him after 6.6 raises the income.
+- **5.3 Marterl** (3 per run, on chest spots no chest took; one of each kind): stand at one for 1.5 s and it
+  starts (its sign and coloured panel show the kind; the candle is lit while it works):
+  - **Mutprobe** – 30 s, a ring of 16 of the current main fodder 14 m out every 5 s, then a free chest
+    (at least Fein) on the spot.
+  - **Gier** – 60 s of twice the crowd (within the slot cap) and twice the gold per coin.
+  - **Segen** – Claude: a **free Speisekarte round** (one level's worth of cards) for the one who prays,
+    instead of "1 of 2 stat boosts": stat slots are limited to 4, and a free pick reuses everything
+    (offers, co-op, the bot). Two cards instead of three would need a new offer size; left as is.
+  - New run event `SITE` (site, index, state, extra, x, z; `RunEventCodec` VERSION 4) for both the stall and
+    the Marterl; a client arriving later gets them re-sent like the loot. Note for 6.6: Marterl take chest
+    spots, so the ~15-chest maps need ~3 spots more.
+- **Bot:** goes to a Marterl within 40 m and to Der Standler (once per visit) when it can pay his cheapest
+  item; buys the cheapest it can afford, else leaves.
+- **Menu at 1280×720:** with nine entries the footer (name, Schilling, version) fell off; below 820 px of UI
+  height the column now keeps half its margins and 16 px gaps.
+- **Test hooks:** `standler_at=<s>` (he sets up at that second right where the first player stands),
+  `marterl_drill=<kind>` (the first Marterl, of that kind, at the spawn), `gold=<n>` (start gold).
+  `mp_test.ps1 -Sites` uses them: every client must see the stall and the Marterl, and a client must buy
+  from him through the host. `ui_shots` got `bill`, `shop`, `marterl`; its menu paths moved one entry down
+  (`meta` now ends on the Tageskarte).
+- **Checks:** 230 GUT tests (new `test_part5.gd`: the day and its card, first try and streak, the streak
+  Aufträge, damage per source incl. burns and no overkill, the shop codec and buying, prices, the SITE
+  event), board tests 9/9 (daily mode), web export (.pck 7.7 MiB), browser check 169 fps / ≤ 112 draw calls,
+  `ui_shots` (meta, settings, patches, title, bill, shop, marterl: no console errors, ≤ 106 draw calls),
+  `mp_test -Clients 1`, `-Clients 1 -Sites` (the client bought from him: its own items at its own prices),
+  `-Clients 3 -Coop`, one autoplay run (Kirtag / Ferdl: 2 Standler buys, 1 Marterl, all 14,275 kills
+  attributed, top knock-down cause Radler 6×).
+- Patch-list lines 12-15 for 1.4.0.

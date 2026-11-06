@@ -13,8 +13,8 @@ const ORBIT_HEIGHT: float = 9.0
 const ORBIT_SPEED: float = 0.05
 const LEFT_WIDTH: float = 320.0
 const MARGIN: float = 64.0
-## Below this UI height the left column keeps only half the margin above and below, so its nine
-## entries and the footer still fit (1280x720).
+## Below this UI height the left column keeps only half the margin above and below and half the gaps,
+## so its nine entries and the footer still fit (1280x720).
 const SHORT_HEIGHT: float = 820.0
 ## [label key, screen id, enabled].
 const ENTRIES: Array = [
@@ -202,9 +202,10 @@ func _build_ui() -> void:
 
 
 func _fit_column(height: float) -> void:
-	var margin: float = MARGIN * 0.5 if height < SHORT_HEIGHT else MARGIN
-	_left.offset_top = margin
-	_left.offset_bottom = -margin
+	var short: bool = height < SHORT_HEIGHT
+	_left.offset_top = MARGIN * 0.5 if short else MARGIN
+	_left.offset_bottom = -_left.offset_top
+	_left.theme_type_variation = &"Gap16" if short else &"Gap32"
 
 
 func _update_name() -> void:
