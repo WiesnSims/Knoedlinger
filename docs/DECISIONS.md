@@ -1971,7 +1971,14 @@ the second tab.
     view shows through the HUD's see-through corner panel.
   - B2 (candidate, same): the centre banner ("Z'wenig Gold fürs Kistl!") can cross an enemy line for a
     moment.
-- **Balance (A):** none yet.
+- **Balance (A):**
+  - A1 (owner, 2026-11-06): **rebalance the old weapons that measured far off** in 1.4's 6.5 test (held crowd
+    of 250 at 10:00, 90 s; older-weapon average 5,824): too weak Wiener Würstel (918), Krampusrute,
+    Skistöcke; too strong Tablett-Wurf, Sachertorte-Mine (15,170). Claude offered 3 options per weapon;
+    the owner picks, then the picks are written here. Target band 4,500–7,500 in the same test (the old
+    weapons have different jobs, so wider than the ±10 % used for the new ones); all five re-measured
+    before and after, plus autoplay with a character who starts with each (Toni for the Skistöcke, Poldi
+    for the Tablett).
 - **Small changes (C):**
   - C1 (owner, 2026-11-06): **Krapfen-Kanone aims into the crowd.**
     - Owner first asked for the Krapfen to bounce between enemies; Claude pointed out that is exactly the
