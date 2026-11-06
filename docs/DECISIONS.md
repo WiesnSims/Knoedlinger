@@ -1973,23 +1973,20 @@ the second tab.
     moment.
 - **Balance (A):** none yet.
 - **Small changes (C):**
-  - C1 (owner, 2026-11-06): **Krapfen-Kanone aims into the crowd, and a shared "+1 Hupfer" upgrade.**
+  - C1 (owner, 2026-11-06): **Krapfen-Kanone aims into the crowd.**
     - Owner first asked for the Krapfen to bounce between enemies; Claude pointed out that is exactly the
       Würstel's and the Krampusrute's CHAIN pattern (and the Würstel measured weakest in 6.5), so the owner
       chose **option A**: the Krapfen keeps its straight lobbed hops (its identity: splash + jam on groups),
       but each one is **aimed at the thickest part of the crowd** within its reach instead of the nearest
       enemy, so the hops run through the crowd instead of beside it. Hops still follow from the aim, so
       clients keep replaying shots from the fire counter – no network change. Faschingsdienstag the same.
-    - **New weapon level mod `bounces` ("+1 Hupfer")**, reusable by every weapon that hops or jumps:
-      Krapfen-Kanone/Faschingsdienstag = hops per Krapfen (3 at start); Wiener Würstel = jumps per sausage.
-      Data only (`level_mods` + a cap per weapon), card text "+1 Hupfer". Area keeps growing the jam splash.
-    - **Würstel split (Claude):** for CHAIN weapons `amount` is today the jump count (shown as "+1 Projektil",
-      and the Rucksack adds a jump). After C1 the jumps come from `bounces`, and `amount` means **more
-      sausages at once**, each starting at its own nearest enemy – so "+1 Projektil" and the Rucksack mean
-      the same as on every other weapon. Würstel start: 1 sausage, 3 Hupfer. **Krampusrute** is the same
-      CHAIN pattern ("Springt von Sünder zu Sünder"), so it gets the same split unless the owner says no.
-    - Checks: unit tests (aim at the densest cell, hops and jumps per `bounces`, several sausages), a 10:00
-      damage measurement for the three weapons against the 6.5 numbers (the Würstel should come up toward
-      the average, not past it), ui_shots for the card text, `mp_test -Clients 1` and `-Coop`.
+    - **Dropped (owner, same day): a shared "+1 Hupfer" level mod** for hops/jumps (Krapfen, Würstel,
+      Krampusrute, with `amount` turned into "more sausages" for the CHAIN weapons). "+1 Projektil" already
+      does the job – more Krapfen for the Kanone, one more jump for the CHAIN weapons – and every extra mod
+      kind makes the other mods rarer on that weapon's cards. The Würstel's weakness (6.5) is a balance item
+      if the owner wants it, not part of C1. Upgrades of the Krapfen-Kanone stay as they are.
+    - Checks: a unit test (aims at the densest cell, hops land in it), a 10:00 damage measurement against
+      the 6.5 number (5,603-6,250 range for the new weapons), `mp_test -Clients 1` and `-Coop` (clients
+      still draw the same arcs).
 - Taskboard for the owner: https://claude.ai/artifact/NUU2WXcPqcVtBSzAeXB3ww (mirrors these lists; updated
   in the same session as any change here).
