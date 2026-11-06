@@ -1575,3 +1575,4 @@ the second tab.
   Gamskogl = après-ski techno (D major, 134 BPM), Gemeindebau = Wienerlied beat (A minor, 96 BPM, swung).
   +1.4 MiB OGG. The Kirtag keeps its track; the boss and Sperrstund' tracks stay shared.
 - Not done in Part 1: map traits on the map select (1.3, P3) – slides to later as planned.
+- **Owner approved Part 1 on 2026-11-06.** Next: Part 2 (the family) on `v1-4`.
