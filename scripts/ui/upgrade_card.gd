@@ -16,7 +16,9 @@ var _tween: Tween
 
 
 ## `owned_level` is the item's level before this card (0 = not owned).
-func setup(card: Card, key: int, change: String, owned_level: int, catalog: UpgradeCatalog) -> void:
+## `price` >= 0: Der Standler's price in gold under the keycap, dimmed when the player cannot pay it.
+func setup(card: Card, key: int, change: String, owned_level: int, catalog: UpgradeCatalog, price: int = -1,
+		affordable: bool = true) -> void:
 	theme_type_variation = UiStyle.rarity_variation("Card", card)
 	custom_minimum_size = Vector2(0.0, ROW_HEIGHT)
 	focus_mode = Control.FOCUS_ALL
@@ -49,6 +51,13 @@ func setup(card: Card, key: int, change: String, owned_level: int, catalog: Upgr
 	_pips.adds = card.level - owned_level if _pips.levels > 0 else 0
 	_pips.tone = UiStyle.rarity_color(card.rarity) if card.kind != Card.Kind.EVOLUTION else UiStyle.color("evolution")
 	side.add_child(_pips)
+	if price >= 0:
+		var cost: Label = UiStyle.label(&"LabelChange" if affordable else &"LabelMuted",
+				TranslationServer.translate("SHOP_PRICE") % price)
+		cost.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		side.add_child(cost)
+		if not affordable:
+			modulate = Color(1.0, 1.0, 1.0, 0.6)
 	# Open-ended levels: the level it reaches, as a number.
 	if _pips.levels == 0 and card.level > 1 and (card.kind == Card.Kind.WEAPON or card.kind == Card.Kind.PASSIVE):
 		var level: Label = UiStyle.label(&"LabelMuted", TranslationServer.translate("CARD_LEVEL") % card.level)

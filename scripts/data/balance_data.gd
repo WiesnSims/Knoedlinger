@@ -292,21 +292,30 @@ extends Resource
 ## A hit always does at least this much, whatever the armor.
 @export var min_hit_damage: float = 1.0
 ## Armor this high takes half of every hit (Formulas.armor_share): 3 armor -23 %, 8 -44 %, 20 -67 %.
-@export var armor_half: float = 10.0
+@export var armor_half: float = 6.0
 ## A revive from an item (Marterl-Kerze) brings the player back with this share of their max HP.
 @export var item_revive_hp: float = 0.5
 
 @export_group("Meta")
 ## Schilling a run pays (GAME-DESIGN.md: gold, cash-ins, 25 % of the Knödl when knocked out):
 ## per gold picked up, per cash-in by tier S..XL, the Knödl share, a win bonus, +10 % per extra player.
-@export var schilling_per_gold: float = 0.5
+@export var schilling_per_gold: float = 0.1
 @export var schilling_per_cash_in: PackedFloat32Array = PackedFloat32Array([5.0, 15.0, 40.0, 100.0])
 @export var schilling_knodl_share: float = 0.25
 @export var schilling_win_bonus: float = 100.0
 @export var coop_schilling_per_player: float = 0.1
 ## Grant modifiers: Föhn pushes every Knödl this hard (m/s^2, in gusts), Kontrolle multiplies elites.
 @export var foehn_force: float = 3.0
+## The Weinbergschnecke's slime trail (SlimeTrail): seconds a spot lasts, seconds between two spots
+## of one snail, spot radius in metres.
+@export var slime_seconds: float = 5.0
+@export var slime_interval: float = 0.5
+@export var slime_radius: float = 0.9
 @export var kontrolle_elite_mult: float = 2.0
+
+@export_group("Stats")
+## Most of a slowing ground's slow the sure_footing stat (Gummistiefel) can take away.
+@export var sure_footing_cap: float = 0.8
 
 @export_group("Character traits")
 ## Onkel Ferdl's Grant stops at this much extra damage.
@@ -319,6 +328,17 @@ extends Resource
 @export var jump_wave_radius: float = 4.5
 @export var jump_wave_damage: float = 6.0
 @export var jump_wave_knockback: float = 14.0
+## Opa Hias's "Hat eh Zeit": standing still (slower than idle_speed m/s) this long gives the
+## attack speed in his trait_effects[&"idle_rate"].
+@export var idle_speed: float = 0.4
+@export var idle_seconds: float = 1.0
+## Cousine Mitzi's "Trab": running straight at trot_min_speed of the run speed or more for
+## trot_seconds gives trait_effects[&"trot"] as speed and Knödl damage; turning further than
+## trot_turn_degrees from the line resets it (the line follows a curve at trot_follow per second).
+@export var trot_seconds: float = 2.0
+@export var trot_min_speed: float = 0.6
+@export var trot_turn_degrees: float = 35.0
+@export var trot_follow: float = 1.5
 
 @export_group("Kontrolleur")
 ## From this minute on, a Kontrolleur stands at every open Wirtshaus that has not served yet; it
@@ -364,24 +384,95 @@ extends Resource
 @export var portal_radius: float = 4.5
 ## A player whose feet are higher than this above the ground jumps over an attack mark.
 @export var hazard_dodge_height: float = 1.1
+## Die Hausmeisterin locks stairs and ramps at least this high (StairLock); her gates are this tall.
+@export var stair_lock_min_height: float = 6.0
+@export var stair_gate_height: float = 3.2
 
 @export_group("Loot")
 ## Map chests per run (out of the map's chest spots), what one costs and how many items it gives.
-@export var map_chest_count: int = 6
-@export var map_chest_price: int = 25
-## Every map chest a player opens makes their next one this much dearer.
-@export var map_chest_price_step: int = 15
+@export var map_chest_count: int = 15
+@export var map_chest_price: int = 20
+## Every map chest a player buys makes their next one this much dearer (times; free chests do not count).
+@export var map_chest_price_growth: float = 1.22
 @export var map_chest_items: int = 1
 @export var chest_pickup_radius: float = 2.0
-## Gold per coin; any kill drops a coin with this chance (elites and bosses drop theirs for sure).
+## Gold per coin, plus this much for every minute on the clock (rounded); any kill drops a coin with this
+## chance (elites and bosses drop theirs for sure).
 @export var coin_value: int = 1
-@export var coin_drop_chance: float = 0.006
+@export var coin_value_per_minute: float = 0.33
+@export var coin_drop_chance: float = 0.01
+## No new kill coins while this many loot items lie around (boss chests and Stempel always find room).
+@export var coin_loot_cap: int = 400
+## Fassl: barrels the player or the Knödl smashes for coins. This many stand around the players
+## (closer than fassl_far to someone), a new one every fassl_respawn seconds, fassl_min..fassl_max m off.
+@export var fassl_count: int = 5
+@export var fassl_respawn: float = 8.0
+@export var fassl_min: float = 14.0
+@export var fassl_max: float = 40.0
+@export var fassl_far: float = 90.0
+## Coins in a Fassl (each worth what a kill coin is worth at that time) and how close breaks it.
+@export var fassl_coins: int = 2
+@export var fassl_break_radius: float = 1.6
 ## Coins this close fly to the player (times the Wanderkarte bonus); picked up within the radius.
 @export var coin_magnet_range: float = 4.0
 @export var coin_pickup_radius: float = 1.2
 ## A Gulasch drops with this chance per kill and heals this much.
 @export var heal_drop_chance: float = 0.0015
 @export var heal_amount: float = 35.0
+
+@export_group("Item effects (1.4)")
+## Most item procs one frame handles (all players) and most proc effects it shows.
+@export var item_proc_budget: int = 40
+@export var item_cue_budget: int = 6
+## What item effects with their own damage (wisps, shock rings, the Spagat cut) start from, times
+## the effect's value and the player's damage.
+@export var item_base_damage: float = 20.0
+## Rodel: downhill push on the string (m/s² per copy's value).
+@export var rodel_push: float = 14.0
+## "Knödl folgt brav": the pull toward the nearest Brösel (m/s²) within the string's reach of the player.
+@export var knodl_follow_pull: float = 18.0
+## The pop shown where a proc hit (RunEventCodec.Cue.SPARK).
+@export var spark_radius: float = 1.4
+
+@export_group("Tageskarte (Daily Kirtag)")
+## The day's Grant level is drawn from this range (indices into GameContent.grants; 1 = Normal).
+@export var daily_grant_min: int = 1
+@export var daily_grant_max: int = 2
+
+@export_group("Der Standler")
+## He sets up near the players at these minutes and stays this long; walking up to his stall (within
+## standler_radius) opens his shop: standler_items items per player (their own offer in co-op).
+@export var standler_minutes: PackedFloat32Array = PackedFloat32Array([3.0, 9.0])
+@export var standler_stay: float = 75.0
+@export var standler_radius: float = 3.0
+@export var standler_items: int = 3
+## He sets up this far from one of the players.
+@export var standler_distance: float = 10.0
+## Co-op: the shop closes after this long (solo pauses, no limit).
+@export var standler_shop_seconds: float = 12.0
+## An item's price by rarity (Gewöhnlich .. Hofratswürdig), times standler_price_growth for every item
+## the player already bought from him this run, times (1 + standler_price_per_minute * minute).
+@export var standler_prices: PackedInt32Array = PackedInt32Array([30, 45, 70, 110])
+@export var standler_price_growth: float = 1.3
+@export var standler_price_per_minute: float = 0.04
+
+@export_group("Marterl")
+## Wayside shrines per run (on chest spots no chest took), used once each by standing within
+## marterl_radius for marterl_pray_seconds.
+@export var marterl_count: int = 3
+@export var marterl_radius: float = 2.5
+@export var marterl_pray_seconds: float = 1.5
+## Mutprobe: this long, a ring of marterl_ring_count enemies marterl_ring_radius out every
+## marterl_ring_every seconds; then a free chest.
+@export var marterl_mutprobe_seconds: float = 30.0
+@export var marterl_ring_every: float = 5.0
+@export var marterl_ring_count: int = 16
+@export var marterl_ring_radius: float = 14.0
+## Gier: this long, the crowd and the gold from coins times marterl_gier_mult.
+@export var marterl_gier_seconds: float = 60.0
+@export var marterl_gier_mult: float = 2.0
+## Segen: free Speisekarte rounds for the one who prays.
+@export var marterl_segen_levels: int = 1
 
 @export_group("Death")
 ## Solo: knocked down = the run is over, the end screen comes after this pause.

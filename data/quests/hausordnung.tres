@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hausordnung"
+title_key = "QUEST_HAUSORDNUNG"
+desc_key = "DESC_QUEST_HAUSORDNUNG"
+kind = &"bosses"
+filter = &"hausmeisterin"
+target = 1.0
+reward_schilling = 150

@@ -12,6 +12,6 @@ rarity = 1
 stats = Dictionary[StringName, float]({})
 effect = &"free_chest"
 effect_value = 0.1
-max_stacks = 5
+max_stacks = 3
 icon = ExtResource("2_icon")
 color = Color(0.91, 0.76, 0.35, 1)

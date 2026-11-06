@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_0bvbf"]
+[ext_resource type="Texture2D" path="res://assets/icons/staubsauger.svg" id="2_fykpj"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_tldyb"]
+
+[sub_resource type="Resource" id="Resource_xnn8d"]
+script = ExtResource("1_0bvbf")
+trigger = 5
+action = 19
+value = 1.0
+radius = 60.0
+cooldown = 45.0
+
+[resource]
+script = ExtResource("3_tldyb")
+id = &"staubsauger"
+name_key = "ITEM_STAUBSAUGER"
+desc_key = "DESC_ITEM_STAUBSAUGER"
+rarity = 3
+effects = Array[ExtResource("1_0bvbf")]([SubResource("Resource_xnn8d")])
+max_stacks = 1
+knodl = true
+icon = ExtResource("2_fykpj")
+color = Color(0.2901961, 0.6392157, 1, 1)

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_04nt3"]
+
+[resource]
+script = ExtResource("1_04nt3")
+id = &"trophaeenwand"
+title_key = "QUEST_TROPHAEENWAND"
+desc_key = "DESC_QUEST_TROPHAEENWAND"
+filter = &"perchte"
+target = 300.0
+reward_schilling = 150
+unlock_kind = &"item"
+unlock_id = &"jagdtrophaee"

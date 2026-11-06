@@ -30,6 +30,7 @@ func _init() -> void:
 	_map.id = &"gemeindebau"
 	_map.name_key = "MAP_GEMEINDEBAU"
 	_map.wave = load("res://data/waves/gemeindebau.tres")
+	_map.music = &"gemeindebau"
 	_map.half_size = 150.0
 	_map.terrain_samples = 256
 	_map.ground_cell = 0.5
@@ -145,7 +146,10 @@ func _spots() -> void:
 		Vector2(-110.0, 0.0)])
 	_map.chest_spots = PackedVector2Array([Vector2(-20.0, -30.0), Vector2(20.0, 30.0), Vector2(roof, 20.0), Vector2(-roof, -20.0),
 		Vector2(-20.0, roof), Vector2(20.0, -roof), Vector2(96.0, -96.0), Vector2(-96.0, 96.0), Vector2(60.0, 0.0),
-		Vector2(-60.0, 0.0), Vector2(0.0, 60.0), Vector2(0.0, -64.0), Vector2(110.0, 50.0), Vector2(-110.0, -50.0)])
+		Vector2(-60.0, 0.0), Vector2(0.0, 60.0), Vector2(0.0, -64.0), Vector2(110.0, 50.0), Vector2(-110.0, -50.0),
+		# 1.4: ~15 chests a run (plus the Marterl) need more spots, on the bot's lanes.
+		Vector2(0.0, 26.0), Vector2(60.0, 66.0), Vector2(60.0, -66.0), Vector2(-60.0, -66.0), Vector2(-60.0, 66.0),
+		Vector2(-20.0, 0.0), Vector2(20.0, -20.0), Vector2(0.0, 40.0)])
 	_map.bot_waypoints = PackedVector2Array([Vector2(0.0, 26.0), Vector2(0.0, 50.0), Vector2(60.0, 66.0), Vector2(66.0, 0.0),
 		Vector2(60.0, -66.0), Vector2(0.0, -66.0), Vector2(-60.0, -66.0), Vector2(-66.0, 0.0), Vector2(-60.0, 66.0),
 		Vector2(0.0, 40.0), Vector2(-20.0, 0.0), Vector2(20.0, -20.0)])

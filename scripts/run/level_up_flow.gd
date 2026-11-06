@@ -4,7 +4,14 @@ extends RefCounted
 ## level-ups waiting gets an offer; their choice (pick, reroll, banish, skip) comes back as a
 ## message, is checked and applied, and the next offer follows until none are left. Queued
 ## level-ups open one after another. In co-op the game runs on, so an offer has a time limit after
-## which a random card is taken for the player. Chests from a Wirtshaus go out the same way.
+## which a random card is taken for the player. Chests from a Wirtshaus go out the same way, and
+## Der Standler's shop (1.4): his items with prices; a buy costs gold, leaving (or the co-op time
+## running out) closes it. Level-ups wait while a shop is open.
+
+## Der Standler: `peer` bought the shop's card `card` (RunSites takes it off the stall).
+signal bought(peer: int, card: int)
+## Der Standler: `peer` left the shop (or ran out of time).
+signal shop_closed(peer: int)
 
 var balance: BalanceData
 var rng := RandomNumberGenerator.new()
@@ -16,6 +23,8 @@ var _seq: int = 0
 var _cards: Dictionary[int, Array] = {}
 var _seqs: Dictionary[int, int] = {}
 var _timers: Dictionary[int, float] = {}
+## peer -> the prices of their open shop (its cards are in _cards).
+var _prices: Dictionary[int, PackedInt32Array] = {}
 
 
 func _init(p_balance: BalanceData, seed_value: int = 1) -> void:
@@ -32,7 +41,10 @@ func update(states: Dictionary[int, PlayerState], delta: float, coop: bool) -> v
 			if coop:
 				_timers[peer] -= delta
 				if _timers[peer] <= 0.0:
-					_take(peer, state, rng.randi_range(0, _cards[peer].size() - 1), coop)
+					if _prices.has(peer):
+						_close_shop(peer, state)
+					else:
+						_take(peer, state, rng.randi_range(0, _cards[peer].size() - 1), coop)
 			continue
 		if state.pending_levels > 0 and not state.downed:
 			_deal(peer, state, coop)
@@ -45,6 +57,9 @@ func on_choice(peer: int, data: PackedByteArray, state: PlayerState, coop: bool)
 		return
 	var build: PlayerBuild = state.build
 	var cards: Array = _cards[peer]
+	if _prices.has(peer):
+		_shop_choice(peer, state, choice, coop)
+		return
 	match choice.action:
 		OfferCodec.Action.PICK:
 			if choice.card < cards.size():
@@ -90,8 +105,56 @@ func notify(peer: int, notice: OfferCodec.Notice) -> void:
 	NetworkManager.send_offer(peer, OfferCodec.encode_offer(offer))
 
 
+## Host: Der Standler's items for this player, at these prices. Nothing is taken until they buy.
+func open_shop(peer: int, state: PlayerState, cards: Array[Card], prices: PackedInt32Array, coop: bool) -> void:
+	_seq = (_seq + 1) & 0xFFFF
+	_cards[peer] = cards
+	_prices[peer] = prices
+	_seqs[peer] = _seq
+	_timers[peer] = balance.standler_shop_seconds
+	state.choosing = true
+	var offer := OfferCodec.Offer.new()
+	offer.type = OfferCodec.Type.SHOP
+	offer.seq = _seq
+	offer.seconds = ceili(balance.standler_shop_seconds) if coop else 0
+	offer.cards = cards
+	offer.prices = prices
+	NetworkManager.send_offer(peer, OfferCodec.encode_offer(offer))
+
+
+func is_shop(peer: int) -> bool:
+	return _prices.has(peer)
+
+
+func _shop_choice(peer: int, state: PlayerState, choice: OfferCodec.Choice, coop: bool) -> void:
+	var cards: Array[Card] = []
+	cards.assign(_cards[peer])
+	var prices: PackedInt32Array = _prices[peer]
+	if choice.action != OfferCodec.Action.PICK or choice.card >= cards.size():
+		_close_shop(peer, state)
+		return
+	var card: Card = cards[choice.card]
+	if state.build.gold < prices[choice.card] or not CardDealer.is_valid(card, state.build, balance):
+		notify(peer, OfferCodec.Notice.NO_GOLD)
+		open_shop(peer, state, cards, prices, coop)
+		return
+	state.build.gold -= prices[choice.card]
+	state.heal(state.build.apply(card, balance))
+	state.refresh_max_hp(balance.player_max_hp)
+	_close_shop(peer, state, false)
+	bought.emit(peer, choice.card)
+
+
+func _close_shop(peer: int, state: PlayerState, emit: bool = true) -> void:
+	forget(peer)
+	state.choosing = false
+	if emit:
+		shop_closed.emit(peer)
+
+
 ## A player left: forget their offer.
 func forget(peer: int) -> void:
+	_prices.erase(peer)
 	_cards.erase(peer)
 	_seqs.erase(peer)
 	_timers.erase(peer)

@@ -211,6 +211,10 @@ func _add_effects() -> void:
 	quad.size = Vector2.ONE
 	_add_effect(_instanced(quad, load("res://shaders/hazard.gdshader"), true, true))
 	_add_effect(_instanced(quad, load("res://shaders/beam.gdshader"), true))
+	# 1.4: the Weinbergschnecke's slime spots.
+	var slime: MultiMeshInstance3D = _instanced(quad, null, true)
+	slime.material_override = SlimeTrail.make_material()
+	_add_effect(slime)
 	var loot_look: MultiMeshInstance3D = _instanced(MeshFactory.brosel(), null, true)
 	loot_look.material_override = MapBuilder.vertex_color_material()
 	_add_effect(loot_look)

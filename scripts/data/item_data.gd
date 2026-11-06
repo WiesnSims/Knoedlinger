@@ -16,6 +16,9 @@ extends Resource
 ## A special rule by name (&"" = none), e.g. &"free_chest", and how much one copy adds to it.
 @export var effect: StringName = &""
 @export var effect_value: float = 0.0
+## 1.4: rules by trigger and action (ItemEffect), run by ItemProcs on the host. `effect` above stays
+## for the older named rules.
+@export var effects: Array[ItemEffect] = []
 ## Most copies one player can hold (0 = no limit).
 @export var max_stacks: int = 0
 ## Knödl upgrades are listed apart in the inventory.

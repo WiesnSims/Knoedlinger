@@ -9,6 +9,8 @@ extends RefCounted
 const DASH_SECONDS: float = 0.4
 ## A boss stops walking this far from its target (it is big).
 const KEEP_DISTANCE: float = 2.2
+## A whirlwind moves the loose Brösel this often (each move goes to the clients).
+const SWIRL_SECONDS: float = 0.25
 
 
 class Active:
@@ -36,7 +38,13 @@ var active: Array[Active] = []
 ## Toast keys to show everyone (attack names) since the last take.
 var toasts: PackedStringArray = PackedStringArray()
 
+## Host: the loose Brösel a whirlwind boss pulls in and flings out.
+var brosel: BroselField
+## Host: the stairs a STAIRWELL attack locks (Die Hausmeisterin).
+var stairs: StairLock
+
 var _type_index: Dictionary[BossData, int] = {}
+var _swirl_timer: float = 0.0
 
 
 func _init(p_balance: BalanceData, p_enemies: EnemyManager, p_hazards: HazardField, wave: WaveData) -> void:
@@ -93,10 +101,26 @@ func update(delta: float, targets: PackedVector3Array, fighting: bool = true) ->
 			continue
 		if fighting:
 			_think(boss, delta, targets)
+			if boss.data.pull_radius > 0.0:
+				_pull(boss, delta)
 		boss.last_x = enemies.pos_x[boss.slot]
 		boss.last_z = enemies.pos_z[boss.slot]
 		k += 1
 	return beaten
+
+
+## The pull of every whirlwind boss on a Knödl at `at` (m/s^2, for Knodl.wind).
+func pull_on(at: Vector3) -> Vector3:
+	var push := Vector3.ZERO
+	for boss: Active in active:
+		if boss.data.pull_radius <= 0.0:
+			continue
+		var dx: float = enemies.pos_x[boss.slot] - at.x
+		var dz: float = enemies.pos_z[boss.slot] - at.z
+		var d: float = sqrt(dx * dx + dz * dz)
+		if d > 1.0 and d < boss.data.pull_radius:
+			push += Vector3(dx, 0.0, dz) / d * boss.data.pull_knodl * (1.0 - d / boss.data.pull_radius * 0.5)
+	return push
 
 
 ## A mark hit: a boss's charge line sends the boss along it (once per attack).
@@ -121,7 +145,10 @@ func touch_damage(targets: PackedVector3Array, out: PackedFloat32Array) -> void:
 		for t: int in targets.size():
 			var p: Vector3 = targets[t]
 			if (p.x - x) * (p.x - x) + (p.z - z) * (p.z - z) < reach * reach and absf(p.y - gy) < balance.enemy_contact_height + 1.0:
-				out[t] = maxf(out[t], boss.data.enemy.contact_damage)
+				if boss.data.enemy.contact_damage > out[t]:
+					out[t] = boss.data.enemy.contact_damage
+					if t < enemies.touch_type.size():
+						enemies.touch_type[t] = enemies.type[boss.slot]
 
 
 func is_boss_slot(slot: int) -> bool:
@@ -170,12 +197,66 @@ func _think(boss: Active, delta: float, targets: PackedVector3Array) -> void:
 	if boss.pause > 0.0 or boss.data.attacks.is_empty():
 		return
 	var attack: AttackData = boss.data.attacks[boss.next_attack % boss.data.attacks.size()]
-	if distance > attack.range:
-		return
-	boss.next_attack += 1
-	hazards.start_attack(attack, enemies.pos_x[slot], enemies.pos_z[slot], tx, tz, slot)
+	if attack.aim == AttackData.Aim.STAIRWELL:
+		# Up the stairs nearest the target; with none near (or one already locked) it skips its turn.
+		var well: int = stairs.nearest(tx, tz, attack.range) if stairs != null and not stairs.busy() else -1
+		boss.next_attack += 1
+		if well < 0:
+			return
+		var reach: float = stairs.widths[well] * 0.5
+		hazards.add_slope(stairs.mark_foot(well), stairs.mark_top(well), reach, attack.telegraph, attack, slot, well)
+	else:
+		if distance > attack.range:
+			return
+		boss.next_attack += 1
+		hazards.start_attack(attack, enemies.pos_x[slot], enemies.pos_z[slot], tx, tz, slot)
+	if attack.aim == AttackData.Aim.SPIRAL and boss.data.fling_speed > 0.0:
+		_fling(boss, attack.spread)
 	if attack.toast_key != "":
 		toasts.append(attack.toast_key)
 	boss.waiting = attack.telegraph + 0.2
 	var enraged: bool = enemies.hp[slot] < enemies.max_hp[slot] * boss.data.enraged_below
 	boss.pause = attack.telegraph + boss.data.attack_pause * (boss.data.enraged_pause_mult if enraged else 1.0)
+
+
+## Der Sturm: the crowd within its pull_radius swirls in toward it (and round it), Brösel too.
+func _pull(boss: Active, delta: float) -> void:
+	var cx: float = enemies.pos_x[boss.slot]
+	var cz: float = enemies.pos_z[boss.slot]
+	var radius: float = boss.data.pull_radius
+	var found: int = enemies.grid.query(cx, cz, radius)
+	for k: int in found:
+		var i: int = enemies.grid.results[k]
+		if enemies.alive[i] == 0 or enemies.controlled[i] != 0:
+			continue
+		var dx: float = cx - enemies.pos_x[i]
+		var dz: float = cz - enemies.pos_z[i]
+		var d: float = sqrt(dx * dx + dz * dz)
+		if d < 2.5 or d > radius:
+			continue
+		var step: float = boss.data.pull_speed * delta * enemies.types[enemies.type[i]].knockback_factor
+		enemies.shove(i, enemies.pos_x[i] + (dx + dz * 0.6) / d * step, enemies.pos_z[i] + (dz - dx * 0.6) / d * step)
+	if brosel != null:
+		_swirl_timer -= delta
+		if _swirl_timer <= 0.0:
+			_swirl_timer = SWIRL_SECONDS
+			brosel.swirl(cx, cz, radius, boss.data.pull_speed * SWIRL_SECONDS)
+
+
+## Der Sturm lets go: what it pulled in flies out to where its spiral of marks lands.
+func _fling(boss: Active, reach: float) -> void:
+	var cx: float = enemies.pos_x[boss.slot]
+	var cz: float = enemies.pos_z[boss.slot]
+	var inner: float = boss.data.pull_radius * 0.5
+	var found: int = enemies.grid.query(cx, cz, inner)
+	for k: int in found:
+		var i: int = enemies.grid.results[k]
+		if enemies.alive[i] == 0 or enemies.controlled[i] != 0:
+			continue
+		var dx: float = enemies.pos_x[i] - cx
+		var dz: float = enemies.pos_z[i] - cz
+		var d: float = maxf(sqrt(dx * dx + dz * dz), 0.1)
+		enemies.kb_x[i] += dx / d * boss.data.fling_speed
+		enemies.kb_z[i] += dz / d * boss.data.fling_speed
+	if brosel != null:
+		brosel.fling(cx, cz, inner, reach)

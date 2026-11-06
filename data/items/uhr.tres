@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_eggwn"]
+[ext_resource type="Texture2D" path="res://assets/icons/uhr.svg" id="2_i33jt"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_olylr"]
+
+[sub_resource type="Resource" id="Resource_m76eb"]
+script = ExtResource("1_eggwn")
+trigger = 3
+action = 11
+value = 1.0
+radius = 15.0
+seconds = 3.0
+
+[sub_resource type="Resource" id="Resource_x11l7"]
+script = ExtResource("1_eggwn")
+trigger = 3
+action = 7
+value = 0.3
+
+[resource]
+script = ExtResource("3_olylr")
+id = &"uhr"
+name_key = "ITEM_UHR"
+desc_key = "DESC_ITEM_UHR"
+rarity = 3
+effects = Array[ExtResource("1_eggwn")]([SubResource("Resource_m76eb"), SubResource("Resource_x11l7")])
+max_stacks = 1
+icon = ExtResource("2_i33jt")
+color = Color(0.70980394, 0.48235294, 1, 1)

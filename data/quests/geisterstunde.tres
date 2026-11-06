@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_fd3q4"]
+
+[resource]
+script = ExtResource("1_fd3q4")
+id = &"geisterstunde"
+title_key = "QUEST_GEISTERSTUNDE"
+desc_key = "DESC_QUEST_GEISTERSTUNDE"
+filter = &"geist"
+target = 1000.0
+reward_schilling = 150
+unlock_kind = &"item"
+unlock_id = &"kachelofen"

@@ -75,6 +75,7 @@ var terrain: Heightfield
 var ground: Heightfield
 var enemies: EnemyManager
 var replica: EnemyReplica
+var slime: SlimeTrail
 var renderer: EnemyRenderer
 var brosel: BroselField
 ## Host: the real shots; client: shots shown from the players' fire counters.
@@ -88,6 +89,8 @@ var seconds: Dictionary[int, Knodl] = {}
 var weapon_vfx: Dictionary[int, WeaponVfx] = {}
 var wirtshaeuser: Array[Wirtshaus] = []
 var hazards: HazardField
+## Die Hausmeisterin's locked stairs (every role).
+var stairs: StairLock
 ## Talking enemies: the host picks the lines, every role shows them.
 var voices: EnemyVoices
 var loot: LootField
@@ -96,6 +99,16 @@ var gate: PortalGate
 var bosses: BossDirector
 ## Host: revives, shared XP, Knödl-Pass, Riesenknödl, Familienstreit (CoopRules).
 var coop: CoopRules
+## Der Standler and the Marterl (1.4): host logic, and their look on every machine.
+var sites: RunSites
+## Host: the items' rules (1.4, ItemProcs).
+var procs: ItemProcs
+## Every machine: damage per player and source (1.4 build view; the host sends DAMAGE events).
+var ledger := DamageLedger.new()
+var _ledger_timer: float = 0.0
+var _ledger_sent: Dictionary[String, Vector2] = {}
+## The bot went to Der Standler's stall on this visit (RunSites.stand_visits).
+var _bot_shopped: int = 0
 ## Host: run events of this frame (attack marks, loot, toasts ...).
 var events := RunEventCodec.Queue.new()
 var result: Result = Result.NONE
@@ -118,6 +131,10 @@ var run_time: float = 0.0
 var phase: Phase = Phase.RUNNING
 
 var _forced_enemies: int = 0
+## Test flag `projectiles=<n>`: the host keeps n of the stress test's shots flying from the players (perf checks).
+var _test_shots: int = 0
+var _test_shot_budget: float = 0.0
+var _test_shot_angle: float = 0.0
 var _seconds: float = 0.0
 var _bot: bool = true
 var _god: bool = false
@@ -163,6 +180,8 @@ var _respawn_grace: Dictionary[int, float] = {}
 var _notice_timers: Dictionary[int, float] = {}
 var _seen_life: Dictionary[int, int] = {}
 var _seen_served: Dictionary[int, bool] = {}
+## Host: Wirtshaus spots that have served Steffi a second time.
+var _second_serves: Dictionary[int, bool] = {}
 var _weapon_rng := RandomNumberGenerator.new()
 var _riesen_wirt: Node3D
 ## The first frame after a solo pause carries the paused time; it is left out of the frame stats.
@@ -189,6 +208,8 @@ var _bus_done: bool = false
 var _lose_timer: float = -1.0
 var _no_gold_timers: Dictionary[int, float] = {}
 var _loot_rng := RandomNumberGenerator.new()
+## Host: seconds until the next Fassl may stand up.
+var _fassl_timer: float = 0.0
 ## Run events waiting for the next send to the clients.
 var _outgoing: Array[RunEventCodec.Event] = []
 ## The boss in the HUD bar: BossDirector.list index (or NO_BOSS), its body's slot and HP.
@@ -231,12 +252,17 @@ var _shockwaves: Array[MeshInstance3D] = []
 var _shockwave_materials: Array[ShaderMaterial] = []
 var _shockwave_times: PackedFloat32Array = PackedFloat32Array()
 var _shockwave_next: int = 0
+var _shockwave_sizes: PackedFloat32Array = PackedFloat32Array()
 ## Host: each Knödl's state last frame (a Schupfn ending sets off the Powidl), the bell clocks.
 var _knodl_state_last: Dictionary[int, int] = {}
 var _bell_timers: Dictionary[int, float] = {}
 ## Host: enemy types whose arrive_toast was shown this run.
 var _arrived: Dictionary[int, bool] = {}
-const SHOCKWAVES: int = 8
+## Run-Abrechnung (1.4 task 5.4), host: damage source id -> [peer, kind, id]; kind is "weapon" (id =
+## weapon id), "knodl" or "extra" (items, traits, reflects). EnemyManager counts per id.
+var _sources: Array = []
+var _source_ids: Dictionary[String, int] = {}
+const SHOCKWAVES: int = 16
 const SHOCKWAVE_SECONDS: float = 0.4
 
 
@@ -244,6 +270,7 @@ func _ready() -> void:
 	InputSetup.ensure_actions()
 	stats.warmup = WARMUP_SECONDS
 	_forced_enemies = maxi(LaunchArgs.get_int("enemies", 0), 0)
+	_test_shots = maxi(LaunchArgs.get_int("projectiles", 0), 0)
 	_seconds = LaunchArgs.get_float("seconds", 0.0)
 	_autoplay = LaunchArgs.get_flag("autoplay", false)
 	# A run is played by a person unless asked otherwise (the automated checks pass bot=1).
@@ -253,6 +280,9 @@ func _ready() -> void:
 	_start_mass = LaunchArgs.get_float("knodl_mass", -1.0)
 	_respawn = LaunchArgs.get_flag("respawn", false) or _autoplay
 	balance = load("res://data/balance.tres")
+	# `daily=1`: today's Tageskarte straight from the command line or URL (tests).
+	if LaunchArgs.get_flag("daily", false) and RunSetup.daily == "" and not RunSetup.from_room:
+		RunSetup.use_daily(GameContent.load_default(), balance, Daily.today())
 	map = _load_map(RunSetup.map_id())
 	wave = map.wave if map.wave != null else load(WAVE_PATH)
 	catalog = load(CATALOG_PATH)
@@ -290,6 +320,10 @@ func _ready() -> void:
 	renderer.name = "EnemyRenderer"
 	add_child(renderer)
 	renderer.setup(types, slots, ground)
+	slime = SlimeTrail.new()
+	slime.name = "SlimeTrail"
+	add_child(slime)
+	slime.setup(types, ground, balance)
 	brosel = BroselField.new()
 	brosel.name = "BroselField"
 	add_child(brosel)
@@ -297,11 +331,14 @@ func _ready() -> void:
 	projectiles = ProjectilePool.new()
 	projectiles.name = "Projectiles"
 	add_child(projectiles)
-	projectiles.setup(balance, 400, ground)
+	projectiles.setup(balance, 400 + _test_shots, ground)
 	hazards = HazardField.new()
 	hazards.name = "Hazards"
 	add_child(hazards)
 	hazards.setup(ground, seed_value)
+	stairs = StairLock.new()
+	add_child(stairs)
+	stairs.setup(map, balance)
 	voices = EnemyVoices.new()
 	voices.name = "EnemyVoices"
 	add_child(voices)
@@ -313,6 +350,8 @@ func _ready() -> void:
 	gate = PortalGate.new()
 	add_child(gate)
 	gate.setup(map, ground)
+	sites = RunSites.new(self, balance, seed_value)
+	procs = ItemProcs.new(self, balance, seed_value)
 	for spot: int in map.wirtshaus_spots.size():
 		var wirt := Wirtshaus.new()
 		add_child(wirt)
@@ -365,6 +404,7 @@ func _ready() -> void:
 	add_child(touch)
 	if host:
 		enemies = EnemyManager.new(balance, types, slots, seed_value, ground, map.half_size)
+		enemies.brosel = brosel
 		voices.enemies = enemies
 		enemies.ring_min = balance.spawn_first_ring_min
 		enemies.ring_max = balance.spawn_first_ring_max
@@ -382,8 +422,13 @@ func _ready() -> void:
 		_open_wirtshaeuser(balance.wirtshaus_count - (1 if grant.modifier == &"streik" else 0), seed_value)
 		_scatter_start_brosel(seed_value)
 		bosses = BossDirector.new(balance, enemies, hazards, wave)
+		bosses.brosel = brosel
+		bosses.stairs = stairs
 		coop = CoopRules.new(self, balance, seed_value)
 		_place_map_chests()
+		sites.place_marterl()
+		level_flow.bought.connect(sites.on_bought)
+		level_flow.shop_closed.connect(sites.on_shop_closed)
 	else:
 		replica = EnemyReplica.new(balance, types, slots)
 		voices.replica = replica
@@ -416,11 +461,18 @@ func _ready() -> void:
 		inventory.allowed = false
 		if host and not NetworkManager.is_coop():
 			get_tree().paused = true
-	GameAudio.music(&"kirtag")
+	GameAudio.music(map.music if map != null else &"kirtag")
 	GameAudio.bark(&"servas")
 	# Die Ehrentafel: a ticket for this run (only real runs from the menu; Board decides).
+	# The Tageskarte: only the day's first try gets a ticket (a restart is practice).
 	if host:
-		Board.start_run("coop" if NetworkManager.is_online() else "solo", String(map.id))
+		if RunSetup.daily == "":
+			Board.start_run("coop" if NetworkManager.is_online() else "solo", String(map.id))
+		elif RunSetup.daily_counts:
+			Board.start_run("daily", Daily.board_map(RunSetup.daily))
+		else:
+			Board.forget()
+		RunSetup.daily_counts = false
 		Board.ranked.connect(_on_ranked)
 	print("[RUN] role=%s map=%s character=%s enemies=%s seconds=%s bot=%s bake_ms=%d adapter=%s" % [
 		_role(), map.id, character.id, _forced_enemies if _forced_enemies > 0 else "wave", _seconds, _bot,
@@ -451,7 +503,7 @@ func _exit_tree() -> void:
 
 
 func _on_ranked(rank: int, week_rank: int, _id: int) -> void:
-	end_screen.show_rank(rank, week_rank)
+	end_screen.show_rank(rank, week_rank, RunSetup.daily != "")
 
 
 func _process(delta: float) -> void:
@@ -531,6 +583,9 @@ func _host_frame(delta: float) -> void:
 		if _bus_left > 0.0:
 			ramp += wave.bus_extra
 			cap += wave.bus_extra
+		# Marterl "Gier": twice the crowd for a while.
+		ramp *= sites.crowd_mult()
+		cap = ceili(cap * sites.crowd_mult())
 		var thin: float = quality.enemy_factor(players.size() == 1)
 		ramp *= thin
 		cap = ceili(cap * thin)
@@ -551,11 +606,13 @@ func _host_frame(delta: float) -> void:
 		enemies.target_heading[k] = _heading(players[peers[k]])
 	var knodl_peers: Array[int] = []
 	var knodl_targets := PackedVector4Array()
+	enemies.knodl_sweet.clear()
 	for peer: int in knodls:
 		if states[peer].build.stat(&"knodl_guard") <= 0.0 and not knodls[peer].merged_away:
 			var at: Vector3 = knodls[peer].global_position
 			knodl_peers.append(peer)
 			knodl_targets.append(Vector4(at.x, at.y, at.z, knodls[peer].radius))
+			enemies.knodl_sweet.append(1 if knodls[peer].sort.sweet else 0)
 	var t0: int = Time.get_ticks_usec()
 	enemies.pace = overtime_pace()
 	enemies.update(delta, targets, knodl_targets)
@@ -583,12 +640,17 @@ func _host_frame(delta: float) -> void:
 	for t: int in peers.size():
 		var state: PlayerState = states[peers[t]]
 		var hit: float = Formulas.hit_damage(enemies.touch_damage[t] * damage_mult, state.build.stat(&"armor"), balance)
+		if enemies.touch_type[t] >= 0:
+			state.last_cause = types[enemies.touch_type[t]].id
 		var hp_before: float = state.hp
 		if not _god and phase != Phase.ENDED and state.hurt(hit, balance):
 			on_downed(peers[t])
 		if state.hp < hp_before:
 			_on_hurt(peers[t])
 			_reflect_hit(peers[t], hp_before - state.hp)
+			procs.on_hurt(peers[t], hp_before - state.hp)
+	procs.tick(delta)
+	procs.prepare(delta)
 	for peer: int in players:
 		var state: PlayerState = states[peer]
 		var player: Player = players[peer]
@@ -612,31 +674,57 @@ func _host_frame(delta: float) -> void:
 					if aim[1] != 0:
 						print("[RUN] pass-throw peer=%d to=%d t=%.1f" % [peer, aim[1], run_time])
 		if not state.downed and not state.choosing:
+			for owned: PlayerBuild.OwnedWeapon in state.build.weapons:
+				if owned.source < 0:
+					owned.source = _source(peer, "weapon", String(owned.data.id))
 			WeaponSystem.update(state.build, player, enemies, projectiles, run_time, delta, _weapon_rng, balance)
+			enemies.source = -1
+			projectiles.source = -1
+		knodl.damage_source = _source(peer, "knodl", "knodl")
+		# Knödl folgt brav (the player's setting rides in their input): toward the nearest Brösel in reach.
+		knodl.follow_target = Vector3.INF
+		if player.last_input.buttons & InputMessage.BUTTON_FOLLOW and not state.downed:
+			var at: Vector3 = player.global_position
+			var crumb: Vector2 = brosel.nearest(at.x, at.z, knodl.max_length())
+			if crumb.is_finite():
+				knodl.follow_target = Vector3(crumb.x, 0.0, crumb.y)
 		if not knodl.merged_away:
 			knodl.crush(enemies, delta)
 		if seconds.has(peer):
+			seconds[peer].damage_source = knodl.damage_source
 			seconds[peer].crush(enemies, delta)
+	if _test_shots > 0:
+		_fire_test_shots(delta)
 	projectiles.update(delta, enemies)
+	procs.after_hits()
 	hazards.update(delta)
+	stairs.update(delta)
 	_resolve_hazards()
+	var wind := Vector3.ZERO
 	if grant.modifier == &"foehn":
 		_wind_angle += delta * 0.07
 		var gust: float = balance.foehn_force * (0.55 + 0.45 * sin(run_time * 0.5))
-		for peer: int in knodls:
-			knodls[peer].wind = Vector3(cos(_wind_angle), 0.0, sin(_wind_angle)) * gust
+		wind = Vector3(cos(_wind_angle), 0.0, sin(_wind_angle)) * gust
+	# Der Sturm pulls every Knödl that is not too heavy toward it.
+	for peer: int in knodls:
+		var knodl: Knodl = knodls[peer]
+		knodl.wind = wind + (Vector3.ZERO if knodl.sort.heavy else bosses.pull_on(knodl.global_position))
 	var t2: int = Time.get_ticks_usec()
 	stats.add_system("knodl_weapons", t2 - t1)
 	_update_traits(delta)
 	_update_item_effects(delta)
 	_send_guards()
+	procs.on_kills()
 	_kill_blasts()
 	_drop_brosel()
 	_feed_knodls(delta)
 	_check_wirtshaeuser(delta)
 	_collect_loot(delta)
+	_update_fassl(delta)
+	_send_damage(delta)
 	level_flow.update(states, delta, NetworkManager.is_coop())
 	coop.update(delta)
+	sites.update(delta)
 	for peer: int in states:
 		states[peer].merge_partner = coop.merge_partner(peer)
 	_update_timeline(delta)
@@ -646,7 +734,8 @@ func _host_frame(delta: float) -> void:
 	stats.add_system("brosel", t3 - t2)
 	_update_air_targets()
 	renderer.draw(enemies.capacity, enemies.alive, enemies.pos_x, enemies.pos_z, enemies.yaw, enemies.type,
-			enemies.radius, enemies.flash, enemies.phase)
+			enemies.radius, enemies.flash, enemies.phase, enemies.statuses())
+	slime.update(delta, enemies.capacity, enemies.alive, enemies.pos_x, enemies.pos_z, enemies.type)
 	brosel.draw()
 	var t4: int = Time.get_ticks_usec()
 	stats.add_system("render_upload", t4 - t3)
@@ -763,6 +852,7 @@ func _set_phase(new_phase: Phase) -> void:
 			GameAudio.music(&"sperrstund")
 			_spawn_riesen_wirt()
 			hazards.clear()
+			stairs.release()
 		Phase.ENDED:
 			Engine.time_scale = 1.0
 			_on_run_ended()
@@ -829,7 +919,8 @@ func _on_run_ended() -> void:
 func _on_inventory_toggled(open: bool) -> void:
 	if open:
 		_note_panel_mouse()
-		inventory.show_player(states.get(NetworkManager.local_id()), knodls.get(NetworkManager.local_id()), balance)
+		inventory.show_player(states.get(NetworkManager.local_id()), knodls.get(NetworkManager.local_id()), balance,
+				ledger, NetworkManager.local_id(), run_time)
 	_hold_pause(open)
 
 
@@ -841,6 +932,9 @@ func _note_panel_mouse() -> void:
 
 
 func _on_pause_toggled(open: bool) -> void:
+	if open:
+		pause.show_player(states.get(NetworkManager.local_id()), knodls.get(NetworkManager.local_id()), balance,
+				ledger, NetworkManager.local_id(), run_time)
 	_hold_pause(open)
 
 
@@ -931,7 +1025,7 @@ func _check_wirtshaeuser(delta: float) -> void:
 		if state.downed or knodl.merged_away:
 			continue
 		for wirt: Wirtshaus in wirtshaeuser:
-			if not wirt.open or wirt.served or not wirt.touches(knodl.global_position, knodl.radius, balance.wirtshaus_door_radius):
+			if not wirt.open or not _serves(wirt, peer) or not wirt.touches(knodl.global_position, knodl.radius, balance.wirtshaus_door_radius):
 				continue
 			if _guarded(wirt):
 				if not _notice_timers.has(peer):
@@ -948,11 +1042,22 @@ func _check_wirtshaeuser(delta: float) -> void:
 			break
 
 
+## Host: whether this Wirtshaus still serves this player. Each serves once per run; one that has
+## served already serves Steffi once more ("Ausg'steckt", trait_effects[&"serves_twice"]).
+func _serves(wirt: Wirtshaus, peer: int) -> bool:
+	if not wirt.served:
+		return true
+	return character_of(peer).trait_effects.has(&"serves_twice") and not _second_serves.has(wirt.spot)
+
+
 func _cash_in(peer: int, wirt: Wirtshaus, tier: int) -> void:
 	var state: PlayerState = states[peer]
 	var knodl: Knodl = knodls[peer]
+	if wirt.served:
+		_second_serves[wirt.spot] = true
 	wirt.set_state(true, true, tier)
 	state.cash_ins[tier] += 1
+	procs.on_cashin(peer)
 	var gold: int = roundi(knodl.knodl_mass * balance.wirtshaus_gold_per_mass) if tier == 0 else 0
 	if tier == 2:
 		state.build.rerolls += balance.wirtshaus_l_rerolls
@@ -1028,10 +1133,11 @@ func _drop_brosel() -> void:
 		for piece: int in Formulas.split_into_brosel(enemies.kill_xp[k], balance):
 			brosel.drop(kx, kz, piece, true)
 		var coins: int = types[enemies.kill_type[k]].gold_drop
-		if coins == 0 and _loot_rng.randf() < balance.coin_drop_chance:
+		if coins == 0 and _loot_rng.randf() < balance.coin_drop_chance and loot.count < balance.coin_loot_cap:
 			coins = 1
 		for c: int in coins:
-			_drop_loot(LootField.Kind.COIN, kx + _loot_rng.randf_range(-1.0, 1.0), kz + _loot_rng.randf_range(-1.0, 1.0), balance.coin_value)
+			_drop_loot(LootField.Kind.COIN, kx + _loot_rng.randf_range(-1.0, 1.0), kz + _loot_rng.randf_range(-1.0, 1.0),
+					Formulas.coin_value(run_time, balance) * sites.gold_mult())
 		if _loot_rng.randf() < balance.heal_drop_chance:
 			_drop_loot(LootField.Kind.HEAL, kx, kz, roundi(balance.heal_amount))
 	enemies.clear_kills()
@@ -1082,6 +1188,7 @@ func _feed_knodls(delta: float) -> void:
 		var state: PlayerState = states[peer]
 		var knodl: Knodl = knodls[peer]
 		state.add_xp(credit.x, balance, run_time)
+		procs.on_brosel(peer, ceili(credit.y))
 		coop.share_xp(peer, credit.x)
 		knodl.add_knodl_mass(credit.y * balance.knodl_mass_per_xp)
 		state.best_knodl_mass = maxf(state.best_knodl_mass, knodl.knodl_mass)
@@ -1091,6 +1198,12 @@ func _feed_knodls(delta: float) -> void:
 
 func on_downed(peer: int) -> void:
 	var state: PlayerState = states[peer]
+	# Stehengebliebene Uhr and the like: the hit that would knock them down does not (once).
+	if procs != null and phase != Phase.SPERRSTUND and procs.on_lethal(peer):
+		state.deaths -= 1
+		events.toast("TOAST_SAVED")
+		print("[RUN] saved by an item peer=%d t=%.1f" % [peer, run_time])
+		return
 	# Marterl-Kerze (per copy) and the Stammtisch's Nachschlag: back up at once with half the HP.
 	if state.revives_used < roundi(state.build.effect(&"revive") + state.build.meta.get(&"revives", 0.0)):
 		state.revives_used += 1
@@ -1099,8 +1212,11 @@ func on_downed(peer: int) -> void:
 		state.downed_timer = 0.0
 		state.hp = state.max_hp * balance.item_revive_hp
 		events.toast("TOAST_REVIVED")
+		procs.on_revive(peer)
 		return
 	state.downed_times.append(run_time)
+	if state.last_cause != &"":
+		state.downed_by[state.last_cause] = state.downed_by.get(state.last_cause, 0) + 1
 	# Nachspielzeit: down is out for good (no respawn, no teammate, the Wirtshäuser are shut). When the
 	# last one falls, a moment of slow motion, then the end screen.
 	if phase == Phase.SPERRSTUND:
@@ -1216,6 +1332,8 @@ func _world_frame() -> WorldStateCodec.Frame:
 		e.rerolls = state.build.rerolls
 		e.banishes = state.build.banishes
 		e.chests_opened = state.chests_opened
+		e.chests_bought = state.chests_bought
+		e.shield = state.shield / maxf(state.max_hp, 1.0)
 		e.schilling = _schilling_of(peer)
 		e.weapons = state.build.weapon_rows()
 		e.passives = state.build.passive_rows()
@@ -1231,10 +1349,12 @@ func _client_frame(delta: float) -> void:
 	replica.update(Time.get_ticks_msec(), delta)
 	_update_air_targets()
 	renderer.draw(replica.capacity, replica.alive, replica.x, replica.z, replica.yaw, replica.type,
-			replica.radius, replica.flash, replica.phase)
+			replica.radius, replica.flash, replica.phase, replica.status)
+	slime.update(delta, replica.capacity, replica.alive, replica.x, replica.z, replica.type)
 	brosel.draw()
 	projectiles.update(delta, null)
 	hazards.update(delta)
+	stairs.update(delta)
 	for at: Vector2 in replica.recent_deaths:
 		GameAudio.play(&"kill", Vector3(at.x, ground.height_at(at.x, at.y), at.y))
 	replica.recent_deaths.clear()
@@ -1260,6 +1380,7 @@ func _local_frame(delta: float) -> void:
 		player.stat_jump_height = build.stat(&"jump_height")
 		player.stat_extra_jumps = roundi(build.stat(&"extra_jumps"))
 		player.stat_glide = build.stat(&"glide")
+		player.stat_sure_footing = minf(build.stat(&"sure_footing"), balance.sure_footing_cap)
 		var peer_knodl: Knodl = knodls.get(peer)
 		if peer_knodl != null:
 			peer_knodl.string_mult = 1.0 + build.stat(&"string_length")
@@ -1298,7 +1419,9 @@ func _local_frame(delta: float) -> void:
 		if speisekarte.is_open():
 			speisekarte.show_player(state, knodl)
 		if inventory.is_open():
-			inventory.show_player(state, knodl, balance)
+			inventory.show_player(state, knodl, balance, ledger, NetworkManager.local_id(), run_time)
+		if pause.is_open():
+			pause.show_player(state, knodl, balance, ledger, NetworkManager.local_id(), run_time)
 	inventory.allowed = not speisekarte.is_open() and not pause.is_open() and phase != Phase.ENDED
 	if not inventory.allowed and inventory.is_open():
 		inventory.set_open(false)
@@ -1411,10 +1534,25 @@ func _bot_goal(local: Player, knodl: Knodl) -> Vector2:
 		var heal: int = loot.nearest(LootField.Kind.HEAL, at.x, at.z)
 		if heal >= 0 and here.distance_to(Vector2(loot.xs[heal], loot.zs[heal])) < 30.0:
 			return Vector2(loot.xs[heal], loot.zs[heal])
+	# A Marterl close by first (the rarer chance), then chests it can pay, Fassl, and Der Standler once per
+	# visit when it can pay for something.
+	for k: int in sites.marterl_at.size():
+		var shrine: Vector3 = sites.marterl_at[k]
+		if sites.marterl_state[k] == RunSites.State.PLACED and here.distance_to(Vector2(shrine.x, shrine.z)) < 40.0:
+			return Vector2(shrine.x, shrine.z)
 	chest = loot.nearest(LootField.Kind.CHEST, at.x, at.z)
 	if chest >= 0 and state != null and state.build.gold >= _chest_price(chest, state) \
-			and here.distance_to(Vector2(loot.xs[chest], loot.zs[chest])) < 40.0:
+			and here.distance_to(Vector2(loot.xs[chest], loot.zs[chest])) < 70.0:
 		return Vector2(loot.xs[chest], loot.zs[chest])
+	var barrel: int = loot.nearest(LootField.Kind.FASSL, at.x, at.z)
+	if barrel >= 0 and here.distance_to(Vector2(loot.xs[barrel], loot.zs[barrel])) < 18.0:
+		return Vector2(loot.xs[barrel], loot.zs[barrel])
+	if sites.stand_at.is_finite() and _bot_shopped != sites.stand_visits and state != null 			and state.build.gold >= sites.price(0, 0, run_time):
+		var stall := Vector2(sites.stand_at.x, sites.stand_at.z)
+		if here.distance_to(stall) < balance.standler_radius * 0.6:
+			_bot_shopped = sites.stand_visits
+		elif here.distance_to(stall) < 60.0:
+			return stall
 	if knodl != null and knodl.knodl_mass >= balance.bot_cash_in_mass:
 		var wirt: Wirtshaus = _nearest_open_wirtshaus(at)
 		if wirt != null and at.distance_to(wirt.mat_centre()) < BOT_WIRT_REACH:
@@ -1571,7 +1709,7 @@ func _run_summary() -> Dictionary:
 		"brosel_alive": brosel.active_count, "result": Result.keys()[result], "stempel": stempel_found,
 		"hofrat_beaten": (gate_flags & WorldStateCodec.GATE_BOSS_BEATEN) != 0, "bosses_beaten": _bosses_beaten.duplicate(),
 		"character": String(character.id), "map": String(map.id), "grant": grant_index,
-		"overtime": snappedf(overtime_seconds(), 0.1)}
+		"overtime": snappedf(overtime_seconds(), 0.1), "daily": RunSetup.daily}
 	var boss_ids: Array = []
 	for beaten: Array in _bosses_beaten:
 		boss_ids.append(beaten[0])
@@ -1590,6 +1728,10 @@ func _run_summary() -> Dictionary:
 		summary["damage_taken"] = snappedf(state.damage_taken, 0.1)
 		summary["best_knodl_mass"] = snappedf(state.best_knodl_mass, 0.1)
 		summary["gold"] = state.build.gold
+		summary["gold_earned"] = state.build.gold_earned
+		summary["chests_bought"] = state.chests_bought
+		summary["chests_opened"] = state.chests_opened
+		summary["chest_times"] = Array(state.chest_times).map(func(t: float) -> int: return roundi(t))
 		summary["cash_ins"] = Array(state.cash_ins)
 		var total: int = 0
 		for count: int in state.cash_ins:
@@ -1641,9 +1783,12 @@ func _run_summary() -> Dictionary:
 		summary["knodl_kills"] = knodl.crushed
 		summary["auto_returns"] = knodl.auto_returns
 	if enemies != null:
+		summary.merge(_reckoning(id), true)
 		summary["kills"] = enemies.kills
 		summary["brosel_merges"] = brosel.merges
 		summary["cards_picked"] = level_flow.picks
+		summary["standler_buys"] = sites.bought_by(id)
+		summary["marterl_used"] = sites.marterl_by.get(id, 0)
 	else:
 		summary.merge(_host_summary, true)
 	return summary
@@ -1658,6 +1803,7 @@ func _shared_summary(peer: int) -> Dictionary:
 		by_type[String(enemy_id)] = _kills_by_type[enemy_id]
 	shared["kills"] = enemies.kills
 	shared["kills_by_type"] = by_type
+	shared.merge(_reckoning(peer), true)
 	var state: PlayerState = states.get(peer)
 	if state != null:
 		shared["deaths"] = state.deaths
@@ -1669,6 +1815,11 @@ func _shared_summary(peer: int) -> Dictionary:
 		shared["cash_in_total"] = total
 		shared["mass_eaten"] = snappedf(state.mass_eaten_by_enemies, 0.1)
 		shared["damage_taken"] = snappedf(state.damage_taken, 0.1)
+		shared["gold_earned"] = state.build.gold_earned
+		shared["chests_opened"] = state.chests_opened
+		shared["chest_times"] = Array(state.chest_times).map(func(t: float) -> int: return roundi(t))
+		shared["standler_buys"] = sites.bought_by(peer)
+		shared["marterl_used"] = sites.marterl_by.get(peer, 0)
 	var knodl: Knodl = knodls.get(peer)
 	if knodl != null:
 		shared["throws"] = knodl.throws
@@ -1766,6 +1917,8 @@ func _on_world_state(data: PackedByteArray) -> void:
 		state.life = e.life
 		state.pending_levels = e.pending_levels
 		state.chests_opened = e.chests_opened
+		state.chests_bought = e.chests_bought
+		state.shield = e.shield * state.max_hp
 		state.schilling = e.schilling
 		if not state.build.mirror(e.weapons, e.passives, e.items, e.gold, e.rerolls, e.banishes, e.chests_opened):
 			push_warning("World state names an item this build does not know.")
@@ -1808,7 +1961,7 @@ func _on_offer(data: PackedByteArray) -> void:
 		return
 	_offers_received += 1
 	match offer.type:
-		OfferCodec.Type.OFFER:
+		OfferCodec.Type.OFFER, OfferCodec.Type.SHOP:
 			_note_panel_mouse()
 			speisekarte.show_offer(offer, state.build)
 			# The host's own offer arrives deferred, after the HUD looked this frame: step back now,
@@ -1875,6 +2028,7 @@ func _on_peer_joined(peer_id: int) -> void:
 	var lying := RunEventCodec.Queue.new()
 	for slot: int in loot.all_slots():
 		lying.loot(loot.ids[slot], loot.kinds[slot], loot.xs[slot], loot.zs[slot], loot.values[slot])
+	sites.resend(lying)
 	var list: Array[RunEventCodec.Event] = lying.take()
 	while not list.is_empty():
 		NetworkManager.send_run_events_to(peer_id, RunEventCodec.encode(list.slice(0, RunEventCodec.MAX_EVENTS)))
@@ -1980,6 +2134,8 @@ func _spawn_player(peer_id: int, local: bool) -> Player:
 			for k: int in catalog.items.size():
 				if String(catalog.items[k].id) == item_id:
 					build.add_item(k)
+		# Testing: --gold=200 starts with that much gold (Der Standler's shop in the screenshots).
+		build.gold += maxi(LaunchArgs.get_int("gold", 0), 0)
 		states[peer_id] = PlayerState.new(peer_id, balance.player_max_hp, build)
 		states[peer_id].refresh_max_hp(balance.player_max_hp)
 		states[peer_id].hp = states[peer_id].max_hp
@@ -2066,6 +2222,13 @@ func _update_traits(delta: float) -> void:
 				state.build.banishes += 1
 			else:
 				_coffee_break(player.global_position)
+		if effects.has(&"idle_rate"):
+			var rate: float = effects[&"idle_rate"] if player.still_time >= balance.idle_seconds and not state.downed else 0.0
+			if rate != state.build.trait_rate:
+				state.build.trait_rate = rate
+				state.build.recompute()
+		if effects.has(&"trot") and knodls.has(peer):
+			(knodls[peer] as Knodl).damage_bonus = player.trot_bonus()
 		if effects.has(&"jump_wave"):
 			var jumps: int = player.jump_count if peer == NetworkManager.local_id() else player.last_input.jumps
 			var seen: int = _jumps_seen.get(peer, jumps)
@@ -2076,7 +2239,7 @@ func _update_traits(delta: float) -> void:
 				if count % every == 0:
 					var at: Vector3 = player.global_position
 					var damage: float = balance.jump_wave_damage * (1.0 + state.build.stat(&"damage"))
-					_ring_damage(at, balance.jump_wave_radius * (1.0 + state.build.stat(&"area")), damage, balance.jump_wave_knockback)
+					_ring_damage(at, balance.jump_wave_radius * (1.0 + state.build.stat(&"area")), damage, balance.jump_wave_knockback, peer)
 					events.cue(RunEventCodec.Cue.SHOCKWAVE, at.x, at.z)
 			timers[&"jumps"] = count
 			_jumps_seen[peer] = jumps
@@ -2100,7 +2263,7 @@ func _reflect_hit(peer: int, taken: float) -> void:
 			continue
 		var at: Vector3 = players[peer].global_position
 		var reach: float = owned.data.reach * Formulas.weapon_area(owned.data, owned.mods, build.stat(&"area"))
-		_ring_damage(at, reach, damage, owned.data.knockback)
+		_ring_damage(at, reach, damage, owned.data.knockback, peer)
 		events.cue(RunEventCodec.Cue.SHOCKWAVE, at.x, at.z)
 
 
@@ -2111,8 +2274,9 @@ func _coffee_break(at: Vector3) -> void:
 		enemies.slow(enemies.grid.results[k], 0.0, balance.coffee_seconds)
 
 
-## Damages and pushes every enemy within `radius` of `at` (Kevin's shockwave).
-func _ring_damage(at: Vector3, radius: float, damage: float, knockback: float) -> void:
+## Damages and pushes every enemy within `radius` of `at` (Kevin's shockwave); `peer`'s extra damage.
+func _ring_damage(at: Vector3, radius: float, damage: float, knockback: float, peer: int = 0) -> void:
+	enemies.source = _source(peer, "extra", "extra") if players.has(peer) else -1
 	var found: int = enemies.grid.query(at.x, at.z, radius)
 	for k: int in found:
 		var j: int = enemies.grid.results[k]
@@ -2121,10 +2285,13 @@ func _ring_damage(at: Vector3, radius: float, damage: float, knockback: float) -
 			continue
 		away = away.normalized() if away.length() > 0.01 else Vector2.RIGHT
 		enemies.damage(j, damage, away.x * knockback, away.y * knockback)
+	enemies.source = -1
 
 
 ## Every role: a ring that grows and fades where a shockwave went off (a few, reused in turn).
-func _show_shockwave(x: float, z: float) -> void:
+func _show_shockwave(x: float, z: float, radius: float = -1.0) -> void:
+	if radius < 0.0:
+		radius = balance.jump_wave_radius
 	if _shockwaves.is_empty():
 		for k: int in SHOCKWAVES:
 			var ring := MeshInstance3D.new()
@@ -2141,11 +2308,15 @@ func _show_shockwave(x: float, z: float) -> void:
 			_shockwaves.append(ring)
 			_shockwave_materials.append(material)
 			_shockwave_times.append(SHOCKWAVE_SECONDS)
+			_shockwave_sizes.append(balance.jump_wave_radius)
 	var k: int = _shockwave_next
 	_shockwave_next = (_shockwave_next + 1) % SHOCKWAVES
 	_shockwaves[k].global_position = Vector3(x, ground.height_at(x, z) + 0.15, z)
 	_shockwave_times[k] = 0.0
-	GameAudio.play(&"slam", _shockwaves[k].global_position)
+	_shockwave_sizes[k] = radius
+	# Item sparks are small and many: only the big rings slam.
+	if radius >= balance.jump_wave_radius:
+		GameAudio.play(&"slam", _shockwaves[k].global_position)
 
 
 func _move_shockwave(delta: float) -> void:
@@ -2154,7 +2325,7 @@ func _move_shockwave(delta: float) -> void:
 		var t: float = _shockwave_times[k] / SHOCKWAVE_SECONDS
 		_shockwaves[k].visible = t < 1.0
 		if t < 1.0:
-			_shockwaves[k].scale = Vector3.ONE * balance.jump_wave_radius * lerpf(0.3, 1.0, sqrt(t))
+			_shockwaves[k].scale = Vector3.ONE * _shockwave_sizes[k] * lerpf(0.3, 1.0, sqrt(t))
 			_shockwave_materials[k].set_shader_parameter(&"progress", t)
 
 
@@ -2179,7 +2350,7 @@ func _update_item_effects(delta: float) -> void:
 			if last == Knodl.State.THROWN and knodl.state != Knodl.State.THROWN and build.effect(&"knodl_burst") > 0.0:
 				var at: Vector3 = knodl.global_position
 				var damage: float = balance.powidl_damage * knodl.radius * (1.0 + build.stat(&"damage"))
-				_ring_damage(at, knodl.radius + balance.powidl_radius, damage, 10.0)
+				_ring_damage(at, knodl.radius + balance.powidl_radius, damage, 10.0, peer)
 				knodl.set_knodl_mass(knodl.knodl_mass * (1.0 - balance.powidl_cost))
 				events.cue(RunEventCodec.Cue.SHOCKWAVE, at.x, at.z)
 			_knodl_state_last[peer] = knodl.state
@@ -2190,7 +2361,7 @@ func _update_item_effects(delta: float) -> void:
 			if _bell_timers[peer] >= balance.bell_seconds:
 				_bell_timers[peer] = 0.0
 				var at: Vector3 = player.global_position
-				_ring_damage(at, balance.bell_radius * (1.0 + build.stat(&"area")), balance.bell_damage * (1.0 + build.stat(&"damage")), 12.0)
+				_ring_damage(at, balance.bell_radius * (1.0 + build.stat(&"area")), balance.bell_damage * (1.0 + build.stat(&"damage")), 12.0, peer)
 				events.cue(RunEventCodec.Cue.SHOCKWAVE, at.x, at.z)
 				GameAudio.play(&"gate_open", at)
 
@@ -2224,8 +2395,11 @@ func _update_second_knodl(peer: int, wanted: bool, where: Vector3 = Vector3.INF)
 ## Host: Schweizerkracher blasts at a few of this frame's kills.
 func _kill_blasts() -> void:
 	var chance: float = 0.0
+	var holder: int = 0
 	for peer: int in states:
 		chance += states[peer].build.effect(&"kill_blast")
+		if holder == 0 and states[peer].build.effect(&"kill_blast") > 0.0:
+			holder = peer
 	if chance <= 0.0:
 		return
 	var blasts: int = 0
@@ -2235,7 +2409,7 @@ func _kill_blasts() -> void:
 		blasts += 1
 		var x: float = enemies.kill_x[k]
 		var z: float = enemies.kill_z[k]
-		_ring_damage(Vector3(x, 0.0, z), balance.kracher_radius, balance.kracher_damage, 8.0)
+		_ring_damage(Vector3(x, 0.0, z), balance.kracher_radius, balance.kracher_damage, 8.0, holder)
 		events.cue(RunEventCodec.Cue.SHOCKWAVE, x, z)
 
 
@@ -2250,6 +2424,37 @@ func _lock_content(build: PlayerBuild) -> void:
 	for k: int in catalog.items.size():
 		if not Profile.is_unlocked(&"item", catalog.items[k].id):
 			build.locked[Card.Kind.ITEM * 256 + k] = true
+
+
+## Host: the damage source id of a player's weapon, Knödl or extras (Run-Abrechnung).
+func _source(peer: int, kind: String, id: String) -> int:
+	var key: String = "%d|%s|%s" % [peer, kind, id]
+	var found: int = _source_ids.get(key, -1)
+	if found < 0:
+		found = _sources.size()
+		_sources.append([peer, kind, id])
+		_source_ids[key] = found
+	return found
+
+
+## Host: one player's Run-Abrechnung: damage and kills per weapon (by weapon id), by the Knödl and by
+## extras, and what knocked them down how often (enemy id -> n).
+func _reckoning(peer: int) -> Dictionary:
+	var damage: Dictionary = {}
+	var kills: Dictionary = {}
+	for id: int in mini(_sources.size(), enemies.dealt.size()):
+		var entry: Array = _sources[id]
+		if int(entry[0]) != peer:
+			continue
+		var key: String = str(entry[2])
+		damage[key] = snappedf(float(damage.get(key, 0.0)) + enemies.dealt[id], 0.1)
+		kills[key] = int(kills.get(key, 0)) + enemies.source_kills[id]
+	var downed: Dictionary = {}
+	var state: PlayerState = states.get(peer)
+	if state != null:
+		for cause: StringName in state.downed_by:
+			downed[String(cause)] = state.downed_by[cause]
+	return {"damage_by_source": damage, "kills_by_source": kills, "downed_by": downed}
 
 
 ## Host: the Schilling a player's run is worth so far (GAME-DESIGN.md: gold, cash-ins, and 25 % of the
@@ -2280,7 +2485,9 @@ func _record_profile(outcome: String) -> void:
 	var summary: Dictionary = _run_summary()
 	summary["result"] = outcome
 	_reward = Profile.record_run(summary)
-	Profile.remember_choice(character.id, map.id, grant_index)
+	# A Tageskarte run leaves the player's own choice on the Play screen alone.
+	if RunSetup.daily == "":
+		Profile.remember_choice(character.id, map.id, grant_index)
 	if outcome != "QUIT" and NetworkManager.is_host():
 		Board.submit({
 			"names": _board_names(), "characters": _board_characters(), "result": outcome,
@@ -2389,8 +2596,12 @@ func _resolve_hazards() -> void:
 				if at.y - ground.height_at(at.x, at.z) > balance.hazard_dodge_height:
 					continue
 				if HazardField.contains(h, at.x, at.z, balance.player_radius):
+					state.last_cause = types[enemies.type[h.source]].id if h.source >= 0 else &"attack"
+					var hp_before: float = state.hp
 					if state.hurt(Formulas.hit_damage(attack.damage * grant.enemy_damage, state.build.stat(&"armor"), balance), balance):
 						on_downed(peer)
+					if state.hp < hp_before:
+						procs.on_hurt(peer, hp_before - state.hp)
 		if attack.dash and h.source >= 0:
 			if bosses.is_boss_slot(h.source):
 				bosses.on_hit(h)
@@ -2519,6 +2730,109 @@ func _start_bus() -> void:
 	events.bus(x, z, atan2(centre.x - x, centre.z - z))
 
 
+## Host: about once a second, every player's damage so far per weapon, item, Knödl and extras (and
+## the procs per item) as DAMAGE events, for the build view on every machine.
+func _send_damage(delta: float) -> void:
+	_ledger_timer -= delta
+	if _ledger_timer > 0.0:
+		return
+	_ledger_timer = 1.0
+	for id: int in _sources.size():
+		var entry: Array = _sources[id]
+		var peer: int = int(entry[0])
+		var name: String = str(entry[2])
+		var kind: int = DamageLedger.Kind.EXTRA
+		var index: int = 0
+		var count: int = 0
+		match str(entry[1]):
+			"weapon":
+				kind = DamageLedger.Kind.WEAPON
+				index = _weapon_index(name)
+			"item":
+				kind = DamageLedger.Kind.ITEM
+				index = _item_index(name)
+				count = procs.procs_of(peer, name)
+			"knodl":
+				kind = DamageLedger.Kind.KNODL
+		if index < 0:
+			continue
+		var total: float = enemies.dealt[id] if id < enemies.dealt.size() else 0.0
+		var key: String = DamageLedger.key(peer, kind as DamageLedger.Kind, index)
+		var now := Vector2(total, count)
+		# Weapons and the Knödl always (the 30 s window needs the samples), the rest when it changed.
+		if _ledger_sent.get(key, Vector2(-1.0, -1.0)) == now and kind == DamageLedger.Kind.ITEM:
+			continue
+		_ledger_sent[key] = now
+		events.damage(peer, kind, index, total, count)
+
+
+func _weapon_index(id: String) -> int:
+	for k: int in catalog.weapons.size():
+		if String(catalog.weapons[k].id) == id:
+			return k
+	return -1
+
+
+func _item_index(id: String) -> int:
+	for k: int in catalog.items.size():
+		if String(catalog.items[k].id) == id:
+			return k
+	return -1
+
+
+## Host: Fassl stand around the players (a new one every few seconds, far ones go) and burst into
+## coins when a player walks into one or a Knödl rolls over it.
+func _update_fassl(delta: float) -> void:
+	if phase != Phase.RUNNING:
+		return
+	var positions: PackedVector3Array = _player_positions()
+	if positions.is_empty():
+		return
+	var standing: int = 0
+	for slot: int in loot.capacity:
+		if loot.alive[slot] == 0 or loot.kinds[slot] != LootField.Kind.FASSL:
+			continue
+		var x: float = loot.xs[slot]
+		var z: float = loot.zs[slot]
+		var near: float = INF
+		var breaker: int = 0
+		for peer: int in players:
+			var at: Vector3 = players[peer].global_position
+			var d: float = Vector2(at.x - x, at.z - z).length()
+			near = minf(near, d)
+			if d < balance.fassl_break_radius and not states[peer].downed:
+				breaker = peer
+		for peer: int in knodls:
+			var ball: Knodl = knodls[peer]
+			if Vector2(ball.global_position.x - x, ball.global_position.z - z).length() < ball.radius + 0.5:
+				breaker = peer
+		if breaker != 0:
+			_take_loot(slot, breaker)
+			for c: int in balance.fassl_coins:
+				var angle: float = TAU * c / maxi(balance.fassl_coins, 1)
+				_drop_loot(LootField.Kind.COIN, x + cos(angle) * 1.2, z + sin(angle) * 1.2,
+						Formulas.coin_value(run_time, balance) * sites.gold_mult())
+		elif near > balance.fassl_far:
+			_take_loot(slot, 0)
+		else:
+			standing += 1
+	_fassl_timer -= delta
+	if standing >= balance.fassl_count or _fassl_timer > 0.0 or loot.count >= balance.coin_loot_cap:
+		return
+	_fassl_timer = balance.fassl_respawn if standing > 0 else 0.0
+	# Somewhere flat a little off one player, about as high as they stand (not up on a roof).
+	var centre: Vector3 = positions[_loot_rng.randi_range(0, positions.size() - 1)]
+	var half: float = map.half_size - 4.0
+	for attempt: int in 6:
+		var angle: float = _loot_rng.randf() * TAU
+		var reach: float = _loot_rng.randf_range(balance.fassl_min, balance.fassl_max)
+		var x: float = clampf(centre.x + cos(angle) * reach, -half, half)
+		var z: float = clampf(centre.z + sin(angle) * reach, -half, half)
+		if ground.slope_at(x, z) < 0.3 and absf(ground.height_at(x, z) - centre.y) < 2.5:
+			_drop_loot(LootField.Kind.FASSL, x, z, 0)
+			return
+
+
 ## Host: players walking over loot: coins, Gulasch, Stempel, chests (map chests cost gold).
 func _collect_loot(delta: float) -> void:
 	for peer: int in _no_gold_timers.keys():
@@ -2561,8 +2875,10 @@ func _collect_loot(delta: float) -> void:
 							# Zweitschlüssel vom Gemeindeamt: sometimes the chest is open anyway.
 							if _loot_rng.randf() >= state.build.effect(&"free_chest"):
 								state.build.gold -= price
+								state.chests_bought += 1
 							var rarity: int = LootField.chest_rarity(loot.values[slot])
 							state.chests_opened += 1
+							state.chest_times.append(run_time)
 							state.build.set_chests_opened(state.chests_opened)
 							_take_loot(slot, peer)
 							level_flow.give_chest(peer, state, CHEST_TIER_MAP, balance.map_chest_items, false, 0, rarity)
@@ -2594,10 +2910,9 @@ func _mark_chest_prices(from: Vector3) -> void:
 		hud.marker(camera, at, tr("HUD_CHEST_MARKER") % price, "accent" if state.build.gold >= price else "muted")
 
 
-## What a map chest costs this player: its base price, dearer for every chest they opened.
+## What a map chest costs this player: its base price, dearer for every chest they bought.
 func _chest_price(slot: int, state: PlayerState) -> int:
-	var opened: int = state.chests_opened if state != null else 0
-	return LootField.chest_low(loot.values[slot]) + balance.map_chest_price_step * opened
+	return Formulas.chest_price(LootField.chest_low(loot.values[slot]), state.chests_bought if state != null else 0, balance)
 
 
 func _take_loot(slot: int, peer: int) -> void:
@@ -2612,7 +2927,10 @@ func _take_loot(slot: int, peer: int) -> void:
 ## state.
 func _flush_events() -> void:
 	for h: HazardField.Hazard in hazards.take_made():
-		events.hazard(h)
+		if h.tag >= 0:
+			events.lock(h.tag, h.telegraph, h.attack.lock_seconds)
+		else:
+			events.hazard(h)
 		if h.source >= 0 and enemies.alive[h.source] != 0:
 			voices.offer(h.source, VoiceLineData.Moment.ATTACK)
 	for key: String in bosses.take_toasts():
@@ -2655,6 +2973,10 @@ func _on_run_events(data: PackedByteArray) -> void:
 				loot.add_remote(e.id, e.a, e.x, e.z, e.b)
 			RunEventCodec.Kind.TAKEN:
 				loot.remove(e.id)
+			RunEventCodec.Kind.LOCK:
+				if e.a < stairs.feet.size():
+					hazards.add_slope(stairs.mark_foot(e.a), stairs.mark_top(e.a), stairs.widths[e.a] * 0.5, e.seconds)
+					_hazards_seen += 1
 
 
 ## Every role: the sound, toast or look of a run event.
@@ -2664,6 +2986,11 @@ func _present(e: RunEventCodec.Event) -> void:
 		RunEventCodec.Kind.HAZARD:
 			if local != null and Vector2(e.x - local.global_position.x, e.z - local.global_position.z).length() < e.radius + e.length + 10.0:
 				GameAudio.play(&"warn", Vector3(e.x, ground.height_at(e.x, e.z), e.z))
+		RunEventCodec.Kind.LOCK:
+			stairs.lock(e.a, e.seconds, e.length)
+			print("[RUN] stairs locked %d for %.0f s t=%.1f" % [e.a, e.length, run_time])
+			if e.a < stairs.feet.size():
+				GameAudio.play(&"warn", stairs.feet[e.a])
 		RunEventCodec.Kind.TAKEN:
 			var slot: int = loot.slot_of(e.id)
 			if slot < 0:
@@ -2676,6 +3003,9 @@ func _present(e: RunEventCodec.Event) -> void:
 					GameAudio.play(&"heal", at)
 				LootField.Kind.STEMPEL:
 					GameAudio.play(&"stempel", at)
+				LootField.Kind.FASSL:
+					if e.b != 0:
+						GameAudio.play(&"knodl_hit", at)
 				_:
 					GameAudio.play(&"chest", at)
 		RunEventCodec.Kind.TOAST:
@@ -2704,8 +3034,14 @@ func _present(e: RunEventCodec.Event) -> void:
 				GameAudio.play(&"gate_open")
 			elif e.a == RunEventCodec.Cue.SHOCKWAVE:
 				_show_shockwave(e.x, e.z)
+			elif e.a == RunEventCodec.Cue.SPARK:
+				_show_shockwave(e.x, e.z, balance.spark_radius)
 		RunEventCodec.Kind.SAY:
 			voices.present(e.a, e.b, e.id, e.x, e.z)
+		RunEventCodec.Kind.SITE:
+			sites.present(e)
+		RunEventCodec.Kind.DAMAGE:
+			ledger.record(e.b, e.a, e.c, e.x, e.id, run_time)
 
 
 ## Every role: the gate, the boss bar, the Formular line, markers, hints, music and the local
@@ -2811,10 +3147,11 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 	for h: HazardField.Hazard in hazards.struck:
 		GameAudio.play(&"slam", Vector3(h.x, ground.height_at(h.x, h.z), h.z))
 	if local != null:
+		local.ground_slow = 1.0 - (1.0 - slime.speed_factor(local.global_position)) * (1.0 - local.stat_sure_footing)
 		GameAudio.set_listener(local.global_position)
 		voices.update_view(delta, local.global_position)
 	if phase == Phase.RUNNING:
-		GameAudio.music(&"boss" if boss_alive else &"kirtag")
+		GameAudio.music(&"boss" if boss_alive else (map.music if map != null else &"kirtag"))
 		if not boss_alive:
 			GameAudio.set_music_speed(1.0 + 0.12 * clampf(run_time / balance.run_seconds, 0.0, 1.0))
 	elif phase == Phase.SPERRSTUND:
@@ -2919,3 +3256,21 @@ func _load_character(id: String) -> CharacterData:
 		push_warning("Unknown character '%s', playing Onkel Ferdl." % id)
 		path = CHARACTER_DIR.path_join("ferdl.tres")
 	return load(path) as CharacterData
+
+
+## Test flag `projectiles=<n>`: the stress test's feeder (golden-angle spread, players in turn), so a
+## real map can be measured with 500 enemies + 300 projectiles. Counts as "Sonstiges" damage.
+func _fire_test_shots(delta: float) -> void:
+	var origins: PackedVector3Array = PackedVector3Array()
+	for peer: int in players:
+		origins.append(players[peer].global_position)
+	if origins.is_empty():
+		return
+	_test_shot_budget = minf(_test_shot_budget + balance.projectile_fire_rate * delta, float(_test_shots))
+	var fired: int = 0
+	while _test_shot_budget >= 1.0 and projectiles.active_count < _test_shots and projectiles.has_free():
+		_test_shot_budget -= 1.0
+		_test_shot_angle += 2.39996
+		var origin: Vector3 = origins[fired % origins.size()]
+		projectiles.fire(origin.x, origin.z, cos(_test_shot_angle), sin(_test_shot_angle))
+		fired += 1

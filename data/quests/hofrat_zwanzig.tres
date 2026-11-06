@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_l2a68"]
+
+[resource]
+script = ExtResource("1_l2a68")
+id = &"hofrat_zwanzig"
+title_key = "QUEST_HOFRAT_ZWANZIG"
+desc_key = "DESC_QUEST_HOFRAT_ZWANZIG"
+kind = &"bosses"
+filter = &"hofrat"
+target = 20.0
+reward_schilling = 400
+unlock_kind = &"item"
+unlock_id = &"dreschflegel"

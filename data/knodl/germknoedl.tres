@@ -7,6 +7,7 @@ script = ExtResource("1_script")
 id = &"germknoedl"
 name_key = "KNODL_GERM"
 bounce = 0.8
+sweet = true
 throw_distance_mult = 2.0
 color = Color(0.97, 0.95, 0.9, 1)
 crumb_color = Color(0.8, 0.75, 0.7, 1)

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/slalom_gewitter.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"slalom_gewitter"
+name_key = "WEAPON_SLALOM_GEWITTER"
+desc_key = "DESC_WEAPON_SLALOM_GEWITTER"
+pattern = 1
+look = 2
+cooldown = 0.55
+damage = 4.5
+crit_chance = 0.15
+knockback = 6.0
+projectile_speed = 26.0
+projectile_lifetime = 0.9
+pierce = 6
+projectile_radius = 0.45
+spread_degrees = 12.0
+amount = 3
+color = Color(1.0, 0.95, 0.55, 1)
+is_evolution = true
+icon = ExtResource("9_icon")
+level_mods = Dictionary[StringName, float]({&"damage": 0.27, &"rate": 0.1, &"area": 0.1, &"amount": 1.0})
+max_amount = 9

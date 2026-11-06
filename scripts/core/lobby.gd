@@ -231,6 +231,7 @@ func _on_run_start(new_setup: Dictionary) -> void:
 	RunSetup.map = str(setup.get("map", RunSetup.map))
 	RunSetup.grant = int(setup.get("grant", RunSetup.grant))
 	RunSetup.seed = int(setup.get("seed", -1))
+	RunSetup.daily = ""
 	var mine: Dictionary = NetworkManager.profiles.get(NetworkManager.local_id(), NetworkManager.local_profile)
 	RunSetup.character = str(mine.get("character", RunSetup.character))
 	RunSetup.from_menu = not _automated

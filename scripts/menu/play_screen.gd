@@ -9,12 +9,16 @@ signal start_pressed(character: StringName, map: StringName, grant: int)
 signal closed
 
 const CARD := Vector2(136.0, 136.0)
+## Two rows of cards: 4 columns for up to 8 Knödlinger, up to MAX_COLUMNS narrower ones beyond.
 const COLUMNS: int = 4
+const MAX_COLUMNS: int = 6
+const NARROW_CARD_WIDTH: float = 112.0
 
 var content: GameContent
 var _character: StringName = &""
 var _map: StringName = &""
 var _character_cards: Dictionary[StringName, Button] = {}
+var _card_size: Vector2 = CARD
 ## The chosen map: swatch and name between the ‹ › pills.
 var _map_card: PanelContainer
 var _map_swatch: ColorRect
@@ -41,7 +45,8 @@ func _init(p_content: GameContent) -> void:
 	column.add_child(header)
 	header.add_child(UiStyle.label(&"LabelTitle", tr("PLAY_TITLE")))
 	var grid := GridContainer.new()
-	grid.columns = COLUMNS
+	grid.columns = clampi(ceili(content.characters.size() / 2.0), COLUMNS, MAX_COLUMNS)
+	_card_size = CARD if grid.columns <= COLUMNS else Vector2(NARROW_CARD_WIDTH, CARD.y)
 	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_child(grid)
 	for character: CharacterData in content.characters:
@@ -63,7 +68,7 @@ func _init(p_content: GameContent) -> void:
 	weapon_row.add_child(_knodl_name)
 	_trait = UiStyle.label(&"LabelMuted")
 	_trait.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_trait.custom_minimum_size = Vector2(CARD.x * COLUMNS + 8.0 * (COLUMNS - 1), 0.0)
+	_trait.custom_minimum_size = Vector2(_card_size.x * grid.columns + 8.0 * (grid.columns - 1), 0.0)
 	detail.add_child(_trait)
 	# Map and Grant level side by side.
 	var choices := UiStyle.hbox(&"Row32")
@@ -148,7 +153,7 @@ func focus_first() -> void:
 
 func _character_card(character: CharacterData) -> Button:
 	var card := Button.new()
-	card.custom_minimum_size = CARD
+	card.custom_minimum_size = _card_size
 	card.theme_type_variation = &"CardRarity0"
 	card.focus_entered.connect(func() -> void: _select_character(character.id))
 	card.pressed.connect(func() -> void: _select_character(character.id))

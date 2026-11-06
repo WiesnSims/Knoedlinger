@@ -1,8 +1,9 @@
 class_name WeaponSystem
 extends RefCounted
 ## Fires every player's weapons on the host (auto-attack: GAME-DESIGN.md pillar 1) and applies the
-## damage through EnemyManager's grid. Patterns: ARC (melee arc or cone toward the aim, a second
-## one behind from amount 2), PROJECTILE (piercing shots toward the aim, boomerangs come back),
+## damage through EnemyManager's grid. Patterns: ARC (melee arc or cone toward the aim; from amount 2
+## more swings share the circle), PROJECTILE (piercing shots toward the aim, boomerangs come back,
+## lobbed shots hop and splash),
 ## RING (a shockwave all around), AURA (hurts everything close at every tick), ORBIT (pieces circling
 ## the player), DROP (impacts on enemies nearby), MINE (blasts where the player stood, later) and
 ## CHAIN (a hit jumping from enemy to enemy). Hits can burn and slow (WeaponData "On hit").
@@ -14,18 +15,26 @@ extends RefCounted
 ## Below the player's hand: where shots start and orbit pieces fly.
 const SHOT_HEIGHT: float = 1.0
 
+## The knockback stat (Gummistiefel) of the player whose weapons fire right now, as a factor on
+## every weapon's knockback; 1 outside update().
+static var knock: float = 1.0
+
 
 ## Host: one player's weapons for this frame.
 static func update(build: PlayerBuild, player: Player, enemies: EnemyManager, projectiles: ProjectilePool,
 		run_time: float, delta: float, rng: RandomNumberGenerator, balance: BalanceData) -> void:
+	knock = 1.0 + build.stat(&"knockback")
 	for owned: PlayerBuild.OwnedWeapon in build.weapons:
 		var weapon: WeaponData = owned.data
 		owned.impacts.clear()
-		if weapon.pattern == WeaponData.Pattern.MINE:
-			_tick_mines(owned, enemies, delta, Formulas.weapon_area(weapon, owned.mods, build.stat(&"area")),
-					Formulas.weapon_damage(weapon, owned.mods, build.stat(&"damage")), build.stat(&"duration"))
+		enemies.source = owned.source
+		projectiles.source = owned.source
 		var area: float = Formulas.weapon_area(weapon, owned.mods, build.stat(&"area"))
-		var damage: float = Formulas.weapon_damage(weapon, owned.mods, build.stat(&"damage"))
+		var damage: float = Formulas.weapon_damage(weapon, owned.mods, build.stat(&"damage") + build.cond_damage)
+		if weapon.pattern == WeaponData.Pattern.MINE:
+			_tick_mines(owned, enemies, delta, area, damage, build.stat(&"duration"))
+		elif not owned.mines.is_empty():
+			_tick_pulls(owned, enemies, delta, area, damage)
 		var crit: float = Formulas.weapon_crit(weapon, owned.mods, build.stat(&"crit"))
 		if weapon.pattern == WeaponData.Pattern.ORBIT:
 			orbit_hit(owned, player.global_position, enemies, run_time, area, damage, crit, build.stat(&"move_speed"), rng)
@@ -40,20 +49,22 @@ static func update(build: PlayerBuild, player: Player, enemies: EnemyManager, pr
 		var hit_damage: float = damage * (weapon.crit_multiplier if rng.randf() < crit else 1.0)
 		var origin: Vector3 = player.global_position
 		var facing: Vector3 = player.facing_direction()
-		var amount: int = Formulas.weapon_amount(weapon, owned.mods)
+		var amount: int = Formulas.weapon_amount(weapon, owned.mods, owned.extra_amount)
 		if weapon.pattern == WeaponData.Pattern.ARC or weapon.pattern == WeaponData.Pattern.PROJECTILE:
 			facing = aim_at_nearest(origin, facing, enemies, aim_reach(weapon, area, build.stat(&"duration")),
 					weapon.height_reach)
 			owned.aim = aim_byte(facing)
 		match weapon.pattern:
 			WeaponData.Pattern.ARC:
-				arc_hit(weapon, origin, facing, enemies, hit_damage, area)
-				if amount >= 2:
-					arc_hit(weapon, origin, -facing, enemies, hit_damage, area)
+				for k: int in amount:
+					arc_hit(weapon, origin, facing.rotated(Vector3.UP, arc_turn(k, amount)), enemies, hit_damage, area)
 			WeaponData.Pattern.PROJECTILE:
 				fire_shots(weapon, origin, facing, amount, area, hit_damage, projectiles, build.stat(&"duration"))
 			WeaponData.Pattern.RING, WeaponData.Pattern.AURA:
-				ring_hit(weapon, origin, enemies, hit_damage, weapon.reach * area)
+				if weapon.pull_seconds > 0.0:
+					owned.mines.append(Vector3(origin.x, origin.z, weapon.pull_seconds))
+				else:
+					ring_hit(weapon, origin, enemies, hit_damage, weapon.reach * area)
 			WeaponData.Pattern.DROP:
 				drop_hit(owned, origin, enemies, hit_damage, area, amount, rng, build.stat(&"duration"))
 			WeaponData.Pattern.MINE:
@@ -64,6 +75,13 @@ static func update(build: PlayerBuild, player: Player, enemies: EnemyManager, pr
 			WeaponData.Pattern.CHAIN:
 				chain_hit(owned, origin, enemies, hit_damage, area, amount, build.stat(&"duration"))
 		owned.fires = (owned.fires + 1) & 0xFF
+	knock = 1.0
+
+
+## ARC: how far swing `k` of `amount` is turned from the aim; they share the circle evenly (two:
+## one in front, one behind; Viererzug: four lashes).
+static func arc_turn(k: int, amount: int) -> float:
+	return TAU * k / amount
 
 
 ## How far an ARC or PROJECTILE weapon looks for a target: its reach, or how far its shots fly
@@ -140,7 +158,10 @@ static func arc_hit(weapon: WeaponData, origin: Vector3, facing: Vector3, enemie
 			continue
 		if absf(enemies.ground_at(enemies.pos_x[j], enemies.pos_z[j]) - origin.y) > weapon.height_reach:
 			continue
-		apply_hit(weapon, enemies, j, damage, to.x * weapon.knockback, to.y * weapon.knockback)
+		var amount: float = damage
+		if weapon.tip_length > 0.0 and d > reach_base - weapon.tip_length * area:
+			amount *= weapon.tip_multiplier
+		apply_hit(weapon, enemies, j, amount, to.x * weapon.knockback * knock, to.y * weapon.knockback * knock)
 		hit += 1
 	return hit
 
@@ -172,13 +193,15 @@ static func enemies_near(enemies: EnemyManager, x: float, z: float, radius: floa
 	return out
 
 
-## Blasts at (x, z): everything in the radius is hit and pushed outward.
+## Blasts at (x, z): everything in the radius is hit and pushed outward (`knockback` < 0: the weapon's).
 static func blast(weapon: WeaponData, enemies: EnemyManager, x: float, z: float, radius: float, damage: float,
-		duration: float) -> void:
+		duration: float, knockback: float = -1.0) -> void:
+	if knockback < 0.0:
+		knockback = weapon.knockback * knock
 	for j: int in enemies_near(enemies, x, z, radius):
 		var away := Vector2(enemies.pos_x[j] - x, enemies.pos_z[j] - z)
 		away = away.normalized() if away.length() > 0.01 else Vector2.RIGHT
-		apply_hit(weapon, enemies, j, damage, away.x * weapon.knockback, away.y * weapon.knockback, duration)
+		apply_hit(weapon, enemies, j, damage, away.x * knockback, away.y * knockback, duration)
 
 
 ## DROP: `amount` impacts on random enemies within reach (stamps, hail, snow globes).
@@ -214,6 +237,31 @@ static func _tick_mines(owned: PlayerBuild.OwnedWeapon, enemies: EnemyManager, d
 		owned.mines.remove_at(k)
 
 
+## RING with a pull (Harmonika): while a pull runs, enemies in reach are drawn toward where it
+## started; when it ends, the ring goes off there. The pulls wait in `mines` like mines do.
+static func _tick_pulls(owned: PlayerBuild.OwnedWeapon, enemies: EnemyManager, delta: float, area: float,
+		damage: float) -> void:
+	var weapon: WeaponData = owned.data
+	var radius: float = weapon.reach * area
+	var k: int = 0
+	while k < owned.mines.size():
+		var pull: Vector3 = owned.mines[k]
+		pull.z -= delta
+		if pull.z > 0.0:
+			owned.mines[k] = pull
+			for j: int in enemies_near(enemies, pull.x, pull.y, radius):
+				var to := Vector2(pull.x - enemies.pos_x[j], pull.y - enemies.pos_z[j])
+				var d: float = to.length()
+				if d > 1.0:
+					var step: float = minf(weapon.pull_speed * delta, d - 1.0)
+					enemies.shove(j, enemies.pos_x[j] + to.x / d * step, enemies.pos_z[j] + to.y / d * step)
+			k += 1
+			continue
+		owned.impacts.append(Vector2(pull.x, pull.y))
+		ring_hit(weapon, Vector3(pull.x, enemies.ground_at(pull.x, pull.y), pull.y), enemies, damage, radius)
+		owned.mines.remove_at(k)
+
+
 ## CHAIN: the nearest enemy within reach, then the nearest one not hit yet within chain_range of the
 ## last, `amount` times; each jump hits a little softer.
 static func chain_hit(owned: PlayerBuild.OwnedWeapon, origin: Vector3, enemies: EnemyManager, damage: float, area: float,
@@ -241,7 +289,8 @@ static func chain_hit(owned: PlayerBuild.OwnedWeapon, origin: Vector3, enemies: 
 		x = enemies.pos_x[best]
 		z = enemies.pos_z[best]
 		owned.impacts.append(Vector2(x, z))
-		apply_hit(weapon, enemies, best, damage * pow(0.85, k), dir.x * weapon.knockback, dir.y * weapon.knockback, duration)
+		apply_hit(weapon, enemies, best, damage * pow(0.85, k), dir.x * weapon.knockback * knock,
+				dir.y * weapon.knockback * knock, duration)
 		reach = weapon.chain_range * area
 
 
@@ -264,24 +313,29 @@ static func ring_hit(weapon: WeaponData, origin: Vector3, enemies: EnemyManager,
 			continue
 		var d: float = sqrt(d_sq)
 		var away := Vector2(dx, dz) / d if d > 0.001 else Vector2.RIGHT
-		apply_hit(weapon, enemies, j, damage, away.x * weapon.knockback, away.y * weapon.knockback)
+		apply_hit(weapon, enemies, j, damage, away.x * weapon.knockback * knock, away.y * weapon.knockback * knock)
 		hit += 1
 	return hit
 
 
-## `amount` shots fanned out around the facing direction.
+## `amount` shots fanned out around the facing direction. A lobbed shot (hops) carries its splash
+## radius instead of its hit radius.
 static func fire_shots(weapon: WeaponData, origin: Vector3, facing: Vector3, amount: int, area: float,
 		damage: float, projectiles: ProjectilePool, duration: float = 0.0) -> void:
 	if projectiles == null:
 		return
-	var base: float = atan2(facing.x, facing.z)
-	var spread: float = deg_to_rad(weapon.spread_degrees)
+	var radius: float = (weapon.impact_radius if weapon.hops > 0 else weapon.projectile_radius) * area
 	for k: int in amount:
-		var angle: float = base + (k - (amount - 1) * 0.5) * spread
+		var angle: float = shot_angle(weapon, facing, k, amount)
 		var vx: float = sin(angle) * weapon.projectile_speed
 		var vz: float = cos(angle) * weapon.projectile_speed
 		projectiles.fire_shot(origin.x, origin.z, vx, vz, weapon.projectile_lifetime * (1.0 + duration), damage,
-				weapon.projectile_radius * area, weapon.pierce, weapon.knockback, weapon.boomerang, weapon)
+				radius, weapon.pierce, weapon.knockback * knock, weapon.boomerang, weapon, weapon.hops)
+
+
+## The heading (as Player.rotation.y) of shot `k` of `amount`, fanned around `facing`.
+static func shot_angle(weapon: WeaponData, facing: Vector3, k: int, amount: int) -> float:
+	return atan2(facing.x, facing.z) + (k - (amount - 1) * 0.5) * deg_to_rad(weapon.spread_degrees)
 
 
 ## The orbiting pieces hit what they touch; each enemy at most every hit_interval per weapon.
@@ -291,7 +345,7 @@ static func orbit_hit(owned: PlayerBuild.OwnedWeapon, origin: Vector3, enemies: 
 	if owned.hit_until.size() != enemies.capacity:
 		owned.hit_until.resize(enemies.capacity)
 		owned.hit_until.fill(0.0)
-	var count: int = Formulas.weapon_amount(weapon, owned.mods)
+	var count: int = Formulas.weapon_amount(weapon, owned.mods, owned.extra_amount)
 	var piece_radius: float = weapon.projectile_radius * area
 	var grid: SpatialHash = enemies.grid
 	var hit: int = 0
@@ -314,6 +368,6 @@ static func orbit_hit(owned: PlayerBuild.OwnedWeapon, origin: Vector3, enemies: 
 			owned.hit_until[j] = run_time + weapon.hit_interval
 			var away := Vector2(enemies.pos_x[j] - origin.x, enemies.pos_z[j] - origin.z).normalized()
 			var amount: float = damage * (weapon.crit_multiplier if rng.randf() < crit else 1.0)
-			apply_hit(weapon, enemies, j, amount, away.x * weapon.knockback, away.y * weapon.knockback)
+			apply_hit(weapon, enemies, j, amount, away.x * weapon.knockback * knock, away.y * weapon.knockback * knock)
 			hit += 1
 	return hit

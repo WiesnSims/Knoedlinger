@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="KnodlSortData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/knodl_sort_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"topfenknoedl"
+name_key = "KNODL_TOPFEN"
+contact_damage_mult = 0.75
+reel_time_mult = 0.33
+cooldown_mult = 0.5
+sweet = true
+color = Color(0.98, 0.96, 0.88, 1)
+crumb_color = Color(0.86, 0.66, 0.32, 1)
+fleck_color = Color(0.92, 0.8, 0.5, 1)

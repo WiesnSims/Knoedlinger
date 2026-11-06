@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_fmjl0"]
+
+[resource]
+script = ExtResource("1_fmjl0")
+id = &"heurigenstammgast"
+title_key = "QUEST_HEURIGENSTAMMGAST"
+desc_key = "DESC_QUEST_HEURIGENSTAMMGAST"
+kind = &"wins"
+filter = &"heuriger"
+target = 3.0
+reward_schilling = 400
+unlock_kind = &"item"
+unlock_id = &"federbett"

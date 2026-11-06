@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_m4f6h"]
+[ext_resource type="Texture2D" path="res://assets/icons/irrlichter.svg" id="2_3fds4"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_ci7u2"]
+
+[sub_resource type="Resource" id="Resource_x5yht"]
+script = ExtResource("1_m4f6h")
+trigger = 1
+action = 4
+chance = 0.15
+value = 1.0
+radius = 12.0
+
+[resource]
+script = ExtResource("3_ci7u2")
+id = &"irrlichter"
+name_key = "ITEM_IRRLICHTER"
+desc_key = "DESC_ITEM_IRRLICHTER"
+rarity = 2
+effects = Array[ExtResource("1_m4f6h")]([SubResource("Resource_x5yht")])
+icon = ExtResource("2_3fds4")
+color = Color(0.72156864, 0.9411765, 1, 1)

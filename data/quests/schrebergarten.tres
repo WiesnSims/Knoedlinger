@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"schrebergarten"
+title_key = "QUEST_SCHREBERGARTEN"
+desc_key = "DESC_QUEST_SCHREBERGARTEN"
+kind = &"wins"
+filter = &"gemeindebau"
+target = 1.0
+reward_schilling = 200
+unlock_kind = &"character"
+unlock_id = &"hias"

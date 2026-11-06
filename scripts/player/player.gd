@@ -33,6 +33,10 @@ var slope_jump_reach: float = INF
 var camera_yaw: float = 0.0
 ## A big Knödl slows its player down (Formulas.knodl_speed_factor).
 var speed_factor: float = 1.0
+## Slowing ground under the local player (the Weinbergschnecke's slime, SlimeTrail); 1 = none.
+var ground_slow: float = 1.0
+## Share of a ground slow the build takes away (sure_footing stat, Gummistiefel; capped by balance).
+var stat_sure_footing: float = 0.0
 ## Knocked down: cannot move (host state, see PlayerState).
 var downed: bool = false
 ## Choosing from the Speisekarte in co-op: stands still under a sign (host state).
@@ -48,6 +52,10 @@ var motion_velocity: Vector3 = Vector3.ZERO
 var jumps_used: int = 0
 ## Every jump so far (wraps at 256; the host counts Kevin's shockwaves from it).
 var jump_count: int = 0
+## Seconds this player has stood still and run straight on (Opa Hias's and Cousine Mitzi's traits),
+## from motion_velocity on every machine, so the host knows them for remote players too.
+var still_time: float = 0.0
+var straight_time: float = 0.0
 
 var _tick: int = 0
 var _manual_timer: float = 0.0
@@ -64,6 +72,7 @@ var _schupfn_presses: int = 0
 var _schupfn_aim: float = 0.0
 var _schupfn_aimed: bool = false
 var _last_position: Vector3 = Vector3.ZERO
+var _trot_dir: Vector2 = Vector2.ZERO
 var _look: Node3D
 var _sign: Label3D
 ## Co-op: a line over the player while knocked down ("Umgfoin! 23"); empty = none.
@@ -132,7 +141,7 @@ func max_jumps() -> int:
 
 ## Run speed on flat ground with the build and the Knödl's drag (also the host's pose check).
 func run_speed() -> float:
-	return balance.player_speed * speed_factor * stat_speed
+	return balance.player_speed * speed_factor * stat_speed * ground_slow
 
 
 ## The fastest this player can be: momentum from jumps and slopes, or Cousin Toni's slope bonus
@@ -193,6 +202,7 @@ func _physics_process(delta: float) -> void:
 	# Cousin Toni: faster on any slope steeper than about 8 degrees.
 	if on_floor and character != null and character.slope_speed > 0.0 and get_floor_normal().y < 0.99:
 		speed *= 1.0 + character.slope_speed
+	speed *= 1.0 + trot_bonus()
 	var horizontal: Vector2 = _steer(Vector2(velocity.x, velocity.z), move, speed, on_floor, delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.y
@@ -241,6 +251,8 @@ func _physics_process(delta: float) -> void:
 	last_input.buttons = InputMessage.BUTTON_JUMP if Input.is_action_pressed(&"jump") else 0
 	if _schupfn_aimed:
 		last_input.buttons |= InputMessage.BUTTON_AIM
+	if Settings.get_bool(&"knodl_follow"):
+		last_input.buttons |= InputMessage.BUTTON_FOLLOW
 	last_input.aim_yaw = _schupfn_aim
 	last_input.schupfn_presses = _schupfn_presses
 	last_input.jumps = jump_count
@@ -360,6 +372,30 @@ func _update_motion(delta: float) -> void:
 		motion_velocity = velocity
 	else:
 		motion_velocity = motion_velocity.lerp(measured, 0.3)
+	_update_trait_clocks(delta)
+
+
+## Cousine Mitzi's Trab: her extra speed and Knödl damage once she has run straight long enough.
+func trot_bonus() -> float:
+	if character == null or not character.trait_effects.has(&"trot") or straight_time < balance.trot_seconds:
+		return 0.0
+	return character.trait_effects[&"trot"]
+
+
+## Standing still counts below idle_speed; running straight counts at a good pace and stops at a
+## sharp turn (a gentle curve is fine: the reference direction follows it slowly).
+func _update_trait_clocks(delta: float) -> void:
+	var flat := Vector2(motion_velocity.x, motion_velocity.z)
+	var speed: float = flat.length()
+	still_time = still_time + delta if speed < balance.idle_speed else 0.0
+	if downed or speed < run_speed() * balance.trot_min_speed:
+		straight_time = 0.0
+		return
+	var dir: Vector2 = flat / speed
+	if straight_time > 0.0 and dir.dot(_trot_dir) < cos(deg_to_rad(balance.trot_turn_degrees)):
+		straight_time = 0.0
+	_trot_dir = dir if straight_time == 0.0 else _trot_dir.slerp(dir, minf(delta * balance.trot_follow, 1.0)).normalized()
+	straight_time += delta
 
 
 ## World-space movement (x = world X, y = world Z) from the keys, relative to the camera, or the bot.

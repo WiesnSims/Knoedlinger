@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/character_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/weapons/steirische_harmonika.tres" id="2_weapon"]
+[ext_resource type="Resource" path="res://data/knodl/marillenknoedl.tres" id="3_sort"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"steffi"
+name_key = "CHARACTER_STEFFI"
+role_key = "ROLE_STEFFI"
+trait_key = "TRAIT_STEFFI"
+start_weapon = ExtResource("2_weapon")
+knodl_sort = ExtResource("3_sort")
+trait_effects = Dictionary[StringName, float]({&"serves_twice": 1.0})
+coat_color = Color(0.46, 0.26, 0.46, 1)
+trouser_color = Color(0.86, 0.82, 0.7, 1)
+hat_color = Color(0.3, 0.46, 0.25, 1)

@@ -33,6 +33,14 @@ enum Look { BALL, PIN, SPEAR, FLAME }
 @export var arc_degrees: float = 140.0
 ## Only enemies whose feet are within this height of the player's are hit.
 @export var height_reach: float = 2.0
+## ARC: hits in the last `tip_length` metres of the reach deal `tip_multiplier` times the damage
+## (Fiakerpeitsche: the crack of the whip's tip).
+@export var tip_length: float = 0.0
+@export var tip_multiplier: float = 1.0
+## RING: first pulls every enemy in reach toward the player at `pull_speed` for `pull_seconds`,
+## then the ring goes off where the pull started (Steirische Harmonika: squeeze, then blast).
+@export var pull_seconds: float = 0.0
+@export var pull_speed: float = 0.0
 ## Shots or orbiting pieces per attack.
 @export var amount: int = 1
 
@@ -45,6 +53,12 @@ enum Look { BALL, PIN, SPEAR, FLAME }
 @export var projectile_radius: float = 0.35
 ## Angle between neighbouring shots when several fly at once.
 @export var spread_degrees: float = 8.0
+## Lobbed shots (Krapfen-Kanone): the shot hops along its line instead of hitting in flight and
+## lands `hops` times over its lifetime, each landing a splash of impact_radius with the weapon's
+## statuses. The landings follow from the aim alone, so every machine draws them the same.
+@export var hops: int = 0
+## How high a hop goes, in metres.
+@export var hop_height: float = 1.6
 
 @export_group("Orbit")
 @export var orbit_radius: float = 2.6

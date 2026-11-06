@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/almabtrieb.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"almabtrieb"
+name_key = "WEAPON_ALMABTRIEB"
+desc_key = "DESC_WEAPON_ALMABTRIEB"
+pattern = 2
+cooldown = 1.8
+damage = 9.0
+reach = 9.0
+knockback = 20.0
+slow_mult = 0.0
+slow_seconds = 0.8
+color = Color(0.95, 0.85, 0.4, 1)
+is_evolution = true
+icon = ExtResource("9_icon")
+level_mods = Dictionary[StringName, float]({&"damage": 0.33, &"rate": 0.1, &"area": 0.12})
+max_amount = 1

@@ -1,0 +1,1566 @@
+[gd_resource type="Resource" script_class="MapData" format=4]
+
+[ext_resource type="Script" path="res://scripts/data/map_prop.gd" id="1_a1qrr"]
+[ext_resource type="Script" path="res://scripts/data/map_data.gd" id="2_xbura"]
+[ext_resource type="Script" path="res://scripts/data/map_structure.gd" id="3_dvfqx"]
+[ext_resource type="Resource" path="res://data/waves/heuriger.tres" id="4_w22qg"]
+
+[sub_resource type="Resource" id="Resource_rmlwm"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(4.6075814e-15, 0, 35.25)
+size = Vector3(5, 3, 9)
+yaw_degrees = -180.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_4syc7"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(-65.16841, 0, -77.625)
+size = Vector3(5, 3, 9)
+yaw_degrees = 59.99999955470795
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_aoixh"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(65.16841, 0, -77.625)
+size = Vector3(5, 3, 9)
+yaw_degrees = -59.99999955470795
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_arpd8"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(61.25, 3, -40)
+size = Vector3(5, 3, 9)
+yaw_degrees = -90.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_raatd"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(-61.25, 3, -40)
+size = Vector3(5, 3, 9)
+yaw_degrees = 90.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_vkqjv"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(-1.1251071e-14, 3, -101.25)
+size = Vector3(5, 3, 9)
+yaw_degrees = 1.0524716345838991e-14
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_eask1"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(-8.378525, 6, 7.5169716)
+size = Vector3(5, 3, 9)
+yaw_degrees = 169.99999946911652
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_c38v5"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(-36.961643, 6, -71.0145)
+size = Vector3(5, 3, 9)
+yaw_degrees = 49.99999868188683
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_efo5g"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(36.961643, 6, -71.0145)
+size = Vector3(5, 3, 9)
+yaw_degrees = -49.99999868188683
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_8k580"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(34.714474, 9, -33.878902)
+size = Vector3(5, 3, 9)
+yaw_degrees = -99.99999884927774
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_05hv5"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(-34.714474, 9, -33.878902)
+size = Vector3(5, 3, 9)
+yaw_degrees = 99.99999884927774
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_fhctj"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(-6.475106e-15, 9, -75.25)
+size = Vector3(5, 3, 9)
+yaw_degrees = 1.0524716345838991e-14
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_5q02e"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(1.3623746e-15, 12, -17.75)
+size = Vector3(5, 3, 9)
+yaw_degrees = -180.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_x5k27"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(-7.6099486, 12, -60.90816)
+size = Vector3(5, 3, 9)
+yaw_degrees = 20.000000659393134
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_7dko0"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(87.61539, 0, 86.866394)
+size = Vector3(5, 3, 9)
+yaw_degrees = 170.00000644331797
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_g5224"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(96.38461, 0, 37.133606)
+size = Vector3(5, 3, 9)
+yaw_degrees = -9.999993556682028
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_hevok"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(85.375, 3, 50.52516)
+size = Vector3(5, 3, 9)
+yaw_degrees = 29.999997258965482
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_t2ynl"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(98.625, 3, 73.47484)
+size = Vector3(5, 3, 9)
+yaw_degrees = -150.00000274103454
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_wu4er"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(-99.38461, 0, 80.866394)
+size = Vector3(5, 3, 9)
+yaw_degrees = 170.00000644331797
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_7a3jt"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(-90.61539, 0, 31.133604)
+size = Vector3(5, 3, 9)
+yaw_degrees = -9.99999212285455
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_aqac4"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(-101.625, 3, 44.52516)
+size = Vector3(5, 3, 9)
+yaw_degrees = 29.999997258965482
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_xa4s0"]
+script = ExtResource("1_a1qrr")
+kind = 1
+position = Vector3(-88.375, 3, 67.47484)
+size = Vector3(5, 3, 9)
+yaw_degrees = -150.00000274103454
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_mceee"]
+script = ExtResource("1_a1qrr")
+position = Vector3(50.239937, 1.4727266, 16.179634)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = -135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_u1mpj"]
+script = ExtResource("1_a1qrr")
+position = Vector3(56.179634, 1.4727266, 10.239937)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = -135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_vwgna"]
+script = ExtResource("1_a1qrr")
+position = Vector3(53.209785, 5.8727264, 13.209785)
+size = Vector3(9.6, 0.8, 1.6)
+yaw_degrees = -135.0
+color = Color(0.648, 0.594, 0.495, 1)
+
+[sub_resource type="Resource" id="Resource_3gaxv"]
+script = ExtResource("1_a1qrr")
+position = Vector3(40.340443, 4.527272, 6.28014)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = -135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_3ngey"]
+script = ExtResource("1_a1qrr")
+position = Vector3(46.28014, 4.527272, 0.3404429)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = -135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_4j6vs"]
+script = ExtResource("1_a1qrr")
+position = Vector3(43.31029, 8.927272, 3.3102913)
+size = Vector3(9.6, 0.8, 1.6)
+yaw_degrees = -135.0
+color = Color(0.648, 0.594, 0.495, 1)
+
+[sub_resource type="Resource" id="Resource_817rn"]
+script = ExtResource("1_a1qrr")
+position = Vector3(31.148052, 7.3636365, -2.9122508)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = -135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_hg4h8"]
+script = ExtResource("1_a1qrr")
+position = Vector3(37.08775, 7.3636365, -8.851948)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = -135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_tulqm"]
+script = ExtResource("1_a1qrr")
+position = Vector3(34.1179, 11.763637, -5.882099)
+size = Vector3(9.6, 0.8, 1.6)
+yaw_degrees = -135.0
+color = Color(0.648, 0.594, 0.495, 1)
+
+[sub_resource type="Resource" id="Resource_6gjct"]
+script = ExtResource("1_a1qrr")
+position = Vector3(21.955666, 10.2, -12.104637)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = -135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_3j5ne"]
+script = ExtResource("1_a1qrr")
+position = Vector3(27.895363, 10.2, -18.044334)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = -135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_q3emt"]
+script = ExtResource("1_a1qrr")
+position = Vector3(24.925514, 14.599999, -15.074486)
+size = Vector3(9.6, 0.8, 1.6)
+yaw_degrees = -135.0
+color = Color(0.648, 0.594, 0.495, 1)
+
+[sub_resource type="Resource" id="Resource_y8p0b"]
+script = ExtResource("1_a1qrr")
+position = Vector3(-56.179634, 1.4727266, 10.239937)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = 135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_l3s33"]
+script = ExtResource("1_a1qrr")
+position = Vector3(-50.239937, 1.4727266, 16.179634)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = 135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_q5wo8"]
+script = ExtResource("1_a1qrr")
+position = Vector3(-53.209785, 5.8727264, 13.209785)
+size = Vector3(9.6, 0.8, 1.6)
+yaw_degrees = 135.0
+color = Color(0.648, 0.594, 0.495, 1)
+
+[sub_resource type="Resource" id="Resource_3pjv4"]
+script = ExtResource("1_a1qrr")
+position = Vector3(-46.28014, 4.527272, 0.3404429)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = 135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_cllsh"]
+script = ExtResource("1_a1qrr")
+position = Vector3(-40.340443, 4.527272, 6.28014)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = 135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_wkwkb"]
+script = ExtResource("1_a1qrr")
+position = Vector3(-43.31029, 8.927272, 3.3102913)
+size = Vector3(9.6, 0.8, 1.6)
+yaw_degrees = 135.0
+color = Color(0.648, 0.594, 0.495, 1)
+
+[sub_resource type="Resource" id="Resource_7v30e"]
+script = ExtResource("1_a1qrr")
+position = Vector3(-37.08775, 7.3636365, -8.851948)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = 135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_yvn61"]
+script = ExtResource("1_a1qrr")
+position = Vector3(-31.148052, 7.3636365, -2.9122508)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = 135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_jfw1u"]
+script = ExtResource("1_a1qrr")
+position = Vector3(-34.1179, 11.763637, -5.882099)
+size = Vector3(9.6, 0.8, 1.6)
+yaw_degrees = 135.0
+color = Color(0.648, 0.594, 0.495, 1)
+
+[sub_resource type="Resource" id="Resource_qxiaw"]
+script = ExtResource("1_a1qrr")
+position = Vector3(-27.895363, 10.2, -18.044334)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = 135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_8kiyy"]
+script = ExtResource("1_a1qrr")
+position = Vector3(-21.955666, 10.2, -12.104637)
+size = Vector3(1.2, 5.2, 1.6)
+yaw_degrees = 135.0
+color = Color(0.72, 0.66, 0.55, 1)
+
+[sub_resource type="Resource" id="Resource_b64sc"]
+script = ExtResource("1_a1qrr")
+position = Vector3(-24.925514, 14.599999, -15.074486)
+size = Vector3(9.6, 0.8, 1.6)
+yaw_degrees = 135.0
+color = Color(0.648, 0.594, 0.495, 1)
+
+[sub_resource type="Resource" id="Resource_havrx"]
+script = ExtResource("3_dvfqx")
+kind = 9
+position = Vector2(0, 78)
+size = Vector3(5, 2.8, 3)
+color = Color(0.62, 0.44, 0.27, 1)
+accent = Color(0.95, 0.8, 0.35, 1)
+
+[sub_resource type="Resource" id="Resource_dke7k"]
+script = ExtResource("3_dvfqx")
+position = Vector2(-100, 114)
+yaw_degrees = 180.0
+size = Vector3(11, 4.5, 8)
+color = Color(0.95, 0.92, 0.8, 1)
+accent = Color(0.62, 0.3, 0.18, 1)
+
+[sub_resource type="Resource" id="Resource_ini4b"]
+script = ExtResource("3_dvfqx")
+position = Vector2(-60, 114)
+yaw_degrees = 180.0
+size = Vector3(11, 4.5, 8)
+color = Color(0.893, 0.86480004, 0.75200003, 1)
+accent = Color(0.62, 0.3, 0.18, 1)
+
+[sub_resource type="Resource" id="Resource_y5f5v"]
+script = ExtResource("3_dvfqx")
+position = Vector2(-20, 114)
+yaw_degrees = 180.0
+size = Vector3(11, 4.5, 8)
+color = Color(0.95, 0.92, 0.8, 1)
+accent = Color(0.62, 0.3, 0.18, 1)
+
+[sub_resource type="Resource" id="Resource_8y8rn"]
+script = ExtResource("3_dvfqx")
+position = Vector2(20, 114)
+yaw_degrees = 180.0
+size = Vector3(11, 4.5, 8)
+color = Color(0.893, 0.86480004, 0.75200003, 1)
+accent = Color(0.62, 0.3, 0.18, 1)
+
+[sub_resource type="Resource" id="Resource_2ppm7"]
+script = ExtResource("3_dvfqx")
+position = Vector2(60, 114)
+yaw_degrees = 180.0
+size = Vector3(11, 4.5, 8)
+color = Color(0.95, 0.92, 0.8, 1)
+accent = Color(0.62, 0.3, 0.18, 1)
+
+[sub_resource type="Resource" id="Resource_a4xl6"]
+script = ExtResource("3_dvfqx")
+position = Vector2(100, 114)
+yaw_degrees = 180.0
+size = Vector3(11, 4.5, 8)
+color = Color(0.893, 0.86480004, 0.75200003, 1)
+accent = Color(0.62, 0.3, 0.18, 1)
+
+[sub_resource type="Resource" id="Resource_xx182"]
+script = ExtResource("3_dvfqx")
+kind = 1
+position = Vector2(-22, 84)
+yaw_degrees = 90.0
+size = Vector3(10, 4, 7)
+color = Color(0.95, 0.94, 0.9, 1)
+accent = Color(0.3, 0.55, 0.3, 1)
+
+[sub_resource type="Resource" id="Resource_gg5xq"]
+script = ExtResource("3_dvfqx")
+kind = 15
+position = Vector2(10, 84)
+size = Vector3(3, 0.45, 0.6)
+color = Color(0.5, 0.34, 0.2, 1)
+accent = Color(0.5, 0.34, 0.2, 1)
+
+[sub_resource type="Resource" id="Resource_tyjm2"]
+script = ExtResource("3_dvfqx")
+kind = 15
+position = Vector2(16, 84)
+size = Vector3(3, 0.45, 0.6)
+color = Color(0.5, 0.34, 0.2, 1)
+accent = Color(0.5, 0.34, 0.2, 1)
+
+[sub_resource type="Resource" id="Resource_blf0c"]
+script = ExtResource("3_dvfqx")
+kind = 15
+position = Vector2(10, 88)
+size = Vector3(3, 0.45, 0.6)
+color = Color(0.5, 0.34, 0.2, 1)
+accent = Color(0.5, 0.34, 0.2, 1)
+
+[sub_resource type="Resource" id="Resource_eiedx"]
+script = ExtResource("3_dvfqx")
+kind = 15
+position = Vector2(16, 88)
+size = Vector3(3, 0.45, 0.6)
+color = Color(0.5, 0.34, 0.2, 1)
+accent = Color(0.5, 0.34, 0.2, 1)
+
+[sub_resource type="Resource" id="Resource_tpylq"]
+script = ExtResource("3_dvfqx")
+kind = 7
+position = Vector2(-40, 78)
+size = Vector3(1, 7, 1)
+color = Color(0.34, 0.52, 0.24, 1)
+accent = Color(0.5, 0.4, 0.25, 1)
+
+[sub_resource type="Resource" id="Resource_u4uoq"]
+script = ExtResource("3_dvfqx")
+kind = 7
+position = Vector2(30, 72)
+size = Vector3(1, 7, 1)
+color = Color(0.34, 0.52, 0.24, 1)
+accent = Color(0.5, 0.4, 0.25, 1)
+
+[sub_resource type="Resource" id="Resource_rf1bn"]
+script = ExtResource("3_dvfqx")
+kind = 7
+position = Vector2(78, 92)
+size = Vector3(1, 7, 1)
+color = Color(0.34, 0.52, 0.24, 1)
+accent = Color(0.5, 0.4, 0.25, 1)
+
+[sub_resource type="Resource" id="Resource_pr1j8"]
+script = ExtResource("3_dvfqx")
+kind = 7
+position = Vector2(-80, 90)
+size = Vector3(1, 7, 1)
+color = Color(0.34, 0.52, 0.24, 1)
+accent = Color(0.5, 0.4, 0.25, 1)
+
+[sub_resource type="Resource" id="Resource_8deyo"]
+script = ExtResource("3_dvfqx")
+kind = 13
+position = Vector2(48, 62)
+yaw_degrees = 200.0
+size = Vector3(5, 4, 6)
+color = Color(0.95, 0.92, 0.8, 1)
+accent = Color(0.62, 0.3, 0.18, 1)
+
+[sub_resource type="Resource" id="Resource_yh32t"]
+script = ExtResource("3_dvfqx")
+kind = 4
+position = Vector2(0, -48)
+size = Vector3(18, 6, 9)
+color = Color(0.95, 0.92, 0.8, 1)
+accent = Color(0.62, 0.3, 0.18, 1)
+
+[sub_resource type="Resource" id="Resource_cd87l"]
+script = ExtResource("3_dvfqx")
+position = Vector2(49.851025, 23.286055)
+yaw_degrees = -225.0
+size = Vector3(6, 3.4, 5)
+color = Color(0.95, 0.92, 0.8, 1)
+accent = Color(0.62, 0.3, 0.18, 1)
+
+[sub_resource type="Resource" id="Resource_f418a"]
+script = ExtResource("3_dvfqx")
+position = Vector2(63.286053, 9.851027)
+yaw_degrees = -45.0
+size = Vector3(6, 3.4, 5)
+color = Color(0.95, 0.92, 0.8, 1)
+accent = Color(0.62, 0.3, 0.18, 1)
+
+[sub_resource type="Resource" id="Resource_8sryl"]
+script = ExtResource("3_dvfqx")
+position = Vector2(-63.286053, 9.851027)
+yaw_degrees = 45.0
+size = Vector3(6, 3.4, 5)
+color = Color(0.95, 0.92, 0.8, 1)
+accent = Color(0.62, 0.3, 0.18, 1)
+
+[sub_resource type="Resource" id="Resource_bwsqj"]
+script = ExtResource("3_dvfqx")
+position = Vector2(-49.851025, 23.286055)
+yaw_degrees = 225.0
+size = Vector3(6, 3.4, 5)
+color = Color(0.95, 0.92, 0.8, 1)
+accent = Color(0.62, 0.3, 0.18, 1)
+
+[sub_resource type="Resource" id="Resource_puf7x"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(66.758575, -25.810028)
+yaw_degrees = 78.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.38620844, 0.5684278, 0.2519415, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_i4oqe"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(62.349476, -12.240225)
+yaw_degrees = 66.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.3515396, 0.5440513, 0.2096889, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_0gwp2"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(55.215412, 0.11634445)
+yaw_degrees = 54.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.39226997, 0.57268983, 0.259329, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_coqnk"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(21.09041, 24.909607)
+yaw_degrees = 18.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.3805213, 0.56442904, 0.2450103, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_w64tk"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(7.1340675, 27.876122)
+yaw_degrees = 6.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.4193651, 0.5917411, 0.29235122, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_w3c2s"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-7.1340675, 27.876122)
+yaw_degrees = -6.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.3521336, 0.54446894, 0.2104128, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_7h4vd"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-21.09041, 24.909607)
+yaw_degrees = -18.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.33061677, 0.5293399, 0.18418917, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_bwwue"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-55.215412, 0.11634445)
+yaw_degrees = -54.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.375563, 0.5609427, 0.23896737, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_dbqt0"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-62.349476, -12.240225)
+yaw_degrees = -66.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.3971861, 0.5761465, 0.26532054, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_0yd3g"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-66.758575, -54.189972)
+yaw_degrees = -102.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.36854333, 0.556007, 0.23041217, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_mdo2g"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-55.215412, -80.11635)
+yaw_degrees = -126.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.3719984, 0.5584364, 0.23462304, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_7d3ix"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-45.668163, -90.719635)
+yaw_degrees = -138.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.40738934, 0.5833206, 0.27775577, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_g6vvu"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-21.09041, -104.90961)
+yaw_degrees = -162.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.36687812, 0.5548362, 0.2283827, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_obdj1"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(7.1340675, -107.87612)
+yaw_degrees = -186.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.39615008, 0.57541806, 0.2640579, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_0hcy7"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(21.09041, -104.90961)
+yaw_degrees = -198.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.4136689, 0.58773595, 0.28540897, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_8sx24"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(45.668163, -90.719635)
+yaw_degrees = -222.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.35050187, 0.5433216, 0.20842414, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_xpwp2"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(62.349476, -67.75977)
+yaw_degrees = -246.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.36501807, 0.5535283, 0.22611573, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_23sog"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(66.758575, -54.189972)
+yaw_degrees = -258.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.40118146, 0.5789557, 0.27018988, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_vahyy"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(54.3419, -33.327652)
+yaw_degrees = 83.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.33858955, 0.5349458, 0.19390598, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_aeowt"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(21.392529, 10.39764)
+yaw_degrees = 23.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.35444427, 0.54609364, 0.21322893, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_nlwju"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(7.6197276, 14.217175)
+yaw_degrees = 8.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.4099543, 0.58512414, 0.28088182, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_itpr2"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-20.50971, 10.763317)
+yaw_degrees = -22.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.36876583, 0.5561635, 0.23068334, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_o1v1f"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-54.217175, -32.380272)
+yaw_degrees = -82.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.34548375, 0.53979325, 0.2023083, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_7kd2f"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-50.763317, -60.509712)
+yaw_degrees = -112.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.3555099, 0.54684293, 0.21452768, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_74daj"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-21.392529, -90.397644)
+yaw_degrees = -157.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.39769372, 0.5765034, 0.2659392, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_uiid5"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-7.6197276, -94.21718)
+yaw_degrees = -172.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.38654202, 0.56866235, 0.25234807, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_20ocs"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(20.50971, -90.76332)
+yaw_degrees = -202.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.39067864, 0.57157093, 0.25738958, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_63w1r"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(54.217175, -47.619728)
+yaw_degrees = -262.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.35366422, 0.54554516, 0.21227825, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_p0t7b"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(11.50786, 0.13267517)
+yaw_degrees = 16.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.3355653, 0.53281933, 0.19022018, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_adh86"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-2.9123325, 1.6483002)
+yaw_degrees = -4.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.42229924, 0.5938042, 0.2959272, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_x3tud"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-16.981255, -1.859478)
+yaw_degrees = -24.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.40034714, 0.5783691, 0.2691731, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_jmdhj"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-37.52465, -21.698004)
+yaw_degrees = -64.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.3697267, 0.55683905, 0.23185436, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_mlpw5"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-34.612316, -63.346306)
+yaw_degrees = -124.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.41989228, 0.59211177, 0.2929937, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_vyng6"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-24.540033, -73.77646)
+yaw_degrees = -144.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.42385563, 0.59489846, 0.29782403, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_7iiem"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(37.52465, -58.301994)
+yaw_degrees = -244.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.39736184, 0.57627004, 0.26553473, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_6qxes"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(41.52129, -44.364063)
+yaw_degrees = -264.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.34018755, 0.5360694, 0.19585355, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_vofay"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-10.303079, -13.159563)
+yaw_degrees = -21.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.35237026, 0.54463536, 0.21070123, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_dems6"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(-18.09296, -62.34295)
+yaw_degrees = -141.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.33525017, 0.5325978, 0.18983613, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_xbjcm"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(10.303079, -66.84044)
+yaw_degrees = -201.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.3726785, 0.55891454, 0.23545189, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_bpg78"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(22.342947, -58.09296)
+yaw_degrees = -231.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.3518841, 0.5442935, 0.21010873, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_upwdm"]
+script = ExtResource("3_dvfqx")
+kind = 10
+position = Vector2(28.39604, -44.49749)
+yaw_degrees = -261.0
+size = Vector3(4.5, 1.3, 0.3)
+color = Color(0.37098566, 0.5577243, 0.23338874, 1)
+accent = Color(0.36, 0.55, 0.22, 1)
+
+[sub_resource type="Resource" id="Resource_rnuhb"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(91.10823, -128.42383)
+yaw_degrees = 56.419533
+size = Vector3(1, 10.445951, 1)
+color = Color(0.18301079, 0.38227645, 0.22286391, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_e75vi"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(133.26053, 87.15042)
+yaw_degrees = 44.11861
+size = Vector3(1, 12.079983, 1)
+color = Color(0.25650644, 0.4378463, 0.2927744, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_sqj2y"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-129.57098, -27.782501)
+yaw_degrees = 62.822056
+size = Vector3(1, 9.051385, 1)
+color = Color(0.24787793, 0.43132234, 0.28456682, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_angf5"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(118.50508, -22.12922)
+yaw_degrees = 32.758617
+size = Vector3(1, 9.608246, 1)
+color = Color(0.22186211, 0.41165182, 0.25982004, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_ir5lr"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(132.49106, 135.14905)
+yaw_degrees = 0.95311755
+size = Vector3(1, 12.968762, 1)
+color = Color(0.1917565, 0.38888904, 0.231183, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_e45gi"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(121.69235, -129.57838)
+yaw_degrees = 31.422613
+size = Vector3(1, 9.869637, 1)
+color = Color(0.27577335, 0.452414, 0.3111015, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_btdle"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-119.02534, -4.2756195)
+yaw_degrees = 12.934784
+size = Vector3(1, 10.068837, 1)
+color = Color(0.21652862, 0.40761918, 0.25474674, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_6i8b3"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(22.347473, 129.84793)
+yaw_degrees = 24.779545
+size = Vector3(1, 8.261082, 1)
+color = Color(0.20160037, 0.39633197, 0.24054669, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_iiqh3"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-56.762978, 134.01007)
+yaw_degrees = 39.023853
+size = Vector3(1, 9.565005, 1)
+color = Color(0.26449317, 0.44388506, 0.30037153, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_mb86r"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-53.757645, -128.88753)
+yaw_degrees = 77.74805
+size = Vector3(1, 9.505362, 1)
+color = Color(0.22310475, 0.41259137, 0.26100206, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_6hk05"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-109.790344, 121.12613)
+yaw_degrees = 22.30135
+size = Vector3(1, 11.234346, 1)
+color = Color(0.18892771, 0.38675022, 0.2284922, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_7jvj6"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-83.05162, 130.07404)
+yaw_degrees = 49.91749
+size = Vector3(1, 10.80676, 1)
+color = Color(0.15357211, 0.36001793, 0.19486126, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_1gx5b"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(130.33954, 32.806137)
+yaw_degrees = 86.69954
+size = Vector3(1, 8.075106, 1)
+color = Color(0.2132665, 0.4051527, 0.25164375, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_0ehnw"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(74.928375, 127.21088)
+yaw_degrees = 69.90388
+size = Vector3(1, 12.192478, 1)
+color = Color(0.1815308, 0.38115743, 0.22145613, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_k7gfq"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(118.46857, -117.07454)
+yaw_degrees = 23.28005
+size = Vector3(1, 11.62961, 1)
+color = Color(0.23558846, 0.4220303, 0.27287683, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_inels"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(128.16052, -55.31845)
+yaw_degrees = 57.60284
+size = Vector3(1, 11.516315, 1)
+color = Color(0.18774362, 0.38585493, 0.22736588, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_alxxl"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(122.3978, -45.81598)
+yaw_degrees = 42.316753
+size = Vector3(1, 9.501764, 1)
+color = Color(0.26188368, 0.44191206, 0.29788935, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_a5hgj"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(23.139175, -126.99256)
+yaw_degrees = 82.320175
+size = Vector3(1, 12.719566, 1)
+color = Color(0.20250258, 0.39701414, 0.24140489, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_3sy1b"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-128.33357, 40.204376)
+yaw_degrees = 20.155447
+size = Vector3(1, 10.898405, 1)
+color = Color(0.20492615, 0.3988466, 0.24371023, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_4vuub"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(112.14609, 123.95859)
+yaw_degrees = 36.18706
+size = Vector3(1, 11.492359, 1)
+color = Color(0.27075827, 0.4486221, 0.30633104, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_13m1r"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-121.50079, -63.501053)
+yaw_degrees = 1.5403566
+size = Vector3(1, 10.374411, 1)
+color = Color(0.18037699, 0.38028502, 0.2203586, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_gkdmu"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-121.724205, 40.759476)
+yaw_degrees = 0.0039912295
+size = Vector3(1, 10.788689, 1)
+color = Color(0.17964183, 0.37972918, 0.2196593, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_1pgm3"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(133.85254, -39.13887)
+yaw_degrees = 65.603386
+size = Vector3(1, 9.64161, 1)
+color = Color(0.21125048, 0.4036284, 0.24972606, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_eu0by"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-130.01747, 45.71524)
+yaw_degrees = 44.702
+size = Vector3(1, 8.373784, 1)
+color = Color(0.23268318, 0.4198336, 0.27011326, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_qle8u"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(128.16574, 73.21994)
+yaw_degrees = 62.382435
+size = Vector3(1, 12.162556, 1)
+color = Color(0.1817827, 0.3813479, 0.22169572, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_1f2ql"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-131.9178, 76.07054)
+yaw_degrees = 32.441242
+size = Vector3(1, 10.643492, 1)
+color = Color(0.20820488, 0.40132564, 0.24682903, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_2qhqj"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(134.6023, -25.508461)
+yaw_degrees = 71.47047
+size = Vector3(1, 11.377125, 1)
+color = Color(0.19278747, 0.38966855, 0.23216367, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_xrxqr"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(115.3017, -134.26378)
+yaw_degrees = 10.960658
+size = Vector3(1, 9.777448, 1)
+color = Color(0.22861727, 0.41675937, 0.2662457, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_0eydv"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(1.0842438, 118.028244)
+yaw_degrees = 11.645881
+size = Vector3(1, 12.364605, 1)
+color = Color(0.25480574, 0.43656045, 0.29115668, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_ribjg"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-50.8963, -122.07303)
+yaw_degrees = 8.892704
+size = Vector3(1, 8.5567875, 1)
+color = Color(0.26090872, 0.4411749, 0.29696196, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_l18p1"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(96.5775, 128.2316)
+yaw_degrees = 77.39876
+size = Vector3(1, 9.943134, 1)
+color = Color(0.21422735, 0.4058792, 0.25255772, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_6b4q6"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-132.46402, 2.9612274)
+yaw_degrees = 54.929054
+size = Vector3(1, 9.458203, 1)
+color = Color(0.15372938, 0.36013684, 0.19501087, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_bwfpw"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-110.04563, -128.80211)
+yaw_degrees = 60.52779
+size = Vector3(1, 8.274944, 1)
+color = Color(0.21214743, 0.4043066, 0.25057924, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_o7b05"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(27.225784, -130.03032)
+yaw_degrees = 74.40667
+size = Vector3(1, 11.348919, 1)
+color = Color(0.199209, 0.3945239, 0.23827198, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_5dut3"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(132.95776, -121.999214)
+yaw_degrees = 57.83408
+size = Vector3(1, 9.257708, 1)
+color = Color(0.24660431, 0.43035933, 0.2833553, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_6ibk1"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-122.8642, -71.85408)
+yaw_degrees = 40.326805
+size = Vector3(1, 12.566408, 1)
+color = Color(0.21267228, 0.4047034, 0.2510785, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_w2g1l"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-133.89247, 26.271332)
+yaw_degrees = 86.94132
+size = Vector3(1, 12.451546, 1)
+color = Color(0.26908633, 0.44735795, 0.30474064, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_7n43r"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(132.52988, 21.57785)
+yaw_degrees = 45.228798
+size = Vector3(1, 10.618242, 1)
+color = Color(0.26690254, 0.44570678, 0.3026634, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_dk706"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(7.891739, 126.58441)
+yaw_degrees = 45.117775
+size = Vector3(1, 8.510263, 1)
+color = Color(0.25861257, 0.43943876, 0.2947778, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_xk3cv"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-49.10354, 135.35312)
+yaw_degrees = 32.795586
+size = Vector3(1, 11.472695, 1)
+color = Color(0.15618053, 0.36199015, 0.19734244, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_7cjvy"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(131.4913, -3.9718323)
+yaw_degrees = 33.09815
+size = Vector3(1, 11.246994, 1)
+color = Color(0.23793617, 0.4238054, 0.27511, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_el3p0"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(35.746155, -128.6699)
+yaw_degrees = 4.091275
+size = Vector3(1, 10.389326, 1)
+color = Color(0.23775032, 0.42366487, 0.27493322, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_4hus4"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-26.09465, -131.4791)
+yaw_degrees = 73.5868
+size = Vector3(1, 8.2488, 1)
+color = Color(0.17936355, 0.37951878, 0.2193946, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_h66ub"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-71.34538, -126.44483)
+yaw_degrees = 14.096838
+size = Vector3(1, 10.358755, 1)
+color = Color(0.22446705, 0.41362143, 0.26229793, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_7sl74"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-124.16756, 111.36444)
+yaw_degrees = 25.15786
+size = Vector3(1, 11.743754, 1)
+color = Color(0.17831746, 0.37872782, 0.21839952, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_vav5s"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(64.71004, -135.37094)
+yaw_degrees = 63.720474
+size = Vector3(1, 10.794313, 1)
+color = Color(0.2641067, 0.44359285, 0.30000392, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_0yvop"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(39.802963, -124.00416)
+yaw_degrees = 10.545937
+size = Vector3(1, 10.625917, 1)
+color = Color(0.26698238, 0.44576716, 0.30273932, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_e5e67"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(131.544, -115.57891)
+yaw_degrees = 87.39367
+size = Vector3(1, 10.624132, 1)
+color = Color(0.16961665, 0.37214917, 0.21012315, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_l70d5"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-135.01588, -10.8841095)
+yaw_degrees = 64.343956
+size = Vector3(1, 11.688425, 1)
+color = Color(0.26798493, 0.4465252, 0.30369297, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_gf2at"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-41.46952, 127.413086)
+yaw_degrees = 39.07011
+size = Vector3(1, 12.407599, 1)
+color = Color(0.27243054, 0.4498865, 0.3079217, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_bemas"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-26.499306, 126.452545)
+yaw_degrees = 76.443565
+size = Vector3(1, 10.389217, 1)
+color = Color(0.26770958, 0.446317, 0.30343103, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_o817d"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(7.7747498, 134.03247)
+yaw_degrees = 45.896614
+size = Vector3(1, 12.516036, 1)
+color = Color(0.17335926, 0.37497896, 0.2136832, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_pqbpn"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(32.166, 124.65213)
+yaw_degrees = 17.753597
+size = Vector3(1, 8.580712, 1)
+color = Color(0.21269752, 0.4047225, 0.2511025, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_1u16h"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(94.41681, -121.95121)
+yaw_degrees = 87.95362
+size = Vector3(1, 8.112273, 1)
+color = Color(0.25977868, 0.44032043, 0.29588702, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_nosas"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-135.74333, 68.52608)
+yaw_degrees = 61.51191
+size = Vector3(1, 8.267741, 1)
+color = Color(0.17099711, 0.37319294, 0.21143627, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_jioqm"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(118.75012, 70.07393)
+yaw_degrees = 11.407071
+size = Vector3(1, 8.313451, 1)
+color = Color(0.2600656, 0.4405374, 0.29615992, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_xpik5"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-31.262436, 127.84589)
+yaw_degrees = 11.054658
+size = Vector3(1, 8.122698, 1)
+color = Color(0.27645737, 0.45293117, 0.3117521, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_t1w4h"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(116.97496, 135.38239)
+yaw_degrees = 21.407743
+size = Vector3(1, 10.354261, 1)
+color = Color(0.21776289, 0.4085524, 0.25592077, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_6udl6"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(70.298355, 133.23407)
+yaw_degrees = 17.9284
+size = Vector3(1, 8.346798, 1)
+color = Color(0.20870672, 0.4017051, 0.24730639, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_dub54"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-33.170982, -125.65035)
+yaw_degrees = 44.10385
+size = Vector3(1, 9.239582, 1)
+color = Color(0.22174779, 0.4115654, 0.2597113, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_g645g"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(48.051575, -129.15009)
+yaw_degrees = 26.256834
+size = Vector3(1, 11.95183, 1)
+color = Color(0.24378309, 0.42822623, 0.28067172, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_prc5k"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-126.85058, -3.9122925)
+yaw_degrees = 77.1383
+size = Vector3(1, 11.236511, 1)
+color = Color(0.14194942, 0.35123003, 0.18380553, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_fhqs2"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(120.15567, 64.15758)
+yaw_degrees = 47.674553
+size = Vector3(1, 12.401949, 1)
+color = Color(0.14881876, 0.35642394, 0.1903398, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_h3mb5"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(116.15819, -126.79455)
+yaw_degrees = 31.618494
+size = Vector3(1, 9.972644, 1)
+color = Color(0.1556058, 0.36155558, 0.19679575, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_khx2u"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(132.53848, 10.044769)
+yaw_degrees = 22.2359
+size = Vector3(1, 8.021353, 1)
+color = Color(0.19509518, 0.39141342, 0.23435882, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_0efts"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(-27.251198, -120.84744)
+yaw_degrees = 35.644066
+size = Vector3(1, 11.6029625, 1)
+color = Color(0.21071951, 0.40322694, 0.249221, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_o5oly"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(123.58414, 39.28784)
+yaw_degrees = 71.17114
+size = Vector3(1, 10.51733, 1)
+color = Color(0.23652671, 0.42273968, 0.2737693, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_520lv"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(128.13336, -124.172165)
+yaw_degrees = 35.46013
+size = Vector3(1, 8.886693, 1)
+color = Color(0.17609255, 0.37704557, 0.21628316, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_3cmta"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(16.138062, -132.91518)
+yaw_degrees = 48.950375
+size = Vector3(1, 11.428035, 1)
+color = Color(0.19862115, 0.39407942, 0.2377128, 1)
+accent = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_2pqol"]
+script = ExtResource("3_dvfqx")
+kind = 6
+position = Vector2(55.90892, -119.01591)
+yaw_degrees = 8.889121
+size = Vector3(1, 11.394993, 1)
+color = Color(0.2622982, 0.44222546, 0.29828364, 1)
+accent = Color(1, 1, 1, 1)
+
+[resource]
+script = ExtResource("2_xbura")
+id = &"heuriger"
+name_key = "MAP_HEURIGER"
+half_size = 150.0
+noise_seed = 41
+noise_amplitude = 0.5
+noise_frequency = 0.03
+flat_radius = 140.0
+flat_blend = 10.0
+hills = PackedVector4Array()
+ridge_starts = PackedVector4Array()
+ridge_shapes = PackedVector2Array()
+rim_start = 124.0
+rim_height = 26.0
+mesas = PackedVector4Array(0, -40, 74, 3, 0, -40, 60, 3, 0, -40, 47, 3, 0, -40, 34, 3, 0, -40, 21, 3, 92, 62, 24, 3, 92, 62, 12, 3, -95, 56, 24, 3, -95, 56, 12, 3)
+mesa_edge = 2.5
+lanes = PackedVector4Array(57.982754, 17.982754, 19.091883, -20.908117, -57.982754, 17.982754, -19.091883, -20.908117)
+lane_shapes = PackedVector3Array(3.5, 0, 12, 3.5, 0, 12)
+wave = ExtResource("4_w22qg")
+music = &"heuriger"
+spawn_point = Vector3(0, 0, 86)
+bot_waypoints = PackedVector2Array(0, 86, 57.982754, 17.982754, 19.091883, -20.908117, 6.123032e-16, -30, -19.091883, -20.908117, -57.982754, 17.982754, -95, 56, -40, 96, 40, 96, 92, 62, 80, -40, -80, -40)
+props = Array[ExtResource("1_a1qrr")]([SubResource("Resource_rmlwm"), SubResource("Resource_4syc7"), SubResource("Resource_aoixh"), SubResource("Resource_arpd8"), SubResource("Resource_raatd"), SubResource("Resource_vkqjv"), SubResource("Resource_eask1"), SubResource("Resource_c38v5"), SubResource("Resource_efo5g"), SubResource("Resource_8k580"), SubResource("Resource_05hv5"), SubResource("Resource_fhctj"), SubResource("Resource_5q02e"), SubResource("Resource_x5k27"), SubResource("Resource_7dko0"), SubResource("Resource_g5224"), SubResource("Resource_hevok"), SubResource("Resource_t2ynl"), SubResource("Resource_wu4er"), SubResource("Resource_7a3jt"), SubResource("Resource_aqac4"), SubResource("Resource_xa4s0"), SubResource("Resource_mceee"), SubResource("Resource_u1mpj"), SubResource("Resource_vwgna"), SubResource("Resource_3gaxv"), SubResource("Resource_3ngey"), SubResource("Resource_4j6vs"), SubResource("Resource_817rn"), SubResource("Resource_hg4h8"), SubResource("Resource_tulqm"), SubResource("Resource_6gjct"), SubResource("Resource_3j5ne"), SubResource("Resource_q3emt"), SubResource("Resource_y8p0b"), SubResource("Resource_l3s33"), SubResource("Resource_q5wo8"), SubResource("Resource_3pjv4"), SubResource("Resource_cllsh"), SubResource("Resource_wkwkb"), SubResource("Resource_7v30e"), SubResource("Resource_yvn61"), SubResource("Resource_jfw1u"), SubResource("Resource_qxiaw"), SubResource("Resource_8kiyy"), SubResource("Resource_b64sc")])
+wirtshaus_spots = PackedVector2Array(36, 88, -50, 92, -80, -40, 80, -40, -1.5062658e-14, -122, 33.75, -98.45671, 108, 18, -108, 6)
+wirtshaus_buschen = true
+structures = Array[ExtResource("3_dvfqx")]([SubResource("Resource_havrx"), SubResource("Resource_dke7k"), SubResource("Resource_ini4b"), SubResource("Resource_y5f5v"), SubResource("Resource_8y8rn"), SubResource("Resource_2ppm7"), SubResource("Resource_a4xl6"), SubResource("Resource_xx182"), SubResource("Resource_gg5xq"), SubResource("Resource_tyjm2"), SubResource("Resource_blf0c"), SubResource("Resource_eiedx"), SubResource("Resource_tpylq"), SubResource("Resource_u4uoq"), SubResource("Resource_rf1bn"), SubResource("Resource_pr1j8"), SubResource("Resource_8deyo"), SubResource("Resource_yh32t"), SubResource("Resource_cd87l"), SubResource("Resource_f418a"), SubResource("Resource_8sryl"), SubResource("Resource_bwsqj"), SubResource("Resource_puf7x"), SubResource("Resource_i4oqe"), SubResource("Resource_0gwp2"), SubResource("Resource_coqnk"), SubResource("Resource_w64tk"), SubResource("Resource_w3c2s"), SubResource("Resource_7h4vd"), SubResource("Resource_bwwue"), SubResource("Resource_dbqt0"), SubResource("Resource_0yd3g"), SubResource("Resource_mdo2g"), SubResource("Resource_7d3ix"), SubResource("Resource_g6vvu"), SubResource("Resource_obdj1"), SubResource("Resource_0hcy7"), SubResource("Resource_8sx24"), SubResource("Resource_xpwp2"), SubResource("Resource_23sog"), SubResource("Resource_vahyy"), SubResource("Resource_aeowt"), SubResource("Resource_nlwju"), SubResource("Resource_itpr2"), SubResource("Resource_o1v1f"), SubResource("Resource_7kd2f"), SubResource("Resource_74daj"), SubResource("Resource_uiid5"), SubResource("Resource_20ocs"), SubResource("Resource_63w1r"), SubResource("Resource_p0t7b"), SubResource("Resource_adh86"), SubResource("Resource_x3tud"), SubResource("Resource_jmdhj"), SubResource("Resource_mlpw5"), SubResource("Resource_vyng6"), SubResource("Resource_7iiem"), SubResource("Resource_6qxes"), SubResource("Resource_vofay"), SubResource("Resource_dems6"), SubResource("Resource_xbjcm"), SubResource("Resource_bpg78"), SubResource("Resource_upwdm"), SubResource("Resource_rnuhb"), SubResource("Resource_e75vi"), SubResource("Resource_sqj2y"), SubResource("Resource_angf5"), SubResource("Resource_ir5lr"), SubResource("Resource_e45gi"), SubResource("Resource_btdle"), SubResource("Resource_6i8b3"), SubResource("Resource_iiqh3"), SubResource("Resource_mb86r"), SubResource("Resource_6hk05"), SubResource("Resource_7jvj6"), SubResource("Resource_1gx5b"), SubResource("Resource_0ehnw"), SubResource("Resource_k7gfq"), SubResource("Resource_inels"), SubResource("Resource_alxxl"), SubResource("Resource_a5hgj"), SubResource("Resource_3sy1b"), SubResource("Resource_4vuub"), SubResource("Resource_13m1r"), SubResource("Resource_gkdmu"), SubResource("Resource_1pgm3"), SubResource("Resource_eu0by"), SubResource("Resource_qle8u"), SubResource("Resource_1f2ql"), SubResource("Resource_2qhqj"), SubResource("Resource_xrxqr"), SubResource("Resource_0eydv"), SubResource("Resource_ribjg"), SubResource("Resource_l18p1"), SubResource("Resource_6b4q6"), SubResource("Resource_bwfpw"), SubResource("Resource_o7b05"), SubResource("Resource_5dut3"), SubResource("Resource_6ibk1"), SubResource("Resource_w2g1l"), SubResource("Resource_7n43r"), SubResource("Resource_dk706"), SubResource("Resource_xk3cv"), SubResource("Resource_7cjvy"), SubResource("Resource_el3p0"), SubResource("Resource_4hus4"), SubResource("Resource_h66ub"), SubResource("Resource_7sl74"), SubResource("Resource_vav5s"), SubResource("Resource_0yvop"), SubResource("Resource_e5e67"), SubResource("Resource_l70d5"), SubResource("Resource_gf2at"), SubResource("Resource_bemas"), SubResource("Resource_o817d"), SubResource("Resource_pqbpn"), SubResource("Resource_1u16h"), SubResource("Resource_nosas"), SubResource("Resource_jioqm"), SubResource("Resource_xpik5"), SubResource("Resource_t1w4h"), SubResource("Resource_6udl6"), SubResource("Resource_dub54"), SubResource("Resource_g645g"), SubResource("Resource_prc5k"), SubResource("Resource_fhqs2"), SubResource("Resource_h3mb5"), SubResource("Resource_khx2u"), SubResource("Resource_0efts"), SubResource("Resource_o5oly"), SubResource("Resource_520lv"), SubResource("Resource_3cmta"), SubResource("Resource_2pqol")])
+stempel_spots = PackedVector2Array(26.311394, -30.423435, -26.311394, -49.576565, 20.25, -75.07403, -50.7434, -21.530912, -33.75, -98.45671, 92, 62, -95, 56, 33.75, 18.456715, 50.7434, -58.469086)
+chest_spots = PackedVector2Array(-20, 60, 24, 50, -33.75, 18.456715, 50.7434, -21.530912, -13.851816, -78.057556, 7.246933, -12.954077, -12.990381, -32.5, 92, 40, -95, 34, -100, -60, 100, -60, 30, -115, -80, 108, 80, 108, 0, 86, 58, 18, 19, -21, 0, -30, -19, -21, -58, 18, -40, 96)
+portal_point = Vector2(0, -30)
+grass_color = Color(0.5, 0.62, 0.3, 1)
+meadow_color = Color(0.6, 0.68, 0.34, 1)
+rock_color = Color(0.66, 0.58, 0.44, 1)
+dirt_color = Color(0.62, 0.5, 0.34, 1)
+sky_color = Color(0.62, 0.78, 0.95, 1)
+paths = PackedVector4Array(-110, 100, 110, 100, 0, 100, 0, 38, 57.982754, 17.982754, 40, 100, -57.982754, 17.982754, -40, 100, 60, 100, 80, 86, -60, 100, -84, 82)
+path_width = 6.0
+path_color = Color(0.78, 0.7, 0.55, 1)

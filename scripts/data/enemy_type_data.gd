@@ -29,6 +29,14 @@ extends Resource
 ## much of its mass per second while touching it.
 @export var eats_knodl: bool = false
 @export var bite_per_second: float = 0.0
+## Bröselfresser that only like sweet Knödl (KnodlSortData.sweet, the Wespe): goes for the nearest
+## sweet Knödl and chases players while there is none.
+@export var sweet_tooth: bool = false
+## Pecks up loose Brösel within this many metres first (Star-Schwarm), then goes for the Knödl;
+## 0 = never.
+@export var eats_brosel: float = 0.0
+## Leaves a slime trail (Weinbergschnecke): players on it run at (1 - slime_slow) of their speed.
+@export var slime_slow: float = 0.0
 ## Elites: one telegraphed attack (null = it only hurts by touch).
 @export var attack: AttackData
 ## Bosses are not moved by the crowd logic; BossDirector moves them and runs their BossData.

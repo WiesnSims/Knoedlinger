@@ -13,7 +13,12 @@ extends CanvasLayer
 ## The answer for the host (OfferCodec.Choice bytes).
 signal answered(data: PackedByteArray)
 
-const CHEST_SECONDS: float = 3.5
+## The chest reveal stays this long, longer per extra item (up to CHEST_SECONDS_MAX); hovering it
+## keeps it up. Items say what they do (ItemText) so there is something to read.
+const CHEST_SECONDS: float = 6.0
+const CHEST_SECONDS_PER_ITEM: float = 1.5
+const CHEST_SECONDS_MAX: float = 10.0
+const CHEST_TILE_WIDTH: float = 224.0
 const MENU_WIDTH: float = 560.0
 const FOOTER_HEIGHT: float = 64.0
 ## Seconds before the pad's focus lands on the first row.
@@ -36,6 +41,7 @@ var _stage: HBoxContainer
 var _inventory: InventoryPanel
 var _stats: StatsPanel
 var _title: Label
+var _subtitle: Label
 var _pending: Label
 var _cards_box: VBoxContainer
 var _cards: Array[UpgradeCard] = []
@@ -88,7 +94,8 @@ func _ready() -> void:
 	header.add_child(titles)
 	_title = UiStyle.label(&"LabelTitle")
 	titles.add_child(_title)
-	titles.add_child(UiStyle.label(&"LabelMuted", tr("MENU_SUBTITLE")))
+	_subtitle = UiStyle.label(&"LabelMuted", tr("MENU_SUBTITLE"))
+	titles.add_child(_subtitle)
 	_pending = UiStyle.label(&"LabelAccent")
 	_pending.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	header.add_child(_pending)
@@ -175,7 +182,9 @@ func show_offer(offer: OfferCodec.Offer, build: PlayerBuild) -> void:
 	GameAudio.play(&"menu_open")
 	_banish_mode = false
 	_banish.set_pressed_no_signal(false)
-	_title.text = tr("MENU_TITLE")
+	var shop: bool = offer.type == OfferCodec.Type.SHOP
+	_title.text = tr("SHOP_TITLE") if shop else tr("MENU_TITLE")
+	_subtitle.text = tr("SHOP_SUBTITLE") if shop else tr("MENU_SUBTITLE")
 	_pending.text = tr("MENU_PENDING") % (offer.pending - 1) if offer.pending > 1 else ""
 	for card_view: UpgradeCard in _cards:
 		card_view.queue_free()
@@ -185,7 +194,9 @@ func show_offer(offer: OfferCodec.Offer, build: PlayerBuild) -> void:
 		var view := UpgradeCard.new()
 		_cards_box.add_child(view)
 		var owned: int = card.level - 1 if card.kind == Card.Kind.WEAPON or card.kind == Card.Kind.PASSIVE else 0
-		view.setup(card, k + 1, change_text(card, catalog, balance, build), owned, catalog)
+		var price: int = offer.prices[k] if shop and k < offer.prices.size() else -1
+		view.setup(card, k + 1, change_text(card, catalog, balance, build), owned, catalog, price,
+				price < 0 or build == null or build.gold >= price)
 		view.pressed.connect(_on_card.bind(k))
 		view.hovered.connect(_on_card_hovered.bind(k))
 		view.reveal(UiStyle.T_STAGGER * (k + 1))
@@ -193,9 +204,14 @@ func show_offer(offer: OfferCodec.Offer, build: PlayerBuild) -> void:
 	_show_details(-1)
 	_reroll.set_label(tr("MENU_REROLL"), str(offer.rerolls))
 	_reroll.disabled = offer.rerolls <= 0
+	_reroll.visible = not shop
 	_banish.set_label(tr("MENU_BANISH"), str(offer.banishes))
 	_banish.disabled = offer.banishes <= 0
-	_skip.set_label(tr("MENU_SKIP"), "+%d" % balance.skip_gold)
+	_banish.visible = not shop
+	if shop:
+		_skip.set_label(tr("SHOP_LEAVE"))
+	else:
+		_skip.set_label(tr("MENU_SKIP"), "+%d" % balance.skip_gold)
 	_seconds_left = offer.seconds
 	_timer_bar.visible = offer.seconds > 0
 	_timer_bar.max_value = maxf(offer.seconds, 1.0)
@@ -227,11 +243,20 @@ func show_chest(offer: OfferCodec.Offer) -> void:
 	if offer.value > 0:
 		_chest_items.add_child(_chest_tile(load(UiStyle.ICON_GOLD), tr("CHEST_GOLD") % offer.value, "", &"TileEvolution"))
 	for card: Card in offer.cards:
+		var lines := PackedStringArray()
+		var subtitle: String = level_text(card)
+		if card.kind == Card.Kind.ITEM and card.index < catalog.items.size():
+			var item: ItemData = catalog.items[card.index]
+			lines = ItemText.describe(item, maxi(card.level, 1), balance)
+			# A first find: "Neu!" and its one-liner below the numbers.
+			if not Profile.is_found(&"item", item.id):
+				subtitle = tr("CARD_NEW")
+				lines.append(tr(item.desc_key))
 		_chest_items.add_child(_chest_tile(UiStyle.card_icon(card, catalog), card_name(card, catalog),
-				level_text(card), UiStyle.rarity_variation("Tile", card)))
+				subtitle, UiStyle.rarity_variation("Tile", card), lines))
 	_chest_panel.visible = true
 	_chest_panel.modulate.a = 1.0
-	_chest_timer = CHEST_SECONDS
+	_chest_timer = minf(CHEST_SECONDS + CHEST_SECONDS_PER_ITEM * maxi(offer.cards.size() - 1, 0), CHEST_SECONDS_MAX)
 
 
 ## The host took the offer away (co-op time ran out and it picked).
@@ -296,8 +321,7 @@ static func card_details(card: Card, p_catalog: UpgradeCatalog, p_balance: Balan
 		Card.Kind.ITEM:
 			var item: ItemData = p_catalog.items[card.index]
 			line = TranslationServer.translate(item.desc_key)
-			for key: StringName in item.stats:
-				meta.append(stat_text(key, item.stats[key]))
+			meta.append_array(ItemText.describe(item, maxi(card.level, 1), p_balance))
 		Card.Kind.GOLD:
 			line = TranslationServer.translate("CARD_GOLD_DESC") % p_balance.fallback_gold
 		Card.Kind.HEAL:
@@ -354,7 +378,9 @@ static func stat_text(key: StringName, value: float) -> String:
 
 func _process(delta: float) -> void:
 	if _chest_timer > 0.0:
-		_chest_timer -= delta
+		# Hovering the reveal keeps it (time to read).
+		if not _chest_panel.get_global_rect().has_point(_chest_panel.get_global_mouse_position()):
+			_chest_timer -= delta
 		_chest_panel.modulate.a = clampf(_chest_timer / 0.5, 0.0, 1.0)
 		if _chest_timer <= 0.0:
 			_chest_panel.visible = false
@@ -366,7 +392,8 @@ func _process(delta: float) -> void:
 	if auto_pick:
 		_bot_timer -= delta
 		if _bot_timer <= 0.0:
-			_answer(OfferCodec.Action.PICK, _bot_choice())
+			var pick: int = _bot_choice()
+			_answer(OfferCodec.Action.PICK if pick >= 0 else OfferCodec.Action.SKIP, maxi(pick, 0))
 
 
 func _input(event: InputEvent) -> void:
@@ -405,8 +432,15 @@ func _focus_for_pad() -> void:
 
 
 ## The bot's taste: an evolution first, then its own weapons, then anything new, at random within
-## the same appetite.
+## the same appetite. At Der Standler: the cheapest item it can pay for, or -1 (leave).
 func _bot_choice() -> int:
+	if _offer.type == OfferCodec.Type.SHOP:
+		var cheapest: int = -1
+		for k: int in _offer.prices.size():
+			if _build != null and _offer.prices[k] <= _build.gold \
+					and (cheapest < 0 or _offer.prices[k] < _offer.prices[cheapest]):
+				cheapest = k
+		return cheapest
 	var best: int = 0
 	var best_score: float = -1.0
 	for k: int in _offer.cards.size():
@@ -426,6 +460,10 @@ func _bot_choice() -> int:
 
 
 func _on_card(k: int) -> void:
+	if _offer.type == OfferCodec.Type.SHOP and _build != null and k < _offer.prices.size() \
+			and _offer.prices[k] > _build.gold:
+		GameAudio.play(&"no_gold")
+		return
 	if _banish_mode:
 		var card: Card = _offer.cards[k]
 		if card.kind == Card.Kind.WEAPON or card.kind == Card.Kind.PASSIVE:
@@ -490,7 +528,8 @@ func _answer(action: OfferCodec.Action, card: int) -> void:
 	answered.emit(OfferCodec.encode_choice(choice))
 
 
-func _chest_tile(icon: Texture2D, title: String, subtitle: String, variation: StringName) -> VBoxContainer:
+func _chest_tile(icon: Texture2D, title: String, subtitle: String, variation: StringName,
+		lines: PackedStringArray = PackedStringArray()) -> VBoxContainer:
 	var tile := UiStyle.vbox()
 	var frame: PanelContainer = UiStyle.panel(variation)
 	frame.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -503,4 +542,12 @@ func _chest_tile(icon: Texture2D, title: String, subtitle: String, variation: St
 		var sub: Label = UiStyle.label(&"LabelChange", subtitle)
 		sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		tile.add_child(sub)
+	for k: int in lines.size():
+		# The effect lines; a new item's one-liner (the last line then) is muted.
+		var muted: bool = k == lines.size() - 1 and subtitle == tr("CARD_NEW") and lines.size() > 1
+		var text: Label = UiStyle.label(&"LabelMuted" if muted else &"LabelSmall", lines[k])
+		text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		text.custom_minimum_size.x = CHEST_TILE_WIDTH
+		tile.add_child(text)
 	return tile

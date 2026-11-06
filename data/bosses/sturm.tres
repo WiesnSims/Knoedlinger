@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="BossData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/boss_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/data/attack_data.gd" id="2_attack"]
+[ext_resource type="Resource" path="res://data/enemies/sturm.tres" id="3_body"]
+[ext_resource type="Resource" path="res://data/enemies/star.tres" id="4_escort"]
+
+[sub_resource type="Resource" id="spiral"]
+script = ExtResource("2_attack")
+id = &"sturm_spiral"
+aim = 3
+radius = 2.4
+telegraph = 1.4
+damage = 18.0
+count = 14
+spread = 22.0
+range = 40.0
+stagger = 0.08
+toast_key = "BOSS_STURM_SPIRAL"
+
+[sub_resource type="Resource" id="gust"]
+script = ExtResource("2_attack")
+id = &"sturm_gust"
+radius = 2.8
+telegraph = 1.1
+damage = 16.0
+count = 5
+spread = 6.0
+range = 30.0
+
+[resource]
+script = ExtResource("1_script")
+id = &"sturm"
+name_key = "BOSS_STURM"
+intro_key = "BOSS_STURM_INTRO"
+defeat_key = "BOSS_STURM_DEFEAT"
+enemy = ExtResource("3_body")
+max_hp = 2800.0
+speed = 3.5
+attacks = Array[ExtResource("2_attack")]([SubResource("gust"), SubResource("spiral"), SubResource("gust")])
+attack_pause = 2.0
+escort = ExtResource("4_escort")
+escort_count = 10
+chest_items = 3
+gold = 40
+golden_brosel = 4
+arrive_distance = 24.0
+pull_radius = 18.0
+pull_speed = 5.0
+fling_speed = 14.0
+pull_knodl = 6.0

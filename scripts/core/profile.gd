@@ -14,10 +14,15 @@ const CODE_PREFIX: String = "KNDL1."
 const MAX_CODE_BYTES: int = 1 << 20
 ## Kinds whose things can be locked behind a quest and found for the Almanach.
 const KINDS: Array[StringName] = [&"character", &"weapon", &"passive", &"item", &"map", &"knodl", &"enemy"]
+## Cloudflare Pages previews live on subdomains of the live site (`v1-4.knoedlinger.pages.dev`).
+const PREVIEW_HOST_SUFFIX: String = ".knoedlinger.pages.dev"
 
 var content: GameContent
 var persistent: bool = true
 var data: Dictionary = {}
+## Playtest builds: every quest-locked thing and every Grant level is open, without touching the save
+## (quests still count and pay). On by itself on a preview URL; `unlock_all=0|1` forces it either way.
+var unlock_all: bool = false
 ## kind:id -> the quest that unlocks it (everything else is open from the start).
 var _locked_by: Dictionary[String, QuestData] = {}
 
@@ -28,9 +33,23 @@ func _ready() -> void:
 		if quest.unlock_kind != &"":
 			_locked_by[_key(quest.unlock_kind, quest.unlock_id)] = quest
 	persistent = Settings.persistent
+	unlock_all = LaunchArgs.get_flag("unlock_all", is_preview_host(_page_host()))
+	if unlock_all:
+		print("[PROFILE] preview build: everything unlocked")
 	data = _fresh()
 	if persistent:
 		_load()
+
+
+static func is_preview_host(host: String) -> bool:
+	return host.ends_with(PREVIEW_HOST_SUFFIX)
+
+
+static func _page_host() -> String:
+	if not OS.has_feature("web"):
+		return ""
+	var host: Variant = JavaScriptBridge.eval("window.location.hostname", true)
+	return host if host is String else ""
 
 
 # --- Reading -------------------------------------------------------------------------------------
@@ -50,13 +69,13 @@ func is_quest_done(quest: StringName) -> bool:
 ## Open from the start unless a quest unlocks it; then open once that quest is done.
 func is_unlocked(kind: StringName, id: StringName) -> bool:
 	var quest: QuestData = _locked_by.get(_key(kind, id))
-	return quest == null or is_quest_done(quest.id)
+	return unlock_all or quest == null or is_quest_done(quest.id)
 
 
 ## The quest that unlocks something still locked (null when it is open).
 func unlocking_quest(kind: StringName, id: StringName) -> QuestData:
 	var quest: QuestData = _locked_by.get(_key(kind, id))
-	return quest if quest != null and not is_quest_done(quest.id) else null
+	return quest if quest != null and not unlock_all and not is_quest_done(quest.id) else null
 
 
 func is_found(kind: StringName, id: StringName) -> bool:
@@ -65,7 +84,8 @@ func is_found(kind: StringName, id: StringName) -> bool:
 
 ## Highest Grant level that may be chosen (index into content.grants).
 func grant_unlocked() -> int:
-	return clampi(int(data.get("grant_unlocked", 1)), 0, maxi(content.grants.size() - 1, 0))
+	var top: int = maxi(content.grants.size() - 1, 0)
+	return top if unlock_all else clampi(int(data.get("grant_unlocked", 1)), 0, top)
 
 
 ## The sum of every Stammtisch rank's gain, per stat (PlayerBuild.STATS or a special).
@@ -120,7 +140,46 @@ func progress(quest: QuestData) -> float:
 			return float(best.get("grant_win", -1))
 		&"coop":
 			return float((stats.get("coop", {}) as Dictionary).get(filter, 0))
+		&"daily_streak":
+			return float((data["daily"] as Dictionary).get("best_streak", 0))
+		&"daily_days":
+			return float((data["daily"] as Dictionary).get("days", 0))
+		&"chests", &"gold", &"standler", &"marterl":
+			return float(stats.get(String(quest.kind), 0))
+		&"chests_run":
+			return float(best.get("chests_run", 0))
 	return 0.0
+
+
+## Die Tageskarte: the day was already played (its first try is used up).
+func daily_played(day: String) -> bool:
+	return str((data["daily"] as Dictionary).get("last", "")) == day
+
+
+## Days in a row with a Tageskarte run, as it stands on `day` (0 once a day was missed).
+func daily_streak(day: String) -> int:
+	var daily: Dictionary = data["daily"]
+	var last: String = str(daily.get("last", ""))
+	return int(daily.get("streak", 0)) if last == day or last == Daily.day_before(day) else 0
+
+
+func daily_best_streak() -> int:
+	return int((data["daily"] as Dictionary).get("best_streak", 0))
+
+
+## A Tageskarte run of `day` starts. The first one of the day counts (for the board and the streak)
+## and is noted at once, so leaving or reloading never gives a second first try. True if it counts.
+func start_daily(day: String) -> bool:
+	if daily_played(day):
+		return false
+	var daily: Dictionary = data["daily"]
+	var streak: int = int(daily.get("streak", 0)) + 1 if str(daily.get("last", "")) == Daily.day_before(day) else 1
+	daily["streak"] = streak
+	daily["best_streak"] = maxi(int(daily.get("best_streak", 0)), streak)
+	daily["days"] = int(daily.get("days", 0)) + 1
+	daily["last"] = day
+	_save()
+	return true
 
 
 func record(character: StringName, map: StringName) -> Dictionary:
@@ -185,6 +244,11 @@ func record_run(run: Dictionary) -> Dictionary:
 	for k: int in mini(run_tiers.size(), 4):
 		tiers[k] = int(tiers[k]) + int(run_tiers[k])
 	stats["stempel"] = int(stats.get("stempel", 0)) + int(run.get("stempel", 0))
+	# 1.4: map chests, gold earned, Der Standler and the Marterl, over all runs.
+	for pair: Array in [["chests", "chests_opened"], ["gold", "gold_earned"], ["standler", "standler_buys"],
+			["marterl", "marterl_used"]]:
+		stats[pair[0]] = int(stats.get(pair[0], 0)) + int(run.get(pair[1], 0))
+	best["chests_run"] = maxi(int(best.get("chests_run", 0)), int(run.get("chests_opened", 0)))
 	# Co-op deeds (CoopRules, counted per player): {runs, revives, passes, ...: n}.
 	var coop: Dictionary = run.get("coop", {})
 	if not coop.is_empty():
@@ -216,7 +280,7 @@ func record_run(run: Dictionary) -> Dictionary:
 	var grant_up: bool = false
 	if won:
 		best["grant_win"] = maxi(int(best.get("grant_win", -1)), grant)
-		if grant + 1 > grant_unlocked() and grant + 1 < content.grants.size():
+		if grant + 1 > int(data.get("grant_unlocked", 1)) and grant + 1 < content.grants.size():
 			data["grant_unlocked"] = grant + 1
 			grant_up = true
 	for kind: StringName in [&"weapon", &"passive", &"item"]:
@@ -312,6 +376,7 @@ func _fresh() -> Dictionary:
 		"stats": {"kills": {}, "cash_ins": [0, 0, 0, 0], "runs": 0, "wins": {}, "bosses": {}, "stempel": 0},
 		"best": {"level": {}, "knodl": 0.0, "survive": 0.0, "boss_no_throw": {}, "grant_win": -1, "overtime": {}},
 		"found": {}, "records": {}, "last": {},
+		"daily": {"last": "", "streak": 0, "best_streak": 0, "days": 0},
 	}
 
 

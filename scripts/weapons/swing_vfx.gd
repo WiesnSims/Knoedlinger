@@ -1,7 +1,7 @@
 class_name SwingVfx
 extends MeshInstance3D
-## One melee swing effect: a fan on the ground that sweeps open and fades. One per ARC weapon (and
-## one more for its swing behind), replayed on every swing (no instantiate() per swing). Host and
+## One melee swing effect: a fan on the ground that sweeps open and fades. One per swing an ARC
+## weapon can make at once (WeaponSystem.arc_turn), replayed on every swing (no instantiate() per swing). Host and
 ## clients play it when the weapon's fire counter changes (WeaponVfx). A FLAME weapon (the Obstler)
 ## shows a flickering flame stream instead, a little longer than its cooldown, so it never breaks.
 
@@ -15,16 +15,13 @@ var _material: ShaderMaterial
 var _time: float = DURATION
 var _duration: float = DURATION
 var _flame: bool = false
-## PI for the swing behind the player.
-var _turn: float = 0.0
 ## The heading of this swing (the weapon's aim), as Player.rotation.y.
 var _yaw: float = 0.0
 
 
-func setup(p_player: Player, weapon: WeaponData, behind: bool = false) -> void:
+func setup(p_player: Player, weapon: WeaponData) -> void:
 	player = p_player
 	reach = weapon.reach
-	_turn = PI if behind else 0.0
 	name = "Swing_%s" % weapon.id
 	top_level = true
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
@@ -58,5 +55,5 @@ func _process(delta: float) -> void:
 		visible = false
 		return
 	global_position = player.get_global_transform_interpolated().origin + Vector3(0.0, 0.6, 0.0)
-	rotation = Vector3(0.0, _yaw + _turn, 0.0)
+	rotation = Vector3(0.0, _yaw, 0.0)
 	_material.set_shader_parameter(&"progress", _time / _duration)

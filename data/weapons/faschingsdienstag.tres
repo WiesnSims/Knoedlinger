@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/faschingsdienstag.svg" id="9_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"faschingsdienstag"
+name_key = "WEAPON_FASCHINGSDIENSTAG"
+desc_key = "DESC_WEAPON_FASCHINGSDIENSTAG"
+pattern = 1
+cooldown = 1.2
+damage = 9.0
+knockback = 6.0
+projectile_speed = 13.0
+projectile_lifetime = 1.5
+hops = 5
+hop_height = 2.0
+impact_radius = 2.3
+spread_degrees = 30.0
+amount = 3
+slow_mult = 0.4
+slow_seconds = 2.0
+color = Color(1, 0.65, 0.85, 1)
+is_evolution = true
+icon = ExtResource("9_icon")
+level_mods = Dictionary[StringName, float]({&"damage": 0.3, &"rate": 0.1, &"area": 0.12, &"amount": 1.0})
+max_amount = 8

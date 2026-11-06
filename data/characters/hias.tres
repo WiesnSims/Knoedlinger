@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/character_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/weapons/gartenschlauch.tres" id="2_weapon"]
+[ext_resource type="Resource" path="res://data/knodl/serviettenknoedl.tres" id="3_sort"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hias"
+name_key = "CHARACTER_HIAS"
+role_key = "ROLE_HIAS"
+trait_key = "TRAIT_HIAS"
+start_weapon = ExtResource("2_weapon")
+knodl_sort = ExtResource("3_sort")
+trait_effects = Dictionary[StringName, float]({&"idle_rate": 0.25})
+coat_color = Color(0.48, 0.42, 0.3, 1)
+trouser_color = Color(0.3, 0.32, 0.38, 1)
+hat_color = Color(0.86, 0.76, 0.46, 1)

@@ -51,14 +51,26 @@ var best_knodl_mass: float = 0.0
 ## Run stats for the end screen and the balance log.
 var cash_ins: PackedInt32Array = PackedInt32Array([0, 0, 0, 0])
 var mass_eaten_by_enemies: float = 0.0
-## Map chests opened (each one costs more: balance.map_chest_price_step). In the world state.
+## Map chests opened (Sparbuch counts them) and bought (each one makes the next dearer:
+## balance.map_chest_price_growth; free ones do not). Both in the world state.
 var chests_opened: int = 0
+var chests_bought: int = 0
+## Host: run time of every map chest opened (balance log: first chest ~1:30, then about one a minute).
+var chest_times := PackedFloat32Array()
+## Federbett (1.4): healing above max HP becomes this shield, up to shield_share × max HP (ItemProcs
+## sets the share every frame). The shield is in the world state.
+var shield: float = 0.0
+var shield_share: float = 0.0
 ## Client: the Schilling the host says this run pays (the world state).
 var schilling: int = 0
 ## Run time of every level-up (balance log: is the first one within 10 s?).
 var level_times: PackedFloat32Array = PackedFloat32Array()
 ## Run time of every knock-down.
 var downed_times: PackedFloat32Array = PackedFloat32Array()
+## Run-Abrechnung (host): the enemy type whose touch or attack hurt last, and what knocked this
+## player down how often (enemy id -> n).
+var last_cause: StringName = &""
+var downed_by: Dictionary[StringName, int] = {}
 
 
 func _init(p_peer_id: int = 1, p_max_hp: float = 100.0, p_build: PlayerBuild = null) -> void:
@@ -68,10 +80,14 @@ func _init(p_peer_id: int = 1, p_max_hp: float = 100.0, p_build: PlayerBuild = n
 	build = p_build
 
 
-## Host: a hit (already reduced by armor). Returns true when it knocked the player down.
+## Host: a hit (already reduced by armor). Returns true when it knocked the player down. A shield
+## (Federbett) takes it first.
 func hurt(amount: float, balance: BalanceData) -> bool:
 	if downed or choosing or hurt_timer > 0.0 or amount <= 0.0:
 		return false
+	var soaked: float = minf(shield, amount)
+	shield -= soaked
+	amount -= soaked
 	hp = maxf(hp - amount, 0.0)
 	damage_taken += amount
 	hurt_timer = balance.player_hurt_cooldown
@@ -87,6 +103,8 @@ func hurt(amount: float, balance: BalanceData) -> bool:
 func add_xp(amount: float, balance: BalanceData, run_time: float = 0.0) -> int:
 	if amount <= 0.0:
 		return 0
+	if build != null:
+		amount *= 1.0 + build.stat(&"xp_gain")
 	xp += amount
 	var new_level: int = Formulas.level_for_xp(xp, balance)
 	var gained: int = new_level - level
@@ -119,7 +137,10 @@ func revive(hp_share: float, grace: float) -> void:
 
 func heal(amount: float) -> void:
 	if not downed and amount > 0.0:
+		var over: float = hp + amount - max_hp
 		hp = minf(hp + amount, max_hp)
+		if over > 0.0 and shield_share > 0.0:
+			shield = minf(shield + over, max_hp * shield_share)
 
 
 ## Host: counts the timers down and regenerates. Returns true when a knocked-down player is back.

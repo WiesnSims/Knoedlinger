@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_50yg6"]
+[ext_resource type="Texture2D" path="res://assets/icons/dreschflegel.svg" id="2_v2uun"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_tstmg"]
+
+[sub_resource type="Resource" id="Resource_xwl25"]
+script = ExtResource("1_50yg6")
+action = 6
+chance = 0.02
+value = 15.0
+
+[resource]
+script = ExtResource("3_tstmg")
+id = &"dreschflegel"
+name_key = "ITEM_DRESCHFLEGEL"
+desc_key = "DESC_ITEM_DRESCHFLEGEL"
+rarity = 3
+effects = Array[ExtResource("1_50yg6")]([SubResource("Resource_xwl25")])
+max_stacks = 1
+icon = ExtResource("2_v2uun")
+color = Color(0.6039216, 0.41568628, 0.22745098, 1)

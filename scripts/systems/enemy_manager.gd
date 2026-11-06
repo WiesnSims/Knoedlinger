@@ -74,6 +74,15 @@ var slow_timer: PackedFloat32Array = PackedFloat32Array()
 var slow_mult: PackedFloat32Array = PackedFloat32Array()
 var burn_timer: PackedFloat32Array = PackedFloat32Array()
 var burn_dps: PackedFloat32Array = PackedFloat32Array()
+## Brösel peckers (EnemyTypeData.eats_brosel): the crumb they fly to ((INF, INF) = none) and seconds
+## until they look again.
+var goal_x: PackedFloat32Array = PackedFloat32Array()
+var goal_z: PackedFloat32Array = PackedFloat32Array()
+var goal_timer: PackedFloat32Array = PackedFloat32Array()
+## Host: the loose Brösel peckers eat (null = they only go for the Knödl).
+var brosel: BroselField
+## Per Knödl passed to update(): 1 = sweet dough (KnodlSortData.sweet) for the Wespen.
+var knodl_sweet: PackedByteArray = PackedByteArray()
 
 ## Attacks elites started this update (slot and the target point), for the HazardField; the
 ## caller empties them.
@@ -84,6 +93,8 @@ var attack_z: PackedFloat32Array = PackedFloat32Array()
 var kill_type: PackedInt32Array = PackedInt32Array()
 ## Slot of each enemy in the kill list.
 var kill_slot: PackedInt32Array = PackedInt32Array()
+## Per kill: the source that dealt the last hit (ItemProcs: on-kill items).
+var kill_source: PackedInt32Array = PackedInt32Array()
 
 ## Slots that spawned / died since the last take_events(), for the network's reliable events.
 var spawned: PackedInt32Array = PackedInt32Array()
@@ -98,8 +109,28 @@ var kills: int = 0
 var contacts: int = 0
 ## Per target of the last update(): the highest contact damage of any enemy touching it this frame.
 var touch_damage: PackedFloat32Array = PackedFloat32Array()
+## Per target of the last update(): the type of the enemy behind touch_damage (-1 = none).
+var touch_type: PackedInt32Array = PackedInt32Array()
 ## Per Knödl of the last update(): the mass Bröselfresser bit off it this frame.
 var knodl_bites: PackedFloat32Array = PackedFloat32Array()
+## Run-Abrechnung (1.4 task 5.4): who dealt the damage. A caller sets `source` (a small id RunWorld
+## hands out per player and weapon) before it hurts enemies; burns keep the source that lit them.
+## `dealt` and `source_kills` are indexed by source and count only the damage an enemy really took.
+var source: int = -1
+var dealt: PackedFloat32Array = PackedFloat32Array()
+var source_kills: PackedInt32Array = PackedInt32Array()
+var burn_source: PackedInt32Array = PackedInt32Array()
+## Items (1.4 task 6.7, ItemProcs): by source, 1 = log its hits for on-hit procs (hit_slot,
+## hit_source, hit_amount; burn ticks and other unflashed damage are not hits), and its bonus
+## against some targets: x = healthy (90 % HP+), y = elites and bosses, z = standing lower than
+## w (the owner's feet). The bonus multiplies the hit before it lands.
+var proc_source := PackedByteArray()
+var source_bonus := PackedVector4Array()
+var hit_slot := PackedInt32Array()
+var hit_source := PackedInt32Array()
+var hit_amount := PackedFloat32Array()
+## Per type: 1 for elites (they drop gold) and bosses.
+var elite := PackedByteArray()
 
 var _rng := RandomNumberGenerator.new()
 var _frame: int = 0
@@ -110,6 +141,9 @@ var _attacks: Array[AttackData] = []
 var _split_type: PackedInt32Array = PackedInt32Array()
 ## Per type: metres a flier rises to reach a target in the air (EnemyTypeData.air_reach).
 var _air_reach: PackedFloat32Array = PackedFloat32Array()
+## Per type: 1 = only eats sweet Knödl; metres it looks for loose Brösel (0 = never).
+var _sweet: PackedByteArray = PackedByteArray()
+var _peck: PackedFloat32Array = PackedFloat32Array()
 
 
 func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: int, seed_value: int = 1,
@@ -130,19 +164,24 @@ func _init(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_capacity: in
 	type.fill(0)
 	for name: String in ["pos_x", "pos_z", "yaw", "hp", "max_hp", "speed", "radius", "flash", "phase",
 			"respawn_timer", "kb_x", "kb_z", "knodl_timer", "attack_timer", "busy", "dash_x", "dash_z", "dash_time",
-			"slow_timer", "slow_mult", "burn_timer", "burn_dps"]:
+			"slow_timer", "slow_mult", "burn_timer", "burn_dps", "goal_x", "goal_z", "goal_timer"]:
 		var array := PackedFloat32Array()
 		array.resize(capacity)
 		array.fill(0.0)
 		set(name, array)
 	controlled.resize(capacity)
+	burn_source.resize(capacity)
+	burn_source.fill(-1)
 	controlled.fill(0)
 	for t: EnemyTypeData in types:
 		_eats.append(1 if t.eats_knodl else 0)
 		_bites.append(t.bite_per_second)
 		_attacks.append(t.attack)
 		_split_type.append(types.find(t.split_into) if t.split_into != null else -1)
+		elite.append(1 if t.boss or t.gold_drop > 0 else 0)
 		_air_reach.append(t.air_reach)
+		_sweet.append(1 if t.sweet_tooth else 0)
+		_peck.append(t.eats_brosel)
 
 
 ## How high a flier with `reach` has risen toward a target `rise` metres above its ground, `distance`
@@ -176,6 +215,8 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 	var target_total: int = targets.size()
 	touch_damage.resize(target_total)
 	touch_damage.fill(0.0)
+	touch_type.resize(target_total)
+	touch_type.fill(-1)
 	var knodl_total: int = knodls.size()
 	knodl_bites.resize(knodl_total)
 	knodl_bites.fill(0.0)
@@ -211,9 +252,11 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 			knodl_timer[i] -= delta
 		if burn_timer[i] > 0.0:
 			burn_timer[i] -= delta
-			hp[i] -= burn_dps[i] * delta
-			if hp[i] <= 0.0:
-				damage(i, 0.0)
+			var held: int = source
+			source = burn_source[i]
+			var burned: bool = damage(i, burn_dps[i] * delta, 0.0, 0.0, false)
+			source = held
+			if burned:
 				continue
 		var slowed: float = pace
 		if slow_timer[i] > 0.0:
@@ -226,18 +269,41 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 		var best_sq: float = INF
 		var best: int = 0
 		var eater: bool = knodl_total > 0 and _eats[type[i]] != 0
+		var pecking: bool = false
 		var tx: float = 0.0
 		var tz: float = 0.0
+		# Star-Schwarm: loose Brösel first, the Knödl only when none lie in reach.
+		if _peck[type[i]] > 0.0 and brosel != null:
+			goal_timer[i] -= delta
+			if goal_timer[i] <= 0.0:
+				goal_timer[i] = _rng.randf_range(0.5, 0.9)
+				var crumb: Vector2 = brosel.nearest(x, z, _peck[type[i]])
+				goal_x[i] = crumb.x
+				goal_z[i] = crumb.y
+			if goal_x[i] != INF:
+				pecking = true
+				eater = false
+				tx = goal_x[i]
+				tz = goal_z[i]
+				best_sq = (tx - x) * (tx - x) + (tz - z) * (tz - z)
 		if eater:
+			var picky: bool = _sweet[type[i]] != 0
 			for k: int in knodl_total:
+				if picky and (k >= knodl_sweet.size() or knodl_sweet[k] == 0):
+					continue
 				var knodl: Vector4 = knodls[k]
 				var d_sq: float = (knodl.x - x) * (knodl.x - x) + (knodl.z - z) * (knodl.z - z)
 				if d_sq < best_sq:
 					best_sq = d_sq
 					best = k
-			tx = knodls[best].x
-			tz = knodls[best].z
-		else:
+			# A Wespe with no sweet Knödl about goes for the players instead.
+			eater = best_sq < INF
+			if eater:
+				tx = knodls[best].x
+				tz = knodls[best].z
+		if pecking:
+			pass
+		elif not eater:
 			for t: int in target_total:
 				var target: Vector3 = targets[t]
 				var d_sq: float = (target.x - x) * (target.x - x) + (target.z - z) * (target.z - z)
@@ -291,7 +357,13 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 		# standing well above or below (a ledge, a jump) is out of reach. Bröselfresser stop at the
 		# Knödl and eat.
 		var touch: float = r + (knodls[best].w + 0.1 if eater else player_radius)
-		if eater:
+		if pecking:
+			if distance < r + 0.6:
+				vx = 0.0
+				vz = 0.0
+				brosel.steal(tx, tz, 0.8)
+				goal_timer[i] = 0.0
+		elif eater:
 			if distance < touch + 0.15:
 				var gy: float = ground.height_at(x, z) if has_ground else 0.0
 				var lift: float = air_lift(knodls[best].y - gy, distance, _air_reach[type[i]], climb_range)
@@ -311,6 +383,7 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 				var hurt: float = types[type[i]].contact_damage
 				if hurt > touch_damage[best]:
 					touch_damage[best] = hurt
+					touch_type[best] = type[i]
 				vx = 0.0
 				vz = 0.0
 				if distance > 0.001:
@@ -372,12 +445,33 @@ func update(delta: float, targets: PackedVector3Array, knodls: PackedVector4Arra
 	_rebuild_grid()
 
 
-## Returns true when this hit killed the enemy. (kx, kz) is a knockback velocity to add.
-func damage(slot: int, amount: float, kx: float = 0.0, kz: float = 0.0) -> bool:
+## Returns true when this hit killed the enemy. (kx, kz) is a knockback velocity to add. The damage
+## counts for `source` (Run-Abrechnung). A burn tick does not flash.
+func damage(slot: int, amount: float, kx: float = 0.0, kz: float = 0.0, flashes: bool = true) -> bool:
 	if alive[slot] == 0:
 		return false
+	if source >= 0 and source < source_bonus.size():
+		var bonus: Vector4 = source_bonus[source]
+		if bonus.x > 0.0 and hp[slot] >= max_hp[slot] * 0.9:
+			amount *= 1.0 + bonus.x
+		if bonus.y > 0.0 and elite[type[slot]] != 0:
+			amount *= 1.0 + bonus.y
+		if bonus.z > 0.0 and ground_at(pos_x[slot], pos_z[slot]) < bonus.w - 0.8:
+			amount *= 1.0 + bonus.z
+	if flashes and source >= 0 and source < proc_source.size() and proc_source[source] != 0:
+		hit_slot.append(slot)
+		hit_source.append(source)
+		hit_amount.append(amount)
+	if source >= 0:
+		if source >= dealt.size():
+			dealt.resize(source + 1)
+			source_kills.resize(source + 1)
+		dealt[source] += clampf(amount, 0.0, maxf(hp[slot], 0.0))
+		if hp[slot] > 0.0 and hp[slot] <= amount:
+			source_kills[source] += 1
 	hp[slot] -= amount
-	flash[slot] = 1.0
+	if flashes:
+		flash[slot] = 1.0
 	if kx != 0.0 or kz != 0.0:
 		var factor: float = types[type[slot]].knockback_factor
 		kb_x[slot] += kx * factor
@@ -396,6 +490,7 @@ func damage(slot: int, amount: float, kx: float = 0.0, kz: float = 0.0) -> bool:
 	kill_xp.append(types[type[slot]].brosel_xp)
 	kill_type.append(type[slot])
 	kill_slot.append(slot)
+	kill_source.append(source)
 	controlled[slot] = 0
 	var split: int = _split_type[type[slot]]
 	if split >= 0:
@@ -441,6 +536,8 @@ func slow(slot: int, mult: float, seconds: float) -> void:
 func burn(slot: int, dps: float, seconds: float) -> void:
 	if alive[slot] == 0:
 		return
+	if burn_timer[slot] <= 0.0 or dps >= burn_dps[slot]:
+		burn_source[slot] = source
 	burn_dps[slot] = maxf(burn_dps[slot] if burn_timer[slot] > 0.0 else 0.0, dps)
 	burn_timer[slot] = maxf(burn_timer[slot], seconds)
 
@@ -485,6 +582,30 @@ func shove(slot: int, x: float, z: float) -> void:
 
 
 ## HP as 0..SnapshotCodec.HP_MAX for the snapshot (3 bits).
+## Status bits for the look (1 = frozen or stunned, 2 = burning), also sent to clients.
+const STATUS_FROZEN: int = 1
+const STATUS_BURNING: int = 2
+
+
+func status_of(slot: int) -> int:
+	var bits: int = 0
+	if slow_timer[slot] > 0.0 and slow_mult[slot] <= 0.05:
+		bits |= STATUS_FROZEN
+	if burn_timer[slot] > 0.0:
+		bits |= STATUS_BURNING
+	return bits
+
+
+## Every slot's status_of() (0 for the dead), for the renderer and the snapshot.
+func statuses() -> PackedByteArray:
+	var out := PackedByteArray()
+	out.resize(capacity)
+	for i: int in capacity:
+		if alive[i] != 0 and (slow_timer[i] > 0.0 or burn_timer[i] > 0.0):
+			out[i] = status_of(i)
+	return out
+
+
 func hp_bucket(slot: int) -> int:
 	return clampi(ceili(hp[slot] / max_hp[slot] * SnapshotCodec.HP_MAX), 0, SnapshotCodec.HP_MAX)
 
@@ -503,6 +624,7 @@ func clear_kills() -> void:
 	kill_xp.clear()
 	kill_type.clear()
 	kill_slot.clear()
+	kill_source.clear()
 
 
 func _spawn(slot: int, targets: PackedVector3Array) -> void:

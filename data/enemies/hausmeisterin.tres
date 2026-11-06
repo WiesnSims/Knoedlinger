@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/voice_lines/hausmeisterin.tres" id="9_voice"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hausmeisterin"
+name_key = "BOSS_HAUSMEISTERIN"
+desc_key = "DESC_ENEMY_HAUSMEISTERIN"
+max_hp = 100.0
+speed = 3.6
+radius = 1.4
+model_scale = 2.2
+contact_damage = 16.0
+brosel_xp = 0
+knockback_factor = 0.0
+body_color = Color(0.36, 0.46, 0.7, 1)
+head_color = Color(0.93, 0.78, 0.66, 1)
+spawn_weight = 0.0
+boss = true
+look = &"hausmeisterin"
+voice = ExtResource("9_voice")

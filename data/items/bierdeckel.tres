@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_qe7ah"]
+[ext_resource type="Texture2D" path="res://assets/icons/bierdeckel.svg" id="2_xhbqe"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_y5d5w"]
+
+[sub_resource type="Resource" id="Resource_apq8f"]
+script = ExtResource("1_qe7ah")
+trigger = 11
+action = 12
+value = 0.2
+
+[resource]
+script = ExtResource("3_y5d5w")
+id = &"bierdeckel"
+name_key = "ITEM_BIERDECKEL"
+desc_key = "DESC_ITEM_BIERDECKEL"
+rarity = 1
+effects = Array[ExtResource("1_qe7ah")]([SubResource("Resource_apq8f")])
+icon = ExtResource("2_xhbqe")
+color = Color(0.9647059, 0.94509804, 0.8627451, 1)

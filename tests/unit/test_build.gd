@@ -79,7 +79,7 @@ func test_item_effects_add_up() -> void:
 	assert_eq(roundi(build.effect(&"revive")), 1)
 	build.add_item(_item(&"sparbuch"))
 	build.set_chests_opened(4)
-	assert_almost_eq(build.stat(&"damage"), 4 * 0.03, 0.001, "Sparbuch: damage per chest opened")
+	assert_almost_eq(build.stat(&"damage"), 4 * 0.015, 0.001, "Sparbuch: damage per chest opened")
 
 
 func test_levels_are_open_ended_and_weapon_cards_roll_a_mod() -> void:

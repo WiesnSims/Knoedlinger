@@ -10,16 +10,17 @@ extends RefCounted
 ##      alike bytes together, which deflates far better (a 4-player crowd fits the budget).
 ##      v3 (1.3.2): 5 bits of type (MAX_TYPES, the Nachspielzeit ghosts made 18) and 3 of HP (HP_MAX);
 ##      the HP bucket only flashes hit enemies on clients.
+##      v4 (1.4): one more plane, n x u8 status (EnemyManager.STATUS_*: frozen, burning), mostly zeros.
 ## Events: [u8 version][u16 spawns]{[u16 slot][u8 type][s16 x][s16 z]}[u16 deaths]{[u16 slot]}
 
-const VERSION: int = 3
+const VERSION: int = 4
 ## Enemy types a wave may list (5 bits), and the top HP bucket (3 bits).
 const MAX_TYPES: int = 32
 const HP_MAX: int = 7
 ## 5 cm steps: invisible on half-metre enemies that clients interpolate anyway.
 const POSITION_SCALE: float = 20.0
 const MAX_COORDINATE: float = 327.0
-const BYTES_PER_ENEMY: int = 5
+const BYTES_PER_ENEMY: int = 6
 const RAW_HEADER: int = 8
 const WIRE_HEADER: int = 6
 const COMPRESSION: FileAccess.CompressionMode = FileAccess.COMPRESSION_DEFLATE
@@ -35,6 +36,7 @@ class Frame:
 	var z: PackedFloat32Array = PackedFloat32Array()
 	var type: PackedByteArray = PackedByteArray()
 	var hp: PackedByteArray = PackedByteArray()
+	var status: PackedByteArray = PackedByteArray()
 	var alive_count: int = 0
 
 
@@ -44,11 +46,13 @@ static func encode_manager(seq: int, host_ms: int, manager: EnemyManager) -> Pac
 	for i: int in manager.capacity:
 		if manager.alive[i] != 0:
 			hp[i] = manager.hp_bucket(i)
-	return encode(seq, host_ms, manager.capacity, manager.alive, manager.pos_x, manager.pos_z, manager.type, hp)
+	return encode(seq, host_ms, manager.capacity, manager.alive, manager.pos_x, manager.pos_z, manager.type, hp,
+			manager.statuses())
 
 
 static func encode(seq: int, host_ms: int, slots: int, alive: PackedByteArray, x: PackedFloat32Array,
-		z: PackedFloat32Array, type: PackedByteArray, hp: PackedByteArray) -> PackedByteArray:
+		z: PackedFloat32Array, type: PackedByteArray, hp: PackedByteArray,
+		status: PackedByteArray = PackedByteArray()) -> PackedByteArray:
 	var mask_bytes: int = (slots + 7) / 8
 	var count: int = 0
 	for i: int in slots:
@@ -73,6 +77,7 @@ static func encode(seq: int, host_ms: int, slots: int, alive: PackedByteArray, x
 		raw[base + 2 * count + k] = qz >> 8
 		raw[base + 3 * count + k] = qz & 0xFF
 		raw[base + 4 * count + k] = ((type[i] & 0x1F) << 3) | (hp[i] & HP_MAX)
+		raw[base + 5 * count + k] = status[i] if i < status.size() else 0
 		k += 1
 	var packed: PackedByteArray = raw.compress(COMPRESSION)
 	var wire := PackedByteArray()
@@ -107,6 +112,7 @@ static func decode(wire: PackedByteArray) -> Frame:
 	frame.z.resize(frame.slots)
 	frame.type.resize(frame.slots)
 	frame.hp.resize(frame.slots)
+	frame.status.resize(frame.slots)
 	var count: int = 0
 	for i: int in frame.slots:
 		if (raw[RAW_HEADER + (i >> 3)] & (1 << (i & 7))) != 0:
@@ -126,6 +132,7 @@ static func decode(wire: PackedByteArray) -> Frame:
 		var tag: int = raw[base + 4 * count + k]
 		frame.type[i] = tag >> 3
 		frame.hp[i] = tag & HP_MAX
+		frame.status[i] = raw[base + 5 * count + k]
 		frame.alive_count += 1
 		k += 1
 	return frame

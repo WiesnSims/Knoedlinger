@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyTypeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_type_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/voice_lines/weinbergschnecke.tres" id="9_voice"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"weinbergschnecke"
+name_key = "ENEMY_WEINBERGSCHNECKE"
+desc_key = "DESC_ENEMY_WEINBERGSCHNECKE"
+max_hp = 30.0
+speed = 1.4
+radius = 0.55
+contact_damage = 6.0
+brosel_xp = 5
+knockback_factor = 0.4
+body_color = Color(0.82, 0.74, 0.58, 1)
+head_color = Color(0.62, 0.44, 0.26, 1)
+look = &"schnecke"
+slime_slow = 0.35
+voice = ExtResource("9_voice")

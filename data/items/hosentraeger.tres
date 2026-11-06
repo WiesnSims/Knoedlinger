@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_nvggi"]
+[ext_resource type="Texture2D" path="res://assets/icons/hosentraeger.svg" id="2_i5y6d"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_u0wyn"]
+
+[sub_resource type="Resource" id="Resource_2fyfg"]
+script = ExtResource("1_nvggi")
+trigger = 10
+action = 12
+value = 0.25
+
+[resource]
+script = ExtResource("3_u0wyn")
+id = &"hosentraeger"
+name_key = "ITEM_HOSENTRAEGER"
+desc_key = "DESC_ITEM_HOSENTRAEGER"
+rarity = 1
+effects = Array[ExtResource("1_nvggi")]([SubResource("Resource_2fyfg")])
+icon = ExtResource("2_i5y6d")
+color = Color(0.30980393, 0.5411765, 0.22745098, 1)

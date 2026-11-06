@@ -5,6 +5,15 @@ extends PanelContainer
 ## chests, with how many of each, framed in their rarity), and gold and what is left of
 ## Nochmal bitte / Des mog i ned at the bottom. Shown left of the Speisekarte and in the Tab screen.
 ## Rebuilt only when the build changes; the tiles are drawn by TileGrid (a few draw calls per grid).
+## In the build view (1.4, `selectable`) every tile can be picked (`picked`) and the items scroll
+## past ITEM_ROWS rows.
+
+signal picked(section: Section, index: int)
+
+enum Section { WEAPON, PASSIVE, ITEM }
+
+## Rows of items shown before the item grid scrolls (selectable panels only).
+const ITEM_ROWS: int = 5
 
 const TILE: float = 40.0
 const COLUMNS: int = 6
@@ -18,9 +27,12 @@ var _gold: Label
 var _rerolls: Label
 var _banishes: Label
 var _signature: String = ""
+var _scroll: ScrollContainer
+var _selectable: bool = false
 
 
-func _init() -> void:
+func _init(selectable: bool = false) -> void:
+	_selectable = selectable
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	custom_minimum_size = Vector2(WIDTH, 0.0)
 	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
@@ -37,6 +49,36 @@ func _init() -> void:
 	_gold = _counter(footer, "INV_GOLD")
 	_rerolls = _counter(footer, "INV_REROLLS")
 	_banishes = _counter(footer, "INV_BANISHES")
+	if selectable:
+		for pair: Array in [[_weapons, Section.WEAPON], [_passives, Section.PASSIVE], [_items, Section.ITEM]]:
+			var grid: TileGrid = pair[0]
+			var section: Section = pair[1]
+			grid.set_selectable(true)
+			grid.picked.connect(func(index: int) -> void: _on_picked(grid, section, index))
+		# Items scroll past ITEM_ROWS rows, so 60 items still fit at 1280×720.
+		var pair_box: Control = _items.get_parent()
+		pair_box.remove_child(_items)
+		_scroll = ScrollContainer.new()
+		_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		_scroll.follow_focus = true
+		pair_box.add_child(_scroll)
+		_scroll.add_child(_items)
+
+
+## The first grid with something in it gets the pad/keyboard focus.
+func focus_first() -> void:
+	for grid: TileGrid in [_weapons, _passives, _items]:
+		if grid.tile_count() > 0 and grid.visible:
+			grid.grab_focus()
+			return
+
+
+func _on_picked(grid: TileGrid, section: Section, index: int) -> void:
+	# One ring at a time across the three grids.
+	for other: TileGrid in [_weapons, _passives, _items]:
+		if other != grid:
+			other.select(-1)
+	picked.emit(section, index)
 
 
 func show_build(build: PlayerBuild, _balance: BalanceData) -> void:
@@ -78,6 +120,10 @@ func show_build(build: PlayerBuild, _balance: BalanceData) -> void:
 	_items.set_tiles(items)
 	_items_title.visible = not items.is_empty()
 	_items.visible = not items.is_empty()
+	if _scroll != null:
+		var rows: int = mini(ceili(float(items.size()) / COLUMNS), ITEM_ROWS)
+		_scroll.custom_minimum_size = Vector2(0.0, rows * (TILE + 8.0) - 8.0 if rows > 0 else 0.0)
+		_scroll.visible = not items.is_empty()
 
 
 func _section(column: VBoxContainer, title_key: String) -> TileGrid:

@@ -21,6 +21,13 @@ extends Resource
 ##   grant_win      a run won at this Grant level or higher (target = level index)
 ##   coop           co-op deeds over all runs (filter: runs, revives, passes, streit, merge_cash_xl,
 ##                  family_win, knodl_revive_<character id>)
+##   daily_streak   Tageskarte runs on days in a row (the best streak)
+##   daily_days     days with a Tageskarte run
+##   chests         map chests opened over all runs (1.4)
+##   chests_run     map chests opened in one run
+##   gold           gold earned over all runs
+##   standler       items bought from Der Standler over all runs
+##   marterl        Marterl prayed at over all runs
 
 @export var id: StringName = &""
 @export var title_key: String = ""

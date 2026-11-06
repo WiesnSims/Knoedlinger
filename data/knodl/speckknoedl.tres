@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"speckknoedl"
+heavy = true
 name_key = "KNODL_SPECK"
 contact_damage_mult = 1.4
 roll_speed_mult = 0.8

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/quest_data.gd" id="1_xkeul"]
+
+[resource]
+script = ExtResource("1_xkeul")
+id = &"ueberstunden"
+title_key = "QUEST_UEBERSTUNDEN"
+desc_key = "DESC_QUEST_UEBERSTUNDEN"
+kind = &"overtime"
+target = 5.0
+reward_schilling = 400
+unlock_kind = &"item"
+unlock_id = &"uhr"

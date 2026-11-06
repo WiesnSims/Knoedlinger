@@ -927,3 +927,390 @@ PATCH_1_3_2_03,"Neu: Nachspielzeit! Um 15:00 steht's Ergebnis fest – dann komm
 PATCH_1_3_2_04,"Ab 17:00 wern s' grantig: rote Geister, de fast mit an Schlag umhaun."
 PATCH_1_3_2_05,"Jede Sekund' Nachspielzeit bringt Schilling, zählt auf da Ehrentafel und für drei neue Aufträg'."
 PATCH_1_3_2_06,"Ab da Sperrstund' san olle Wirtshäuser zua – und wer umfoit, bleibt liegn."
+ENEMY_WEINBERGSCHNECKE,Weinbergschnecke
+DESC_ENEMY_WEINBERGSCHNECKE,"Hat Zeit. Und hinterlasst a Spur, auf der du a ka Eile mehr hast."
+ENEMY_STAR,Star
+DESC_ENEMY_STAR,"Kommt nie allein. Pickt erst de Brösel auf, dann dein Knödl."
+ENEMY_WESPE,Wespe
+DESC_ENEMY_WESPE,Mag nur des Süße. Marillenknödl san ihr Lieblingsspeis.
+BOSS_STURM,Der Sturm
+BOSS_STURM_INTRO,Der Sturm is do! Halt dei Knödl fest!
+BOSS_STURM_DEFEAT,Der Sturm hat si glegt. Prost!
+BOSS_STURM_SPIRAL,Er draht si!
+DESC_ENEMY_STURM,A Wirbelwind aus jungem Wein. Zieht ois an und schleudert's wieder raus. Nur a schweres Knödl bleibt liegen.
+MAP_HEURIGER,Heuriger in den Weinbergen
+MAP_HEURIGER_DESC,"Terrassen, Kellergassen, Buschenschanken. Bergab rollt's Knödl von selber."
+QUEST_WEINLESE,Weinlese
+DESC_QUEST_WEINLESE,Gewinn 3 Runden.
+QUEST_SCHNECKENPOST,Schneckenpost
+DESC_QUEST_SCHNECKENPOST,Erledig 300 Weinbergschnecken.
+QUEST_STARENPLAGE,Starenplage
+DESC_QUEST_STARENPLAGE,Erledig 1000 Stare.
+QUEST_WESPENNEST,Wespennest
+DESC_QUEST_WESPENNEST,Erledig 500 Wespen.
+QUEST_STURMWARNUNG,Sturmwarnung
+DESC_QUEST_STURMWARNUNG,Besieg den Sturm.
+VOICE_WEINBERGSCHNECKE_HUDLN,Nur ned hudln.
+VOICE_WEINBERGSCHNECKE_ZEIT,I hob Zeit. Vü Zeit.
+VOICE_WEINBERGSCHNECKE_HAEUSL,Mei Häusl …
+VOICE_STAR_VUE,Mia san vü mehr!
+VOICE_STAR_BROESEL,Brösel! Brösel!
+VOICE_WESPE_SUESS,Is des wos Süßes?
+VOICE_WESPE_MARILLE,"Mmh, Marille!"
+VOICE_WESPE_BSSS,Bsss …
+VOICE_STURM_JOHRGANG,Heuer is a guater Johrgang!
+VOICE_STURM_LUSTIG,Jetzt wird's lustig!
+VOICE_STURM_DRAHN,Olle a Runde drahn!
+VOICE_STURM_TRUEB,I bin no ganz trüb!
+VOICE_STURM_VERGOREN,I bin … vergoren …
+BOSS_HAUSMEISTERIN,Die Hausmeisterin
+BOSS_HAUSMEISTERIN_INTRO,Die Hausmeisterin is do! Schuach abputzen!
+BOSS_HAUSMEISTERIN_DEFEAT,Die Hausmeisterin hat Dienstschluss.
+BOSS_HAUSMEISTERIN_SWEEP,Jetzt wird zammkehrt!
+BOSS_HAUSMEISTERIN_LOCK,Stiagnhaus zuagsperrt!
+DESC_ENEMY_HAUSMEISTERIN,"Seit 1971 im Dienst. Kehrt ois zamm, sperrt die Stiagn zua und woaß genau, wer's woar."
+STAIRS_LOCKED,Frisch gwischt!
+QUEST_HAUSORDNUNG,Hausordnung
+DESC_QUEST_HAUSORDNUNG,Besieg die Hausmeisterin.
+VOICE_HAUSMEISTERIN_HAUSORDNUNG,"Hausordnung, Paragraph eins: Ruhe im Hof!"
+VOICE_HAUSMEISTERIN_ZAMMKEHRN,Do wird jetzt zammkehrt!
+VOICE_HAUSMEISTERIN_STIAGN,Ned auf die frisch gwischte Stiagn!
+VOICE_HAUSMEISTERIN_ZEHNE,Um zehne wird zuagsperrt!
+VOICE_HAUSMEISTERIN_HAUSVERWALTUNG,I sog's da Hausverwaltung!
+VOICE_HAUSMEISTERIN_MIST,Und wer trogt jetzt in Mist owe …
+PATCH_1_4_0_01,"Neue Karte: Heuriger in den Weinbergen. Fünf Terrassen, zwei Kellergassen, Buschenschanken. Freischalten: 3 Runden gewinnen."
+PATCH_1_4_0_02,"Neue Gegner: Weinbergschnecke (ihr Schleim bremst), Star-Schwarm (pickt Brösel und dann dein Knödl) und Wespen (mögen nur süße Knödl)."
+PATCH_1_4_0_03,Neuer Zwischengegner um 10:00 am Heurigen: Der Sturm. Zieht ois an und schleudert's in an Wirbel wieder raus. Schwere Knödl bleiben liegen.
+PATCH_1_4_0_04,"Jede Karte hat jetzt ihre eigene Musik: Schrammel-Techno, Après-Ski und a Wienerlied-Beat."
+PATCH_1_4_0_05,"Drei neue Knödlinger: Opa Hias, der Schrebergärtner (Gartenschlauch, greift im Stehn schneller an), Cousine Mitzi, die Fiakerin (Fiakerpeitsche, wird im Trab schneller) und Steffi, die Winzerin (Steirische Harmonika, jedes Wirtshaus serviert ihr zwamal)."
+PATCH_1_4_0_06,"Zwei neue Knödlsorten: der Serviettenknödl walzt a doppelt so breite Spur, der Topfenknödl is nach am Schupfn gleich wieder da."
+PATCH_1_4_0_07,"Freischalten: Opa Hias mit am Sieg im Gemeindebau-Hof, Cousine Mitzi mit 2 Minuten Nachspielzeit, Steffi mit am Sieg beim Heurigen. Ihre Waffen kommen mit Level 15 auf die Speisekarte. Dazu zwölf neue Aufträge."
+PATCH_1_4_0_08,"Acht neue Entwicklungen: Schneepflug, Slalom-Gewitter, „Zahlen, bitte!“, Almabtrieb, Hochwasser, Viererzug, Zeltfest und Faschingsdienstag. Jede Waffe aus da Familie hat jetzt a eigene."
+PATCH_1_4_0_09,"Neue Waffe: die Krapfen-Kanone. Ihre Krapfen hupfen dreimal und lassen überall bremsende Marmelad liegen."
+PATCH_1_4_0_10,"Zwei neue Werte-Upgrades: der Seniorenteller (mehr Erfahrung aus Brösel) und die Gummistiefel (mehr Rückstoß, Schleim bremst weniger). Alles Neue schaltest über elf neue Aufträge frei."
+PATCH_1_4_0_11,"Der Gemeindebau-Hof hat sei eigene Zwischengegnerin um 10:00: die Hausmeisterin. Sie kehrt in rote Fächer und sperrt a Stiagn für 10 Sekunden zua."
+WEAPON_GARTENSCHLAUCH,Gartenschlauch
+DESC_WEAPON_GARTENSCHLAUCH,"Gießt die Paradeiser. Und schwemmt alles weg, was drübersteigt."
+WEAPON_FIAKERPEITSCHE,Fiakerpeitsche
+DESC_WEAPON_FIAKERPEITSCHE,"Knallt nur ganz vorn richtig. Die Ross wissen des."
+WEAPON_STEIRISCHE_HARMONIKA,Steirische Harmonika
+DESC_WEAPON_STEIRISCHE_HARMONIKA,"Zieht alle zam, dann drückt's alle weg. Wie a Zeltfest."
+KNODL_SERVIETTEN,Serviettenknödl
+KNODL_TOPFEN,Topfenknödl
+CHARACTER_HIAS,Opa Hias
+ROLE_HIAS,Schrebergärtner
+TRAIT_HIAS,"Hat eh Zeit: nach 1 Sekunde Stillstehn greift er um 25 % schneller an. Sein Serviettenknödl walzt a doppelt so breite Spur, dreht si aber gmüatlich."
+CHARACTER_MITZI,Cousine Mitzi
+ROLE_MITZI,Fiakerin
+TRAIT_MITZI,"Trab: nach 2 Sekunden schnurgerade rennen 20 % schneller, und ihr Knödl haut 20 % fester zua. A scharfe Kurvn, und's is vorbei. Ihr Topfenknödl is gleich wieder da."
+CHARACTER_STEFFI,Steffi
+ROLE_STEFFI,Winzerin
+TRAIT_STEFFI,"Ausg'steckt: jedes Wirtshaus serviert ihr zwamal."
+QUEST_SCHREBERGARTEN,Schrebergarten
+DESC_QUEST_SCHREBERGARTEN,Gewinn a Runde im Gemeindebau-Hof.
+QUEST_FIAKERFAHRT,Fiakerfahrt
+DESC_QUEST_FIAKERFAHRT,Überleb 2 Minuten Nachspielzeit in einer Runde.
+QUEST_AUSGSTECKT,Ausg'steckt is
+DESC_QUEST_AUSGSTECKT,Gewinn a Runde beim Heurigen.
+QUEST_HIAS_40,Gartenzwergmeister
+DESC_QUEST_HIAS_40,Erreich Level 40 mit Opa Hias.
+QUEST_MITZI_40,Fiakerkönigin
+DESC_QUEST_MITZI_40,Erreich Level 40 mit Cousine Mitzi.
+QUEST_STEFFI_40,Weinkönigin
+DESC_QUEST_STEFFI_40,Erreich Level 40 mit Steffi.
+QUEST_HIAS_SIEG,Ernte eingfahren
+DESC_QUEST_HIAS_SIEG,Gewinn a Runde mit Opa Hias.
+QUEST_MITZI_SIEG,Rundfahrt
+DESC_QUEST_MITZI_SIEG,Gewinn a Runde mit Cousine Mitzi.
+QUEST_STEFFI_SIEG,Prost
+DESC_QUEST_STEFFI_SIEG,Gewinn a Runde mit Steffi.
+QUEST_GIESSDIENST,Gießdienst
+DESC_QUEST_GIESSDIENST,Erreich Level 15 mit Opa Hias.
+QUEST_FIAKERPRUEFUNG,Fiakerprüfung
+DESC_QUEST_FIAKERPRUEFUNG,Erreich Level 15 mit Cousine Mitzi.
+QUEST_MUSIKANTENSTAMMTISCH,Musikantenstammtisch
+DESC_QUEST_MUSIKANTENSTAMMTISCH,Erreich Level 15 mit Steffi.
+WEAPON_KRAPFEN_KANONE,Krapfen-Kanone
+DESC_WEAPON_KRAPFEN_KANONE,Hupft dreimal. Und überall bleibt Marmelad picken.
+WEAPON_SCHNEEPFLUG,Schneepflug
+DESC_WEAPON_SCHNEEPFLUG,Der Winterdienst kommt. Zum ersten Mal pünktlich.
+WEAPON_SLALOM_GEWITTER,Slalom-Gewitter
+DESC_WEAPON_SLALOM_GEWITTER,"Torlauf, nur dass die Tore zurückschlagen."
+WEAPON_ZAHLEN_BITTE,"„Zahlen, bitte!“"
+DESC_WEAPON_ZAHLEN_BITTE,Der Ober kommt. Mit allen Tabletts auf einmal.
+WEAPON_ALMABTRIEB,Almabtrieb
+DESC_WEAPON_ALMABTRIEB,"Die Küh kommen hoam. Wer im Weg steht, hat Pech."
+WEAPON_HOCHWASSER,Hochwasser
+DESC_WEAPON_HOCHWASSER,Der Schrebergarten steht unter Wasser. Die Nachbarn a.
+WEAPON_VIERERZUG,Viererzug
+DESC_WEAPON_VIERERZUG,"Vier Peitschen, vier Richtungen, null Geduld."
+WEAPON_ZELTFEST,Zeltfest
+DESC_WEAPON_ZELTFEST,Alle zammrucken! Und dann alle wieder auseinand.
+WEAPON_FASCHINGSDIENSTAG,Faschingsdienstag
+DESC_WEAPON_FASCHINGSDIENSTAG,Krapfen für alle. Ob sie wollen oder ned.
+PASSIVE_SENIORENTELLER,Seniorenteller
+DESC_PASSIVE_SENIORENTELLER,"Kleine Portion, große Lebenserfahrung."
+PASSIVE_GUMMISTIEFEL,Gummistiefel
+DESC_PASSIVE_GUMMISTIEFEL,Gatsch? Wurscht. Schleim? A wurscht.
+STAT_XP_GAIN,Erfahrung
+STAT_KNOCKBACK,Rückstoß
+STAT_SURE_FOOTING,Standfest
+QUEST_WINTERDIENST,Winterdienst
+DESC_QUEST_WINTERDIENST,Erreich Level 30 mit Onkel Ferdl.
+QUEST_SLALOMKOENIG,Slalomkönig
+DESC_QUEST_SLALOMKOENIG,Erreich Level 30 mit Cousin Toni.
+QUEST_OBERKELLNER,Oberkellner
+DESC_QUEST_OBERKELLNER,Erreich Level 30 mit Herrn Poldi.
+QUEST_VIEHSCHEID,Viehscheid
+DESC_QUEST_VIEHSCHEID,Erreich Level 30 mit Tante Vroni.
+QUEST_HOCHWASSERSCHUTZ,Hochwasserschutz
+DESC_QUEST_HOCHWASSERSCHUTZ,Erreich Level 30 mit Opa Hias.
+QUEST_VIERSPAENNER,Vierspänner
+DESC_QUEST_VIERSPAENNER,Erreich Level 30 mit Cousine Mitzi.
+QUEST_BIERZELT,Bierzelt
+DESC_QUEST_BIERZELT,Erreich Level 30 mit Steffi.
+QUEST_GERMTEIG,Germteig
+DESC_QUEST_GERMTEIG,Lass dein Knödl auf 1.000 Masse wachsen.
+QUEST_WESPENSOMMER,Wespensommer
+DESC_QUEST_WESPENSOMMER,Erledig 2.000 Wespen.
+QUEST_PENSIONSANTRITT,Pensionsantritt
+DESC_QUEST_PENSIONSANTRITT,Erreich Level 40 in einer Runde.
+QUEST_SCHNECKENZAUN,Schneckenzaun
+DESC_QUEST_SCHNECKENZAUN,Erledig 1.000 Weinbergschnecken.
+MENU_DAILY,Tageskarte
+DAILY_TITLE,Tageskarte
+DAILY_DATE,"Heit, %s – für alle gleich"
+DAILY_MAP,Wo: %s
+DAILY_GRANT,Wie grantig: %s
+DAILY_FIRST,Da erste Versuch heit kummt auf die Ehrentafel vom Tag. Den gibt's nur oamal.
+DAILY_PRACTICE,"Heit scho gspült – jetzt nur mehr zum Üben. Morgen gibt's a neue Kartn."
+DAILY_STREAK,Tage hintereinand: %d · Rekord: %d
+DAILY_BOARD,Ehrentafel vom Tag
+END_DAILY,Tageskarte vom %s
+END_BOARD_RANK_DAILY,Tageskarte: Platz %d
+QUEST_STAMMKUNDSCHAFT,Stammkundschaft
+DESC_QUEST_STAMMKUNDSCHAFT,Spiel die Tageskarte 7 Tage hintereinand.
+QUEST_ABONNEMENT,Abonnement
+DESC_QUEST_ABONNEMENT,Spiel die Tageskarte an 30 Tagen.
+END_TAB_NUMBERS,Zahlen
+END_TAB_BILL,Abrechnung
+BILL_DAMAGE,Schaden
+BILL_SHARE,Anteil
+BILL_KILLS,Erledigt
+BILL_KNODL,Da Knödl
+BILL_EXTRA,Sonstiges
+BILL_ATTACK,an Angriff
+BILL_NONE,Ka Schaden gmacht. Gemütlich.
+BILL_NEVER_DOWN,Ned oamal umgfoin. Respekt.
+BILL_DOWN_BY,Am öftesten umgfoin durch: %s (%d×)
+SHOP_TITLE,Da Standler
+SHOP_SUBTITLE,"Ois echt, ois günstig. Fast."
+SHOP_LEAVE,"Na, danke"
+SHOP_PRICE,%d Gold
+STANDLER_SIGN,Standler
+TOAST_STANDLER,Da Standler hat aufgsperrt! Schau vorbei.
+TOAST_STANDLER_GONE,Da Standler packt zam.
+MARTERL_0,Mutprobe
+MARTERL_1,Gier
+MARTERL_2,Segen
+TOAST_MARTERL_0,Mutprobe! Halt 30 Sekunden durch.
+TOAST_MARTERL_1,"Gier! Doppelt so vü Gsindl, doppelt so vü Gold."
+TOAST_MARTERL_2,Segen! A Extra-Runde auf da Speisekarte.
+TOAST_MARTERL_DONE_0,Mutprobe bestanden – a Truhn!
+TOAST_MARTERL_DONE_1,Die Gier is vorbei.
+PATCH_1_4_0_12,"Neu im Menü: die Tageskarte. Jeden Tag a Knödlinger, a Karte und a Grant-Stufe, für alle gleich. Nur da erste Versuch kummt auf die Ehrentafel vom Tag. Zwa neue Aufträge fürs Dranbleiben."
+PATCH_1_4_0_13,"Um 3:00 und 9:00 sperrt da Standler in deiner Nähe auf: drei Items um Gold, jeder Kauf macht des nächste teurer. Im Familienausflug hat jeder sei eigenes Angebot."
+PATCH_1_4_0_14,"Marterl am Wegesrand: stell di hin und es gilt. Mutprobe (30 Sekunden durchhalten, dann a Truhn), Gier (doppelt so vü Gegner und Gold) oder Segen (a Extra-Runde auf da Speisekarte)."
+PATCH_1_4_0_15,"Nach da Runde gibt's jetzt a Abrechnung: wie vü Schaden jede Waffe und da Knödl gmacht ham, und wer di am öftesten umghaut hat."
+ITEM_GFRORNS,Gfrorns
+DESC_ITEM_GFRORNS,"Ein Eis am Stiel. Wer's abkriegt, steht still."
+QUEST_SCHNEEBALLSCHLACHT,Schneeballschlacht
+DESC_QUEST_SCHNEEBALLSCHLACHT,Besieg insgesamt 400 Schneemänner.
+ITEM_KACHELOFEN,Kachelofen
+DESC_ITEM_KACHELOFEN,"Wer still sitzt, wird warm. Hat die Oma immer gsagt."
+QUEST_GEISTERSTUNDE,Geisterstunde
+DESC_QUEST_GEISTERSTUNDE,Besieg insgesamt 1.000 Stammgast-Geister.
+ITEM_BIERDECKEL,Bierdeckel
+DESC_ITEM_BIERDECKEL,Der erste Strich zählt doppelt.
+QUEST_ANSCHREIBEN,Anschreiben
+DESC_QUEST_ANSCHREIBEN,Mach in einem Lauf 8 Truhn auf.
+ITEM_HOSENTRAEGER,Hosenträger
+DESC_ITEM_HOSENTRAEGER,"Hält die Hosn oben, auch im Flug."
+QUEST_VOGELFREI,Vogelfrei
+DESC_QUEST_VOGELFREI,Besieg insgesamt 2.000 Stare.
+ITEM_WEIDEZAUN,Weidezaun
+DESC_ITEM_WEIDEZAUN,"Wer di anrempelt, kriegt an Schlag."
+QUEST_SAUSTALL,Saustall
+DESC_QUEST_SAUSTALL,Besieg insgesamt 500 Wildschweine.
+ITEM_DISTELSTRAUSS,Distelstrauß
+DESC_ITEM_DISTELSTRAUSS,"Schön anzschaun, schiach zum Angreifen."
+QUEST_HUNDSTAGE,Hundstage
+DESC_QUEST_HUNDSTAGE,Besieg insgesamt 3.000 Kampf-Dackel.
+ITEM_JAGDTROPHAEE,Jagdtrophäe
+DESC_ITEM_JAGDTROPHAEE,Für die Großen. Hängt dann im Stüberl.
+QUEST_TROPHAEENWAND,Trophäenwand
+DESC_QUEST_TROPHAEENWAND,Besieg insgesamt 300 Perchten.
+ITEM_LEBERKAESSEMMEL,Leberkässemmel
+DESC_ITEM_LEBERKAESSEMMEL,Fallt manchmal vom Himmel. Warm.
+QUEST_JAUSE,Jause
+DESC_QUEST_JAUSE,Kauf beim Standler insgesamt 5 Sachen.
+ITEM_SONNWENDFEUER,Sonnwendfeuer
+DESC_ITEM_SONNWENDFEUER,Manchmal fangt's Feuer. Brandschutz is woanders.
+QUEST_SONNWENDE,Sonnwende
+DESC_QUEST_SONNWENDE,Besieg insgesamt 1.000 Gartenzwerge.
+ITEM_BLITZABLEITER,Blitzableiter
+DESC_ITEM_BLITZABLEITER,Leitet ab. Meistens auf die anderen.
+QUEST_GEWITTERNACHT,Gewitternacht
+DESC_QUEST_GEWITTERNACHT,Besieg den Sturm insgesamt 3-mal.
+ITEM_PFEFFERONI,Scharfe Pfefferoni
+DESC_ITEM_PFEFFERONI,Brennt zweimal. Einmal beim Feind.
+QUEST_SCHARF,Ordentlich scharf
+DESC_QUEST_SCHARF,Besieg insgesamt 1.500 Wespen.
+ITEM_IRRLICHTER,Irrlichter
+DESC_ITEM_IRRLICHTER,Aus manchem Feind steigt ein Licht und sucht den nächsten.
+QUEST_IRRLICHT,Irrlicht
+DESC_QUEST_IRRLICHT,Überlebe in einem Lauf 3 Minuten Nachspielzeit.
+ITEM_STALLATERNE,Stallaterne
+DESC_ITEM_STALLATERNE,"Mehr Licht, mehr Glück. Sagt der Bauer."
+QUEST_ANDACHT,Andacht
+DESC_QUEST_ANDACHT,Bet insgesamt 10-mal bei einem Marterl.
+ITEM_LETZTE_RUNDE,Letzte Runde
+DESC_ITEM_LETZTE_RUNDE,"Je schlechter's geht, desto gfährlicher wirst."
+QUEST_ZWEIHUNDERTTAUSEND,Zweihunderttausend
+DESC_QUEST_ZWEIHUNDERTTAUSEND,Besieg insgesamt 200.000 Gegner.
+ITEM_STRICHLISTE,Strichliste
+DESC_ITEM_STRICHLISTE,Jeder Strich macht di a bisserl stärker.
+QUEST_STRICHERL,Stricherl um Stricherl
+DESC_QUEST_STRICHERL,Besieg insgesamt 20.000 Touristen-Zombies.
+ITEM_RUCKSACK,Rucksack
+DESC_ITEM_RUCKSACK,Da geht no was eini. Ein Schuss mehr für alles.
+QUEST_SCHATZSUCHER,Schatzsucher
+DESC_QUEST_SCHATZSUCHER,Mach insgesamt 50 Truhn auf.
+ITEM_SCHUTZENGERL,Schutzengerl
+DESC_ITEM_SCHUTZENGERL,Nach einem Treffer kurz unverwundbar. Dann Pause.
+QUEST_HAUSFRIEDEN,Hausfrieden
+DESC_QUEST_HAUSFRIEDEN,Besieg die Hausmeisterin insgesamt 3-mal.
+ITEM_BROESELSTURM,Bröselsturm
+DESC_ITEM_BROESELSTURM,"Was zum Knödl fliegt, schneidet am Spagat mit."
+QUEST_BROESELBERG,Bröselberg
+DESC_QUEST_BROESELBERG,Roll in einem Lauf einen Knödl mit 3.000 Masse.
+ITEM_WETTERFLECK,Wetterfleck
+DESC_ITEM_WETTERFLECK,"Rinnt alles ab. Fester Tritt, und mancher Treffer heilt sogar."
+QUEST_REGENWETTER,Regenwetter
+DESC_QUEST_REGENWETTER,Besieg insgesamt 1.000 Weinbergschnecken.
+ITEM_RODEL,Rodel
+DESC_ITEM_RODEL,Bergab lauft der Knödl wie von selber.
+QUEST_RODELPARTIE,Rodelpartie
+DESC_QUEST_RODELPARTIE,Gewinn insgesamt 3 Läufe auf der Gamskogl-Piste.
+ITEM_UHR,Stehengebliebene Uhr
+DESC_ITEM_UHR,Einmal pro Lauf bleibt die Zeit stehn statt du liegen.
+QUEST_UEBERSTUNDEN,Überstunden
+DESC_QUEST_UEBERSTUNDEN,Überlebe in einem Lauf 5 Minuten Nachspielzeit.
+ITEM_AMTSSCHIMMEL,Amtsschimmel
+DESC_ITEM_AMTSSCHIMMEL,Manchmal wird einer einfach abgelegt. Für immer.
+QUEST_AKTENVERMERK,Aktenvermerk
+DESC_QUEST_AKTENVERMERK,Besieg insgesamt 5.000 Akten-Geister.
+ITEM_DRESCHFLEGEL,Dreschflegel
+DESC_ITEM_DRESCHFLEGEL,"Selten, aber dann ordentlich."
+QUEST_HOFRAT_ZWANZIG,Hofrat in Pension
+DESC_QUEST_HOFRAT_ZWANZIG,Besieg den Hofrat insgesamt 20-mal.
+ITEM_STAUBSAUGER,Staubsauger
+DESC_ITEM_STAUBSAUGER,Alle 45 Sekunden kommen alle Brösel zum Knödl.
+QUEST_GROSSPUTZ,Großputz
+DESC_QUEST_GROSSPUTZ,Kehr insgesamt 50-mal in einem Wirtshaus ein.
+ITEM_AMBOSS,Amboss vom Dorfschmied
+DESC_ITEM_AMBOSS,Jede Waffenkarte bringt noch an Bonus dazu.
+QUEST_MEISTERBRIEF,Meisterbrief
+DESC_QUEST_MEISTERBRIEF,Erreich in einem Lauf Level 60.
+ITEM_FEDERBETT,Federbett
+DESC_ITEM_FEDERBETT,"Was zu viel gheilt is, wird zur Tuchent. Bis zur halben Gsundheit."
+QUEST_HEURIGENSTAMMGAST,Heurigen-Stammgast
+DESC_QUEST_HEURIGENSTAMMGAST,Gewinn insgesamt 3 Läufe beim Heurigen.
+QUEST_TRUHNKOENIG,Truhnkönig
+DESC_QUEST_TRUHNKOENIG,Mach insgesamt 200 Truhn auf.
+QUEST_GOLDENE_NASN,Goldene Nasn
+DESC_QUEST_GOLDENE_NASN,Verdien insgesamt 50.000 Gold.
+QUEST_WALLFAHRT,Wallfahrt
+DESC_QUEST_WALLFAHRT,Bet insgesamt 50-mal bei einem Marterl.
+QUEST_GUTER_KUNDE,Guter Kunde
+DESC_QUEST_GUTER_KUNDE,Kauf beim Standler insgesamt 30 Sachen.
+TOAST_SAVED,Die Zeit is stehnblieben. Du ned.
+IFX_WHEN_ON_HIT_CHANCE,{c} % beim Treffer:
+IFX_WHEN_ON_HIT,Bei jedem Treffer:
+IFX_WHEN_ON_KILL_CHANCE,{c} % bei einem Erledigten:
+IFX_WHEN_ON_KILL,Bei jedem Erledigten:
+IFX_WHEN_ON_HURT_CHANCE,"{c} %, wenn du was abkriegst:"
+IFX_WHEN_ON_HURT,"Wenn du was abkriegst:"
+IFX_WHEN_ON_LETHAL,Einmal pro Lauf statt umfallen:
+IFX_WHEN_ON_REVIVE,Beim Aufstehn:
+IFX_WHEN_PERIODIC,Alle {cd} s:
+IFX_WHEN_LOW_HP,Unter halber Gsundheit:
+IFX_WHEN_STANDING_STILL,Nach {s} s Stillstehn:
+IFX_WHEN_MOVING,Beim Gehen:
+IFX_WHEN_AIRBORNE,In da Luft:
+IFX_WHEN_TARGET_HEALTHY,Gegen fast unverletzte Gegner:
+IFX_WHEN_TARGET_ELITE,Gegen Elite und Bosse:
+IFX_WHEN_TARGET_BELOW,Gegen Gegner unter dir:
+IFX_WHEN_ON_CASHIN,Beim Einkehren:
+IFX_WHEN_ON_BROSEL,Wenn dein Knödl Brösel schluckt:
+IFX_DO_FREEZE,{s} s eingfroren
+IFX_DO_BURN,"brennt ({v} % vom Treffer pro s, {s} s)"
+IFX_DO_BLAST,Explosion mit {v} % vom Treffer in {r} m
+IFX_DO_CHAIN,"Blitz springt auf {n} weitere ({v} % vom Treffer)"
+IFX_DO_WISP,a Irrlicht trifft den Nächsten in {r} m ({v} Schaden)
+IFX_DO_EXECUTE,der Gegner is sofort erledigt (keine Bosse)
+IFX_DO_BIG_HIT,{v}-facher Schaden
+IFX_DO_HEAL,+{v} HP
+IFX_DO_HEAL_SHARE,+{v} % der max. HP
+IFX_DO_REGEN,+{v} HP pro Sekunde
+IFX_DO_SHIELD,Heilung über die max. HP wird a Schild (bis {v} % der max. HP)
+IFX_DO_INVULNERABLE,{s} s unverwundbar
+IFX_DO_TIME_STOP,alle Gegner in {r} m stehn {s} s still
+IFX_DO_DAMAGE,+{v} % Schaden
+IFX_DO_DAMAGE_UPTO,bis +{v} % Schaden (je weniger HP)
+IFX_DO_DAMAGE_PER_KILL,"+{v} % Schaden pro 100 Erledigte (max. +{max} %)"
+IFX_DO_DAMAGE_PER_EXECUTE,"+{v} % Schaden pro Abgelegtem (max. +{max} %)"
+IFX_DO_SHOCK,Stromschlag mit {v} Schaden in {r} m
+IFX_DO_THORNS,Gegner neben dir kriegen {v}-fach zurück
+IFX_DO_PROC_CHANCE,+{v} % auf jede Chance von Gegenständen
+IFX_DO_EXTRA_ROLL,Waffenkarten bringen {v} Bonus mehr
+IFX_DO_PULL_BROSEL,alle Brösel in {r} m fliegen zu deinem Knödl
+IFX_DO_DROP_FOOD,a Semmel fallt runter (+{v} HP)
+IFX_DO_STRING_CUT,der Spagat schneidet ({v} Schaden pro Brösel)
+IFX_DO_RODEL,Knödl am Spagat bergab +{v} % schneller
+IFX_COOLDOWN,(höchstens alle {cd} s)
+IFX_RULE_FREE_CHEST,{v} % Chance: die Truhn is gratis
+IFX_RULE_DAMAGE_PER_CHEST,+{v} % Schaden pro offener Truhn
+IFX_RULE_REVIVE,{v}× pro Lauf wieder aufstehn
+IFX_RULE_KNODL_SPIKES,Gegner picken am Knödl: {v} Schaden pro s
+IFX_RULE_KNODL_BURST,Schupfn endet mit einer Explosion (kost Masse)
+IFX_RULE_KNODL_SLOPE,+{v} % Knödl-Schaden bergab
+IFX_RULE_KILL_BLAST,{v} % Chance: ein Erledigter explodiert
+IFX_RULE_BELL,Glockenschlag rund um di alle {v} s
+IFX_RULE_RIESENKNODL,"Knödl doppelt so groß, verliert nie Masse"
+IFX_RULE_SECOND_KNODL,a zweiter Knödl am eigenen Spagat
+BV_TITLE,Was kann's?
+BV_HINT,"Zeig auf a Feld (Maus, Steuerkreuz oder Finger), dann steht da genau, was's kann."
+BV_DAMAGE_HIT,Schaden pro Treffer
+BV_RATE,Angriffe pro Sekunde
+BV_ORBIT_RATE,Treffer pro Sekunde und Gegner
+BV_AMOUNT,Stück pro Angriff
+BV_CRIT,Volltreffer
+BV_CRIT_VALUE,%s %% × %s
+BV_BURN,Brand pro Angriff
+BV_THEORY,Theorie: Schaden pro s
+BV_THEORY_ENEMY,Theorie: pro s und Gegner
+BV_RUN,Dieser Lauf: Schaden
+BV_RECENT,Letzte 30 s: pro s
+BV_PROCS,Ausgelöst
+BV_CHANCE_LANTERN,Chance mit Stallaterne
+BV_FROM_PASSIVES,aus Stat-Upgrades
+BV_FROM_ITEMS,aus Gegenständen
+BV_FROM_META,vom Stammtisch
+SET_KNODL_FOLLOW,Knödl folgt brav
+PATCH_1_4_0_16,"Gold und Truhn: bis zu 15 Truhn pro Lauf, die erste um 20 Gold, jede gekaufte macht die nächste teurer; Münzen werden mit der Zeit mehr wert."
+PATCH_1_4_0_17,"Fassl stehn herum: reinlaufen oder den Knödl drüberrolln, dann fallt Gold raus."
+PATCH_1_4_0_18,"26 neue Gegenstände, die was Eigenes können: einfrieren, anzünden, Blitze, Irrlichter, Schild, die Zeit anhalten und mehr. Jeder wartet hinter einem Auftrag."
+PATCH_1_4_0_19,"Gegenstände sagen jetzt genau, was sie können: in der Truhe, auf der Speisekarte und im Almanach. Eingfrorene Gegner sind blau, brennende orange."
+PATCH_1_4_0_20,"Pause und Tab zeigen dein Inventar: zeig auf a Feld und du siehst Schaden, Angriffe pro Sekunde und was die Waffe in diesem Lauf wirklich gmacht hat."
+PATCH_1_4_0_21,Neue Einstellung „Knödl folgt brav“: dein Knödl rollt von selber zu den Bröseln. Rüstung schützt mehr. 30 neue Aufträge.

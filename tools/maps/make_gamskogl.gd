@@ -22,6 +22,7 @@ func _init() -> void:
 	_map.id = &"gamskogl"
 	_map.name_key = "MAP_GAMSKOGL"
 	_map.wave = load("res://data/waves/gamskogl.tres")
+	_map.music = &"gamskogl"
 	_map.half_size = 150.0
 	_map.terrain_samples = 256
 	_map.ground_cell = 0.5
@@ -119,7 +120,10 @@ func _spots() -> void:
 		Vector2(0.0, 30.0)])
 	_map.chest_spots = PackedVector2Array([Vector2(-20.0, 60.0), Vector2(20.0, 40.0), Vector2(-52.0, 4.0), Vector2(56.0, -24.0),
 		Vector2(0.0, -40.0), Vector2(-36.0, -80.0), Vector2(36.0, -60.0), Vector2(-90.0, 40.0), Vector2(90.0, 20.0),
-		Vector2(-70.0, -60.0), Vector2(74.0, -70.0), Vector2(0.0, -120.0), Vector2(-60.0, 90.0), Vector2(60.0, 90.0)])
+		Vector2(-70.0, -60.0), Vector2(74.0, -70.0), Vector2(0.0, -120.0), Vector2(-60.0, 90.0), Vector2(60.0, 90.0),
+		# 1.4: ~15 chests a run (plus the Marterl) need more spots, on the bot's lanes.
+		Vector2(0.0, 84.0), Vector2(-30.0, 40.0), Vector2(30.0, 0.0), Vector2(0.0, -84.0), Vector2(40.0, -10.0),
+		Vector2(60.0, 30.0), Vector2(12.0, 70.0), Vector2(-60.0, 60.0)])
 	_map.bot_waypoints = PackedVector2Array([Vector2(0.0, 84.0), Vector2(-30.0, 40.0), Vector2(30.0, 0.0), Vector2(-40.0, -40.0),
 		Vector2(0.0, -84.0), Vector2(40.0, -10.0), Vector2(60.0, 30.0), Vector2(12.0, 70.0), Vector2(-60.0, 60.0),
 		Vector2(-52.0, -10.0)])

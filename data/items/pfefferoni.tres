@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_3d2n2"]
+[ext_resource type="Texture2D" path="res://assets/icons/pfefferoni.svg" id="2_etegb"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="3_5kf34"]
+
+[sub_resource type="Resource" id="Resource_6veq8"]
+script = ExtResource("1_3d2n2")
+action = 2
+chance = 0.2
+value = 0.4
+radius = 2.5
+
+[resource]
+script = ExtResource("3_5kf34")
+id = &"pfefferoni"
+name_key = "ITEM_PFEFFERONI"
+desc_key = "DESC_ITEM_PFEFFERONI"
+rarity = 2
+effects = Array[ExtResource("1_3d2n2")]([SubResource("Resource_6veq8")])
+icon = ExtResource("2_etegb")
+color = Color(0.36078432, 0.79607844, 0.41960785, 1)

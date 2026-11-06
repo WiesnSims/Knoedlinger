@@ -4,7 +4,11 @@ extends Control
 ## frames first, then all icons (one atlas), then all numbers. One PanelContainer, TextureRect and
 ## Label per tile cost about three draw calls each in the Compatibility renderer; this costs about
 ## four for the whole grid. Colours, font and gaps still come from the theme (Tile* styles,
-## HudSmall, GridContainer). Tooltips show the tile under the mouse.
+## HudSmall, GridContainer). Tooltips show the tile under the mouse; a `selectable` grid (1.4 build
+## view) instead reports the tile under the mouse, a tap or the pad/keyboard focus (`picked`) and rings
+## it in the accent colour, so a detail panel can say what it is.
+
+signal picked(index: int)
 
 ## One tile: icon (null = free slot), level (0 = none shown), the theme variation of its frame.
 class Tile:
@@ -19,6 +23,8 @@ static var _shapes: ImageTexture
 
 var columns: int = 6
 var edge: float = 40.0
+var selectable: bool = false
+var selected: int = -1
 var _tiles: Array[Tile] = []
 
 
@@ -28,8 +34,30 @@ func _init(p_columns: int = 6, p_edge: float = 40.0) -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 
 
+func set_selectable(on: bool) -> void:
+	selectable = on
+	focus_mode = Control.FOCUS_ALL if on else Control.FOCUS_NONE
+	mouse_filter = Control.MOUSE_FILTER_STOP if on else Control.MOUSE_FILTER_PASS
+	if on and not focus_entered.is_connected(_on_focus):
+		focus_entered.connect(_on_focus)
+		focus_exited.connect(queue_redraw)
+
+
+## Rings tile `index` (-1 = none) and says so.
+func select(index: int) -> void:
+	index = clampi(index, -1, _owned_count() - 1)
+	if index == selected:
+		return
+	selected = index
+	queue_redraw()
+	if index >= 0:
+		picked.emit(index)
+
+
 func set_tiles(tiles: Array[Tile]) -> void:
 	_tiles = tiles
+	if selected >= _owned_count():
+		selected = -1
 	var rows: int = ceili(float(tiles.size()) / columns)
 	var gap: Vector2 = _gap()
 	custom_minimum_size = Vector2(
@@ -43,6 +71,8 @@ func tile_count() -> int:
 
 
 func _get_tooltip(at: Vector2) -> String:
+	if selectable:
+		return ""
 	for k: int in _tiles.size():
 		if _rect(k).has_point(at):
 			return _tiles[k].tooltip
@@ -64,6 +94,11 @@ func _draw() -> void:
 	for k: int in _tiles.size():
 		if _tiles[k].icon != null:
 			draw_texture_rect(UiStyle.atlas_icon(_tiles[k].icon), _rect(k).grow(-4.0), false)
+	if selectable and selected >= 0 and selected < _tiles.size():
+		var accent: Color = UiStyle.color("accent")
+		if not has_focus():
+			accent.a = 0.6
+		draw_texture_rect_region(shapes, _rect(selected).grow(4.0), Rect2(cell, 0.0, cell, cell), accent)
 	var font: Font = get_theme_font("font", &"HudSmall")
 	var font_size: int = get_theme_font_size("font_size", &"HudSmall")
 	var shadow: Color = get_theme_color("font_shadow_color", &"HudSmall")
@@ -84,6 +119,62 @@ func _draw() -> void:
 	for k: int in _tiles.size():
 		if _tiles[k].level > 0:
 			draw_string(font, spots[k], str(_tiles[k].level), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+
+
+func _gui_input(event: InputEvent) -> void:
+	if not selectable:
+		return
+	var motion := event as InputEventMouseMotion
+	var press := event as InputEventMouseButton
+	var touch := event as InputEventScreenTouch
+	if motion != null or (press != null and press.pressed) or (touch != null and touch.pressed):
+		var at: Vector2 = (event as InputEventMouse).position if event is InputEventMouse else touch.position
+		var index: int = _index_at(at)
+		if index >= 0:
+			select(index)
+			if press != null or touch != null:
+				grab_focus()
+				accept_event()
+		return
+	if not has_focus():
+		return
+	var step: int = 0
+	if event.is_action_pressed(&"ui_left"):
+		step = -1 if selected % columns > 0 else 0
+	elif event.is_action_pressed(&"ui_right"):
+		step = 1 if selected % columns < columns - 1 and selected + 1 < _owned_count() else 0
+	elif event.is_action_pressed(&"ui_up"):
+		step = -columns if selected - columns >= 0 else 0
+	elif event.is_action_pressed(&"ui_down"):
+		step = columns if selected + columns < _owned_count() else 0
+	else:
+		return
+	# At an edge the event goes on, so the focus moves to the next control.
+	if step != 0:
+		select(selected + step)
+		accept_event()
+
+
+func _on_focus() -> void:
+	if selected < 0 and _owned_count() > 0:
+		select(0)
+	queue_redraw()
+
+
+func _index_at(at: Vector2) -> int:
+	for k: int in _owned_count():
+		if _rect(k).grow(2.0).has_point(at):
+			return k
+	return -1
+
+
+## Tiles with something in them (free slots come last and cannot be picked).
+func _owned_count() -> int:
+	var count: int = 0
+	for tile: Tile in _tiles:
+		if tile.icon != null:
+			count += 1
+	return count
 
 
 func _gap() -> Vector2:

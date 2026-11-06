@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="BossData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/boss_data.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/data/attack_data.gd" id="2_attack"]
+[ext_resource type="Resource" path="res://data/enemies/hausmeisterin.tres" id="3_body"]
+[ext_resource type="Resource" path="res://data/enemies/dackel.tres" id="4_escort"]
+
+[sub_resource type="Resource" id="besen"]
+script = ExtResource("2_attack")
+id = &"hausmeisterin_besen"
+shape = 1
+aim = 0
+radius = 1.3
+length = 12.0
+telegraph = 0.9
+damage = 18.0
+count = 5
+spread = 22.0
+range = 20.0
+stagger = 0.12
+toast_key = "BOSS_HAUSMEISTERIN_SWEEP"
+
+[sub_resource type="Resource" id="klopfer"]
+script = ExtResource("2_attack")
+id = &"hausmeisterin_klopfer"
+radius = 2.6
+telegraph = 1.1
+damage = 16.0
+count = 3
+spread = 5.0
+range = 30.0
+
+[sub_resource type="Resource" id="zusperren"]
+script = ExtResource("2_attack")
+id = &"hausmeisterin_zusperren"
+shape = 1
+aim = 4
+telegraph = 1.6
+damage = 14.0
+range = 45.0
+lock_seconds = 10.0
+toast_key = "BOSS_HAUSMEISTERIN_LOCK"
+
+[resource]
+script = ExtResource("1_script")
+id = &"hausmeisterin"
+name_key = "BOSS_HAUSMEISTERIN"
+intro_key = "BOSS_HAUSMEISTERIN_INTRO"
+defeat_key = "BOSS_HAUSMEISTERIN_DEFEAT"
+enemy = ExtResource("3_body")
+max_hp = 2600.0
+speed = 3.6
+attacks = Array[ExtResource("2_attack")]([SubResource("besen"), SubResource("klopfer"), SubResource("zusperren"), SubResource("besen"), SubResource("klopfer")])
+attack_pause = 1.8
+escort = ExtResource("4_escort")
+escort_count = 8
+chest_items = 3
+gold = 40
+golden_brosel = 3
+arrive_distance = 20.0

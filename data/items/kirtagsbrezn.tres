@@ -1,14 +1,24 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
+[ext_resource type="Script" path="res://scripts/data/item_effect.gd" id="1_bbgi4"]
 [ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/icons/kirtagsbrezn.svg" id="2_icon"]
+
+[sub_resource type="Resource" id="Resource_oocjs"]
+script = ExtResource("1_bbgi4")
+trigger = 14
+action = 7
+value = 30.0
 
 [resource]
 script = ExtResource("1_script")
 id = &"kirtagsbrezn"
 name_key = "ITEM_KIRTAGSBREZN"
 desc_key = "DESC_ITEM_KIRTAGSBREZN"
-rarity = 0
-stats = Dictionary[StringName, float]({&"regen": 0.15})
+rarity = 1
+stats = Dictionary[StringName, float]({
+&"regen": 0.05
+})
+effects = Array[ExtResource("1_bbgi4")]([SubResource("Resource_oocjs")])
 icon = ExtResource("2_icon")
 color = Color(0.79, 0.54, 0.27, 1)

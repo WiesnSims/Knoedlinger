@@ -46,7 +46,7 @@ func test_armor_reduces_hits_but_never_to_nothing() -> void:
 	assert_almost_eq(Formulas.hit_damage(6.0, 0.0, balance), 6.0, 0.001)
 	assert_almost_eq(Formulas.hit_damage(6.0, balance.armor_half, balance), 3.0, 0.001, "half at armor_half")
 	assert_lt(Formulas.hit_damage(6.0, 20.0, balance), Formulas.hit_damage(6.0, 10.0, balance))
-	assert_gt(Formulas.hit_damage(5.0, 8.0, balance), 2.5, "a few points no longer shrug off fodder")
+	assert_gt(Formulas.hit_damage(5.0, balance.armor_half * 0.8, balance), 2.5, "a few points no longer shrug off fodder")
 	assert_eq(Formulas.hit_damage(5.0, 1000.0, balance), balance.min_hit_damage)
 	assert_eq(Formulas.hit_damage(0.0, 1.0, balance), 0.0)
 

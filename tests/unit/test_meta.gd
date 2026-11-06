@@ -50,6 +50,26 @@ func test_quest_rewards_unlock_what_they_name() -> void:
 	assert_null(Profile.unlocking_quest(&"weapon", &"mozartkugel_orbit"))
 
 
+func test_preview_builds_open_everything_without_touching_the_save() -> void:
+	assert_true(Profile.is_preview_host("v1-4.knoedlinger.pages.dev"))
+	assert_true(Profile.is_preview_host("cf33f1c7.knoedlinger.pages.dev"))
+	assert_false(Profile.is_preview_host("knoedlinger.pages.dev"), "the live site keeps its locks")
+	assert_false(Profile.is_preview_host("127.0.0.1"))
+	assert_false(Profile.unlock_all, "off outside a preview")
+	Profile.unlock_all = true
+	for quest: QuestData in Profile.content.quests:
+		if quest.unlock_kind != &"":
+			assert_true(Profile.is_unlocked(quest.unlock_kind, quest.unlock_id), String(quest.unlock_id))
+			assert_null(Profile.unlocking_quest(quest.unlock_kind, quest.unlock_id))
+	assert_eq(Profile.grant_unlocked(), Profile.content.grants.size() - 1, "every Grant level")
+	assert_eq((Profile.data["quests"] as Dictionary).size(), 0, "nothing stamped")
+	var reward: Dictionary = Profile.record_run(_run({"result": "WON"}))
+	assert_true(reward["grant_unlocked"], "a win still raises the saved Grant level")
+	assert_false((reward["quests"] as Array).is_empty(), "quests still count and pay")
+	Profile.unlock_all = false
+	assert_eq(Profile.grant_unlocked(), 2)
+
+
 func test_found_things_fill_the_almanach() -> void:
 	Profile.record_run(_run())
 	assert_true(Profile.is_found(&"weapon", &"schneeschaufel"))
@@ -126,7 +146,8 @@ func test_grant_levels_get_harder_and_pay_more() -> void:
 func test_every_quest_and_upgrade_is_known() -> void:
 	var catalog: UpgradeCatalog = load("res://data/catalog/catalog.tres")
 	var kinds: Array[StringName] = [&"kills", &"cash_ins", &"level", &"wins", &"runs", &"bosses", &"boss_no_throw",
-		&"stempel", &"knodl", &"survive", &"overtime", &"schilling", &"items", &"grant_win", &"coop"]
+		&"stempel", &"knodl", &"survive", &"overtime", &"schilling", &"items", &"grant_win", &"coop",
+		&"daily_streak", &"daily_days", &"chests", &"chests_run", &"gold", &"standler", &"marterl"]
 	for quest: QuestData in Profile.content.quests:
 		assert_true(kinds.has(quest.kind), "%s: kind %s" % [quest.id, quest.kind])
 		for key: String in [quest.title_key, quest.desc_key]:

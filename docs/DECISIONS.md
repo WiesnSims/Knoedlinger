@@ -1308,3 +1308,627 @@ the second tab.
   Live browser check (headless Edge, 500 enemies, bot, 60 s): 176.3 fps, p95 6.9 ms, at most 100 draw
   calls, no console errors; the title screen shows the real top 5.
 - `v1-4`'s Part 0 (fold in `nachspielzeit`) is now just merging `main` into `v1-4`.
+
+## 2026-11-05 – Plan for 1.4.0 (branch `v1-4`, not started)
+
+- **Owner asked** for a new milestone for the 1.4 features: more maps, weapons and characters, plus Claude's
+  suggestions for new features and changes to existing ones, as a taskboard; planning only. Board:
+  https://claude.ai/artifact/NJ8t1sgRXKVoU9d79ZEHWM (task ids below match it).
+- **Owner: Nachspielzeit is part of 1.4** – the branch `nachspielzeit` (a931dba, already stamped 1.4.0, not yet
+  playtested) is merged into `v1-4` as Part 0 and playtested with the Part 1 preview.
+- **Owner: one branch `v1-4`** for the whole milestone, a preview deploy (`deploy_preview.ps1 -Branch v1-4`)
+  and the browser check after every part, the owner approves part by part; one production release 1.4.0 at
+  the end, only on the owner's word. Merge into `main` and delete the branch once 1.4 is approved.
+- **Owner: Heuriger now, the Kurort map in 1.5.** Moved to 1.5 with it: task 1.2 (Kurort Bad Unterhinterkogl:
+  Kurpark, thermal water that slows everyone and floats the Knödl, Seilbahn high route), 4.4 (Nordic-Walker,
+  Handtuch-Reservierer, Kurgast im Bademantel, mini-boss Der Bademeister) and the Kurort music and Kurkarte item.
+- **Owner: English later** (task 5.6, not in 1.4).
+- **Owner: start only when told** ("go with 1.4 part 1"); the session is cleared before that.
+- **Claude: the parts, in order** (P1 must, P2 should, P3 could; P3 slides to 1.5 first if 1.4 runs long).
+  Every number below is a starting value and goes into `balance.tres` / the data files:
+  - **Part 0 – Nachspielzeit** (0.1): merge `nachspielzeit`, re-run the tests, owner playtest.
+  - **Part 1 – the Heuriger map** (1.1 P1, 4.1 P1, 4.2 P1, 4.5 P1, 6.1 P1 music):
+    `tools/maps/make_heuriger.gd` on `map_kit.gd` → `data/maps/heuriger.tres`, `data/waves/heuriger.tres`.
+    Terraced vineyards on 4–5 levels (the Knödl rolls down terraces), Buschenschanken as the Wirtshäuser,
+    wine-cellar tunnels as shortcuts, boss gate at the Presshaus, Stempel on terrace tops. New enemies:
+    Weinbergschnecke (slow, tanky, slime trail slows players), Star-Schwarm (Bröselfresser flock, loose Brösel
+    first, then the Knödl), Wespe (fast, prefers the sweet Knödl sorts Marillen/Germ/Topfen). Mini-boss at
+    10:00: Der Sturm (a whirlwind of young wine; pulls in Brösel and enemies, flings them out with a red spiral
+    where they land; heavy Knödl sorts stay on the ground). Voice lines via `voices.py` (samples to the owner
+    first). Music per map: Heuriger (Schrammel techno), Gamskogl (après-ski techno), Gemeindebau (Wienerlied
+    beat) from `make_audio.mjs`, ~+1.5 MiB OGG. 1.3 map traits on the map select (P3).
+  - **Part 2 – the family** (2.1–2.5): Opa Hias the Schrebergärtner (Gartenschlauch, Serviettenknödl, trait
+    "Hat eh Zeit": +25 % attack speed after 1 s standing still; unlock: win on the Gemeindebau-Hof), Cousine
+    Mitzi the Fiakerin (Fiakerpeitsche, Topfenknödl, "Trab": +20 % speed and Knödl damage after 2 s running
+    straight, a sharp turn resets it; unlock: 2 min of Nachspielzeit in one run), Steffi the Winzerin (P2;
+    Steirische Harmonika, Marillenknödl, "Ausg'steckt": every Wirtshaus serves her twice; unlock: win on the
+    Heuriger). New Knödl sorts: Serviettenknödl (wide roll, sweeps a 2× strip, turns slowly, only rolls
+    forwards), Topfenknödl (reel-in 0.5 s, half Schupfn cooldown, −25 % contact damage). Portraits with the
+    family nose, barks, Almanach, the `_40` / `_sieg` Aufträge.
+  - **Part 3 – weapons, stats, evolutions** (3.1–3.8): Gartenschlauch (sweeping stream, knockback, wet =
+    −30 % speed for 2 s), Fiakerpeitsche (7 m lash, the last metre hits ×3), Steirische Harmonika (pulls
+    enemies within 8 m for 0.6 s, then a damage ring pushes them out), Krapfen-Kanone (P2; 3 bounces, jam
+    splash slows). Stats Seniorenteller (+XP from Brösel; no XP-gain stat exists yet) and Gummistiefel
+    (+knockback, slowing ground slows you less), appended to the catalog. Evolutions for the start weapons
+    without one: Schneeschaufel + Bergkas = Schneepflug, Skistöcke + Krügerl = Slalom-Gewitter, Tablett-Wurf +
+    Kaffeehaus-Zeitung = "Zahlen, bitte!", Kuhglocke + Hufeisen = Almabtrieb. P2: Gartenschlauch + Gummistiefel
+    = Hochwasser, Fiakerpeitsche + Spagat aus Hanf = Viererzug, Harmonika + Wanderkarte = Zeltfest,
+    Krapfen-Kanone + Seniorenteller = Faschingsdienstag. P2 items: Leberkässemmel (20 HP per cash-in),
+    Wetterfleck (no knockback on you), Rodel (Knödl gains speed downhill on the string) + two with visible
+    effects.
+  - **Part 4 – Die Hausmeisterin** (4.3 P1): the Gemeindebau-Hof's own mini-boss at 10:00 instead of
+    Oberkrampus II (broom sweeps in red, locks a stairwell for 10 s, voice lines).
+  - **Part 5 – features**: Daily Kirtag (5.1 P1: same map/character/Grant/seed for everyone per day, a daily
+    Ehrentafel board on D1, first try counts, weekly streak Auftrag), Der Standler (5.2 P2: merchant at 3:00
+    and 9:00, 3 items for gold, rising prices, own offer per co-op player), Marterl (5.3 P2: Mutprobe = 30 s
+    ring wave → chest, Gier = 2× enemies and gold for 60 s, Segen = 1 of 2 stat boosts; 2–3 per map),
+    Run-Abrechnung (5.4 P2: end-screen tab with damage per weapon, Knödl kills, top knock-down cause; same
+    numbers in autoplay JSON), co-op pings (5.5 P3), family voices via eSpeak (5.7 P3).
+  - **Part 6 – changes**: "Knödl folgt brav" (6.2 P1, GAME-DESIGN.md edge case never built; Spiel tab, off by
+    default), armour check after the owner's 1.3.1 playtest (6.3 P1: `armor_half` 10 → 6 is the softer
+    option), ~30 new Aufträge towards 300 (6.4 P1; 109 today), rebalance with autoplay on every map and
+    character, new weapons within ±10 % of the average (6.5 P2).
+  - **Part 7 – release**: 60 fps with 500 enemies + 300 projectiles and < 150 draw calls on the Heuriger,
+    .pck < 15 MiB; tests, export, browser check per map, `mp_test -Clients 3 -StartTime 595` on the Heuriger,
+    `mp_test -Coop`, ui_shots before/after; version stays 1.4.0 (from Part 0), patch-list entry on top.
+- **Kept rules:** content as data, text through `tr()`, solo and co-op alike (host-authoritative), new enemy
+  types as MultiMeshes (the snapshot allows 32 types since Nachspielzeit's codec v3), new catalog entries
+  appended so save indices stay.
+
+## 2026-11-05 – 1.4 plan addition: gold and chests (task 6.6 P1, part of Part 6)
+
+- **Owner asked** how gold works ("I was never able to buy more than one chest") and how Megabonk does it;
+  then: aim for ~15 chests a run so players always look out for chests. **Owner: no edge-of-screen chest
+  arrow** (the 1.3.1 price pills within 45 m stay as they are).
+- **Found (1.3.1 code):** coins only from 0.6 % of kills (`coin_drop_chance`, 1 gold each, ~1 per 170 kills),
+  elites from 5:00 (`gold_drop` 1, Kontrolleur 3), bosses 25 / 40 / 80 (Oberkrampus, Oberkrampus II, Hofrat),
+  skip 10, S cash-in 0.5 per mass. Coins only by walking (4 m magnet), the Knödl ignores them. 6 map chests,
+  price 25 + 15 per map chest opened (`_chest_price`, `run_world.gd`); boss/Wirtshaus chests free and not
+  counted; Zweitschlüssel free chests still count. A ~15.6k-kill bot run makes ~100 coin gold, mostly late:
+  first chest after Oberkrampus at 5:00, the second (40) around 9-11 min. 1-2 chests per run is the norm.
+- **Megabonk (fan wiki/guides, not all reliable):** many chests per stage, first 30 gold, price grows per
+  *bought* chest (wiki table: #10 = 495, #30 = 21,249, ~×1.35 early, ~×1.2 later), free chests (Key, ~9 %
+  each) do not raise it; gold from enemies (scales with stage and gold gain), pots, Greed shrine (+25 gold,
+  +5 % difficulty), bosses/elites/challenge shrines; Shady Guy sells items. Income grows faster than the
+  price, so chests stay a steady buy (25-chest achievement).
+- **Balance check (Claude):** 15 chests are fine. Items are small (+4-15 % one stat; strong ones capped at
+  1-3 stacks), ~15 extra items ≈ 5-8 Speisekarte levels on top of ~47, and Grant 1 is hard now (bot wins 3/10,
+  ~28 knock-downs). Risks: **Sparbuch** (+3 % damage per chest opened *per stack*: 15 chests × 3 stacks =
+  +135 %), **Zweitschlüssel** 5 stacks = 50 % free chests (compounds once free chests do not raise the price),
+  Hofratswürdig items without a cap (Maibaumspitz +15 % damage) through more rolls with luck.
+- **Changes (starting values, all in `balance.tres` / item data):**
+  - Price: `map_chest_price` 25 → 20, price ×1.22 per *bought* map chest (new `map_chest_price_growth`,
+    replaces the +15 step): 20, 24, 30, 36, 44, 54, 66, 80, 98, 120, 146, 178, 217, 265, 323 (~1,650 for 15).
+    Free chests (Zweitschlüssel) do not raise it.
+  - Chests: `map_chest_count` 6 → ~15, maps get ~15-18 chest spots each (Kirtag, Gamskogl, Gemeindebau and
+    the new Heuriger; `map_kit.gd` overlap check).
+  - Income: `coin_drop_chance` 0.006 → ~0.03; coin value grows with the clock (new `coin_value_per_minute`,
+    ~1 at 0:00 → ~5 at 12:00; boss/elite gold unchanged to start); breakable props (Kirtag barrels / pots,
+    pooled, host-owned like loot, a few gold each, respawning per map area) as a steady source.
+  - Fixes: Sparbuch 0.03 → 0.015 per chest and `max_stacks` 2 (or a +30 % cap per stack); Zweitschlüssel
+    `max_stacks` 5 → 3; watch Hofratswürdig items in autoplay, cap their stacks only if they dominate.
+  - Targets: first chest ~1:30, then about one a minute; 12-15 chests in a good run; autoplay 10 seeds
+    (Ferdl / Kirtag / Grant 1) before and after: wins 3/10 → ~4-6/10 (not 10/10), no single item making up
+    most of a build's damage. Autoplay JSON gets `chests_bought` and `gold_earned`. Tune the gold numbers
+    first, the price growth second.
+  - Interplay with the 1.4 plan: the Standler (5.2) and the Marterl "Gier" (5.3, 2× gold) spend and make
+    gold too; tune them after this, on the new income. Patch-list lines for the change; co-op: gold, prices
+    and chests stay per player as now.
+- **Note:** Part 0 of the plan above is already done (Nachspielzeit shipped in 1.3.2); Part 0 is now only
+  "merge `main` into `v1-4`".
+
+## 2026-11-05 – 1.4 plan addition: item rework (task 6.7 P1, part of Part 6, right after 6.6)
+
+- **Owner asked:** items mostly give a stat bonus; they should do unique things (a one-time revive, flat HP
+  per second, a 10 % chance for attacks to freeze an enemy, ...), focused on the rare/legendary ones like
+  Megabonk; stat items are fine and needed. Does the current roster already have that? Compare with Megabonk.
+- **Found (1.3.2 data, 34 items in `data/items/`):** 23 are pure stats (Doppler, Edelweiss, Feldstecher,
+  Gleitschirm, Glücksschwein, Goldhaube, Haferlschuhe, Holundersaft, Kirtagsbrezn, Kracherl, Kuckucksuhr,
+  Lebkuchenherz, Maibaumspitz, Rosenkranz, Sauerkraut, Schießbudenrose, Sonntagsgwand, Spielhahnfeder,
+  Spitzwegerich, Trachtenjanker, Wetterhahn, Zirbenschnaps, Zuckerwatte); 11 have a rule, 7 of them Knödl
+  upgrades (Bergab-Gesetz, Bröselbutter, Doppelportion, Omas Rezept, Powidl, Riesenknödl) plus Marterl-Kerze
+  (revive), Kirchenglocke (ring every few s), Schweizerkracher (kill blast), Sparbuch, Zweitschlüssel.
+  Of the owner's examples, the revive exists (Marterl-Kerze) and flat HP/s exists (the `regen` stat is HP per
+  second: Holundersaft, Kirtagsbrezn, Spitzwegerich); **nothing procs on hit** (no freeze/burn/chain chance),
+  nothing reacts to taking damage, low HP, crits, standing still, being airborne or cheating death.
+  Rarity says little: 5 of 10 Edel items and Maibaumspitz (Hofratswürdig, plain +15 % damage) are stats only;
+  three pairs are near duplicates (Kracherl/Zuckerwatte, Holundersaft/Kirtagsbrezn, Lebkuchenherz/Sauerkraut).
+  Each `ItemData` has one `effect` name; every rule is hand-coded in `run_world.gd`. Already there to build on:
+  `EnemyManager.slow()` (0 = frozen/stunned, bosses a third and never stopped), `burn()`, Krampusrute's chain,
+  the pooled projectiles, `on_kill` (Schweizerkracher) and a timer (Kirchenglocke).
+- **Megabonk (guides, ~77 items, Default/Common/Rare/Epic/Legendary):** Commons are mostly stats but with
+  conditions (Idle Juice: up to +100 % damage standing still, Scarf: +33 % airborne, Tactical Glasses: +20 %
+  vs enemies above 90 % HP, Campfire: standing still heals, Coward's Cloak: speed when hit, Electric Plug:
+  shock when hit, Ice Cube: 20 % freeze on hit, Big Bonk: 2 % for 20× damage, Borgar: healing food on kill).
+  Rares/Epics are procs and conditions (Spicy Meatball 25 % explode, Moldy Cheese poison, Thunder Mitts,
+  Soul Harvester homing souls, Demonic Soul +0.1 % per kill, Gamer Goggles: more damage at low HP, Turbo
+  Skates: speed → attack speed, Backpack +1 projectile, Overpowered Lamp: +1 proc chance, Shattered Knowledge:
+  XP shards cut enemies). Legendaries change the rules (Za Warudo: freeze time instead of dying once, Mirror:
+  reflect + short invulnerability, Joe's Dagger: 1 % execute, each +1 % damage, Anvil: upgrades roll +1 stat,
+  Chonkplate: overheal, Holy Book: big HP/regen + healing hurts, Sucky Magnet: pulls all XP on screen).
+- **Claude: the rework** (starting values, all in item data / `balance.tres`):
+  - **Data, not code:** a new `ItemEffect` resource (`trigger`, `chance`, `action`, `value`, `radius`,
+    `seconds`, `cooldown`) and `ItemData.effects: Array[ItemEffect]`, so new items are `.tres` only.
+    Triggers: `on_hit`, `on_crit`, `on_kill`, `on_hurt`, `on_lethal`, `periodic`, `low_hp` (< 50 %),
+    `standing_still`, `moving`, `airborne`, `on_chest`, `on_cashin`, `on_schupfn_end`, `on_brosel`.
+    Actions: `freeze`, `burn`, `blast`, `chain`, `homing` (pooled projectile), `execute`, `heal`, `shield`,
+    `invulnerable`, `time_stop` (enemies near the player frozen; no real time-slow, co-op shares one clock),
+    `damage_mult` (conditional), `stat_buff` (timed), `pull_brosel`, `drop_food`. The 11 old rules move onto
+    it (old `effect` field read as a fallback until all items are converted).
+  - **Proc rules:** host only (procs are damage); chance per stack 1 − (1 − p)^n; procs never trigger procs;
+    a per-frame proc budget (~40) and chain/homing target caps so 500 enemies + 300 projectiles stay at 60 fps;
+    pooled VFX; frozen enemies tinted ice blue, burning orange (2 status bits in the enemy snapshot if not
+    sent yet). Nothing friendly in Krampus red.
+  - **Rarity means something:** Gewöhnlich = one stat; Fein = stat + a condition; Edel = a proc or rule;
+    Hofratswürdig = build-defining, `max_stacks` 1. Pure stats move to Gewöhnlich/Fein; the near duplicates
+    become new items (one of each pair keeps the stat).
+  - **New/changed items (~20, roster 34 → ~50; names/lines are drafts, all appended so save indices stay):**
+    - Fein: **Gfrorns** (10 % on hit: freeze 1.5 s; the owner's example), **Kachelofen** (standing still 1 s:
+      +4 HP/s), **Bierdeckel** (+20 % damage to enemies above 90 % HP), **Hosenträger** (+25 % damage
+      airborne), **Weidezaun** (when hit: shock 6 m), **Distelstrauß** (thorns: 50 % of contact damage back),
+      **Jagdtrophäe** (+15 % vs elites/bosses), **Leberkässemmel** (3 % on kill: a Semmel that heals 15 HP;
+      replaces the Part 3 draft "20 HP per cash-in").
+    - Edel: **Sonnwendfeuer** (15 % on hit: burn), **Blitzableiter** (12 % on hit: chain to 3, Krampusrute
+      code), **Scharfe Pfefferoni** (20 % of hits burst for 50 % around the target), **Irrlichter** (kills:
+      15 % a homing wisp), **Stallaterne** (+50 % to every proc chance), **Letzte Runde** (up to +50 %
+      damage as HP falls), **Strichliste** (+0.1 % damage per 10 kills, max +50 %), **Rucksack** (+1
+      projectile for all weapons), **Schutzengerl** (when hit: 1 s invulnerable + 20 % speed, 6 s cooldown),
+      **Bröselsturm** (Brösel flying to your Knödl cut enemies on the way; Knödl twist), **Wetterfleck**
+      (no knockback on you; from Part 3), **Rodel** (Knödl speeds up downhill on the string; from Part 3).
+    - Hofratswürdig: **Marterl-Kerze** (stays: revive, now with a blast and 2 s invulnerable), **Stehengebliebene
+      Uhr** (lethal hit once: enemies within 15 m frozen 3 s, heal 30 %), **Amtsschimmel** (1 % execute on
+      hit, non-boss; each execute +0.5 % damage, max +50 %), **Dreschflegel** (2 % of hits deal 15×),
+      **Staubsauger** (every 45 s all Brösel on screen fly to your Knödl), **Amboss vom Dorfschmied** (weapon
+      cards on the Speisekarte roll one extra bonus), **Federbett** (healing above max HP becomes a shield up to
+      +50 % max HP), **Maibaumspitz** (keeps +15 % damage, adds +25 % while standing higher than the enemy hit).
+  - **Co-op:** effects per player, host-authoritative; heals/shields on teammates only from items that say so
+    (none in this batch); revive and time stop are local to the owner's position.
+  - **Checks:** unit tests (proc odds per stack, no proc recursion, cheat-death once, item tooltip numbers),
+    Almanach entries and icons for every new item, deadpan line each through `tr()`, Run-Abrechnung (5.4) and
+    autoplay JSON get damage per item; autoplay 10 seeds before/after: no item above ~25 % of a build's damage,
+    wins within the 6.6 target (~4-6/10); stress scene with 5 proc items stacked still 60 fps.
+  - **Order:** after 6.6 (more chests make items matter), before the 6.5 rebalance; patch-list lines.
+
+## 2026-11-06 – 1.4 plan additions: item text on pickup (6.7) and the pause menu with the build (task 6.8 P1)
+
+- **Owner: an item must say what it does when you get it.** Checked: the chest reveal (`Speisekarte.show_chest`)
+  shows only icon, name and rarity border and fades after 3.5 s; no item has a line with its numbers, only the
+  deadpan `desc_key`, which the reveal does not show either. Added to **6.7**:
+  - **Effect text from the data:** a `ItemText.describe(item, stacks)` builder writes the exact effect from
+    `stats` and `effects` through `tr()` templates ("+10 % Glück", "10 % beim Treffer: 1,5 s einfrieren",
+    "Einmal pro Lauf: …"), with the stacked value when you hold more than one ("2× → 19 %"). No hand-written
+    number text, so tooltips never drift from the balance. The deadpan line stays below it, smaller.
+  - **Chest reveal:** each item tile gets its effect line under the name (deadpan line only for a new item);
+    the reveal stays ~6 s (+1.5 s per extra item, max 10 s), a first-time item gets a "Neu!" badge, and
+    hovering or Tab keeps it. The Speisekarte's item cards and the Almanach use the same builder.
+  - Co-op: the text is built on each client from its own data, the offer codec does not change.
+- **Owner: the Esc pause menu shows the stats and the inventory, like the upgrade UI without the choice, and
+  every tile can be hovered to see exactly what it does, with damage numbers for weapons.** New task **6.8 P1**
+  in Part 6, right after 6.7 (it needs 6.7's effect text):
+  - **Layout (Claude):** one shared `BuildView` (today's `InventoryPanel` + `StatsPanel`) used by both screens:
+    Esc = the menu column (Weiter, Einstellungen, Zum Menü) with the build view beside it; Tab stays the quick
+    look (same view, no menu). Solo pauses as today; co-op keeps running, as the pause menu does now.
+  - **Details on hover / focus / tap:** a detail panel (fixed spot next to the grid, not a floating tooltip, so
+    gamepad focus and touch tap work too): name, rarity border, level or stack count, the exact effect text,
+    the deadpan line.
+    - **Weapons:** damage per hit (`Formulas.weapon_damage` with the build's damage stat), attacks per second
+      (after attack speed), projectiles/hits per attack, crit chance × multiplier, and a simple
+      **DPS = damage × amount × (1 + crit chance × (crit mult − 1)) ÷ cooldown**; orbits and auras use
+      `hit_interval` and say "pro Gegner", burn adds its share over `burn_seconds`. Below: **this run** –
+      total damage and the DPS over the last 30 s, measured. The paper DPS ignores misses and pierce, so both
+      are shown and labelled ("Theorie" / "dieser Lauf").
+    - **Items with procs:** chance (after stacks and Stallaterne), cooldown, procs and damage this run.
+    - **Stats:** current value and what it is made of (base, stat upgrade, items, Stammtisch), as the
+      StatsPanel's card preview already does for the Speisekarte.
+  - **Measured damage per source:** a per-weapon / per-item damage counter on the host, sent to each player
+    with the existing per-player state (a few floats every ~1 s, reliable, not per hit). This pulls the
+    counter from Run-Abrechnung (5.4 P2) forward; 5.4 then only adds the end-screen tab.
+  - **Checks:** UI-STYLE.md (one theme, `theme_type_variation`, 8 px grid, rarity as border colour), fits at
+    1280×720 with 4 weapons, 4 stats and ~30 items (item grid scrolls), keyboard/mouse, gamepad focus and
+    touch; `ui_shots.ps1` before/after with a new `pause` shot (hovered weapon and item); unit tests for the
+    DPS formula per pattern and the effect-text builder; `mp_test -Clients 1` (the counter reaches the
+    client).
+  - **Order:** after 6.7, before the 6.5 rebalance (the DPS numbers help tuning).
+
+## 2026-11-06 – 1.4 Part 1: the Heuriger (branch `v1-4`, version 1.4.0)
+
+- **Owner: "go with the 1.4 plan part 1"**, keep the session lean. Part 0 is just `main` (1.3.2) merged into
+  `v1-4`; the DECISIONS.md conflict kept both sides (1.3.2 entries, then the plan).
+- **Version 1.4.0 now** (Part 0 no longer stamps it): `project.godot` and the patch list carry 1.4.0 from Part 1
+  on; the patch entry grows with every part (four lines so far).
+- **Map: Heuriger in den Weinbergen** (`tools/maps/make_heuriger.gd` → `data/maps/heuriger.tres`). Five round
+  terraces of 3 m (radii 74/60/47/34/21 m round (0, −40)) with the Presshaus = boss gate on top; ramps on every
+  terrace edge, turned further round per level so the way up winds; two smaller vineyard hills (2 terraces)
+  east and west; vine rows with gaps so the Knödl can roll down; the Heurigen-Ort with the Knödl stand in the
+  south (spawn). Eight Buschenschank spots, Stempel on the terrace tops and side hills, 14 chest spots.
+- **Claude: the wine-cellar tunnels are Kellergassen, not tunnels.** The terrain is a heightmap and cannot hold
+  a real tunnel, so MapData got a small generic feature, `lanes` + `lane_shapes`: a straight strip whose ground
+  rises evenly from one height to another and blends back at the sides. Two Kellergassen (SE and SW) run from
+  the foot straight up to the fourth terrace (12 m over 55 m) – the shortcut – sunk into the terrace walls,
+  with stone cellar portals where they cross a wall and Presshäuser at their foot.
+- **Claude: Buschenschanken** are the normal Wirtshaus building plus a pole with a green Buschen over the
+  door (`MapData.wirtshaus_buschen`), so the Wirtshaus code stays one.
+- **Unlock: Auftrag "Weinlese" – win 3 runs** (Claude's choice; the other maps unlock by surviving 10 min and
+  by 5 runs). Four more Aufträge: Schneckenpost (300 Weinbergschnecken), Starenplage (1000 Stare),
+  Wespennest (500 Wespen), Sturmwarnung (beat Der Sturm) – 114 in all.
+- **New enemies (data flags, so later maps can reuse them):**
+  - Weinbergschnecke: 30 HP, speed 1.4, 5 XP. `slime_slow` 0.35: a slime trail slows players to 65 %.
+    Claude: the trail is not sent over the network – every machine drops spots behind the snails it sees
+    (host: EnemyManager, clients: the replica) and slows only its own player (`SlimeTrail`, one MultiMesh,
+    spots last 5 s, every 0.5 s per snail, 0.9 m radius; numbers in `balance_data.gd`).
+  - Star-Schwarm: 2 HP, speed 6.5, flier. `eats_brosel` 14 m: flies to the nearest loose Brösel and pecks it
+    up (nobody gets that XP; `BroselField.steal`), and goes for the Knödl like a Taube only when none lie in
+    reach.
+  - Wespe: 4 HP, speed 7, flier. `sweet_tooth`: a Bröselfresser only for sweet Knödl (new sort flag `sweet`:
+    Marillen- and Germknödl now; the Topfenknödl of Part 2 too); with no sweet Knödl about it chases players.
+- **Mini-boss at 10:00 on the Heuriger: Der Sturm** (2800 HP, escort 10 Stare). A whirlwind of young wine:
+  pulls enemies (with a swirl), loose Brösel and every Knödl that is not `heavy` (Speckknödl) within 18 m
+  toward it (enemies/Brösel 5 m/s, Knödl 6 m/s² through `Knodl.wind`, the Föhn hook). Its attacks: a gust
+  (5 scattered red circles) and the **spiral** – a new attack aim SPIRAL: 14 red circles on two turns out to
+  22 m, each filling 0.08 s after the last; when it starts, what it pulled in is flung back out (enemies with
+  14 m/s knockback, Brösel scattered up to 22 m, i.e. under the red marks). Brösel moves go to clients as
+  re-sent Brösel, four times a second.
+- **Voices** (`voices.py`, four new filters): Schnecke (slow, low, gooey), Star (high chirp), Wespe (buzzing),
+  Sturm (breathy, tipsy, echoing); 13 lines. Owner asked in the plan for samples first – they are in the
+  preview to listen to; any line can be redone.
+- **Music per map** (`make_audio.mjs`, `MapData.music`): Heuriger = Schrammel techno (A major, 124 BPM),
+  Gamskogl = après-ski techno (D major, 134 BPM), Gemeindebau = Wienerlied beat (A minor, 96 BPM, swung).
+  +1.4 MiB OGG. The Kirtag keeps its track; the boss and Sperrstund' tracks stay shared.
+- Not done in Part 1: map traits on the map select (1.3, P3) – slides to later as planned.
+- **Owner approved Part 1 on 2026-11-06.** Next: Part 2 (the family) on `v1-4`.
+
+## 2026-11-06 – 1.4 Part 2: the family (branch `v1-4`)
+
+- **Owner: "continue with 1.4 part 2".** Three new Knödlinger, two Knödl sorts, twelve Aufträge (114 → 126).
+- **Claude: the three start weapons come forward from Part 3** – a Knödlinger cannot be played without one.
+  Part 3 keeps the Krapfen-Kanone, the two stats, the evolutions and the items. The new weapons are appended
+  to the catalog and offered to everyone on the Speisekarte (like every other start weapon):
+  - **Gartenschlauch** (ARC with the stream look, water blue): 0.4 s, 1.6 damage, 6 m, 45°, knockback 7,
+    wet = 70 % speed for 2 s.
+  - **Fiakerpeitsche** (ARC): 1.0 s, 3.5 damage, 7 m, 26°, 10 % crit; the last metre (`tip_length`) hits ×3
+    (`tip_multiplier`); a second lash behind from amount 2.
+  - **Steirische Harmonika** (RING): 2.6 s, 5 damage, 8 m; `pull_seconds` 0.6 at `pull_speed` 6 m/s draws
+    everything in reach toward where it started, then the ring goes off there (knockback 16). The pulls wait
+    in the weapon's mine list; the ring effect closes in during the pull, then plays outward as usual.
+- **Knödl sorts (new `KnodlSortData` fields):**
+  - **Topfenknödl:** `reel_time_mult` 0.33 (1.5 s → 0.5 s), `cooldown_mult` 0.5 (4 s → 2 s; the HUD ring
+    uses the sort's cooldown), contact damage ×0.75, sweet (Wespen).
+  - **Serviettenknödl:** a roll, not a ball. `width` 2: hits a strip twice its radius to each side (an
+    ellipse on its heading; only the round core shoves enemies aside). `turn_rate` 2 rad/s: its heading
+    turns slowly toward where it is pulled (a roll has no front, so rolling backwards needs no turn);
+    `lateral_grip` 5/s: sideways speed dies off. Jolt still rolls a sphere; the look is a stretched roll
+    laid across the heading and spinning about its long axis (clients take the heading from its movement).
+- **Traits (`trait_effects`, timings in `balance_data.gd` → "Character traits"):**
+  - **Opa Hias, Schrebergärtner** – Gartenschlauch, Serviettenknödl. "Hat eh Zeit" (`idle_rate` 0.25):
+    after `idle_seconds` 1 s below `idle_speed` 0.4 m/s, +25 % attack speed (`PlayerBuild.trait_rate`,
+    host). Unlock: **Schrebergarten** – win on the Gemeindebau-Hof.
+  - **Cousine Mitzi, Fiakerin** – Fiakerpeitsche, Topfenknödl. "Trab" (`trot` 0.2): after `trot_seconds`
+    2 s at 60 % of run speed or more without turning more than 35° off her line (the line follows a gentle
+    curve), +20 % speed (her own machine) and +20 % Knödl contact damage (host, `Knodl.damage_bonus`).
+    Every machine counts it from `motion_velocity`, so nothing new goes over the network; the 2× momentum
+    cap already covers the pose check. Unlock: **Fiakerfahrt** – 2 minutes of Nachspielzeit in one run.
+  - **Steffi, Winzerin** – Steirische Harmonika, Marillenknödl. "Ausg'steckt" (`serves_twice`): a
+    Wirtshaus that has served once (anyone) serves her once more (host `_second_serves`). Unlock:
+    **Ausg'steckt is** – win on the Heuriger.
+  - `_40` / `_sieg` Aufträge for all three (300 / 200 Schilling).
+- **Claude: no per-character barks.** The barks are shared lines (`bark_*.ogg`), not per character; family
+  voices stay task 5.7 (P3). Portraits are drawn from the character colours (straw hat, Melone, Buschen
+  green), so the family nose comes for free; the Almanach lists the new characters and weapons by itself.
+- **Play screen:** 11 cards in 4 columns no longer fit at 1280×720 (the start button fell off the screen).
+  The cards now always take two rows: up to 6 columns, 112 px wide once there are more than 4.
+- **Checks:** 202 GUT tests (new `test_family.gd`: whip tip, Harmonika pull then blast, both sorts, Trab,
+  standing still, unlocks), web export (.pck 7.4 MiB), browser check (default and `character=hias`: 180 fps,
+  103 draw calls), `ui_shots -Only meta,coop,title`, `mp_test -Clients 1`.
+- **Owner: everything new is locked behind an Auftrag** (asked first for a Part 7 "ask about unlocks", then
+  withdrew it). So the three new weapons follow the start-weapon rule (Stempel, Obstler, Tablett): they reach
+  everyone's Speisekarte once their Knödlinger reaches level 15 – **Gießdienst** (Hias → Gartenschlauch),
+  **Fiakerprüfung** (Mitzi → Fiakerpeitsche), **Musikantenstammtisch** (Steffi → Harmonika), 100 Schilling
+  each; the character still starts with it. Aufträge 114 → 126. Parts 3 and 6.7 lock their new content too.
+  Note: in this plan 6.2 is "Knödl folgt brav"; no task covered the unlocks, so this is the standing rule.
+- **Autoplay** (Kirtag / Grant 1, seeds 1-3, so rough): Ferdl level 47, 23 knock-downs, 14.1k kills, 0 wins;
+  Hias 46 / 25 / 16.2k / 0; Mitzi 43 / 34 / 11.3k / 0 (weakest: the bot weaves, so the Trab rarely holds);
+  Steffi 54 / 12 / 21.7k / 1 win (strongest: more cash-ins = more chests). Left as is for the owner's
+  playtest; tuned with the 6.5 rebalance.
+- **Owner, 2026-11-06: Part 2 approved.** From now on the remaining 1.4 parts go ahead **without approval
+  per part** (each still gets its preview and checks); the owner does one final playtest of the whole 1.4
+  before approving the production deploy. **Every part starts in a new session**, so a session builds one
+  part, pushes it to the preview and stops.
+
+## 2026-11-06 – 1.4 Part 3: weapons, stats, evolutions (branch `v1-4`)
+
+- **Owner: "continue with 1.4 part 3".** Built in a new worktree branch from `origin/v1-4` (the `v1-4`
+  worktree was still locked by the Part 2 session) and pushed back to `v1-4`.
+- **Claude: the Part 3 items stay in 6.7.** Leberkässemmel, Wetterfleck and Rodel (and "two with visible
+  effects") were taken over by the item rework (6.7 lists them), so Part 3 is weapons, stats and evolutions.
+- **Every family start weapon now evolves** (weapon at the evolution level + its stat; data in
+  `data/weapons/`, numbers are starting values, evolutions about 2-3× their base like the old ones):
+  - **Schneepflug** = Schneeschaufel + Bergkas: ARC 200°, 6.5 m, 7.5 damage, 0.9 s, knockback 18, slows to
+    50 % for 1.5 s (snowed in).
+  - **Slalom-Gewitter** = Skistöcke + Krügerl: 3 spears (up to 9), 0.55 s, 4.5 damage, pierce 6, 15 % crit.
+  - **"Zahlen, bitte!"** = Tablett-Wurf + Kaffeehaus-Zeitung: 8 boomerang trays 45° apart (a full ring),
+    9 damage, 1.3 s.
+  - **Almabtrieb** = Kuhglocke + Hufeisen: ring 9 m, 9 damage, 1.8 s, knockback 20, stuns 0.8 s.
+  - P2 ones, all built: **Hochwasser** = Gartenschlauch + Gummistiefel (four streams round about, 8 m, 0.35 s,
+    slow 50 % for 2.5 s), **Viererzug** = Fiakerpeitsche + Spagat aus Hanf (four lashes, 9 m, tip ×3 on the
+    last 1.5 m), **Zeltfest** = Steirische Harmonika + Wanderkarte (pull 13 m for 0.8 s at 9 m/s, then 11
+    damage), **Faschingsdienstag** = Krapfen-Kanone + Seniorenteller (3 Krapfen, up to 8, 5 hops, 2.3 m jam
+    splash slowing to 40 % for 2 s).
+- **ARC with more swings:** `amount` swings now share the circle evenly (`WeaponSystem.arc_turn`; two =
+  front and back as before), so Viererzug and Hochwasser need no new pattern. One SwingVfx per possible swing.
+- **Krapfen-Kanone (new weapon):** Claude: the plan's "3 bounces" became **3 hops along its line** rather
+  than bounces from enemy to enemy – clients replay shots from the fire counter without knowing where the
+  host's enemies are, so a shot that picks its next target would fly differently on every machine. A lobbed
+  shot (`WeaponData.hops`, `hop_height`) hits nothing in the air and splashes `impact_radius` with the
+  weapon's statuses at each landing; the landings follow from the aim, so the host's pool and every client
+  draw the same arcs and the same jam splashes (WeaponVfx rings, delayed like mines). 1.5 s, 5 damage, 1.6 m
+  splash, 12 m/s over 1.2 s (4.8 m per hop), slows to 60 % for 1.5 s, up to 5 Krapfen. Apricot jam colour
+  (nothing friendly in Krampus red).
+- **Two new stats** (appended to `PlayerBuild.STATS` and the catalog, so save indices stay):
+  - **Seniorenteller** `xp_gain` +10 % per level: all XP a player gets (Brösel and the co-op share) is
+    multiplied in `PlayerState.add_xp`.
+  - **Gummistiefel** `knockback` +15 % and `sure_footing` +12 % per level. Knockback: `WeaponSystem.knock`
+    is set per player while their weapons fire (lobbed shots carry it). Sure footing takes that share off a
+    slowing ground (the snail slime): `slow' = 1 − (1 − slow) × (1 − footing)`, capped at
+    `balance.sure_footing_cap` 0.8. Rows in the Werte panel: Rückstoß, Standfest, Erfahrung.
+- **Locked behind Aufträge (owner rule)** – 11 new, 126 → 137. `PlayerBuild.evolutions_ready()` now skips an
+  evolution that is still locked, so it is never offered (not even from an evolution chest):
+  Winterdienst / Slalomkönig / Oberkellner / Viehscheid / Hochwasserschutz / Vierspänner / Bierzelt = level 30
+  with Ferdl / Toni / Poldi / Vroni / Hias / Mitzi / Steffi → that character's evolution (200 Schilling);
+  Germteig (a 1000-mass Knödl) → Krapfen-Kanone; Wespensommer (2000 Wespen) → Faschingsdienstag;
+  Pensionsantritt (level 40) → Seniorenteller; Schneckenzaun (1000 Weinbergschnecken) → Gummistiefel.
+  The four old evolutions stay open as before.
+- **Checks:** 210 GUT tests (new `test_evolutions_1_4.gd`: every start weapon evolves, new content has text,
+  icon and an Auftrag, locked evolutions never ready, four lashes, the Krapfen splashes only where it lands
+  and lands every hop, XP gain, knockback), web export (.pck 7.5 MiB), browser check default (180 fps, 102
+  draw calls) and with all nine new weapons at once (187 fps, 112 draw calls), `mp_test -Clients 1`,
+  `ui_shots -Only menu,inventory` (the Werte panel with three more rows still fits at 1280×720).
+- Patch-list lines 08-10 for 1.4.0.
+
+## 2026-11-06 – 1.4 Part 4: Die Hausmeisterin (branch `v1-4`)
+
+- **Owner: "continue with 1.4 part 4".** Built in the `v1-4-part3` worktree (tracks `origin/v1-4`).
+- **The Gemeindebau-Hof's own mini-boss at 10:00** replaces Oberkrampus II there (the Kirtag keeps it):
+  Die Hausmeisterin, 2600 HP, speed 3.6, escort 8 Kampf-Dackel, chest 3 items, 40 gold, 3 golden bits.
+  Look: blue dotted Kittelschürze, headscarf with curlers, keys on the belt, the Besen held across.
+  Attacks in turn: Besen, Teppichklopfer, Zusperren, Besen, Teppichklopfer (pause 1.8 s):
+  - **Besen** – a fan of 5 red lines (12 m, 22° apart) that fill **one after the other** (0.12 s each), so
+    it reads as a sweep. New: `AttackData.stagger` now also works for LINE fans (0 = all at once as before).
+  - **Teppichklopfer** – 3 red circles round the target.
+  - **Zusperren** – new aim `STAIRWELL`: a red line up the whole flight of the tall stairs/ramp nearest the
+    target (within 45 m; 25 m was too short – a player in the middle of the Hof is ~40 m from every ramp, so
+    she never locked), then that flight is **locked for 10 s** (`lock_seconds`): an iron gate at its foot
+    and one at its top, sign "Frisch gwischt!". She skips the attack when no stairs are near or a lock runs.
+- **Claude: the stairwells are found, not placed.** `StairLock` takes every solid RAMP/STAIRS prop at least
+  `balance.stair_lock_min_height` (6 m) high from the map (Gemeindebau: 4 roof ramps, 2 corner stairs, 4 outer
+  stairs), so no map data changed and any later map with tall stairs works. Gates are two pooled StaticBodies
+  on LAYER_WORLD (players and Knödl); **enemies pass** – they walk the baked ground field, and they are her
+  tenants anyway. Gate height `stair_gate_height` 3.2 m. Never red (not an attack): Gemeindebau green.
+- **Claude: marks can lean.** A hazard got `base_y`/`rise`; a stairwell mark is tilted up the slope (a flat
+  mark would float at roof height). Network: a new run event **LOCK** (u8 stairwell, telegraph, lock time;
+  `RunEventCodec` VERSION 3) instead of a HAZARD – every machine builds the same mark and gates from its own
+  copy of the map and closes them when the mark hits; Sperrstund' opens them.
+- **Voices** (`voices.py`, filter "hausmeisterin": sharp, nasal, a stairwell echo): 6 lines (arrive, three
+  attack lines, half health, beaten). Auftrag **Hausordnung** – beat her (150 Schilling), 137 → 138.
+- `mp_test.ps1 -Map <id>` added (host and clients play that map) for `-StartTime 595` on a map's own boss.
+- **Checks:** 216 GUT tests (new `test_hausmeisterin.gd`), web export (.pck 7.7 MiB), browser check default and
+  `map=gemeindebau&start_time=595` (120 fps, ≤ 110 draw calls), `mp_test -Clients 1` and
+  `-StartTime 595 -Map gemeindebau` (she arrives at 10:00, locks reach the client, 38.7 KiB/s). Browser shots
+  show her, the sweep fans and the toast; the gate itself was not caught on camera (bot elsewhere).
+- Patch-list line 11 for 1.4.0.
+
+### 1.4: preview builds have everything unlocked (owner, 2026-11-06)
+- **Owner:** a preview build, made only for playtest and approval, should have everything unlocked from the
+  start – content that is unlocked late is hard to test.
+- **Claude: decided at runtime by the page's address, not at build time**, because the same `build/web` goes
+  to production after a merge. `Profile.unlock_all` is on when the host ends in `.knoedlinger.pages.dev`
+  (branch aliases and per-deploy hash URLs), off on `knoedlinger.pages.dev` itself, localhost and desktop/
+  headless runs. URL option `unlock_all=0|1` forces it either way.
+- It only changes the answers of `is_unlocked`, `unlocking_quest` and `grant_unlocked` (all characters, maps,
+  weapons, stats, items, Knödl and every Grant level); the save is not touched, so quests still count, stamp and
+  pay, and a win still raises the saved Grant level. Stammtisch ranks (incl. weapon slots 3 and 4) stay bought
+  with Schilling, so balance in a playtest stays honest. Console line `[PROFILE] preview build: everything unlocked`.
+
+## 2026-11-06 – 1.4 Part 5: features (branch `v1-4`)
+
+- **Owner: "continue with 1.4 part 5"** (the session was cut once by a power loss before anything was
+  written). Built in the `v1-4-part3` worktree (tracks `origin/v1-4`). Done: 5.1 (P1), 5.2, 5.3, 5.4 (P2).
+  **Claude: 5.5 co-op pings and 5.7 family voices (both P3) slide to 1.5**, as the plan allows for P3.
+- **5.1 Die Tageskarte (Daily Kirtag)** – a menu entry under "Spielen" (`DailyScreen`):
+  - `Daily.pick(day)`: Knödlinger, map, Grant level (`daily_grant_min/max` 1-2: Normal or Grantig) and seed
+    follow from the **UTC** date ("YYYYMMDD", the same for everyone from midnight UTC), hashed with Godot's
+    stable `String.hash()`. Claude: **any Knödlinger and any map can come up, locked or not** – the
+    Tageskarte is a taste and unlocks nothing; the Speisekarte still only offers unlocked weapons/items.
+    (Picking only unlocked content would differ per player, and the board needs the same card for all.)
+  - **First try counts:** `Profile.start_daily(day)` notes the day when the run *starts* (leaving or a
+    reload never gives a second first try); only that run asks for a board ticket. "Nochmal!" after it is
+    practice (no ticket; `Board.forget()` drops any stale one). Solo only. A Tageskarte run does not
+    overwrite the Play screen's last choice.
+  - **Board:** a third mode `daily` in `board/board.js`, map key `daily_<YYYYMMDD>` – no D1 migration. A
+    daily ticket is only given for today's key (or yesterday's in the first hour after midnight UTC), one
+    name only. The screen lists the day's top 50 (BoardPanel with a fixed mode). The first try is enforced
+    on the client only (a browser game cannot stop a cleared save; an IP rule would block households).
+  - **Streak Aufträge** (kinds `daily_streak`, `daily_days`): **Stammkundschaft** – 7 days in a row (300 S),
+    **Abonnement** – 30 days (500 S). Aufträge 138 → 140. Flag `daily=1` (`daily_day=YYYYMMDD` pins the day).
+- **5.4 Run-Abrechnung** – built before the Standler because it measures everything after it:
+  - Host counter in `EnemyManager`: callers set `source` (a small id, `RunWorld._source(peer, kind, id)`, per
+    player × weapon / Knödl / "extra" = item rings, traits, reflects) before they hurt enemies; `dealt` and
+    `source_kills` count only the HP an enemy really lost (no overkill). Shots carry their source
+    (`ProjectilePool`), burns keep the one that lit them. Clients get their numbers in the existing run-end
+    summary (`_shared_summary`), so nothing new goes over the network during the run (6.8 adds the live sync).
+  - Knock-down cause: the enemy type whose touch or attack mark hurt last (`PlayerState.last_cause`).
+  - End screen: tabs "Zahlen" / "Abrechnung" (Left/Right, LB/RB): damage, share and kills per weapon, the
+    Knödl and "Sonstiges", and "Am öftesten umgfoin durch: …". Autoplay JSON gets `damage_by_source`,
+    `kills_by_source`, `downed_by`, `standler_buys`, `marterl_used`.
+- **5.2 Der Standler** (`RunSites`, numbers in balance "Der Standler"):
+  - Sets up at 3:00 and 9:00, `standler_distance` 10 m from one player, stays 75 s: a stall with a green and
+    white awning and a sign seen through walls (no edge arrow, the owner's 6.6 rule). Walking within 3 m opens
+    his shop – the Speisekarte with a new offer type `SHOP` (prices after the cards, `OfferCodec` VERSION 3):
+    3 items per player (**own offer per co-op player**), buy = PICK (the host checks the gold), "Na, danke" =
+    leave (the shop stays shut until they step away). Level-ups wait while it is open; solo pauses, co-op
+    has 12 s. Bought items leave that player's counter.
+  - Price = by rarity 30 / 45 / 70 / 110 × 1.3 per item already bought from him × (1 + 4 % per minute).
+    **Gold income is still the 1.3 one** (bot: ~0-10 gold at 5:00, a few hundred by the end), so few buys
+    for now; the plan tunes him after 6.6 raises the income.
+- **5.3 Marterl** (3 per run, on chest spots no chest took; one of each kind): stand at one for 1.5 s and it
+  starts (its sign and coloured panel show the kind; the candle is lit while it works):
+  - **Mutprobe** – 30 s, a ring of 16 of the current main fodder 14 m out every 5 s, then a free chest
+    (at least Fein) on the spot.
+  - **Gier** – 60 s of twice the crowd (within the slot cap) and twice the gold per coin.
+  - **Segen** – Claude: a **free Speisekarte round** (one level's worth of cards) for the one who prays,
+    instead of "1 of 2 stat boosts": stat slots are limited to 4, and a free pick reuses everything
+    (offers, co-op, the bot). Two cards instead of three would need a new offer size; left as is.
+  - New run event `SITE` (site, index, state, extra, x, z; `RunEventCodec` VERSION 4) for both the stall and
+    the Marterl; a client arriving later gets them re-sent like the loot. Note for 6.6: Marterl take chest
+    spots, so the ~15-chest maps need ~3 spots more.
+- **Bot:** goes to a Marterl within 40 m and to Der Standler (once per visit) when it can pay his cheapest
+  item; buys the cheapest it can afford, else leaves.
+- **Menu at 1280×720:** with nine entries the footer (name, Schilling, version) fell off; below 820 px of UI
+  height the column now keeps half its margins and 16 px gaps.
+- **Test hooks:** `standler_at=<s>` (he sets up at that second right where the first player stands),
+  `marterl_drill=<kind>` (the first Marterl, of that kind, at the spawn), `gold=<n>` (start gold).
+  `mp_test.ps1 -Sites` uses them: every client must see the stall and the Marterl, and a client must buy
+  from him through the host. `ui_shots` got `bill`, `shop`, `marterl`; its menu paths moved one entry down
+  (`meta` now ends on the Tageskarte).
+- **Checks:** 230 GUT tests (new `test_part5.gd`: the day and its card, first try and streak, the streak
+  Aufträge, damage per source incl. burns and no overkill, the shop codec and buying, prices, the SITE
+  event), board tests 9/9 (daily mode), web export (.pck 7.7 MiB), browser check 169 fps / ≤ 112 draw calls,
+  `ui_shots` (meta, settings, patches, title, bill, shop, marterl: no console errors, ≤ 106 draw calls),
+  `mp_test -Clients 1`, `-Clients 1 -Sites` (the client bought from him: its own items at its own prices),
+  `-Clients 3 -Coop`, one autoplay run (Kirtag / Ferdl: 2 Standler buys, 1 Marterl, all 14,275 kills
+  attributed, top knock-down cause Radler 6×).
+- Patch-list lines 12-15 for 1.4.0.
+
+## 2026-11-06 – 1.4 Part 6: changes (branch `v1-4`)
+
+- **Owner: "continue 1.4 part 6"** (interrupted once mid-session, then "continue please"). Built in the
+  `v1-4-part3` worktree (tracks `origin/v1-4`). Done: 6.6, 6.7, 6.8, 6.2, 6.3, 6.4, 6.5 (measured, see below).
+- **6.6 Gold and chests** (numbers in balance "Loot"):
+  - Price `map_chest_price` 20 × `map_chest_price_growth` 1.22 per **bought** chest (replaces the +15 step;
+    `Formulas.chest_price`). Free chests (Zweitschlüssel) do not raise it: `PlayerState.chests_bought`
+    next to `chests_opened` (Sparbuch still counts every opened one), both in the world state
+    (`WorldStateCodec` VERSION 7, PLAYER_SIZE 73 with the Federbett shield byte).
+  - `map_chest_count` 6 → 15. Maps got 6-8 more chest spots each on the bot's lanes (Kirtag 25, Gamskogl 22,
+    Gemeindebau 22, Heuriger 21: 15 chests + 3 Marterl + room to vary); only the spot lists changed.
+  - Coins: worth `coin_value` + `coin_value_per_minute` 0.33 per minute (1 at 0:00, ~5 at 12:00), drop
+    chance 0.006 → 0.01; no kill coins while 400 loot items lie around (`coin_loot_cap`; loot capacity
+    256 → 512, so boss chests and Stempel always find a slot).
+  - **Fassl** (new loot kind, appended): 5 barrels stand 14-40 m from the players (one every 8 s, far ones
+    go), walking into one or rolling the Knödl over it bursts it into 2 coins. The bot breaks those within
+    18 m. One more MultiMesh (+1 draw call).
+  - Sparbuch 0.03 → 0.015 per chest, `max_stacks` 2; Zweitschlüssel `max_stacks` 5 → 3.
+  - **Claude: `schilling_per_gold` 0.5 → 0.1** – Schilling is paid from gold earned, so the new income
+    would have paid ~10× the Schilling; at 0.1 a run pays about what it did (bot: ~360 → ~340-520).
+  - Bot: walks to an affordable chest within 70 m (was 40; players see price pills at 45 m). Autoplay JSON:
+    `gold_earned`, `chests_bought`, `chests_opened`, `chest_times`; the table shows chests and gold.
+  - Measured (5 runs each, Ferdl / Kirtag / Grant 1): first tuning (0.03 coins, 8 Fassl × 3 coins) gave
+    3,700-5,300 gold and 9-14 chests; at 0.015 / 6 × 2 still 2,700-4,900 gold with 2,300-4,400 unspent and
+    6-10 chests, first chest at 1:34-2:01 (target ~1:30). Cut again to 0.01 / 5 Fassl.
+- **6.7 Item rework** – new `ItemEffect` resource (trigger, action, chance, value, radius, seconds, cooldown,
+  cap) in `ItemData.effects`; the host runs them in `ItemProcs`:
+  - Hooks: `EnemyManager.damage()` logs weapon hits (not burn ticks, not the Knödl's spikes) for sources whose
+    owner holds on-hit items and multiplies hits by per-source target bonuses (healthy 90 %+, elite/boss,
+    standing lower); kills carry their source (`kill_source`). `prepare()` before the weapons (conditional
+    damage `PlayerBuild.cond_damage`, regen, periodic, shield share, Rodel), `after_hits()` after the
+    projectiles, `on_kills()` before the Brösel; hurt, lethal (before the Marterl-Kerze), revive, cash-in and
+    Brösel hooks. Proc damage goes out under the item's own source, which logs no hits: **procs never
+    trigger procs**. `item_proc_budget` 40 procs a frame, `item_cue_budget` 6 effects a frame. Chances stack
+    1 - (1 - p)^n, values add up, `cap` limits.
+  - **Claude: the 11 old named rules stay on `ItemData.effect`** (they are data already and work); new rules
+    use `effects`. Marterl-Kerze and Maibaumspitz got effects on top (revive blast + 2 s invulnerable;
+    +25 % against lower enemies, `max_stacks` 1).
+  - Look: frozen enemies ice blue and still, burning ones orange (shader `INSTANCE_CUSTOM.w`); the snapshot
+    got a status plane (`SnapshotCodec` VERSION 4, 6 bytes per enemy, mostly zeros). New cue SPARK (a small
+    ring) for chains, bursts, executes, wisps.
+  - 26 new items (roster 34 → 60), all as in the plan, each behind its own Auftrag: Fein Gfrorns, Kachelofen,
+    Bierdeckel, Hosenträger, Weidezaun, Distelstrauß, Jagdtrophäe, Leberkässemmel, Wetterfleck; Edel
+    Sonnwendfeuer, Blitzableiter, Scharfe Pfefferoni, Irrlichter, Stallaterne, Letzte Runde, Strichliste,
+    Rucksack (new counted stat `amount`: +1 piece for every weapon, also drawn on clients), Schutzengerl,
+    Bröselsturm, Rodel; Hofratswürdig Stehengebliebene Uhr, Amtsschimmel, Dreschflegel, Staubsauger, Amboss
+    vom Dorfschmied (a weapon card adds a second mod: the weapon's least-raised one), Federbett (shield from
+    overhealing, synced, takes hits first).
+  - **Claude, deviations:** Leberkässemmel 0.5 % per kill (3 % dropped ~450 Semmeln a run); Wetterfleck
+    has no "no knockback" (players are never knocked back) – it is +50 % Standfest and 20 % of hits heal 8;
+    Schutzengerl is 1.5 s invulnerable (6 s cooldown) without the speed boost (movement is the client's, a
+    timed buff would need its own sync). Smoke runs: Weidezaun dealt more than any weapon (4,433 in 60 s)
+    → ×0.8 every 2 s (was ×1.5 every 1 s); Pfefferoni 50 → 40 % splash.
+  - Rarity reshuffle: Doppler, Edelweiss, Gleitschirm, Spitzwegerich, Trachtenjanker (pure stats) Edel →
+    Fein. The near duplicates became rule items: Zuckerwatte (+8 % damage while moving), Kirtagsbrezn (+30 HP
+    per cash-in), Sauerkraut (2 HP/s below half HP).
+  - **Effect text from the data:** `ItemText.describe()` writes every stat, old rule and effect through
+    templates (`IFX_WHEN_*` + `IFX_DO_*`, German number format, stacked values). Used by the chest reveal
+    (effect lines under each item, "Neu!" and the one-liner for a first find; 6 s + 1.5 s per extra item,
+    max 10 s; hovering keeps it), the Speisekarte/Standler footer, the Almanach and the build view.
+- **6.8 Build view** (`BuildView`: inventory | detail panel | stats) in the Esc pause menu (beside its
+  entries, now 240 px wide) and the Tab screen. `TileGrid` tiles can be picked by mouse, tap or pad/keyboard
+  focus (accent ring); items scroll past 5 rows. Weapons: damage per hit, attacks per second, pieces, crit,
+  burn, "Theorie" DPS (`Formulas.weapon_dps`; orbits per enemy) and "Dieser Lauf" total and last-30-s DPS
+  measured. Items: effect text, chance with Stallaterne, procs and damage this run. Stat upgrades: the stat
+  now and its parts (stat upgrades, items, Stammtisch). Measured numbers: the host sends a new `DAMAGE` run
+  event (peer, source kind, index, total, procs; `RunEventCodec` VERSION 5) once a second per weapon / Knödl
+  and on change per item; every machine keeps them in `DamageLedger`.
+- **6.2 Knödl folgt brav** (Spiel tab, off by default): rides in the player's input as `BUTTON_FOLLOW`; the
+  host pulls that player's Knödl on the string toward the nearest Brösel within string reach
+  (`knodl_follow_pull` 18).
+- **6.3 Armour: `armor_half` 10 → 6** (the plan's softer option): the owner left no 1.3.1 feedback on
+  armour, and the bot wins 0-1 of 5 runs against the 4-6 / 10 target.
+- **6.4 Aufträge 143 → 173:** one per new item (26) and Truhnkönig (200 chests), Goldene Nasn (50,000 gold),
+  Wallfahrt (50 Marterl), Guter Kunde (30 Standler buys). New quest kinds `chests`, `chests_run`, `gold`,
+  `standler`, `marterl` (Profile counts them per player; clients get them in the shared summary; Standler and
+  Marterl are now counted per player).
+- **6.5 Rebalance (measured):**
+  - New weapons against the 15 older start weapons in a held crowd of 250 at 10:00 (90 s, Ferdl + the
+    weapon, `start_time=600`; at 0:00 fodder dies to one hit, so the counter measures coverage, not damage).
+    Older ones average 5,824 but range 918 (Würstel) to 15,170 (Sachertorte). Base damage: Gartenschlauch
+    1.6 → 2.7 (5,603, −4 %), Fiakerpeitsche 3.5 → 6.6 (6,138 / 5,403 on two seeds), Steirische Harmonika
+    5.0 → 2.1 (its pull makes it coverage-bound and noisy: +44 % … −36 % between 2.4 and 1.8),
+    Krapfen-Kanone 5.0 → 5.9 (6,250, +7 %). **Not touched (outside 6.5's "new weapons"), for the owner:**
+    Würstel, Krampusrute and Skistöcke measure far below, Tablett and Sachertorte far above.
+  - Autoplay after everything (Ferdl / Kirtag / Grant 1, 5 runs): 10-14 chests, gold earned 1,381-3,895
+    (500-2,300 left unspent: the bot only walks to chests it sees), first chest 0:55-2:53, Schilling
+    191-587, knock-downs 16-29, wins 1/5 (target 4-6 / 10 not reached; left to the owner's playtest after
+    the armour change). No item in any run's top 4 damage sources. One run per other map: Gamskogl / Toni 6
+    chests, Gemeindebau / Hias 11 (Hausmeisterin beaten), Heuriger / Steffi 6 (45 knock-downs: the Heuriger
+    is the hardest map for the bot).
+- **Bot:** a Marterl within 40 m now comes before affordable chests (70 m) and Fassl (18 m): with start gold
+  `mp_test -Sites` saw the host bot buy five chests and never pray.
+- **Checks:** 241 GUT tests (new `test_part6.gd`: prices, coin value, chests bought on the wire, Fassl, proc
+  odds, hit log and target bonus, shield, Amboss and Rucksack, every item's text, DPS per pattern, the
+  ledger and the DAMAGE event), web export (.pck 7.9 MiB), browser check 160 fps / ≤ 123 draw calls and
+  165 fps / ≤ 118 with seven proc items stacked, `ui_shots` (pause, inventory, menu, shop, settings, meta,
+  late, hud: no console errors, < 150 draw calls; before shots of the old pause/Tab screens from the Part 5
+  preview in `build/shots/ui/before6`), `mp_test -Clients 1` (33.7 KiB/s at 498 enemies), `-Clients 3
+  -Coop`, `-Clients 1 -Sites`, autoplay as above.
+- Patch-list lines 16-21 for 1.4.0.
+
+## 2026-11-06 – 1.4 Part 7: release checks (branch `v1-4`)
+
+- **Owner: "continue with 1.4 part 7"**. Built in the `v1-4-part3` worktree (tracks `origin/v1-4`).
+- **New test flag `projectiles=<n>`** (Claude): a real run only had the weapons' 8-20 shots in flight even
+  with six projectile weapons and three Rucksäcke, so "500 enemies + 300 projectiles on the Heuriger" could
+  not be measured. The host now keeps n of the stress test's shots flying from the players (same feeder as
+  the M0 arena, "Sonstiges" damage; the pool grows by n). `browser_check -Projectiles 300` already put it in
+  the URL; the run ignored it until now.
+- **Performance (RTX 3080, headless, 500 enemies, bot plays, 60 s):** Heuriger + 300 projectiles Edge
+  140.7 fps (p95 8.5 ms, ≤ 135 draw calls, ~297 shots in flight), Firefox 116.3 fps (p95 11 ms, ≤ 126);
+  without the extra shots Kirtag 157.7 / Gamskogl 149.1 / Gemeindebau 161 / Heuriger 144 fps, ≤ 129 draw
+  calls, no console errors. Budget 60 fps / < 150 draw calls: passed on every map.
+- **Size:** `.pck` 7.92 MiB (target < 15), largest file the wasm part 9.68 MiB (limit 25).
+- **Multiplayer:** `mp_test -Clients 3 -StartTime 595 -Map heuriger` passes (Der Sturm, 238 attack marks,
+  26 loot and the same enemy lines on every client, 843 / 843 enemies, version refusal); 58.6 KiB/s per
+  client with 843 enemies (1.3: 57.2-57.5 at ~845, +1 KiB/s from Part 6's status plane; ~34 KiB/s at 500,
+  the budget's figure). `-Clients 3 -Coop` (revive, 2 passes, 6 merges, Familienstreit), `-Clients 1
+  -Sites`, `-Clients 1` pass. `browser_mp_check -Tabs 4` through a local relay: host 102 fps, clients
+  132 fps, ≤ 136 draw calls, every tab shows 4 Knödl and all 329 enemies.
+- **Tests:** 241 GUT tests pass.
+- Version stays 1.4.0; the 1.4.0 patch note (21 lines, Parts 1-6) is on top; Part 7 adds no line.
+- **ui_shots:** before = the live 1.3.2 site (`build/shots/ui/before7`: hud, busy, menu, inventory, end, the
+  maps, late), after = this build (`after7`, every scene at both sizes; `after7b` end, bill, coop after the
+  fix below). No console errors, every shot < 150 draw calls (co-op HUDs 88). The co-op step failed once
+  because `wrangler dev` could not start during an internet outage; it passed on the rerun.
+- **Fixed:** the end screen's two tabs (Zahlen / Abrechnung) had different heights, so switching moved
+  both panels by ~120 px. `RunEndScreen._even_tabs()` measures both over two frames while the screen fades
+  in and gives each the taller height.
+- **Seen, left for the owner (not new in 1.4):** an enemy line said right at the top left of the view shows
+  through the HUD's see-through panel (the label is behind the HUD, just visible); the centre banner
+  ("Z'wenig Gold fürs Kistl!") can cross an enemy line for a moment.
+- Final build: 241 tests, Heuriger 500 + 300 at 154 fps / ≤ 130 draw calls, `mp_test -Clients 1` 36.6 KiB/s.
