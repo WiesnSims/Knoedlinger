@@ -1629,3 +1629,7 @@ the second tab.
   Hias 46 / 25 / 16.2k / 0; Mitzi 43 / 34 / 11.3k / 0 (weakest: the bot weaves, so the Trab rarely holds);
   Steffi 54 / 12 / 21.7k / 1 win (strongest: more cash-ins = more chests). Left as is for the owner's
   playtest; tuned with the 6.5 rebalance.
+- **Owner, 2026-11-06: Part 2 approved.** From now on the remaining 1.4 parts go ahead **without approval
+  per part** (each still gets its preview and checks); the owner does one final playtest of the whole 1.4
+  before approving the production deploy. **Every part starts in a new session**, so a session builds one
+  part, pushes it to the preview and stops.
