@@ -1971,6 +1971,22 @@ the second tab.
     view shows through the HUD's see-through corner panel.
   - B2 (candidate, same): the centre banner ("Z'wenig Gold fürs Kistl!") can cross an enemy line for a
     moment.
+  - B3 (owner, 2026-11-07): **the Speisekarte picks a card by itself** – often, right as it opens, a card
+    is taken while the player is still jumping (Space) or walking (WASD). Likely cause (to confirm):
+    Space is Godot's `ui_accept`, and a row gets the focus from the arrow keys (also movement) or the
+    mouse, so the next Space presses it. Fix: the first ~0.5 s after opening nothing picks; afterwards
+    a card is taken only with 1–4, a mouse click / tap, or pad A (after its existing delay). Space,
+    Enter and the movement keys never pick. Solo and co-op the same; the bot unchanged.
+  - B4 (owner, 2026-11-07): **end screen buttons not clickable with a long list** – a long run's list
+    pushes the panel past the bottom of the screen. `RunEndScreen` has no ScrollContainer. Fix: the panel
+    gets a maximum height (screen minus the margins), the list scrolls inside it (wheel, drag, pad), and
+    the buttons stay fixed below the list. `ui_shots end,bill` at 1280x720 with a long run (many items).
+  - B5 (owner, 2026-11-07): **co-op runs start before everyone has loaded** – `NetworkManager.start_run`
+    starts the host's run at once, and the clock runs while slower clients are still loading the scene
+    (`_in_run` already tracks who has arrived). Fix: every player's run waits frozen behind a "Warten auf
+    …" panel with the missing names until all clients report the run loaded, then the clock starts for
+    everyone on the same signal. A timeout (~45 s) starts without a client that never arrives (it gets the
+    normal disconnect). Check: `mp_test -Clients 3` with an artificially slow client, `browser_mp_check`.
 - **Balance (A):**
   - A1 (owner, 2026-11-06): **rebalance the old weapons that measured far off** in 1.4's 6.5 test (held crowd
     of 250 at 10:00, 90 s; older-weapon average 5,824): too weak Wiener Würstel (918), Krampusrute,
@@ -1991,6 +2007,27 @@ the second tab.
     weapons have different jobs, so wider than the ±10 % used for the new ones); all five re-measured
     before and after, plus autoplay with a character who starts with each (Toni for the Skistöcke, Poldi
     for the Tablett).
+  - A2 (owner, 2026-11-07): **more chests, fewer useless coins late.**
+    - Today: 15 map chests per run, all placed at 0:00 (`map_chest_count`), each gone once anyone buys it;
+      price 20 × 1.22 per own purchase. Coins: 1 % per kill, worth 1 + 0.33 per minute, so late kills pay
+      a lot; autoplay ends with 500–3,650 unspent gold.
+    - Wanted: (1) chests also appear after 10:00 – a second batch (start value ~5, more per extra player)
+      at free chest spots, shown on the minimap. (2) **Co-op: every player can buy every chest for
+      themselves** at their own price; a chest a player has opened shows as opened only for them (the
+      chest keeps an "opened by" bitmask in its loot events; network change, fine with the version
+      refusal). (3) The coin drop chance follows the player's gold: when the gold already covers the next
+      chest price twice, kill coins for that player drop at a fraction (e.g. ×0.3); elite and boss coins
+      unchanged. Coins near nobody poor count the closest player.
+    - Checks: autoplay before/after (unspent gold at 15:00, chests bought per run, wins), `mp_test
+      -Clients 3 -Sites` (each client buys the same chest), `-Coop`.
+  - A3 (owner, 2026-11-07): **more ways to heal.** Today the only healing drop is the Gulasch (0.15 % per
+    kill, 35 HP) plus items/stats; without a +HP item a run often stays low. Owner's idea: small hearts
+    (+5 HP) that drop more often and are pulled from far away. Claude's take (to agree with the owner):
+    small Lebkuchenherzerl (+5 HP), **drop chance rising as the nearest player's HP falls** (none at full
+    HP, most below ~40 %), so the map is not covered in hearts and a strong player gets no free sustain;
+    pulled from ~8 m (bigger than coins, not the whole screen). Gulasch stays as the big heal. Host-side
+    like every loot; each heart heals the player who picks it up. Checks: autoplay knock-downs per run
+    before/after (16–29 now), win rate.
 - **Small changes (C):**
   - C1 (owner, 2026-11-06): **Krapfen-Kanone aims into the crowd.**
     - Owner first asked for the Krapfen to bounce between enemies; Claude pointed out that is exactly the
@@ -2007,5 +2044,10 @@ the second tab.
     - Checks: a unit test (aims at the densest cell, hops land in it), a 10:00 damage measurement against
       the 6.5 number (5,603-6,250 range for the new weapons), `mp_test -Clients 1` and `-Coop` (clients
       still draw the same arcs).
+  - C2 (owner, 2026-11-07): **smaller, shorter chest pop-up.** The chest reveal (`Speisekarte.show_chest`)
+    is a big panel that stays 6 s + 1.5 s per extra item (max 10 s, hovering keeps it) and covers the
+    play area. Wanted: smaller tiles, placed in the upper part of the screen (under the boss bar), about
+    2.5 s for one item + 1.5 s per extra item (max ~6 s), and never over the middle of the screen where
+    the player stands. `ui_shots` before/after at both sizes.
 - Taskboard for the owner: https://claude.ai/artifact/NUU2WXcPqcVtBSzAeXB3ww (mirrors these lists; updated
   in the same session as any change here).
