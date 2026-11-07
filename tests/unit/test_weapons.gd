@@ -99,8 +99,9 @@ func test_orbit_offsets_spread_evenly_and_spin_with_move_speed() -> void:
 
 func test_ski_poles_pierce_through_a_line_of_enemies() -> void:
 	var poles: WeaponData = load("res://data/weapons/skistoecke.tres")
-	var manager: EnemyManager = _manager(4)
-	_place(manager, [Vector2(0.0, 2.0), Vector2(0.0, 4.0), Vector2(0.0, 6.0), Vector2(0.0, 8.0)])
+	var manager: EnemyManager = _manager(7)
+	_place(manager, [Vector2(0.0, 2.0), Vector2(0.0, 4.0), Vector2(0.0, 6.0), Vector2(0.0, 8.0), Vector2(0.0, 10.0),
+			Vector2(0.0, 12.0), Vector2(0.0, 14.0)])
 	var pool := ProjectilePool.new()
 	add_child_autofree(pool)
 	pool.setup(balance, 8)
@@ -108,7 +109,7 @@ func test_ski_poles_pierce_through_a_line_of_enemies() -> void:
 	for frame: int in 60:
 		pool.update(1.0 / 60.0, manager)
 	var hurt: int = 0
-	for k: int in 4:
+	for k: int in 7:
 		if manager.hp[k] < manager.max_hp[k]:
 			hurt += 1
 	assert_eq(hurt, poles.pierce + 1, "passes through `pierce` enemies and stops in the next")

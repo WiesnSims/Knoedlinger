@@ -12,7 +12,7 @@ signal picked(section: Section, index: int)
 
 enum Section { WEAPON, PASSIVE, ITEM }
 
-## Rows of items shown before the item grid scrolls (selectable panels only).
+## Rows of items shown before the item grid scrolls (selectable panels and the end screen).
 const ITEM_ROWS: int = 5
 
 const TILE: float = 40.0
@@ -31,7 +31,8 @@ var _scroll: ScrollContainer
 var _selectable: bool = false
 
 
-func _init(selectable: bool = false) -> void:
+## `scroll_items`: the items scroll past ITEM_ROWS rows without being selectable (the end screen).
+func _init(selectable: bool = false, scroll_items: bool = false) -> void:
 	_selectable = selectable
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	custom_minimum_size = Vector2(WIDTH, 0.0)
@@ -55,6 +56,7 @@ func _init(selectable: bool = false) -> void:
 			var section: Section = pair[1]
 			grid.set_selectable(true)
 			grid.picked.connect(func(index: int) -> void: _on_picked(grid, section, index))
+	if selectable or scroll_items:
 		# Items scroll past ITEM_ROWS rows, so 60 items still fit at 1280×720.
 		var pair_box: Control = _items.get_parent()
 		pair_box.remove_child(_items)

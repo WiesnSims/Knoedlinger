@@ -5,7 +5,8 @@ extends CanvasLayer
 ## stats (StatsPanel) right. The menu card lists the host's offer as rows (UpgradeCard: icon, name,
 ## one change line, pips, rarity border); the hovered row's one-liner and numbers show in the footer
 ## and its stat changes in the stats panel. Below: Nochmal bitte (reroll), Des mog i ned (banish:
-## press it, then the row) and Danke, passt eh (skip). Keys: 1-4 pick, arrows + Enter, R, B, N.
+## press it, then the row) and Danke, passt eh (skip). Keys: 1-4 pick, R, B, N; the pad walks the rows
+## with the D-pad and takes one with A. Space and Enter never pick (they are the jump a moment ago).
 ## The answer goes back to the host as a Choice; the host applies it and sends the next offer.
 ## Also shows what a Wirtshaus chest gave (icon tiles, no choice, it fades by itself). Runs while
 ## the game is paused (solo). With the bot playing it picks by itself.
@@ -14,15 +15,21 @@ extends CanvasLayer
 signal answered(data: PackedByteArray)
 
 ## The chest reveal stays this long, longer per extra item (up to CHEST_SECONDS_MAX); hovering it
-## keeps it up. Items say what they do (ItemText) so there is something to read.
-const CHEST_SECONDS: float = 6.0
+## keeps it up. Small tiles under the boss bar, never over the player in the middle (1.4.1, C2):
+## icon, name and at most CHEST_LINES lines of what the item does (ItemText).
+const CHEST_SECONDS: float = 2.5
 const CHEST_SECONDS_PER_ITEM: float = 1.5
-const CHEST_SECONDS_MAX: float = 10.0
-const CHEST_TILE_WIDTH: float = 224.0
+const CHEST_SECONDS_MAX: float = 6.0
+const CHEST_TILE_WIDTH: float = 168.0
+const CHEST_ICON: float = 40.0
+const CHEST_LINES: int = 2
 const MENU_WIDTH: float = 560.0
 const FOOTER_HEIGHT: float = 64.0
+## Nothing picks this long after an offer opens: a jump, a click or a number key meant for the game a
+## moment ago must not take a card (1.4.1, B3).
+const PICK_GUARD: float = 0.5
 ## Seconds before the pad's focus lands on the first row.
-const PAD_FOCUS_DELAY: float = 0.4
+const PAD_FOCUS_DELAY: float = PICK_GUARD
 ## The bot reads the menu this long before it picks (`?pick_delay=3` for screenshots).
 const BOT_DELAY: float = 0.35
 ## Stats shown as flat numbers; the rest are percentages.
@@ -140,9 +147,9 @@ func _ready() -> void:
 	_chest_panel = UiStyle.panel()
 	_chest_panel.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	top.add_child(_chest_panel)
-	var chest_column := UiStyle.vbox(&"Gap16")
+	var chest_column := UiStyle.vbox()
 	_chest_panel.add_child(chest_column)
-	_chest_title = UiStyle.label(&"LabelTitle")
+	_chest_title = UiStyle.label(&"LabelAccent")
 	_chest_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	chest_column.add_child(_chest_title)
 	_chest_items = UiStyle.hbox(&"Row16")
@@ -247,11 +254,10 @@ func show_chest(offer: OfferCodec.Offer) -> void:
 		var subtitle: String = level_text(card)
 		if card.kind == Card.Kind.ITEM and card.index < catalog.items.size():
 			var item: ItemData = catalog.items[card.index]
-			lines = ItemText.describe(item, maxi(card.level, 1), balance)
-			# A first find: "Neu!" and its one-liner below the numbers.
+			lines = ItemText.describe(item, maxi(card.level, 1), balance).slice(0, CHEST_LINES)
+			# A first find says "Neu!" (its one-liner waits in the build view; the reveal stays small, C2).
 			if not Profile.is_found(&"item", item.id):
 				subtitle = tr("CARD_NEW")
-				lines.append(tr(item.desc_key))
 		_chest_items.add_child(_chest_tile(UiStyle.card_icon(card, catalog), card_name(card, catalog),
 				subtitle, UiStyle.rarity_variation("Tile", card), lines))
 	_chest_panel.visible = true
@@ -400,6 +406,14 @@ func _input(event: InputEvent) -> void:
 	if not is_open():
 		return
 	var key: InputEventKey = event as InputEventKey
+	# Space and Enter would press the row under the mouse (hovering focuses it): never on the keyboard.
+	if key != null and event.is_action(&"ui_accept"):
+		get_viewport().set_input_as_handled()
+		return
+	if open_seconds() < PICK_GUARD and event.is_pressed() and (key != null or event is InputEventMouseButton
+			or event is InputEventScreenTouch or event is InputEventJoypadButton):
+		get_viewport().set_input_as_handled()
+		return
 	if key != null and key.pressed and not key.echo and key.physical_keycode >= KEY_1 and key.physical_keycode <= KEY_4:
 		var k: int = key.physical_keycode - KEY_1
 		if k < _offer.cards.size():
@@ -412,8 +426,9 @@ func _input(event: InputEvent) -> void:
 			_banish.button_pressed = not _banish.button_pressed
 	elif event.is_action_pressed(&"card_skip"):
 		_answer(OfferCodec.Action.SKIP, 0)
-	elif event.is_action_pressed(&"ui_up") or event.is_action_pressed(&"ui_down") 			or event.is_action_pressed(&"ui_left") or event.is_action_pressed(&"ui_right"):
-		# Arrow keys and the D-pad walk the rows; the focused one shows its details, Enter / A takes it.
+	elif key == null and (event.is_action_pressed(&"ui_up") or event.is_action_pressed(&"ui_down")
+			or event.is_action_pressed(&"ui_left") or event.is_action_pressed(&"ui_right")):
+		# The D-pad walks the rows; the focused one shows its details, A takes it. The arrow keys move.
 		if not _cards.is_empty() and get_viewport().gui_get_focus_owner() == null:
 			var forward: bool = event.is_action_pressed(&"ui_down") or event.is_action_pressed(&"ui_right")
 			_cards[0 if forward else _cards.size() - 1].grab_focus()
@@ -533,7 +548,7 @@ func _chest_tile(icon: Texture2D, title: String, subtitle: String, variation: St
 	var tile := UiStyle.vbox()
 	var frame: PanelContainer = UiStyle.panel(variation)
 	frame.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	frame.add_child(UiStyle.icon_rect(icon, 56.0))
+	frame.add_child(UiStyle.icon_rect(icon, CHEST_ICON))
 	tile.add_child(frame)
 	var name_label: Label = UiStyle.label(&"LabelSmall", title)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -543,9 +558,7 @@ func _chest_tile(icon: Texture2D, title: String, subtitle: String, variation: St
 		sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		tile.add_child(sub)
 	for k: int in lines.size():
-		# The effect lines; a new item's one-liner (the last line then) is muted.
-		var muted: bool = k == lines.size() - 1 and subtitle == tr("CARD_NEW") and lines.size() > 1
-		var text: Label = UiStyle.label(&"LabelMuted" if muted else &"LabelSmall", lines[k])
+		var text: Label = UiStyle.label(&"LabelSmall", lines[k])
 		text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		text.custom_minimum_size.x = CHEST_TILE_WIDTH

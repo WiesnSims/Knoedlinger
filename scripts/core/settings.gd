@@ -44,6 +44,8 @@ const DEFAULTS: Dictionary[StringName, Variant] = {
 	&"touch_size": 1.0,
 	&"touch_opacity": 0.6,
 	&"reduce_flashing": false,
+	## Fewer, smaller item-proc sparks (1.4.1, C3); hits and damage stay the same. Local display only.
+	&"fewer_effects": false,
 	&"glossary": true,
 	## Accessibility (GAME-DESIGN.md edge cases): the Knödl steers itself toward Brösel nearby.
 	&"knodl_follow": false,

@@ -62,8 +62,11 @@ var follow_target: Vector3 = Vector3.INF
 var cooldown: float = 0.0
 ## A Serviettenknödl's rolling direction (flat, either way along it; KnodlSortData.turn_rate).
 var heading: Vector3 = Vector3.FORWARD
-## Its holder's extra contact damage (Cousine Mitzi's Trab), set by RunWorld every frame.
+## Its holder's extra contact damage (their damage stat and items, Cousine Mitzi's Trab), set by
+## RunWorld every frame (host).
 var damage_bonus: float = 0.0
+## Host: contacts on elites and bosses (they take more, 1.4.1 A4); RunWorld plays the heavy cue.
+var heavy_hits: int = 0
 ## Run-Abrechnung: its damage source id (EnemyManager.source), host.
 var damage_source: int = -1
 ## Stats for tests and the balance log.
@@ -327,7 +330,11 @@ func crush(enemies: EnemyManager, delta: float = 0.0) -> int:
 			enemies.knodl_timer[j] = balance.knodl_hit_cooldown
 			var kick: Vector2 = (away + push_dir).normalized() * knock
 			hits += 1
-			if enemies.damage(j, damage, kick.x, kick.y):
+			var hit: float = damage
+			if enemies.elite[enemies.type[j]] != 0:
+				hit = Formulas.knodl_heavy_damage(damage, enemies.types[enemies.type[j]].boss, enemies.max_hp[j], balance)
+				heavy_hits += 1
+			if enemies.damage(j, hit, kick.x, kick.y):
 				kills += 1
 			_wobble = minf(_wobble + 0.1, 1.0)
 	crushed += kills

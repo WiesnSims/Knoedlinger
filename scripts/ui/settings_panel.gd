@@ -24,7 +24,7 @@ const TABS: Array = [
 		["SET_GROUP_DISPLAY", [
 			[&"fullscreen", "SET_FULLSCREEN", "toggle"], [&"quality", "SET_QUALITY", "choice"],
 			[&"antialiasing", "SET_ANTIALIASING", "toggle"], [&"reduce_flashing", "SET_REDUCE_FLASHING", "toggle"],
-			[&"screen_wobble", "SET_SCREEN_WOBBLE", "toggle"],
+			[&"fewer_effects", "SET_FEWER_EFFECTS", "toggle"], [&"screen_wobble", "SET_SCREEN_WOBBLE", "toggle"],
 		]],
 	]],
 	["SET_TAB_CONTROLS", [

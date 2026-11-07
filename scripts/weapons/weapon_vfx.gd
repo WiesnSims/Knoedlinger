@@ -147,8 +147,11 @@ func _add_host_sparks(effect: Effect, owned: PlayerBuild.OwnedWeapon, area: floa
 	var weapon: WeaponData = owned.data
 	var points: PackedVector2Array = owned.impacts
 	if weapon.pattern == WeaponData.Pattern.CHAIN:
-		for k: int in range(1, points.size()):
+		# (from, to) per bolt; a forking chain branches, a splashing one rings where it hit.
+		for k: int in range(1, points.size(), 2):
 			_bolt(effect, points[k - 1], points[k])
+			if weapon.chain_splash > 0.0:
+				_ring(effect, points[k], weapon.chain_splash * area, 0.0)
 		return
 	for point: Vector2 in points:
 		_ring(effect, point, weapon.impact_radius * area, 0.0)
@@ -177,6 +180,8 @@ func _add_client_sparks(effect: Effect, owned: PlayerBuild.OwnedWeapon, origin: 
 				heading += rng.randf_range(-0.9, 0.9)
 				var next: Vector2 = last + Vector2(cos(heading), sin(heading)) * weapon.chain_range * area * 0.6
 				_bolt(effect, last, next)
+				if weapon.chain_splash > 0.0:
+					_ring(effect, next, weapon.chain_splash * area, 0.0)
 				last = next
 
 

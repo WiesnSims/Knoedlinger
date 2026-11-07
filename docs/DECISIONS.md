@@ -1944,7 +1944,7 @@ the second tab.
 - Branch `v1-4` deleted (local and GitHub) with the finished worktrees `v1-4`, `v1-4-part3`,
   `v1-4-gold-plan`, `v1-4-item-plan`.
 
-## 2026-11-06 – Plan for 1.4.1 (branch `v1-4-1`, not started)
+## 2026-11-06 – Plan for 1.4.1 (branch `v1-4-1`; built 2026-11-07, see below)
 
 - **Owner asked** for a plan for the next update 1.4.1: bug fixes, balance and other small changes. The
   concrete items are added here over time; the lists start (nearly) empty.
@@ -1971,5 +1971,268 @@ the second tab.
     view shows through the HUD's see-through corner panel.
   - B2 (candidate, same): the centre banner ("Z'wenig Gold fürs Kistl!") can cross an enemy line for a
     moment.
-- **Balance (A):** none yet.
-- **Small changes (C):** none yet.
+  - B3 (owner, 2026-11-07): **the Speisekarte picks a card by itself** – often, right as it opens, a card
+    is taken while the player is still jumping (Space) or walking (WASD). Likely cause (to confirm):
+    Space is Godot's `ui_accept`, and a row gets the focus from the arrow keys (also movement) or the
+    mouse, so the next Space presses it. Fix: the first ~0.5 s after opening nothing picks; afterwards
+    a card is taken only with 1–4, a mouse click / tap, or pad A (after its existing delay). Space,
+    Enter and the movement keys never pick. Solo and co-op the same; the bot unchanged.
+  - B4 (owner, 2026-11-07): **end screen buttons not clickable with a long list** – a long run's list
+    pushes the panel past the bottom of the screen. `RunEndScreen` has no ScrollContainer. Fix: the panel
+    gets a maximum height (screen minus the margins), the list scrolls inside it (wheel, drag, pad), and
+    the buttons stay fixed below the list. `ui_shots end,bill` at 1280x720 with a long run (many items).
+  - B5 (owner, 2026-11-07): **co-op runs start before everyone has loaded** – `NetworkManager.start_run`
+    starts the host's run at once, and the clock runs while slower clients are still loading the scene
+    (`_in_run` already tracks who has arrived). Fix: every player's run waits frozen behind a "Warten auf
+    …" panel with the missing names until all clients report the run loaded, then the clock starts for
+    everyone on the same signal. A timeout (~45 s) starts without a client that never arrives (it gets the
+    normal disconnect). Check: `mp_test -Clients 3` with an artificially slow client, `browser_mp_check`.
+- **Balance (A):**
+  - A1 (owner, 2026-11-06): **rebalance the old weapons that measured far off** in 1.4's 6.5 test (held crowd
+    of 250 at 10:00, 90 s; older-weapon average 5,824): too weak Wiener Würstel (918), Krampusrute,
+    Skistöcke; too strong Tablett-Wurf, Sachertorte-Mine (15,170). Claude offered 3 options per weapon
+    (numbers only / a mechanic / a third way); **the owner picked Claude's favourites**, all numbers are
+    starting values:
+    - Würstel **"Mit Senf"**: every chain jump splashes ~1.2 m at 50 % damage (crowd value; sets it apart
+      from the Krampusrute).
+    - Krampusrute **forks**: from the 2nd jump on, each jump splits in two (no enemy hit twice per cast).
+    - Skistöcke **two poles**: `amount` 1 → 2 side by side, pierce 2 → 4; Slalom-Gewitter checked to stay a
+      step above.
+    - Tablett-Wurf **full tray**: at most 12 hits on the way out and 12 back (pierce 99 → a per-leg cap),
+      then it flies home without hitting.
+    - Sachertorte **smaller blast**: `impact_radius` 3.6 → 2.6, damage 16 → 14.
+    - Why: the weak ones get something visible instead of bigger numbers, the strong ones are cut only in
+      big crowds, where they were too strong, so early runs feel the same. Co-op: the splash and the fork
+      are host hits drawn from the existing CHAIN impacts; the tray cap is host-side only. Target band 4,500–7,500 in the same test (the old
+    weapons have different jobs, so wider than the ±10 % used for the new ones); all five re-measured
+    before and after, plus autoplay with a character who starts with each (Toni for the Skistöcke, Poldi
+    for the Tablett).
+  - A2 (owner, 2026-11-07): **more chests, fewer useless coins late.**
+    - Today: 15 map chests per run, all placed at 0:00 (`map_chest_count`), each gone once anyone buys it;
+      price 20 × 1.22 per own purchase. Coins: 1 % per kill, worth 1 + 0.33 per minute, so late kills pay
+      a lot; autoplay ends with 500–3,650 unspent gold.
+    - Wanted: (1) chests also appear after 10:00 – a second batch (start value ~5, more per extra player)
+      at free chest spots, shown on the minimap. (2) **Co-op: every player can buy every chest for
+      themselves** at their own price; a chest a player has opened shows as opened only for them (the
+      chest keeps an "opened by" bitmask in its loot events; network change, fine with the version
+      refusal). (3) The coin drop chance follows the player's gold: when the gold already covers the next
+      chest price twice, kill coins for that player drop at a fraction (e.g. ×0.3); elite and boss coins
+      unchanged. Coins near nobody poor count the closest player.
+    - Checks: autoplay before/after (unspent gold at 15:00, chests bought per run, wins), `mp_test
+      -Clients 3 -Sites` (each client buys the same chest), `-Coop`.
+  - A3 (owner, 2026-11-07): **more ways to heal.** Today the only healing drop is the Gulasch (0.15 % per
+    kill, 35 HP) plus items/stats; without a +HP item a run often stays low. Owner's idea: small hearts
+    (+5 HP) that drop more often and are pulled from far away. Claude's take (to agree with the owner):
+    small Lebkuchenherzerl (+5 HP), **drop chance rising as the nearest player's HP falls** (none at full
+    HP, most below ~40 %), so the map is not covered in hearts and a strong player gets no free sustain;
+    pulled from ~8 m (bigger than coins, not the whole screen). Gulasch stays as the big heal. Host-side
+    like every loot; each heart heals the player who picks it up. Checks: autoplay knock-downs per run
+    before/after (16–29 now), win rate.
+  - A4 (owner, 2026-11-07, from Claude's suggestion S6): **keeping a big Knödl pays off – hard hits,
+    above all on elites and bosses.**
+    - Seen: the Knödl does only 10–23 % of a run's damage in 1.4 autoplay, and the bot cashes in about
+      once per run. In code, Knödl contact damage is `knodl_contact_damage` (1.0) × speed × radius × the
+      sort's multiplier × (1 + `damage_bonus`), and `damage_bonus` is only the "trot" character trait:
+      the damage stat (Jagatee), Stammtisch damage and damage items do **not** reach the Knödl.
+    - Owner: not cashing in with a big Knödl should be very good and deal good damage, even more against
+      elites and bosses.
+    - Plan (starting values, tuned by measurement):
+      - The player's damage multiplier (stat, Stammtisch, items) also counts for the Knödl.
+      - Size pays more than linearly: from tier L on the radius counts stronger (e.g. radius^1.5 above
+        the L radius), so a kept XL Knödl hits clearly harder than two small ones.
+      - Elites take ×2 and bosses ×3 from Knödl contacts (`knodl_elite_mult`, `knodl_boss_mult` in
+        balance), with a heavy hit cue (sound, bigger damage number, small camera nudge). One hit on a
+        boss is capped (e.g. 4 % of its max HP) so a merged co-op Riesenknödl does not erase a boss in
+        two passes; the existing hit cooldown stays.
+      - The Wirtshaus marker shows the reward tier your Knödl has reached ("L → Kiste + Rerolls"), so the
+        choice keep / cash in is visible (the second half of S6).
+    - Co-op: Knödl damage is already host-side; the hit cue goes out with the existing hit events.
+    - Checks: unit tests for the formula (stat multiplier, size curve, elite/boss multiplier, boss cap);
+      autoplay before/after: the Knödl's share of damage (10–23 % now; target ~25–35 % when a big one is
+      kept), boss kill times, wins; `mp_test -Coop` (merged Knödl against the boss cap).
+  - A5 (owner, 2026-11-07, from Claude's suggestion S4): **mini-bosses knock players down too often.**
+    - Seen (1.4 autoplay): Der Sturm caused 15 of 45 knock-downs in one Heuriger run, the Lawine 5 on the
+      Gamskogl, the Oberkrampus up to 5 on the Kirtag (at 5:00, the first wall).
+    - In the data, no single hit is the problem: the bosses' marks warn 1.0–1.4 s (elites 0.7–1.1 s) and
+      hit for 14–26 of 100 HP. So the knock-downs come from hits in a row, body contact, or Der Sturm
+      pulling players in (`pull_speed` 5 m/s, radius 18 m) while its crowd keeps hitting.
+    - Plan: first the log names the cause per knock-down (which attack, body contact or crowd while
+      pulled; `downed_by` gets the attack id), then the culprit is softened, e.g. Der Sturm's pull on
+      players 5 → 3.5 m/s, a short grace after a boss hit (~0.6 s without boss damage), or gaps between
+      the Oberkrampus' attacks. Warnings stay Krampus red and readable; Grant levels keep their scaling.
+    - Checks: autoplay per map before/after (knock-downs by boss, wins; Heuriger, Gamskogl and Kirtag),
+      `mp_test -StartTime 595` (bosses on clients unchanged).
+- **Small changes (C):**
+  - C1 (owner, 2026-11-06): **Krapfen-Kanone aims into the crowd.**
+    - Owner first asked for the Krapfen to bounce between enemies; Claude pointed out that is exactly the
+      Würstel's and the Krampusrute's CHAIN pattern (and the Würstel measured weakest in 6.5), so the owner
+      chose **option A**: the Krapfen keeps its straight lobbed hops (its identity: splash + jam on groups),
+      but each one is **aimed at the thickest part of the crowd** within its reach instead of the nearest
+      enemy, so the hops run through the crowd instead of beside it. Hops still follow from the aim, so
+      clients keep replaying shots from the fire counter – no network change. Faschingsdienstag the same.
+    - **Dropped (owner, same day): a shared "+1 Hupfer" level mod** for hops/jumps (Krapfen, Würstel,
+      Krampusrute, with `amount` turned into "more sausages" for the CHAIN weapons). "+1 Projektil" already
+      does the job – more Krapfen for the Kanone, one more jump for the CHAIN weapons – and every extra mod
+      kind makes the other mods rarer on that weapon's cards. The Würstel's weakness (6.5) is a balance item
+      if the owner wants it, not part of C1. Upgrades of the Krapfen-Kanone stay as they are.
+    - Checks: a unit test (aims at the densest cell, hops land in it), a 10:00 damage measurement against
+      the 6.5 number (5,603-6,250 range for the new weapons), `mp_test -Clients 1` and `-Coop` (clients
+      still draw the same arcs).
+  - C2 (owner, 2026-11-07): **smaller, shorter chest pop-up.** The chest reveal (`Speisekarte.show_chest`)
+    is a big panel that stays 6 s + 1.5 s per extra item (max 10 s, hovering keeps it) and covers the
+    play area. Wanted: smaller tiles, placed in the upper part of the screen (under the boss bar), about
+    2.5 s for one item + 1.5 s per extra item (max ~6 s), and never over the middle of the screen where
+    the player stands. `ui_shots` before/after at both sizes.
+  - C3 (owner, 2026-11-07, from S8): **setting "fewer effects".** Today Einstellungen only has "reduce
+    flashing"; with 1.4's proc items, sparks, hail and damage numbers crowd the screen by minute 10. New
+    options: "Schadenszahlen: alle / nur Krit / aus" and "Item-Effekte: voll / weniger" (fewer and fainter
+    proc VFX; hits and damage unchanged). Purely local display, so co-op is unaffected; saved in the
+    settings. Auto-quality may pick "weniger" on weak devices. `ui_shots settings,late` before/after.
+  - C4 (owner, 2026-11-07, from S12): **remind players to save their code.** Progress lives in the browser
+    (IndexedDB); clearing the cache wipes it, and the export code is only in Einstellungen → Spielstand.
+    After a big moment (first Knödlinger unlocked, then every 10 Aufträge) the main menu shows a small
+    note "Spielstand sichern?" with "Code kopieren" and "Nimma erinnern". Remembered in the save; never
+    during a run.
+  - C5 (owner, 2026-11-07, from S13): **"Neu!" on the patch list after an update.** The save remembers the
+    last version whose patch list was opened; while the game is newer, the menu's patch-list button gets
+    a small "Neu!" tag. First start on a fresh save shows no tag. Makes balance changes like A1 visible.
+  - C6 (owner, 2026-11-07, after the 1.4.1 preview): **make it obvious when the player is hit.** Today a hit
+    plays only a quiet sound (−6 dB); below 30 % HP the heart icon warns and the character says "Heast!".
+    Nothing shows on the character or the screen. Owner asked: knockback on large attacks, otherwise a
+    screen effect? Claude's proposal (tiers scaled by the hit, small hits stay small so a crowd's chip
+    damage is not constant noise; waiting for the owner's OK):
+    - **Every hit:** the character flashes white, then blinks during the 0.5 s hurt cooldown; a thin
+      red glow on the screen edge, as strong as the damage; the lost chunk of the HP bar turns white and
+      drains after ~0.4 s; a louder hurt sound with varied pitch and a short grunt.
+    - **Big hit** (a mark, a boss, or ≥ 15 % of max HP): a stronger glow plus a marker on the screen edge
+      pointing to where it came from (hits from behind / off screen); a short camera shake (off with
+      "Bildschirm wackeln"); **knockback ~2–3 m** away from the source (gets you out of a boss's reach, see
+      A5); a heavier thud; a short gamepad rumble.
+    - **Low HP** (< 30 %): a slow pulsing edge glow and a heartbeat.
+    - Not: knockback on every hit (takes movement away, the genre's players hate it); hit-stop (dozens of
+      hits a minute, and co-op cannot freeze the world for one player).
+    - Krampus red is right here (danger to the player); "Weniger Blitzen" softens the flash and the glow.
+      Co-op: everything is local from the HP the client already gets; only the knockback needs a host →
+      player message (each player moves their own character), fine with the 1.4.1 version refusal.
+    - Checks: `ui_shots` of a hit and a big hit at both sizes, `mp_test -Coop` (a client knocked back).
+- Taskboard for the owner: https://claude.ai/artifact/NUU2WXcPqcVtBSzAeXB3ww (mirrors these lists; updated
+  in the same session as any change here).
+
+## 2026-11-07 – 1.4.1 built (owner: "go with 1.4.1")
+
+- **Owner said "go with 1.4.1"**: all 15 plan items in one go on `v1-4-1`; `application/config/version` 1.4.1,
+  patch note `PATCH_1_4_1_01..14` on top of the patch list. Preview only; production on the owner's word.
+- **B1 / B2 enemy lines behind the HUD:** `Hud.covered_rects()` lists the corner panels, the boss bar, the
+  Formular line, the centre banner and the hint line (48 px margin); `EnemyVoices` fades a line whose screen
+  point falls inside one and brings it back when clear.
+- **B3 Speisekarte:** confirmed cause: hovering a row focuses it (`mouse_entered → grab_focus`) and the arrow
+  keys (movement) focused rows, so the next Space (`ui_accept`) pressed it. Now keyboard `ui_accept` is always
+  swallowed while the menu is open, every press is swallowed for `PICK_GUARD` 0.5 s after each offer (also
+  queued level-ups), the arrow keys no longer walk the rows (the pad's D-pad still does, A picks after
+  0.5 s). Picks: 1–4, click, tap, pad A. Unit tests.
+- **B4 end screen:** the numbers, the Run-Abrechnung and the rewards scroll inside the panel (ScrollContainer,
+  height = screen − 2 × 32 px − heading/tabs/buttons; arrow keys / D-pad scroll 48 px), the buttons stay
+  below; the build panel's items scroll past 5 rows (`InventoryPanel.new(false, true)`). `ui_shots endlong`
+  (36 items at 1280×720): buttons on screen. Found on the way (1.4 bug): items in the Run-Abrechnung showed
+  their id ("distelstrauss"); now their name.
+- **B5 co-op start:** `NetworkManager` remembers the clients `start_run` sent into the run (`loading_ids`);
+  the host's run holds (no clock, no spawns, players frozen: `Player.waiting`) and every player sees
+  "Warten auf <Namen> …" until all have reported the run loaded, then one `_rx_hold([])` starts everyone.
+  After 45 s (`COOP_LOAD_TIMEOUT`) the missing client is kicked (normal disconnect). A client waits for the
+  host's first hold message (sent as soon as it reports in; 60 s fallback), so direct `--join` runs still
+  start at once. Test hook `--load_delay=<s>`, `mp_test -SlowClient 6`; every `-Lobby` run now checks that
+  the run started with all clients loaded.
+- **C2 chest reveal:** title in body size, 40 px icons, 168 px tiles, at most 2 effect lines (a first
+  find says "Neu!", its one-liner dropped: the reveal reached the player's head at 720p), 2.5 s + 1.5 s per extra item, max 6 s; still top centre under the boss bar.
+- **A1 old weapons** (owner's picks; measured like 1.4's 6.5: held crowd of 250 at 10:00, 90 s, Ferdl + the
+  weapon; band 4,500–7,500; the numbers are noisy: the bot levels whatever it likes, and a loaded machine
+  shifts them – the Würstel gave 5,221 / 7,290 / 3,571 on three runs):
+  - Würstel "Mit Senf": `chain_splash` 1.2 m at 50 % → about 5,400 (was 918).
+  - Krampusrute forks (`chain_fork`): from the 2nd jump every bolt splits in two, capped at 2 × amount − 1
+    hits per cast (pure doubling would reach 512 hits at max amount). The fork alone measured 1,990, so also
+    damage 9 → 13, amount 4 → 5, cooldown 1.8 → 1.5 → about 4,450.
+  - Skistöcke: amount 1 → 2, pierce 2 → 4 measured 2,076 (at weapon level 4), so also damage 2.5 → 5.0,
+    cooldown 1.0 → 0.9 → about 5,500. Slalom-Gewitter (4.5 / 0.55 s / 3 poles / pierce 6) stays above.
+  - Tablett: `leg_hits` 12 per way (out and back), then it flies on without hitting → about 6,700.
+  - Sachertorte: `impact_radius` 3.6 → 2.6 and damage 16 → 14 measured 8,167, then 12.5 → 9,200, so 10.5 →
+    5,768 / 9,485 (about 7,600; was 15,170).
+  - Chain impacts are now (from, to) pairs (the host draws forks; the splash rings where it hit); clients
+    keep their cosmetic bolts from the fire counter. No network change.
+- **C1 Krapfen aims into the crowd:** `WeaponSystem.aim_into_crowd` tries up to 24 enemies in reach and takes
+  the line whose landings catch the most enemies (nearest wins a tie); the aim byte carries it as before, so
+  clients draw the same arcs. It nearly doubled the Krapfen (11,200 against 6,250), so damage 5.9 → 2.8 →
+  6,289 / 7,005. Faschingsdienstag aims the same way (an evolution, not re-tuned).
+- **A2 chests and coins:** a second batch at 10:00 (`map_chest_late_count` 5 + 2 per extra player) at the
+  chest spots without a chest, toast "Neue Kistln am Platz!" (the game has no minimap; chests have their
+  light beam). Co-op: every player can open every map chest once at their own price; the host keeps who
+  opened it, sends a new run event `OPENED` (RunEventCodec VERSION 6; `decode` now accepts every kind
+  instead of stopping at DAMAGE), the chest disappears only for that player (`LootField.hide_opened`) and
+  goes for good once everyone has opened it. Kill coins drop at ×0.3 (`coin_rich_mult`) for the closest
+  player while their gold covers their next chest twice (`coin_rich_factor`). `mp_test -Clients 3 -Sites`:
+  every player bought chests (3–5 each).
+- **A3 Lebkuchenherzerl:** new loot kind `HEART` (a small iced Lebkuchenherz), 5 HP; per kill
+  `heart_drop_chance` 2 % × how much HP the closest player misses (0 at full HP, the full chance from 40 %
+  down), pulled to a hurt player from 8 m (× Wanderkarte); the Gulasch stays.
+- **A4 a kept big Knödl hits hard:** the player's damage (stat, Stammtisch, item conditions; Mitzi's trot on
+  top) now drives their Knödl and the Doppelportion one; above the tier-L radius the radius counts to the
+  power 2.5 (`knodl_big_exponent`; XL hits about 2.05× an L instead of 1.33×); elites take ×2, bosses ×3,
+  one boss hit at most 4 % of its max HP (`knodl_elite_mult`, `knodl_boss_mult`, `knodl_boss_hit_cap`); a
+  heavy hit plays the slam and nudges the camera (`camera_nudge_*`, off with "Bildschirm wackeln"; host /
+  solo like the existing Knödl hit sound). The Wirtshaus marker shows the reward: "Wirtshaus · L: Kistl +
+  Nochmal · 35 m". **No damage numbers exist in the game** (hits flash), so A4's "bigger number" became the
+  sound and the nudge.
+- **A5 mini-boss knock-downs:** the log now names the cause: `<enemy>:<attack>` for marks (only when the
+  slot still belongs to the attacker), `<boss>:contact` for a boss's body, `<enemy>@<boss>` for the crowd
+  within 18 m of a fighting boss; the end screen groups them back by enemy. Finding (10 runs on four maps):
+  **no mini-boss knocked anyone down with its marks** – Oberkrampus 6 body + 5 crowd on the Kirtag, Der
+  Sturm 8 body + 3 crowd + 1 gust on the Heuriger. (The plan's "Sturm pull on players" does not exist: its
+  pull moves enemies, Brösel and Knödl.) Fix: `boss_hit_grace` 1.1 s – after any boss hit (body or mark)
+  the player takes no damage for 1.1 s instead of 0.5 s, time to get out of reach of the boss and its crowd.
+- **C3 "Weniger Item-Effekte"** (Ton & Bild → Anzeige, off by default): every third item spark, at 70 %
+  size; automatic at the lowest quality. Damage numbers do not exist, so the plan's "Schadenszahlen" option
+  was dropped (nothing to switch).
+- **C4 save-code note:** top right in the main menu while no screen is open, once the first Knödlinger is
+  unlocked and then every 10 Aufträge: "Spielstand sichern?" with "Code kopieren" (copies, next note after
+  10 more Aufträge) and "Nimma erinnern". Kept in the save (`notes`).
+- **C5 "Neu!" on "Was is neu?":** the save remembers the last version whose patch list was opened; a fresh
+  profile starts with the current one (no tag), a save from before 1.4.1 sees the tag. Unit tests for C4/C5.
+- **Autoplay 1.4 → 1.4.1** (Grant 1; 1.4 numbers from Part 7's runs, 1.4.1 after everything; Gemeindebau
+  measured before A5's grace):
+
+  | Map (character) | knock-downs / run | wins | Knödl share | chests | gold left |
+  |---|---|---|---|---|---|
+  | Kirtag (Ferdl) | 21.6 → 6.7 | 1/5 → 2/3 | 14 → 25 % | 11.2 → 14.7 | 1,561 → 1,619 |
+  | Heuriger (Steffi) | 45 → 5.3 | 0/1 → 3/3 | 14 → 21 % | 6 → 15 | 2,364 → 7,132 |
+  | Gamskogl (Toni) | 22 → 6.5 | 0/1 → 0/2 | 22 → 14 % | 6 → 10 | 1,862 → 1,940 |
+  | Gemeindebau (Hias) | 18 → 14.5 | 0/1 → 2/2 | 23 → 28 % | 11 → 5.5 | 3,651 → 5,159 |
+
+  Der Sturm: 12 knock-downs in 3 Heuriger runs before the grace, 0 after; Oberkrampus 11 → 6 on the Kirtag.
+  The bot now wins 7 of 10, above the old 4–6 / 10 target: hearts, the Knödl and the grace together may
+  overshoot – **for the owner's playtest** (the knobs: `heart_drop_chance`, `boss_hit_grace`,
+  `knodl_big_exponent`). Gold left stays high where the bot does not walk to far or high chests (Heuriger,
+  Gemeindebau): a bot limit, the coin cut only works while a player can reach chests.
+- **Checks:** unit tests (254), web export, browser check (Edge, 500 enemies, 123 draw calls max), `mp_test
+  -Clients 2 -SlowClient 6`, `-Clients 3 -Sites`, `-Clients 3 -Coop`, `-Clients 1 -StartTime 595`,
+  `ui_shots` (endlong, chest, end, settings, menu, patches, hud, voices).
+- **C6 hit feedback (owner: "go with C6", built as proposed):**
+  - Every hit (seen from the HP each machine already gets): the character squashes for 0.15 s, then blinks
+    until the 0.5 s hurt cooldown ends, on every screen (teammates too; `Player.show_hit`; "Weniger
+    Blitzen": the squash only). No white material flash: a new material would compile its shader on the
+    first hit in the browser. The local player gets a red edge glow as strong as the hit (`HitFeedback`,
+    `shaders/hit_vignette.gdshader`, layer 9 under the HUD, hidden with it; drawn for its first 30 frames
+    so the shader compiles behind the loading screen), the HP bar's lost chunk turns white and drains
+    after 0.4 s (`BarHpChip` under `BarHpOver` / `BarDangerOver`, new theme variations), and the hurt
+    sound is louder (−6 → −3 dB, more pitch jitter).
+  - Big hit (a mark, a boss's body, or ≥ `hit_big_share` 15 % of max HP): the host pushes the player away
+    from the attacker at `hit_knock_speed` 20 m/s fading at 8/s (about 2.5 m; `Player.knock_back`, rides on
+    top of the steering). The host's own player is pushed directly; a client gets the new run event
+    `KNOCK` (peer, push; RunEventCodec VERSION 7) and moves itself, and the host skips its pose check for
+    that client for 0.7 s. The hit player also gets `hurt_big` (new synthesized thud with a short "oof",
+    `tools/audio/make_audio.mjs`), the camera jolt (`nudge`, off with "Bildschirm wackeln"), a bright arc
+    on the screen edge toward the attacker, and a short gamepad rumble. A knockback and its HP drop are
+    paired within 400 ms on every machine, whichever arrives first.
+  - Low HP (< 30 %): the edge pulses and a heartbeat (`heartbeat`, new) plays every 0.9 s.
+  - Test hook `hit_drill=1` (a pretend big hit every 2 s, no HP change), `ui_shots hit` / `hitdrill`; the host
+    logs `[RUN] knock peer <id>`. Checks: unit test (KNOCK round trip), `mp_test -Clients 2 -StartTime 595`
+    (3 knockbacks on clients, 0 rejected poses), `-Coop`, browser check, screenshots (the glow was first too
+    wide – it tinted a third of the picture – and now starts nearer the edge).

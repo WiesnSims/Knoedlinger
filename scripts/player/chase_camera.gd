@@ -34,6 +34,8 @@ var _touch_speed: float = 1.0
 ## 0..1: a slow sway of the view (the Jagatee); off with the "Bildschirm wackeln" setting.
 var wobble: float = 0.0
 var _wobble_time: float = 0.0
+## 0..1: a short jolt that fades fast (a big Knödl slamming into an elite or boss, 1.4.1 A4).
+var _nudge: float = 0.0
 var _invert: float = 1.0
 var _smoothing: float = 0.0
 var _yaw_target: float = 0.0
@@ -196,13 +198,23 @@ func _place(distance: float) -> void:
 			wanted = at + (_focus - at).normalized() * balance.camera_collision_margin
 	global_position = wanted
 	look_at(_focus)
-	var sway: float = wobble if not Settings.persistent or Settings.get_bool(&"screen_wobble") else 0.0
+	var shakes: bool = not Settings.persistent or Settings.get_bool(&"screen_wobble")
+	if _nudge > 0.0 and balance != null:
+		_nudge = maxf(_nudge - get_process_delta_time() * balance.camera_nudge_fade, 0.0)
+		if shakes:
+			rotate_object_local(Vector3.RIGHT, deg_to_rad(balance.camera_nudge_degrees) * _nudge * _nudge)
+	var sway: float = wobble if shakes else 0.0
 	if sway > 0.0 and balance != null:
 		_wobble_time += get_process_delta_time()
 		var t: float = _wobble_time * balance.camera_wobble_speed * TAU
 		rotate_object_local(Vector3.FORWARD, deg_to_rad(balance.camera_wobble_degrees) * sway * sin(t))
 		rotate_object_local(Vector3.RIGHT, deg_to_rad(balance.camera_wobble_degrees) * 0.4 * sway * sin(t * 0.63))
 	_update_see_through()
+
+
+## A short downward jolt of the view, 0..1 (off with the "Bildschirm wackeln" setting).
+func nudge(strength: float) -> void:
+	_nudge = clampf(maxf(_nudge, strength), 0.0, 1.0)
 
 
 ## Tells the props' shader where the player is on screen, so walls in front of them turn see-through.

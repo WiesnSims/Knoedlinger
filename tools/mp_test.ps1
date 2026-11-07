@@ -34,7 +34,8 @@ param(
     [switch]$NoRejectTest,
     [int]$StartTime = -1,
     [string]$Map = '',
-    [switch]$Sites
+    [switch]$Sites,
+    [int]$SlowClient = 0
 )
 . "$PSScriptRoot\common.ps1"
 
@@ -42,6 +43,9 @@ $log = New-LogFile 'mp_test'
 # -Coop: the co-op rules (M6) through the room, no respawn: the host's drill (--coop_drill) knocks a
 # client down at 0:10 (the bots must wake it) and rolls two Knoedl together at 0:25 (a merge), the
 # Familienstreit comes at 0:30 (--streit_at), the bots throw to each other (Knoedl-Pass).
+# -SlowClient <s> (1.4.1, B5): the last client reports its run loaded that much later; the host's run
+# must wait for it ("Warten auf ...") and start everyone together.
+if ($SlowClient -gt 0) { $Lobby = $true }
 if ($Coop) {
     $Lobby = $true
     if ($Seconds -lt 40) { $Seconds = 40 }
@@ -99,7 +103,7 @@ if (-not (Select-String -Path $hostRun.Log -Pattern 'LISTENING' -Quiet -ErrorAct
 $runs = @()
 for ($i = 1; $i -le $Clients; $i++) {
     $runs += Start-Godot "client$i" (@('--net=ws', '--join=127.0.0.1', "--port=$Port", "--seconds=$Seconds", '--bot=1',
-        "--character=$($wanted[$i % $wanted.Count])", "--name=Gast$i") + $guest)
+        "--character=$($wanted[$i % $wanted.Count])", "--name=Gast$i") + $guest + $(if ($SlowClient -gt 0 -and $i -eq $Clients) { @("--load_delay=$SlowClient") } else { @() }))
 }
 $rejectRun = $null
 if (-not $NoRejectTest) {
@@ -189,6 +193,18 @@ if ($rejectRun) {
     $r = Get-Result $rejectRun.Log
     if (-not $r -or $r.rejected -ne 'version') { $failures += 'the client with a wrong version was not refused' }
     else { Write-Host 'client_old_version: refused as expected (version)' }
+}
+if ($Lobby -and (Test-Path $hostRun.Log)) {
+    # Everyone from the room loads the run before its clock starts (B5).
+    $hostLog = @(Get-Content -Path $hostRun.Log -Encoding UTF8)
+    $go = -1
+    for ($k = 0; $k -lt $hostLog.Count; $k++) { if ($hostLog[$k] -like '[[]RUN] everyone is in*') { $go = $k; break } }
+    if ($go -lt 0) { $failures += 'host: the run never started for everyone (no "everyone is in")' }
+    else {
+        $inBefore = @($hostLog[0..$go] | Where-Object { $_ -match '^\[NET\] peer \d+ is in the run' }).Count
+        Write-Host ("host: the run started with {0} of {1} clients loaded" -f $inBefore, $Clients)
+        if ($inBefore -lt $Clients) { $failures += "host: the run started with $inBefore of $Clients clients loaded" }
+    }
 }
 if ($Coop) {
     # The host logs every co-op deed ([RUN] revive / pass / merge / split / familienstreit).

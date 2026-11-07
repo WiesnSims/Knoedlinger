@@ -16,6 +16,8 @@ const MAX_CODE_BYTES: int = 1 << 20
 const KINDS: Array[StringName] = [&"character", &"weapon", &"passive", &"item", &"map", &"knodl", &"enemy"]
 ## Cloudflare Pages previews live on subdomains of the live site (`v1-4.knoedlinger.pages.dev`).
 const PREVIEW_HOST_SUFFIX: String = ".knoedlinger.pages.dev"
+## The main menu's "Spielstand sichern?" note comes back after this many more Aufträge (1.4.1, C4).
+const SAVE_HINT_EVERY: int = 10
 
 var content: GameContent
 var persistent: bool = true
@@ -37,8 +39,12 @@ func _ready() -> void:
 	if unlock_all:
 		print("[PROFILE] preview build: everything unlocked")
 	data = _fresh()
+	var had_save: bool = persistent and FileAccess.file_exists(PATH)
 	if persistent:
 		_load()
+	# A first start has nothing new to read in the patch list (1.4.1, C5); an older save does.
+	if not had_save:
+		(data["notes"] as Dictionary)["patches_seen"] = _game_version()
 
 
 static func is_preview_host(host: String) -> bool:
@@ -323,13 +329,57 @@ func _keep_records(run: Dictionary, character: String, map: String, won: bool, e
 ## Back to a fresh profile (the settings stay).
 func reset() -> void:
 	data = _fresh()
+	(data["notes"] as Dictionary)["patches_seen"] = _game_version()
 	_save()
 
 
 ## For tests: a fresh profile in memory with this much Schilling.
 func reset_memory(p_schilling: int = 0) -> void:
 	data = _fresh()
+	(data["notes"] as Dictionary)["patches_seen"] = _game_version()
 	data["schilling"] = p_schilling
+
+
+# --- Notes in the main menu (1.4.1) ---------------------------------------------------------------
+
+## The game is newer than the last patch list the player opened: "Neu!" on its menu entry (C5).
+func patches_new() -> bool:
+	return str((data["notes"] as Dictionary).get("patches_seen", "")) != _game_version()
+
+
+func mark_patches_seen() -> void:
+	if not patches_new():
+		return
+	(data["notes"] as Dictionary)["patches_seen"] = _game_version()
+	_save()
+
+
+## Time to remind the player to copy their save code (C4): once the first Knödlinger is unlocked, then
+## every SAVE_HINT_EVERY Aufträge, until they say "Nimma erinnern".
+func save_hint_due() -> bool:
+	var notes: Dictionary = data["notes"]
+	if bool(notes.get("save_hint_off", false)):
+		return false
+	var unlocked: bool = false
+	for quest: QuestData in content.quests:
+		if quest.unlock_kind == &"character" and is_quest_done(quest.id):
+			unlocked = true
+			break
+	return unlocked and (data["quests"] as Dictionary).size() >= int(notes.get("save_hint_quests", 0))
+
+
+## The note was answered: `forever` = "Nimma erinnern", otherwise it waits for SAVE_HINT_EVERY more Aufträge.
+func answer_save_hint(forever: bool) -> void:
+	var notes: Dictionary = data["notes"]
+	if forever:
+		notes["save_hint_off"] = true
+	else:
+		notes["save_hint_quests"] = (data["quests"] as Dictionary).size() + SAVE_HINT_EVERY
+	_save()
+
+
+static func _game_version() -> String:
+	return str(ProjectSettings.get_setting("application/config/version", "0"))
 
 
 # --- Export code ---------------------------------------------------------------------------------
@@ -377,6 +427,7 @@ func _fresh() -> Dictionary:
 		"best": {"level": {}, "knodl": 0.0, "survive": 0.0, "boss_no_throw": {}, "grant_win": -1, "overtime": {}},
 		"found": {}, "records": {}, "last": {},
 		"daily": {"last": "", "streak": 0, "best_streak": 0, "days": 0},
+		"notes": {"patches_seen": "", "save_hint_quests": 0, "save_hint_off": false},
 	}
 
 

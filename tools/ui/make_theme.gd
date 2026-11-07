@@ -172,6 +172,15 @@ func _init() -> void:
 		theme.set_stylebox("background", bar, _box(Color(0.0, 0.0, 0.0, 0.45), 4, Color.TRANSPARENT, 0, 0))
 		theme.set_stylebox("fill", bar, _box(bars[bar], 4, Color.TRANSPARENT, 0, 0))
 		theme.set_font_size("font_size", bar, SMALL)
+	# 1.4.1 (C6): the HP bar as two layers – the lost chunk (white, under it) drains a moment after a hit.
+	theme.set_type_variation("BarHpChip", "ProgressBar")
+	theme.set_stylebox("background", "BarHpChip", _box(Color(0.0, 0.0, 0.0, 0.45), 4, Color.TRANSPARENT, 0, 0))
+	theme.set_stylebox("fill", "BarHpChip", _box(Color(TEXT, 0.9), 4, Color.TRANSPARENT, 0, 0))
+	for over: String in ["BarHpOver", "BarDangerOver"]:
+		theme.set_type_variation(over, "ProgressBar")
+		theme.set_stylebox("background", over, _box(Color.TRANSPARENT, 4, Color.TRANSPARENT, 0, 0))
+		theme.set_stylebox("fill", over, _box(HP if over == "BarHpOver" else DANGER, 4, Color.TRANSPARENT, 0, 0))
+		theme.set_font_size("font_size", over, SMALL)
 
 	# Containers on the grid.
 	theme.set_constant("separation", "VBoxContainer", 8)

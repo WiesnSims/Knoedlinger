@@ -188,6 +188,15 @@ var _riesen_wirt: Node3D
 var _resumed: bool = false
 ## Solo without the bot: nothing runs until the player first moves (_start_held).
 var _start_hold: bool = false
+## Co-op start (1.4.1, B5): every player waits, frozen, until all clients have loaded the run; the
+## host starts the clock for everyone with one message. A client that does not arrive within
+## COOP_LOAD_TIMEOUT seconds is sent out (the normal disconnect) and the rest start.
+const COOP_LOAD_TIMEOUT: float = 45.0
+## Client: no word from the host this long after loading, start anyway (an old host, a lost message).
+const COOP_WAIT_FALLBACK: float = 60.0
+var _coop_wait: bool = false
+var _coop_wait_until_ms: int = 0
+var _coop_missing := PackedInt32Array()
 ## The Tab screen or the pause menu holds the solo pause (not the Speisekarte).
 var _panel_paused: bool = false
 ## The pointer was captured last frame (the browser lets go of it on Esc without telling the game).
@@ -198,6 +207,9 @@ var _panel_had_mouse: bool = false
 ## Shown until ShaderWarmup is through (not in headless runs).
 var _loading: LoadingScreen
 var _log_slow: bool = false
+## Test hook `hit_drill=1` (screenshots of C6): a pretend big hit on the local player every 2 s, from a
+## random side; no HP changes.
+var _hit_drill: float = -1.0
 ## The key the local player is stored under; a client only learns its real peer id once joined.
 var _local_key: int = 1
 var _respawn: bool = false
@@ -208,6 +220,11 @@ var _bus_done: bool = false
 var _lose_timer: float = -1.0
 var _no_gold_timers: Dictionary[int, float] = {}
 var _loot_rng := RandomNumberGenerator.new()
+## Host: the peers that opened each map chest (by loot id); a chest goes once everyone has (1.4.1, A2).
+var _chest_opened: Dictionary[int, PackedInt32Array] = {}
+## Metres around a fighting boss in which a body hit counts as "the crowd at the boss" (A5 log).
+const BOSS_CROWD_RADIUS: float = 18.0
+var _late_chests_placed: bool = false
 ## Host: seconds until the next Fassl may stand up.
 var _fassl_timer: float = 0.0
 ## Run events waiting for the next send to the clients.
@@ -227,11 +244,33 @@ var _hazards_seen: int = 0
 var _voice_lines_received: int = 0
 var _gate_shown: int = -1
 var _last_hp: float = 0.0
+## Hit feedback (1.4.1, C6): the edge glow; when the last knockback / hurt / heavy cue reached the local
+## player (msec) and which way the knockback pushed; every player's HP as last seen (their blink);
+## host: until when a knocked-back client's pose may jump; the heartbeat's timer.
+var hit_fx: HitFeedback
+var _knock_ms: int = -10000
+var _knock_push := Vector2.ZERO
+var _hurt_ms: int = -10000
+var _heavy_ms: int = -10000
+var _seen_hp: Dictionary[int, float] = {}
+var _knock_grace: Dictionary[int, int] = {}
+var _heartbeat: float = 0.0
+## A knockback and the hurt it belongs to count together within this many msec.
+const HIT_PAIR_MS: int = 400
+## Low HP (share of max HP): pulse and heartbeat; seconds between two beats.
+const LOW_HP_SHARE: float = 0.3
+const HEARTBEAT_SECONDS: float = 0.9
 var _was_downed: bool = false
 var _sound_level: int = 0
 var _last_xp: float = 0.0
 var _knodl_state_heard: int = 0
 var _knodl_hits_heard: int = 0
+var _knodl_heavy_heard: int = 0
+## Weniger Item-Effekte: one spark in this many is shown, at this size (C3).
+const FEWER_SPARKS_EVERY: int = 3
+const FEWER_SPARKS_SIZE: float = 0.7
+var _spark_count: int = 0
+var _heavy_cue_ms: int = 0
 ## Host: enemies beaten per type id (quests, Almanach).
 var _kills_by_type: Dictionary[StringName, int] = {}
 ## Host: the Stammtisch bonus each player brings (the local one from the Profile; clients send
@@ -277,6 +316,7 @@ func _ready() -> void:
 	_bot = LaunchArgs.get_flag("bot", false) or _autoplay
 	_god = LaunchArgs.get_flag("god", false)
 	_log_slow = LaunchArgs.get_flag("log_slow", false)
+	_hit_drill = 2.0 if LaunchArgs.get_flag("hit_drill", false) else -1.0
 	_start_mass = LaunchArgs.get_float("knodl_mass", -1.0)
 	_respawn = LaunchArgs.get_flag("respawn", false) or _autoplay
 	balance = load("res://data/balance.tres")
@@ -396,6 +436,9 @@ func _ready() -> void:
 	pause.quit_pressed.connect(_quit_to_menu)
 	hud.covered = func() -> bool:
 		return speisekarte.is_shown() or inventory.is_open() or end_screen.visible or pause.is_open() or _loading != null
+	hit_fx = HitFeedback.new()
+	hit_fx.covered = hud.covered
+	add_child(hit_fx)
 	touch = TouchControls.new()
 	touch.name = "TouchControls"
 	touch.camera = camera
@@ -410,6 +453,8 @@ func _ready() -> void:
 		enemies.ring_max = balance.spawn_first_ring_max
 		enemies.ring_ahead = balance.spawn_ring_ahead
 		_start_hold = not NetworkManager.is_online() and not _bot and _forced_enemies == 0 and _seconds <= 0.0
+		_coop_wait = not NetworkManager.loading_ids().is_empty()
+		_coop_wait_until_ms = Time.get_ticks_msec() + roundi(COOP_LOAD_TIMEOUT * 1000.0)
 		enemies.speed_mult = grant.enemy_speed
 		_update_wave()
 		if _forced_enemies > 0:
@@ -432,6 +477,9 @@ func _ready() -> void:
 	else:
 		replica = EnemyReplica.new(balance, types, slots)
 		voices.replica = replica
+		# Released by the host's first hold message (it answers as soon as we report the run loaded).
+		_coop_wait = true
+		_coop_wait_until_ms = Time.get_ticks_msec() + roundi(COOP_WAIT_FALLBACK * 1000.0)
 	NetworkManager.snapshot_received.connect(_on_snapshot)
 	NetworkManager.events_received.connect(_on_events)
 	NetworkManager.player_input_received.connect(_on_player_input)
@@ -441,6 +489,7 @@ func _ready() -> void:
 	NetworkManager.offer_received.connect(_on_offer)
 	NetworkManager.choice_received.connect(_on_choice)
 	NetworkManager.peer_run_ready.connect(_on_peer_joined)
+	NetworkManager.run_hold_received.connect(_on_run_hold)
 	NetworkManager.peer_left.connect(_on_peer_left)
 	NetworkManager.joined_host.connect(_on_joined_host)
 	NetworkManager.join_failed.connect(_on_join_failed)
@@ -480,6 +529,10 @@ func _ready() -> void:
 	WebPage.loaded()
 	# A client from the co-op room: our scene is up, the host may send the world now.
 	if not host:
+		# Test hook (mp_test -SlowClient): this client takes that long to load.
+		var load_delay: float = LaunchArgs.get_float("load_delay", 0.0)
+		if load_delay > 0.0:
+			await get_tree().create_timer(load_delay, true).timeout
 		NetworkManager.send_run_ready()
 
 
@@ -560,7 +613,46 @@ func _start_held() -> bool:
 	return _start_hold
 
 
+## Host: still waiting for clients to load the run? Tells the clients who is missing whenever that
+## changes (or `always`), and starts everyone once all are in or the time is up.
+func _coop_held(always: bool = false) -> bool:
+	if not _coop_wait:
+		return false
+	var missing := PackedInt32Array(NetworkManager.loading_ids())
+	if missing.is_empty() or Time.get_ticks_msec() >= _coop_wait_until_ms:
+		for peer: int in missing:
+			print("[NET] peer %d did not load the run in %d s, starting without it" % [peer, roundi(COOP_LOAD_TIMEOUT)])
+			NetworkManager.kick(peer)
+		_release_coop_wait()
+		NetworkManager.send_run_hold(PackedInt32Array())
+		return false
+	if always or missing != _coop_missing:
+		_coop_missing = missing
+		NetworkManager.send_run_hold(missing)
+	return true
+
+
+## Client: the host's word on who the run waits for; empty: go.
+func _on_run_hold(missing: PackedInt32Array) -> void:
+	_coop_missing = missing
+	if missing.is_empty():
+		_release_coop_wait()
+
+
+func _release_coop_wait() -> void:
+	if not _coop_wait:
+		return
+	_coop_wait = false
+	_coop_missing = PackedInt32Array()
+	print("[RUN] everyone is in, the run starts")
+	for peer: int in players:
+		players[peer].waiting = false
+
+
 func _host_frame(delta: float) -> void:
+	if _coop_held():
+		brosel.draw()
+		return
 	if _start_held():
 		# The family's crumbs lie there already; the key hints wait with the run.
 		brosel.draw()
@@ -572,6 +664,7 @@ func _host_frame(delta: float) -> void:
 	if _wave_timer <= 0.0:
 		_wave_timer = 1.0
 		_update_wave()
+		_place_late_chests()
 	if _forced_enemies == 0 and phase != Phase.ENDED:
 		var ramp: float = (balance.spawn_start_count + balance.spawn_count_per_minute * run_time / 60.0) \
 				* Formulas.early_ease(run_time, balance.spawn_ease_count, balance)
@@ -641,11 +734,17 @@ func _host_frame(delta: float) -> void:
 		var state: PlayerState = states[peers[t]]
 		var hit: float = Formulas.hit_damage(enemies.touch_damage[t] * damage_mult, state.build.stat(&"armor"), balance)
 		if enemies.touch_type[t] >= 0:
-			state.last_cause = types[enemies.touch_type[t]].id
+			state.last_cause = _touch_cause(enemies.touch_type[t], players[peers[t]].global_position)
 		var hp_before: float = state.hp
 		if not _god and phase != Phase.ENDED and state.hurt(hit, balance):
 			on_downed(peers[t])
 		if state.hp < hp_before:
+			var at: Vector3 = players[peers[t]].global_position
+			if enemies.touch_type[t] >= 0 and (types[enemies.touch_type[t]].boss \
+					or hp_before - state.hp >= state.max_hp * balance.hit_big_share):
+				_knock(peers[t], _nearest_of_type(enemies.touch_type[t], at.x, at.z))
+			if enemies.touch_type[t] >= 0 and types[enemies.touch_type[t]].boss:
+				state.hurt_timer = maxf(state.hurt_timer, balance.boss_hit_grace)
 			_on_hurt(peers[t])
 			_reflect_hit(peers[t], hp_before - state.hp)
 			procs.on_hurt(peers[t], hp_before - state.hp)
@@ -688,9 +787,13 @@ func _host_frame(delta: float) -> void:
 			var crumb: Vector2 = brosel.nearest(at.x, at.z, knodl.max_length())
 			if crumb.is_finite():
 				knodl.follow_target = Vector3(crumb.x, 0.0, crumb.y)
+		# The player's damage (stat, Stammtisch, items) drives their Knödl too (1.4.1, A4); Mitzi's trot
+		# on top.
+		knodl.damage_bonus = state.build.stat(&"damage") + state.build.cond_damage 				+ (player.trot_bonus() if character_of(peer).trait_effects.has(&"trot") else 0.0)
 		if not knodl.merged_away:
 			knodl.crush(enemies, delta)
 		if seconds.has(peer):
+			seconds[peer].damage_bonus = knodl.damage_bonus
 			seconds[peer].damage_source = knodl.damage_source
 			seconds[peer].crush(enemies, delta)
 	if _test_shots > 0:
@@ -1133,13 +1236,17 @@ func _drop_brosel() -> void:
 		for piece: int in Formulas.split_into_brosel(enemies.kill_xp[k], balance):
 			brosel.drop(kx, kz, piece, true)
 		var coins: int = types[enemies.kill_type[k]].gold_drop
-		if coins == 0 and _loot_rng.randf() < balance.coin_drop_chance and loot.count < balance.coin_loot_cap:
+		var closest: PlayerState = _closest_state(kx, kz)
+		if coins == 0 and _loot_rng.randf() < _coin_chance(closest) and loot.count < balance.coin_loot_cap:
 			coins = 1
 		for c: int in coins:
 			_drop_loot(LootField.Kind.COIN, kx + _loot_rng.randf_range(-1.0, 1.0), kz + _loot_rng.randf_range(-1.0, 1.0),
 					Formulas.coin_value(run_time, balance) * sites.gold_mult())
 		if _loot_rng.randf() < balance.heal_drop_chance:
 			_drop_loot(LootField.Kind.HEAL, kx, kz, roundi(balance.heal_amount))
+		elif closest != null and _loot_rng.randf() < Formulas.heart_chance(closest.hp, closest.max_hp, balance) \
+				and loot.count < balance.coin_loot_cap:
+			_drop_loot(LootField.Kind.HEART, kx, kz, roundi(balance.heart_amount))
 	enemies.clear_kills()
 	for peer: int in knodls:
 		var knodl: Knodl = knodls[peer]
@@ -1343,7 +1450,9 @@ func _world_frame() -> WorldStateCodec.Frame:
 
 
 func _client_frame(delta: float) -> void:
-	if phase != Phase.ENDED:
+	if _coop_wait and Time.get_ticks_msec() >= _coop_wait_until_ms:
+		_release_coop_wait()
+	if phase != Phase.ENDED and not _coop_wait:
 		run_time += delta
 	var t0: int = Time.get_ticks_usec()
 	replica.update(Time.get_ticks_msec(), delta)
@@ -1368,6 +1477,12 @@ func _local_frame(delta: float) -> void:
 	var local: Player = players.get(id)
 	var state: PlayerState = states.get(id)
 	var knodl: Knodl = knodls.get(id)
+	if _coop_wait:
+		var names := PackedStringArray()
+		for peer: int in _coop_missing:
+			var who: String = NetworkManager.player_name(peer)
+			names.append(who if who != "" else tr("COOP_WAITING_SOMEONE"))
+		hud.toast(tr("COOP_WAITING") % ", ".join(names) if not names.is_empty() else tr("COOP_WAITING_ANY"), 0.25)
 	for peer: int in states:
 		var peer_state: PlayerState = states[peer]
 		var player: Player = players.get(peer)
@@ -1376,6 +1491,11 @@ func _local_frame(delta: float) -> void:
 		var build: PlayerBuild = peer_state.build
 		player.choosing = peer_state.choosing
 		player.downed = peer_state.downed
+		player.waiting = _coop_wait
+		# Everyone's hit shows on their character, here too (C6).
+		if peer_state.hp < _seen_hp.get(peer, peer_state.hp) - 0.01 and not peer_state.downed:
+			player.show_hit()
+		_seen_hp[peer] = peer_state.hp
 		player.stat_speed = 1.0 + build.stat(&"move_speed")
 		player.stat_jump_height = build.stat(&"jump_height")
 		player.stat_extra_jumps = roundi(build.stat(&"extra_jumps"))
@@ -1996,7 +2116,8 @@ func _on_player_input(peer_id: int, data: PackedByteArray) -> void:
 	if player == null:
 		player = _spawn_player(peer_id, false)
 		player.teleport(message.position)
-	elif NetworkManager.is_host() and not _respawn_grace.has(peer_id) and not _pose_is_plausible(peer_id, player, message):
+	elif NetworkManager.is_host() and not _respawn_grace.has(peer_id) and Time.get_ticks_msec() > _knock_grace.get(peer_id, 0) \
+			and not _pose_is_plausible(peer_id, player, message):
 		_rejected_poses += 1
 		return
 	_last_pose_ms[peer_id] = Time.get_ticks_msec()
@@ -2017,6 +2138,9 @@ func _pose_is_plausible(peer_id: int, player: Player, message: InputMessage) -> 
 ## Co-op stops the solo pause and opens one more Wirtshaus per extra player.
 func _on_peer_joined(peer_id: int) -> void:
 	get_tree().paused = false
+	# The newcomer learns at once whether the run still waits (and for whom) or already runs.
+	if not _coop_held(true):
+		NetworkManager.send_run_hold(PackedInt32Array())
 	_open_wirtshaeuser(balance.coop_wirtshaus_per_player, LaunchArgs.get_int("seed", 1) + peer_id)
 	var all := PackedInt32Array()
 	for i: int in brosel.capacity:
@@ -2227,8 +2351,6 @@ func _update_traits(delta: float) -> void:
 			if rate != state.build.trait_rate:
 				state.build.trait_rate = rate
 				state.build.recompute()
-		if effects.has(&"trot") and knodls.has(peer):
-			(knodls[peer] as Knodl).damage_bonus = player.trot_bonus()
 		if effects.has(&"jump_wave"):
 			var jumps: int = player.jump_count if peer == NetworkManager.local_id() else player.last_input.jumps
 			var seen: int = _jumps_seen.get(peer, jumps)
@@ -2562,14 +2684,155 @@ func _drop_loot(kind: LootField.Kind, x: float, z: float, value: int) -> void:
 
 
 ## Host: the run's map chests at random spots (GAME-DESIGN.md: random chest placement).
-func _place_map_chests() -> void:
+func _place_map_chests(count: int = -1) -> void:
 	var spots: Array[Vector2] = []
-	spots.assign(map.chest_spots)
-	for k: int in mini(balance.map_chest_count, spots.size()):
+	# Only spots without a chest on them (the late batch fills the empty ones).
+	for spot: Vector2 in map.chest_spots:
+		var taken: bool = false
+		for slot: int in loot.all_slots():
+			if loot.kinds[slot] == LootField.Kind.CHEST and Vector2(loot.xs[slot], loot.zs[slot]).distance_squared_to(spot) < 1.0:
+				taken = true
+				break
+		if not taken:
+			spots.append(spot)
+	for k: int in mini(balance.map_chest_count if count < 0 else count, spots.size()):
 		var pick: int = _loot_rng.randi_range(0, spots.size() - 1)
 		var rarity: int = CardDealer.roll_chest_rarity(balance, _loot_rng, 0.0, 0)
 		_drop_loot(LootField.Kind.CHEST, spots[pick].x, spots[pick].y, LootField.chest_value(balance.map_chest_price, rarity))
 		spots.remove_at(pick)
+
+
+## Host: from 10:00 a second batch of map chests (more with every extra player), so late gold has a use
+## (1.4.1, A2).
+func _place_late_chests() -> void:
+	if _late_chests_placed or run_time < balance.map_chest_late_time or phase != Phase.RUNNING:
+		return
+	_late_chests_placed = true
+	_place_map_chests(balance.map_chest_late_count + balance.map_chest_late_per_player * (players.size() - 1))
+	events.toast("TOAST_LATE_CHESTS")
+
+
+## Host: the state of the player closest to (x, z), or null.
+func _closest_state(x: float, z: float) -> PlayerState:
+	var best: PlayerState = null
+	var best_sq: float = INF
+	for peer: int in players:
+		var at: Vector3 = players[peer].global_position
+		var d_sq: float = (at.x - x) * (at.x - x) + (at.z - z) * (at.z - z)
+		if d_sq < best_sq and states.has(peer):
+			best_sq = d_sq
+			best = states[peer]
+	return best
+
+
+## Host: a kill's coin chance; less for a player whose gold already buys their next chests (A2).
+func _coin_chance(state: PlayerState) -> float:
+	if state == null or state.build == null:
+		return balance.coin_drop_chance
+	var next: int = Formulas.chest_price(balance.map_chest_price, state.chests_bought, balance)
+	if state.build.gold >= next * balance.coin_rich_factor:
+		return balance.coin_drop_chance * balance.coin_rich_mult
+	return balance.coin_drop_chance
+
+
+## Host: a big hit pushes `peer` away from `from` (1.4.1, C6). The host's own player is pushed here; a
+## client gets a KNOCK event and moves itself, and its poses may jump for a moment.
+func _knock(peer: int, from: Vector2) -> void:
+	var player: Player = players.get(peer)
+	if player == null or states[peer].downed:
+		return
+	var away := Vector2(player.global_position.x - from.x, player.global_position.z - from.y)
+	if away.length_squared() < 0.01:
+		var facing: Vector3 = player.facing_direction()
+		away = -Vector2(facing.x, facing.z)
+	var push: Vector2 = away.normalized() * balance.hit_knock_speed
+	if peer == NetworkManager.local_id():
+		_on_local_knock(push)
+	else:
+		events.knock(peer, push.x, push.y)
+		_knock_grace[peer] = Time.get_ticks_msec() + 700
+		print("[RUN] knock peer %d t=%.1f" % [peer, run_time])
+
+
+## Every role: the local player was knocked back: move, and the heavy cues if the hurt came first.
+func _on_local_knock(push: Vector2) -> void:
+	var local: Player = players.get(NetworkManager.local_id())
+	if local != null:
+		local.knock_back(push)
+	_knock_ms = Time.get_ticks_msec()
+	_knock_push = push
+	if _knock_ms - _hurt_ms < HIT_PAIR_MS:
+		_heavy_cues()
+
+
+## Host: where the enemy of this type closest to (x, z) stands (the one that hit), or (x, z).
+func _nearest_of_type(type_index: int, x: float, z: float) -> Vector2:
+	var found: int = enemies.grid.query(x, z, 4.0)
+	var best := Vector2(x, z)
+	var best_sq: float = INF
+	for k: int in found:
+		var j: int = enemies.grid.results[k]
+		if enemies.alive[j] == 0 or enemies.type[j] != type_index:
+			continue
+		var d_sq: float = (enemies.pos_x[j] - x) * (enemies.pos_x[j] - x) + (enemies.pos_z[j] - z) * (enemies.pos_z[j] - z)
+		if d_sq < best_sq:
+			best_sq = d_sq
+			best = Vector2(enemies.pos_x[j], enemies.pos_z[j])
+	return best
+
+
+## The local player's hit on screen: the glow (as strong as the hit), and for a big one the heavy cues.
+func _hit_cues(share: float) -> void:
+	_hurt_ms = Time.get_ticks_msec()
+	hit_fx.hit(share)
+	if share >= balance.hit_big_share or _hurt_ms - _knock_ms < HIT_PAIR_MS:
+		_heavy_cues()
+	else:
+		GameAudio.play(&"hurt", Vector3.INF, 0.15)
+
+
+## A big hit: the thud, a jolt, a bright arc on the side it came from, a short rumble (once per hit).
+func _heavy_cues() -> void:
+	var now: int = Time.get_ticks_msec()
+	if now - _heavy_ms < HIT_PAIR_MS:
+		return
+	_heavy_ms = now
+	GameAudio.play(&"hurt_big", Vector3.INF, 0.1)
+	camera.nudge(1.0)
+	if now - _knock_ms < HIT_PAIR_MS and _knock_push.length_squared() > 0.01:
+		# The push points away from the attacker; the arc shows where the attacker is, on screen.
+		var toward: Vector3 = -Vector3(_knock_push.x, 0.0, _knock_push.y).normalized()
+		var right: Vector3 = camera.global_basis.x
+		var ahead: Vector3 = -camera.global_basis.z
+		ahead.y = 0.0
+		hit_fx.hit(0.0, Vector2(toward.dot(right), -toward.dot(ahead.normalized())))
+	if InputDevice.is_pad() and not Input.get_connected_joypads().is_empty():
+		Input.start_joy_vibration(Input.get_connected_joypads()[0], 0.35, 0.65, 0.18)
+
+
+## Host: what a body hit counts as on the knock-down list (1.4.1, A5): a boss's own body is
+## "<boss>:contact", the crowd around a fighting boss "<enemy>@<boss>", anything else the enemy type.
+func _touch_cause(type_index: int, at: Vector3) -> StringName:
+	var data: EnemyTypeData = types[type_index]
+	if data.boss:
+		return StringName("%s:contact" % data.id)
+	for boss: BossDirector.Active in bosses.active:
+		var dx: float = enemies.pos_x[boss.slot] - at.x
+		var dz: float = enemies.pos_z[boss.slot] - at.z
+		if dx * dx + dz * dz < BOSS_CROWD_RADIUS * BOSS_CROWD_RADIUS:
+			return StringName("%s@%s" % [data.id, boss.data.id])
+	return data.id
+
+
+## Host: a mark's knock-down cause, "<who>:<attack>" (A5).
+func _attack_cause(h: HazardField.Hazard) -> StringName:
+	# The slot may belong to someone else by now (the attacker died before its mark struck).
+	var who: String = "attack"
+	if h.source >= 0 and enemies.alive[h.source] != 0:
+		var source: EnemyTypeData = types[enemies.type[h.source]]
+		if source.boss or source.attack == h.attack or source.death_attack == h.attack:
+			who = String(source.id)
+	return StringName("%s:%s" % [who, h.attack.id]) if h.attack != null and h.attack.id != &"" else StringName(who)
 
 
 ## Host: elites that started an attack this frame put their marks down.
@@ -2596,11 +2859,14 @@ func _resolve_hazards() -> void:
 				if at.y - ground.height_at(at.x, at.z) > balance.hazard_dodge_height:
 					continue
 				if HazardField.contains(h, at.x, at.z, balance.player_radius):
-					state.last_cause = types[enemies.type[h.source]].id if h.source >= 0 else &"attack"
+					state.last_cause = _attack_cause(h)
 					var hp_before: float = state.hp
 					if state.hurt(Formulas.hit_damage(attack.damage * grant.enemy_damage, state.build.stat(&"armor"), balance), balance):
 						on_downed(peer)
 					if state.hp < hp_before:
+						_knock(peer, Vector2(h.x, h.z))
+						if h.source >= 0 and types[enemies.type[h.source]].boss:
+							state.hurt_timer = maxf(state.hurt_timer, balance.boss_hit_grace)
 						procs.on_hurt(peer, hp_before - state.hp)
 		if attack.dash and h.source >= 0:
 			if bosses.is_boss_slot(h.source):
@@ -2847,6 +3113,8 @@ func _collect_loot(delta: float) -> void:
 		var at: Vector3 = players[peer].global_position
 		var reach_mult: float = 1.0 + state.build.stat(&"pickup")
 		loot.attract(at.x, at.z, balance.coin_magnet_range * reach_mult, delta)
+		if state.hp < state.max_hp:
+			loot.attract(at.x, at.z, balance.heart_magnet_range * reach_mult, delta, LootField.Kind.HEART)
 		for slot: int in loot.near(at.x, at.y, at.z, reach):
 			if loot.alive[slot] == 0:
 				continue
@@ -2856,7 +3124,7 @@ func _collect_loot(delta: float) -> void:
 					if d < balance.coin_pickup_radius:
 						state.build.add_gold(loot.values[slot])
 						_take_loot(slot, peer)
-				LootField.Kind.HEAL:
+				LootField.Kind.HEAL, LootField.Kind.HEART:
 					if d < balance.coin_pickup_radius and state.hp < state.max_hp:
 						state.heal(loot.values[slot])
 						_take_loot(slot, peer)
@@ -2869,7 +3137,8 @@ func _collect_loot(delta: float) -> void:
 						if stempel_found >= stempel_total:
 							_open_gate()
 				LootField.Kind.CHEST:
-					if d < balance.chest_pickup_radius:
+					var opened: PackedInt32Array = _chest_opened.get(loot.ids[slot], PackedInt32Array())
+					if d < balance.chest_pickup_radius and not opened.has(peer):
 						var price: int = _chest_price(slot, state)
 						if state.build.gold >= price:
 							# Zweitschlüssel vom Gemeindeamt: sometimes the chest is open anyway.
@@ -2880,7 +3149,7 @@ func _collect_loot(delta: float) -> void:
 							state.chests_opened += 1
 							state.chest_times.append(run_time)
 							state.build.set_chests_opened(state.chests_opened)
-							_take_loot(slot, peer)
+							_open_chest(slot, peer)
 							level_flow.give_chest(peer, state, CHEST_TIER_MAP, balance.map_chest_items, false, 0, rarity)
 						elif not _no_gold_timers.has(peer):
 							_no_gold_timers[peer] = NOTICE_INTERVAL
@@ -2913,6 +3182,27 @@ func _mark_chest_prices(from: Vector3) -> void:
 ## What a map chest costs this player: its base price, dearer for every chest they bought.
 func _chest_price(slot: int, state: PlayerState) -> int:
 	return Formulas.chest_price(LootField.chest_low(loot.values[slot]), state.chests_bought if state != null else 0, balance)
+
+
+## Host: a player opened a map chest. Co-op: it stays for whoever has not opened it yet (each at
+## their own price) and goes once everyone has (1.4.1, A2); solo it simply goes.
+func _open_chest(slot: int, peer: int) -> void:
+	var id: int = loot.ids[slot]
+	var opened: PackedInt32Array = _chest_opened.get(id, PackedInt32Array())
+	opened.append(peer)
+	var everyone: bool = true
+	for other: int in players:
+		if not opened.has(other):
+			everyone = false
+	if everyone:
+		_chest_opened.erase(id)
+		_take_loot(slot, peer)
+		return
+	_chest_opened[id] = opened
+	events.opened(id, peer)
+	_flush_events()
+	if peer == NetworkManager.local_id():
+		loot.hide_opened(id)
 
 
 func _take_loot(slot: int, peer: int) -> void:
@@ -2973,6 +3263,12 @@ func _on_run_events(data: PackedByteArray) -> void:
 				loot.add_remote(e.id, e.a, e.x, e.z, e.b)
 			RunEventCodec.Kind.TAKEN:
 				loot.remove(e.id)
+			RunEventCodec.Kind.OPENED:
+				if e.b == NetworkManager.local_id():
+					loot.hide_opened(e.id)
+			RunEventCodec.Kind.KNOCK:
+				if e.b == NetworkManager.local_id():
+					_on_local_knock(Vector2(e.x, e.z))
 			RunEventCodec.Kind.LOCK:
 				if e.a < stairs.feet.size():
 					hazards.add_slope(stairs.mark_foot(e.a), stairs.mark_top(e.a), stairs.widths[e.a] * 0.5, e.seconds)
@@ -2999,7 +3295,7 @@ func _present(e: RunEventCodec.Event) -> void:
 			match loot.kinds[slot]:
 				LootField.Kind.COIN:
 					GameAudio.play(&"coin", at)
-				LootField.Kind.HEAL:
+				LootField.Kind.HEAL, LootField.Kind.HEART:
 					GameAudio.play(&"heal", at)
 				LootField.Kind.STEMPEL:
 					GameAudio.play(&"stempel", at)
@@ -3008,6 +3304,10 @@ func _present(e: RunEventCodec.Event) -> void:
 						GameAudio.play(&"knodl_hit", at)
 				_:
 					GameAudio.play(&"chest", at)
+		RunEventCodec.Kind.OPENED:
+			var opened: int = loot.slot_of(e.id)
+			if opened >= 0 and e.b == NetworkManager.local_id():
+				GameAudio.play(&"chest", loot.position_of(opened))
 		RunEventCodec.Kind.TOAST:
 			hud.toast(tr(e.text))
 		RunEventCodec.Kind.BOSS:
@@ -3035,7 +3335,13 @@ func _present(e: RunEventCodec.Event) -> void:
 			elif e.a == RunEventCodec.Cue.SHOCKWAVE:
 				_show_shockwave(e.x, e.z)
 			elif e.a == RunEventCodec.Cue.SPARK:
-				_show_shockwave(e.x, e.z, balance.spark_radius)
+				# Weniger Item-Effekte (or the lowest quality): every third spark, smaller (1.4.1, C3).
+				if Settings.get_bool(&"fewer_effects") or quality.level == QualityScaler.Level.LOW:
+					_spark_count += 1
+					if _spark_count % FEWER_SPARKS_EVERY == 0:
+						_show_shockwave(e.x, e.z, balance.spark_radius * FEWER_SPARKS_SIZE)
+				else:
+					_show_shockwave(e.x, e.z, balance.spark_radius)
 		RunEventCodec.Kind.SAY:
 			voices.present(e.a, e.b, e.id, e.x, e.z)
 		RunEventCodec.Kind.SITE:
@@ -3120,9 +3426,23 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 	# Sounds of the local player, from the state the host keeps.
 	if state != null:
 		if state.hp < _last_hp - 0.01 and not state.downed:
-			GameAudio.play(&"hurt")
-			if state.hp < state.max_hp * 0.3:
+			_hit_cues((_last_hp - state.hp) / maxf(state.max_hp, 1.0))
+			if state.hp < state.max_hp * LOW_HP_SHARE:
 				GameAudio.bark(&"heast")
+		if _hit_drill >= 0.0:
+			_hit_drill -= delta
+			if _hit_drill <= 0.0 and local != null:
+				_hit_drill = 2.0
+				local.show_hit()
+				_hit_cues(0.25)
+				_on_local_knock(Vector2.RIGHT.rotated(randf() * TAU) * balance.hit_knock_speed)
+		# Low HP: the edge pulses and the heart beats (1.4.1, C6).
+		var low: bool = state.hp < state.max_hp * LOW_HP_SHARE and not state.downed and phase == Phase.RUNNING
+		hit_fx.low_hp = low
+		_heartbeat -= delta
+		if low and _heartbeat <= 0.0:
+			_heartbeat = HEARTBEAT_SECONDS
+			GameAudio.play(&"heartbeat", Vector3.INF, 0.0)
 		if state.downed and not _was_downed:
 			GameAudio.play(&"downed")
 		if state.level > _sound_level and _sound_level > 0:
@@ -3144,11 +3464,19 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 		if knodl.hits > _knodl_hits_heard:
 			GameAudio.play(&"knodl_hit", knodl.global_position)
 		_knodl_hits_heard = knodl.hits
+		# A kept big Knödl slamming into an elite or a boss: a thud and a jolt (1.4.1, A4).
+		if knodl.heavy_hits > _knodl_heavy_heard and Time.get_ticks_msec() - _heavy_cue_ms > 250:
+			_heavy_cue_ms = Time.get_ticks_msec()
+			GameAudio.play(&"slam", knodl.global_position)
+			camera.nudge(clampf(knodl.radius / 2.0, 0.3, 1.0))
+		_knodl_heavy_heard = knodl.heavy_hits
 	for h: HazardField.Hazard in hazards.struck:
 		GameAudio.play(&"slam", Vector3(h.x, ground.height_at(h.x, h.z), h.z))
 	if local != null:
 		local.ground_slow = 1.0 - (1.0 - slime.speed_factor(local.global_position)) * (1.0 - local.stat_sure_footing)
 		GameAudio.set_listener(local.global_position)
+		voices.camera = camera
+		voices.covered = hud.covered_rects
 		voices.update_view(delta, local.global_position)
 	if phase == Phase.RUNNING:
 		GameAudio.music(&"boss" if boss_alive else (map.music if map != null else &"kirtag"))

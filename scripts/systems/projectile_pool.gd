@@ -117,6 +117,9 @@ func fire_shot(x: float, z: float, vx: float, vz: float, lifetime: float, damage
 	_damage[slot] = damage
 	_radius[slot] = radius
 	_pierce[slot] = pierce
+	# A full tray (leg_hits): that many hits per way, out and back.
+	if boomerang and weapon != null and weapon.leg_hits > 0:
+		_pierce[slot] = weapon.leg_hits - 1
 	_knockback[slot] = knockback
 	_last_hit[slot] = -1
 	_turn_at[slot] = lifetime * 0.5 if boomerang else -1.0
@@ -149,6 +152,8 @@ func update(delta: float, enemies: EnemyManager) -> void:
 			_vx[i] = -_vx[i]
 			_vz[i] = -_vz[i]
 			_last_hit[i] = -1
+			if _weapons[i] != null and _weapons[i].leg_hits > 0:
+				_pierce[i] = _weapons[i].leg_hits - 1
 		var x: float = _x[i] + _vx[i] * delta
 		var z: float = _z[i] + _vz[i] * delta
 		_x[i] = x
@@ -165,7 +170,8 @@ func update(delta: float, enemies: EnemyManager) -> void:
 				if _life[i] < _hop_every[i]:
 					_release(i)
 			continue
-		if grid == null:
+		# A full tray (pierce < 0) flies on without hitting until it turns or lands.
+		if grid == null or _pierce[i] < 0:
 			continue
 		var reach: float = _radius[i]
 		var found: int = grid.query(x, z, reach + max_enemy_radius)
@@ -186,7 +192,10 @@ func update(delta: float, enemies: EnemyManager) -> void:
 			hits += 1
 			_last_hit[i] = j
 			if _pierce[i] <= 0:
-				_release(i)
+				if _weapons[i] != null and _weapons[i].boomerang and _weapons[i].leg_hits > 0:
+					_pierce[i] = -1
+				else:
+					_release(i)
 				break
 			_pierce[i] -= 1
 	if enemies != null:

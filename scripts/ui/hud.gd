@@ -13,7 +13,10 @@ const INTRO_SECONDS: float = 10.0
 ## Stempel, the gate, the boss and up to three teammates.
 const MARKERS: int = 9
 const EDGE: float = 16.0
+## Pixels around a HUD panel in which an enemy line still counts as behind it (covered_rects).
+const COVER_MARGIN: float = 48.0
 const HP_BAR := Vector2(176.0, 16.0)
+const HP_CHIP_DELAY: float = 0.4
 
 var _hp_bar: ProgressBar
 var _hp_label: Label
@@ -43,8 +46,13 @@ var _toast_timer: float = 0.0
 var _toast_tween: Tween
 var _intro_timer: float = INTRO_SECONDS
 var _hp_target: float = 0.0
+var _hp_chip: ProgressBar
+## Seconds until the white chunk starts to drain (a new hit restarts it).
+var _chip_wait: float = 0.0
 var _boss_target: float = 0.0
 var _knodl_tier_index: int = -1
+## Panels an enemy line must not show through (covered_rects).
+var _covers: Array[Control] = []
 ## What the toast says while the local player is down (solo: the run is over).
 var downed_key: String = "TOAST_DOWNED"
 ## Co-op: the knocked-down line with the seconds left (overrides downed_key when set).
@@ -77,10 +85,18 @@ func _ready() -> void:
 	left.add_child(hp_row)
 	_heart = HudGlyph.new(HudGlyph.Kind.HEART, 24.0)
 	hp_row.add_child(_heart)
-	_hp_bar = UiStyle.bar(&"BarHp")
-	_hp_bar.custom_minimum_size = HP_BAR
-	_hp_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	hp_row.add_child(_hp_bar)
+	# The bar over its white "lost" chunk (1.4.1, C6): the chunk drains HP_CHIP_DELAY after a hit.
+	var hp_stack := Control.new()
+	hp_stack.custom_minimum_size = HP_BAR
+	hp_stack.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hp_stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hp_row.add_child(hp_stack)
+	_hp_chip = UiStyle.bar(&"BarHpChip")
+	_hp_chip.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hp_stack.add_child(_hp_chip)
+	_hp_bar = UiStyle.bar(&"BarHpOver")
+	_hp_bar.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hp_stack.add_child(_hp_bar)
 	_hp_label = UiStyle.label(&"HudSmall")
 	_hp_label.custom_minimum_size = Vector2(64.0, 0.0)
 	hp_row.add_child(_hp_label)
@@ -147,7 +163,9 @@ func _ready() -> void:
 	_boss_bar = UiStyle.bar(&"BarBoss")
 	_boss_bar.custom_minimum_size = Vector2(400.0, 12.0)
 	_boss_box.add_child(_boss_bar)
+	_covers.append(_boss_box)
 	_formular_panel = UiStyle.panel(&"HudPanel")
+	_covers.append(_formular_panel)
 	_formular_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_formular_panel.visible = false
 	top.add_child(_formular_panel)
@@ -155,6 +173,7 @@ func _ready() -> void:
 	_formular_panel.add_child(_formular)
 	# The toast, in the upper middle.
 	_toast = UiStyle.label(&"HudNumber")
+	_covers.append(_toast)
 	_toast.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_toast.position = Vector2(-320.0, -168.0)
@@ -171,6 +190,7 @@ func _ready() -> void:
 	bottom.alignment = BoxContainer.ALIGNMENT_END
 	root.add_child(bottom)
 	_hint_panel = UiStyle.panel(&"HudPanel")
+	_covers.append(_hint_panel)
 	_hint_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_hint_panel.visible = false
 	bottom.add_child(_hint_panel)
@@ -192,10 +212,13 @@ func _ready() -> void:
 
 func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: BalanceData) -> void:
 	_hp_bar.max_value = state.max_hp
+	_hp_chip.max_value = state.max_hp
+	if state.hp < _hp_target - 0.01:
+		_chip_wait = HP_CHIP_DELAY
 	_hp_target = state.hp
 	_hp_label.text = "%d/%d" % [ceili(state.hp), roundi(state.max_hp)]
 	_heart.warn = state.hp < state.max_hp * 0.3
-	_hp_bar.theme_type_variation = &"BarBoss" if _heart.warn else &"BarHp"
+	_hp_bar.theme_type_variation = &"BarDangerOver" if _heart.warn else &"BarHpOver"
 	_kruegerl.fill = Formulas.level_progress(state.xp, balance)
 	_level_label.text = tr("HUD_LEVEL") % state.level
 	_gold_label.text = str(state.build.gold) if state.build != null else "0"
@@ -244,7 +267,9 @@ func show_wirt_marker(camera: Camera3D, target: Vector3, distance: float) -> voi
 	if camera == null or not is_finite(distance) or _knodl_tier_index < 0:
 		_wirt_marker.visible = false
 		return
-	_place(_wirt_marker, camera, target + Vector3(0.0, 6.5, 0.0), tr("HUD_WIRT_MARKER") % roundi(distance), "accent")
+	# The reward the Knödl would fetch here, so keeping or cashing in is a visible choice (1.4.1, A4).
+	_place(_wirt_marker, camera, target + Vector3(0.0, 6.5, 0.0), tr("HUD_WIRT_MARKER_TIER") % [tr("TIER_%d" % _knodl_tier_index),
+			tr("WIRT_REWARD_%d" % _knodl_tier_index), roundi(distance)], "accent")
 
 
 func hide_wirt_marker() -> void:
@@ -325,6 +350,18 @@ func toast(text: String, seconds: float = TOAST_SECONDS) -> void:
 		_toast_tween.tween_property(_toast, "modulate:a", 1.0, 0.15)
 
 
+## Screen areas the HUD draws on (corner panels, the boss bar, the banner, the hint line): an enemy
+## line behind one fades instead of showing through the see-through panel (1.4.1, B1 / B2).
+func covered_rects() -> Array[Rect2]:
+	var out: Array[Rect2] = []
+	if not _root.visible:
+		return out
+	for node: Control in _covers:
+		if node.is_visible_in_tree() and node.modulate.a > 0.05:
+			out.append(node.get_global_rect().grow(COVER_MARGIN))
+	return out
+
+
 ## Steps back (or comes back) at once, when a panel opened outside the usual frame order.
 func refresh_cover() -> void:
 	_root.visible = not covered.call()
@@ -343,6 +380,10 @@ func _process(delta: float) -> void:
 		_intro.visible = _intro_timer > 0.0 and not InputDevice.is_touch()
 	var ease: float = clampf(delta / UiStyle.T_BAR * 4.0, 0.0, 1.0)
 	_hp_bar.value = lerpf(_hp_bar.value, _hp_target, ease)
+	_chip_wait -= delta
+	if _hp_chip.value < _hp_bar.value or _chip_wait <= 0.0:
+		_hp_chip.value = maxf(lerpf(_hp_chip.value, _hp_target, ease * 0.5), _hp_bar.value) \
+				if _hp_chip.value > _hp_bar.value else _hp_bar.value
 	if _boss_box.visible:
 		_boss_bar.value = lerpf(_boss_bar.value, _boss_target, ease)
 
@@ -364,6 +405,7 @@ func _place(pill: WorldMarker, camera: Camera3D, point: Vector3, text: String, t
 func _corner(root: Control, preset: Control.LayoutPreset, variation: StringName) -> PanelContainer:
 	var box: PanelContainer = UiStyle.panel(variation)
 	root.add_child(box)
+	_covers.append(box)
 	box.set_anchors_and_offsets_preset(preset, Control.PRESET_MODE_MINSIZE, int(EDGE))
 	match preset:
 		Control.PRESET_TOP_RIGHT:

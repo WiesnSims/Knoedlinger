@@ -32,6 +32,8 @@ signal run_start_received(setup: Dictionary)
 signal lobby_return_received
 ## Host: this client's run scene is loaded; gameplay messages flow to it from now on.
 signal peer_run_ready(peer_id: int)
+## The run waits until these players (peer ids) have loaded it; empty: it runs (1.4.1, B5).
+signal run_hold_received(missing: PackedInt32Array)
 signal snapshot_received(data: PackedByteArray)
 signal events_received(data: PackedByteArray)
 signal player_input_received(peer_id: int, data: PackedByteArray)
@@ -77,6 +79,8 @@ var local_profile: Dictionary = {}
 var _accepted: Array[int] = []
 # Host: peers whose run scene is loaded (gameplay goes to them).
 var _in_run: Array[int] = []
+# Host: the clients sent into this run that have not loaded it yet (start_run fills it).
+var _loading: Array[int] = []
 # Client: the host accepted our handshake.
 var _joined: bool = false
 var _hello_sent: bool = false
@@ -128,6 +132,11 @@ func is_session_ready() -> bool:
 ## Host: the clients playing the run (their run scene is loaded). Always empty in solo.
 func client_ids() -> Array[int]:
 	return _in_run.duplicate()
+
+
+## Host: the clients sent into the run from the room that are still loading it.
+func loading_ids() -> Array[int]:
+	return _loading.duplicate()
 
 
 ## Host: every client that passed the handshake (the room, loaded or not).
@@ -245,9 +254,11 @@ func start_run(setup: Dictionary) -> void:
 	if _relay != null:
 		_relay.send_control({"t": "start"})
 	_in_run.clear()
+	_loading.clear()
 	for peer: int in _accepted:
 		if _can_send(peer):
 			_rx_start.rpc_id(peer, setup)
+			_loading.append(peer)
 	run_start_received.emit(setup)
 
 
@@ -258,6 +269,7 @@ func back_to_lobby() -> void:
 	if _relay != null:
 		_relay.send_control({"t": "lobby"})
 	_in_run.clear()
+	_loading.clear()
 	for peer: int in _accepted:
 		if _can_send(peer):
 			_rx_lobby.rpc_id(peer)
@@ -268,6 +280,15 @@ func back_to_lobby() -> void:
 func send_run_ready() -> void:
 	if mode == Mode.CLIENT and _joined:
 		_rx_run_ready.rpc_id(HOST_ID)
+
+
+## Host: tells the clients in the run who it still waits for (empty: everyone is in, go).
+func send_run_hold(missing: PackedInt32Array) -> void:
+	if mode != Mode.HOST:
+		return
+	for peer: int in _in_run:
+		if _can_send(peer):
+			_rx_hold.rpc_id(peer, missing)
 
 
 ## Host: sends a player out of the room.
@@ -488,6 +509,7 @@ func _on_peer_disconnected(peer_id: int) -> void:
 		return
 	_accepted.erase(peer_id)
 	_in_run.erase(peer_id)
+	_loading.erase(peer_id)
 	profiles.erase(peer_id)
 	print("[NET] peer %d left" % peer_id)
 	for peer: int in _accepted:
@@ -580,6 +602,11 @@ func _rx_start(setup: Dictionary) -> void:
 
 
 @rpc("authority", "call_remote", "reliable")
+func _rx_hold(missing: PackedInt32Array) -> void:
+	run_hold_received.emit(missing)
+
+
+@rpc("authority", "call_remote", "reliable")
 func _rx_lobby() -> void:
 	lobby_return_received.emit()
 
@@ -590,6 +617,7 @@ func _rx_run_ready() -> void:
 	if mode != Mode.HOST or not _accepted.has(sender) or _in_run.has(sender):
 		return
 	_in_run.append(sender)
+	_loading.erase(sender)
 	print("[NET] peer %d is in the run" % sender)
 	peer_run_ready.emit(sender)
 

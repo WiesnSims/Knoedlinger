@@ -41,6 +41,14 @@ var stat_sure_footing: float = 0.0
 var downed: bool = false
 ## Choosing from the Speisekarte in co-op: stands still under a sign (host state).
 var choosing: bool = false
+## Co-op start: the run waits until every player has loaded it (1.4.1, B5); nobody moves yet.
+var waiting: bool = false
+## A hit (1.4.1, C6): the model squashes, then blinks for this long (the hurt cooldown); and a big hit's
+## push (m/s, flat), added to the walk and fading at KNOCK_DECAY per second.
+const HURT_BLINK: float = 0.5
+const KNOCK_DECAY: float = 8.0
+var _hurt_left: float = 0.0
+var _knock := Vector2.ZERO
 ## From the build (PlayerBuild stats): move speed factor, jump height bonus, extra jumps.
 var stat_speed: float = 1.0
 var stat_jump_height: float = 0.0
@@ -167,10 +175,11 @@ func teleport(where: Vector3) -> void:
 	reset_physics_interpolation()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	# Knocked down: lie on the ground (only the look turns, the body stays upright for Jolt).
 	var lying: float = PI * 0.5 if downed else 0.0
 	_look.rotation.x = lerpf(_look.rotation.x, lying, 0.2)
+	_show_hurt(delta)
 	# Solo pauses for the Speisekarte; the sign is for teammates (co-op runs on).
 	if note != "":
 		_sign.text = note
@@ -187,7 +196,7 @@ func _physics_process(delta: float) -> void:
 		rotation.y = lerp_angle(rotation.y, _remote_yaw, blend)
 		_update_motion(delta)
 		return
-	var stuck: bool = downed or choosing
+	var stuck: bool = downed or choosing or waiting
 	var move: Vector2 = Vector2.ZERO if stuck else _sample_move(delta)
 	_move = move
 	var on_floor: bool = is_on_floor()
@@ -203,9 +212,11 @@ func _physics_process(delta: float) -> void:
 	if on_floor and character != null and character.slope_speed > 0.0 and get_floor_normal().y < 0.99:
 		speed *= 1.0 + character.slope_speed
 	speed *= 1.0 + trot_bonus()
-	var horizontal: Vector2 = _steer(Vector2(velocity.x, velocity.z), move, speed, on_floor, delta)
-	velocity.x = horizontal.x
-	velocity.z = horizontal.y
+	# A big hit's push rides on top of the walk and fades on its own (the steering never fights it).
+	var horizontal: Vector2 = _steer(Vector2(velocity.x, velocity.z) - _knock, move, speed, on_floor, delta)
+	_knock = _knock.move_toward(Vector2.ZERO, _knock.length() * KNOCK_DECAY * delta + 0.01)
+	velocity.x = horizontal.x + _knock.x
+	velocity.z = horizontal.y + _knock.y
 	var held: bool = _jump_held()
 	var jump_pressed: bool = Input.is_action_just_pressed(&"jump") or (bot != null and _manual_timer <= 0.0 and bot.take_jump())
 	if jump_pressed and not stuck:
@@ -414,6 +425,29 @@ func _sample_move(delta: float) -> Vector2:
 	if bot != null:
 		return bot.sample(delta, global_position)
 	return Vector2.ZERO
+
+
+## A hit landed (every machine, from the HP it sees): squash, then blink while it cannot be hit again.
+func show_hit() -> void:
+	_hurt_left = HURT_BLINK
+
+
+## A big hit's knockback on the local player (the host decides; 1.4.1, C6): `push` in m/s, flat.
+func knock_back(push: Vector2) -> void:
+	if is_local and not downed:
+		_knock = push
+
+
+func _show_hurt(delta: float) -> void:
+	if _hurt_left <= 0.0:
+		return
+	_hurt_left = maxf(_hurt_left - delta, 0.0)
+	var since: float = HURT_BLINK - _hurt_left
+	var squash: float = 0.2 * maxf(1.0 - since / 0.15, 0.0)
+	_look.scale = Vector3(1.0 + squash * 0.5, 1.0 - squash, 1.0 + squash * 0.5)
+	# "Weniger Blitzen": the squash only.
+	var blinks: bool = not (Settings.persistent and Settings.get_bool(&"reduce_flashing"))
+	_look.visible = _hurt_left <= 0.0 or not blinks or since < 0.15 or fmod(since, 0.1) < 0.06
 
 
 func _build_look(local: bool) -> Node3D:
