@@ -2028,6 +2028,28 @@ the second tab.
     pulled from ~8 m (bigger than coins, not the whole screen). Gulasch stays as the big heal. Host-side
     like every loot; each heart heals the player who picks it up. Checks: autoplay knock-downs per run
     before/after (16–29 now), win rate.
+  - A4 (owner, 2026-11-07, from Claude's suggestion S6): **keeping a big Knödl pays off – hard hits,
+    above all on elites and bosses.**
+    - Seen: the Knödl does only 10–23 % of a run's damage in 1.4 autoplay, and the bot cashes in about
+      once per run. In code, Knödl contact damage is `knodl_contact_damage` (1.0) × speed × radius × the
+      sort's multiplier × (1 + `damage_bonus`), and `damage_bonus` is only the "trot" character trait:
+      the damage stat (Jagatee), Stammtisch damage and damage items do **not** reach the Knödl.
+    - Owner: not cashing in with a big Knödl should be very good and deal good damage, even more against
+      elites and bosses.
+    - Plan (starting values, tuned by measurement):
+      - The player's damage multiplier (stat, Stammtisch, items) also counts for the Knödl.
+      - Size pays more than linearly: from tier L on the radius counts stronger (e.g. radius^1.5 above
+        the L radius), so a kept XL Knödl hits clearly harder than two small ones.
+      - Elites take ×2 and bosses ×3 from Knödl contacts (`knodl_elite_mult`, `knodl_boss_mult` in
+        balance), with a heavy hit cue (sound, bigger damage number, small camera nudge). One hit on a
+        boss is capped (e.g. 4 % of its max HP) so a merged co-op Riesenknödl does not erase a boss in
+        two passes; the existing hit cooldown stays.
+      - The Wirtshaus marker shows the reward tier your Knödl has reached ("L → Kiste + Rerolls"), so the
+        choice keep / cash in is visible (the second half of S6).
+    - Co-op: Knödl damage is already host-side; the hit cue goes out with the existing hit events.
+    - Checks: unit tests for the formula (stat multiplier, size curve, elite/boss multiplier, boss cap);
+      autoplay before/after: the Knödl's share of damage (10–23 % now; target ~25–35 % when a big one is
+      kept), boss kill times, wins; `mp_test -Coop` (merged Knödl against the boss cap).
 - **Small changes (C):**
   - C1 (owner, 2026-11-06): **Krapfen-Kanone aims into the crowd.**
     - Owner first asked for the Krapfen to bounce between enemies; Claude pointed out that is exactly the
