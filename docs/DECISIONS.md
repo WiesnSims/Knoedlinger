@@ -2050,6 +2050,18 @@ the second tab.
     - Checks: unit tests for the formula (stat multiplier, size curve, elite/boss multiplier, boss cap);
       autoplay before/after: the Knödl's share of damage (10–23 % now; target ~25–35 % when a big one is
       kept), boss kill times, wins; `mp_test -Coop` (merged Knödl against the boss cap).
+  - A5 (owner, 2026-11-07, from Claude's suggestion S4): **mini-bosses knock players down too often.**
+    - Seen (1.4 autoplay): Der Sturm caused 15 of 45 knock-downs in one Heuriger run, the Lawine 5 on the
+      Gamskogl, the Oberkrampus up to 5 on the Kirtag (at 5:00, the first wall).
+    - In the data, no single hit is the problem: the bosses' marks warn 1.0–1.4 s (elites 0.7–1.1 s) and
+      hit for 14–26 of 100 HP. So the knock-downs come from hits in a row, body contact, or Der Sturm
+      pulling players in (`pull_speed` 5 m/s, radius 18 m) while its crowd keeps hitting.
+    - Plan: first the log names the cause per knock-down (which attack, body contact or crowd while
+      pulled; `downed_by` gets the attack id), then the culprit is softened, e.g. Der Sturm's pull on
+      players 5 → 3.5 m/s, a short grace after a boss hit (~0.6 s without boss damage), or gaps between
+      the Oberkrampus' attacks. Warnings stay Krampus red and readable; Grant levels keep their scaling.
+    - Checks: autoplay per map before/after (knock-downs by boss, wins; Heuriger, Gamskogl and Kirtag),
+      `mp_test -StartTime 595` (bosses on clients unchanged).
 - **Small changes (C):**
   - C1 (owner, 2026-11-06): **Krapfen-Kanone aims into the crowd.**
     - Owner first asked for the Krapfen to bounce between enemies; Claude pointed out that is exactly the
@@ -2071,5 +2083,18 @@ the second tab.
     play area. Wanted: smaller tiles, placed in the upper part of the screen (under the boss bar), about
     2.5 s for one item + 1.5 s per extra item (max ~6 s), and never over the middle of the screen where
     the player stands. `ui_shots` before/after at both sizes.
+  - C3 (owner, 2026-11-07, from S8): **setting "fewer effects".** Today Einstellungen only has "reduce
+    flashing"; with 1.4's proc items, sparks, hail and damage numbers crowd the screen by minute 10. New
+    options: "Schadenszahlen: alle / nur Krit / aus" and "Item-Effekte: voll / weniger" (fewer and fainter
+    proc VFX; hits and damage unchanged). Purely local display, so co-op is unaffected; saved in the
+    settings. Auto-quality may pick "weniger" on weak devices. `ui_shots settings,late` before/after.
+  - C4 (owner, 2026-11-07, from S12): **remind players to save their code.** Progress lives in the browser
+    (IndexedDB); clearing the cache wipes it, and the export code is only in Einstellungen → Spielstand.
+    After a big moment (first Knödlinger unlocked, then every 10 Aufträge) the main menu shows a small
+    note "Spielstand sichern?" with "Code kopieren" and "Nimma erinnern". Remembered in the save; never
+    during a run.
+  - C5 (owner, 2026-11-07, from S13): **"Neu!" on the patch list after an update.** The save remembers the
+    last version whose patch list was opened; while the game is newer, the menu's patch-list button gets
+    a small "Neu!" tag. First start on a fresh save shows no tag. Makes balance changes like A1 visible.
 - Taskboard for the owner: https://claude.ai/artifact/NUU2WXcPqcVtBSzAeXB3ww (mirrors these lists; updated
   in the same session as any change here).
