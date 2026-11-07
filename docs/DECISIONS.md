@@ -2096,6 +2096,25 @@ the second tab.
   - C5 (owner, 2026-11-07, from S13): **"Neu!" on the patch list after an update.** The save remembers the
     last version whose patch list was opened; while the game is newer, the menu's patch-list button gets
     a small "Neu!" tag. First start on a fresh save shows no tag. Makes balance changes like A1 visible.
+  - C6 (owner, 2026-11-07, after the 1.4.1 preview): **make it obvious when the player is hit.** Today a hit
+    plays only a quiet sound (−6 dB); below 30 % HP the heart icon warns and the character says "Heast!".
+    Nothing shows on the character or the screen. Owner asked: knockback on large attacks, otherwise a
+    screen effect? Claude's proposal (tiers scaled by the hit, small hits stay small so a crowd's chip
+    damage is not constant noise; waiting for the owner's OK):
+    - **Every hit:** the character flashes white, then blinks during the 0.5 s hurt cooldown; a thin
+      red glow on the screen edge, as strong as the damage; the lost chunk of the HP bar turns white and
+      drains after ~0.4 s; a louder hurt sound with varied pitch and a short grunt.
+    - **Big hit** (a mark, a boss, or ≥ 15 % of max HP): a stronger glow plus a marker on the screen edge
+      pointing to where it came from (hits from behind / off screen); a short camera shake (off with
+      "Bildschirm wackeln"); **knockback ~2–3 m** away from the source (gets you out of a boss's reach, see
+      A5); a heavier thud; a short gamepad rumble.
+    - **Low HP** (< 30 %): a slow pulsing edge glow and a heartbeat.
+    - Not: knockback on every hit (takes movement away, the genre's players hate it); hit-stop (dozens of
+      hits a minute, and co-op cannot freeze the world for one player).
+    - Krampus red is right here (danger to the player); "Weniger Blitzen" softens the flash and the glow.
+      Co-op: everything is local from the HP the client already gets; only the knockback needs a host →
+      player message (each player moves their own character), fine with the 1.4.1 version refusal.
+    - Checks: `ui_shots` of a hit and a big hit at both sizes, `mp_test -Coop` (a client knocked back).
 - Taskboard for the owner: https://claude.ai/artifact/NUU2WXcPqcVtBSzAeXB3ww (mirrors these lists; updated
   in the same session as any change here).
 
