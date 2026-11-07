@@ -2,10 +2,11 @@ class_name LootField
 extends Node3D
 ## Things lying around the Kirtag that a player picks up by walking over them: gold coins, chests
 ## (map chests cost gold, boss chests are free), the Stempel of the Formular quest, a Gulasch
-## that heals and Fassl (barrels) that the player or the Knödl smashes for coins. The host owns them and says who took what; clients mirror them from run events.
-## A few hundred at most, each kind drawn with one MultiMesh.
+## that heals, small Lebkuchenherzerl (1.4.1) and Fassl (barrels) that the player or the Knödl smashes for coins. The host owns them and says who took what; clients mirror them from run events.
+## A few hundred at most, each kind drawn with one MultiMesh. In co-op every player may open every map
+## chest once (1.4.1, A2): a chest the local player opened is `hidden` here but stays for the others.
 
-enum Kind { COIN, CHEST, BOSS_CHEST, STEMPEL, HEAL, FASSL }
+enum Kind { COIN, CHEST, BOSS_CHEST, STEMPEL, HEAL, FASSL, HEART }
 
 const CAPACITY: int = 512
 ## Transform 12 + instance colour 4 (always white; see EnemyRenderer for why colours are on).
@@ -40,6 +41,8 @@ var kinds := PackedByteArray()
 var xs := PackedFloat32Array()
 var zs := PackedFloat32Array()
 var values := PackedInt32Array()
+## 1 = the local player opened this chest already (not drawn, not offered); others still see it.
+var hidden := PackedByteArray()
 var count: int = 0
 
 var _ground: Heightfield
@@ -65,6 +68,8 @@ func setup(ground: Heightfield) -> void:
 		set(array, floats)
 	alive.resize(capacity)
 	alive.fill(0)
+	hidden.resize(capacity)
+	hidden.fill(0)
 	kinds.resize(capacity)
 	var material := MapBuilder.vertex_color_material()
 	for kind: int in Kind.size():
@@ -134,6 +139,13 @@ func remove(id: int) -> void:
 	count -= 1
 
 
+## The local player opened this chest: it goes from their view, not from the others'.
+func hide_opened(id: int) -> void:
+	var slot: int = _slot_of.get(id, -1)
+	if slot >= 0:
+		hidden[slot] = 1
+
+
 func has(id: int) -> bool:
 	return _slot_of.has(id)
 
@@ -166,7 +178,7 @@ func nearest(kind: int, x: float, z: float) -> int:
 	var best: int = -1
 	var best_sq: float = INF
 	for slot: int in capacity:
-		if alive[slot] == 0 or (kind >= 0 and kinds[slot] != kind):
+		if alive[slot] == 0 or hidden[slot] != 0 or (kind >= 0 and kinds[slot] != kind):
 			continue
 		var d_sq: float = (xs[slot] - x) * (xs[slot] - x) + (zs[slot] - z) * (zs[slot] - z)
 		if d_sq < best_sq:
@@ -184,11 +196,12 @@ func all_slots() -> PackedInt32Array:
 	return out
 
 
-## Coins drift toward a player standing close (Wanderkarte reach), so collecting feels snappy.
-func attract(x: float, z: float, reach: float, delta: float) -> void:
+## Coins (or another kind) drift toward a player standing close (Wanderkarte reach), so collecting
+## feels snappy.
+func attract(x: float, z: float, reach: float, delta: float, kind: Kind = Kind.COIN) -> void:
 	var reach_sq: float = reach * reach
 	for slot: int in capacity:
-		if alive[slot] == 0 or kinds[slot] != Kind.COIN:
+		if alive[slot] == 0 or kinds[slot] != kind:
 			continue
 		var dx: float = x - xs[slot]
 		var dz: float = z - zs[slot]
@@ -211,7 +224,7 @@ func draw(delta: float) -> void:
 		_buffers[kind] = PackedFloat32Array()
 	var beams: int = 0
 	for slot: int in capacity:
-		if alive[slot] == 0:
+		if alive[slot] == 0 or hidden[slot] != 0:
 			continue
 		var kind: int = kinds[slot]
 		var x: float = xs[slot]
@@ -229,6 +242,9 @@ func draw(delta: float) -> void:
 			Kind.HEAL:
 				spin = _time * 0.8
 				lift = 0.3
+			Kind.HEART:
+				spin = _time * 2.5 + slot
+				lift = 0.6 + sin(_time * 3.0 + slot) * 0.12
 		var c: float = cos(spin)
 		var s: float = sin(spin)
 		var buffer: PackedFloat32Array = buffers[kind]
@@ -280,6 +296,7 @@ func _place(id: int, kind: Kind, x: float, z: float, value: int) -> int:
 	for slot: int in capacity:
 		if alive[slot] == 0:
 			alive[slot] = 1
+			hidden[slot] = 0
 			ids[slot] = id
 			kinds[slot] = kind
 			xs[slot] = x
@@ -322,6 +339,14 @@ static func _mesh_for(kind: int) -> ArrayMesh:
 			parts.append(MeshFactory._part(MeshFactory._cylinder(0.42, 0.3, 0.3, 12), Transform3D(Basis(), Vector3(0.0, 0.15, 0.0)), Color(0.95, 0.95, 0.92)))
 			parts.append(MeshFactory._part(MeshFactory._cylinder(0.38, 0.38, 0.04, 12), Transform3D(Basis(), Vector3(0.0, 0.29, 0.0)), Color(0.55, 0.3, 0.15)))
 			parts.append(MeshFactory._part(MeshFactory._sphere(0.18), Transform3D(Basis(), Vector3(0.18, 0.35, 0.1)), Color(0.9, 0.72, 0.45)))
+		Kind.HEART:
+			# A small Lebkuchenherz standing up: two round lobes and a point, iced in white.
+			var ginger := Color(0.62, 0.36, 0.18)
+			var upright := Basis.from_euler(Vector3(PI / 2.0, 0.0, 0.0))
+			for x: float in [-0.13, 0.13]:
+				parts.append(MeshFactory._part(MeshFactory._cylinder(0.17, 0.17, 0.08, 10), Transform3D(upright, Vector3(x, 0.08, 0.0)), ginger))
+			parts.append(MeshFactory._part(MeshFactory._box(Vector3(0.26, 0.26, 0.08)), Transform3D(Basis.from_euler(Vector3(0.0, 0.0, PI / 4.0)), Vector3(0.0, -0.08, 0.0)), ginger))
+			parts.append(MeshFactory._part(MeshFactory._cylinder(0.07, 0.07, 0.1, 8), Transform3D(upright, Vector3(0.0, 0.02, 0.0)), Color(0.97, 0.95, 0.9)))
 		Kind.FASSL:
 			# A wine barrel on end with two iron hoops and a gold coin on the lid.
 			parts.append(MeshFactory._part(MeshFactory._cylinder(0.5, 0.42, 1.1, 12), Transform3D(Basis(), Vector3(0.0, 0.55, 0.0)), wood.lightened(0.1)))

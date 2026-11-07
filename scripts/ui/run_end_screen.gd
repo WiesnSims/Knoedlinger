@@ -6,7 +6,8 @@ extends CanvasLayer
 ## the final build beside it. In solo "Nochmal!" starts a new run; online the host decides (M6).
 ## Schilling and the 25 % Knödl payout are saved from M4 on. A second tab, the Run-Abrechnung (1.4
 ## task 5.4), bills the damage: per weapon, the Knödl and the extras (share and kills), and what
-## knocked the player down most often. Left / Right (LB / RB) switch the tabs.
+## knocked the player down most often. Left / Right (LB / RB) switch the tabs. A long list (many
+## items, many Aufträge) scrolls inside the panel, so the buttons below always stay on screen (1.4.1, B4).
 
 signal again_pressed
 signal menu_pressed
@@ -14,6 +15,9 @@ signal menu_pressed
 const WIDTH: float = 400.0
 ## Milliseconds before the pad's A / B count on this screen.
 const PAD_ARM_MS: int = 1000
+## Space kept free above and below the panel; the pad / arrow keys scroll the list this far per press.
+const SCREEN_MARGIN: float = 32.0
+const SCROLL_STEP: float = 48.0
 ## Summary key, label key, how to show it ("time_past": a time, only shown when there was any).
 const ROWS: Array = [
 	["time", "END_STAT_TIME", "time"], ["overtime", "END_STAT_OVERTIME", "time_past"],
@@ -42,6 +46,10 @@ var _inventory: InventoryPanel
 var _again: ActionPill
 var _shown_ms: int = 0
 var _menu: ActionPill
+var _panel: PanelContainer
+## The numbers, the Run-Abrechnung and the rewards scroll; the heading, tabs and buttons do not.
+var _scroll: ScrollContainer
+var _body: VBoxContainer
 
 
 func _ready() -> void:
@@ -58,12 +66,12 @@ func _ready() -> void:
 	_shown.add_child(shade)
 	var row := UiStyle.hbox(&"Row32")
 	UiStyle.centred(_shown).add_child(row)
-	var panel: PanelContainer = UiStyle.panel()
-	panel.custom_minimum_size = Vector2(WIDTH, 0.0)
-	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	row.add_child(panel)
+	_panel = UiStyle.panel()
+	_panel.custom_minimum_size = Vector2(WIDTH, 0.0)
+	_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(_panel)
 	var column := UiStyle.vbox(&"Gap24")
-	panel.add_child(column)
+	_panel.add_child(column)
 	var heading := UiStyle.vbox(&"Tight")
 	column.add_child(heading)
 	_title = UiStyle.label(&"LabelTitle")
@@ -86,11 +94,17 @@ func _ready() -> void:
 	_grid = GridContainer.new()
 	_grid.columns = 2
 	_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	column.add_child(_grid)
+	_scroll = ScrollContainer.new()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	column.add_child(_scroll)
+	_body = UiStyle.vbox(&"Gap24")
+	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_scroll.add_child(_body)
+	_body.add_child(_grid)
 	_bill = UiStyle.vbox()
-	column.add_child(_bill)
+	_body.add_child(_bill)
 	_reward_box = UiStyle.vbox(&"Tight")
-	column.add_child(_reward_box)
+	_body.add_child(_reward_box)
 	_again = ActionPill.new("Enter", &"ui_accept")
 	_again.set_label(tr("END_AGAIN"))
 	_again.pressed.connect(func() -> void: again_pressed.emit())
@@ -101,9 +115,10 @@ func _ready() -> void:
 	_menu.set_label(tr("END_MENU"))
 	_menu.pressed.connect(func() -> void: menu_pressed.emit())
 	buttons.add_child(_menu)
-	_inventory = InventoryPanel.new()
+	_inventory = InventoryPanel.new(false, true)
 	row.add_child(_inventory)
 	visible = false
+	get_viewport().size_changed.connect(_fit_scroll)
 
 
 ## `summary` is RunWorld's run summary of the local player; `build` and `balance` show the build.
@@ -205,6 +220,18 @@ func _even_tabs() -> void:
 	_grid.custom_minimum_size.y = height
 	_bill.custom_minimum_size.y = height
 	_show_bill(was_bill)
+	_fit_scroll()
+
+
+## The scrolling part is as tall as its content, but never so tall that the panel leaves the screen.
+func _fit_scroll() -> void:
+	if _scroll == null or not visible:
+		return
+	_scroll.custom_minimum_size.y = 0.0
+	var fixed: float = _panel.get_combined_minimum_size().y
+	var room: float = get_viewport().get_visible_rect().size.y - 2.0 * SCREEN_MARGIN - fixed
+	_scroll.custom_minimum_size.y = clampf(_body.get_combined_minimum_size().y, 0.0, maxf(room, SCROLL_STEP))
+	_scroll.scroll_vertical = 0
 
 
 ## The Run-Abrechnung from the summary's damage_by_source / kills_by_source / downed_by.
@@ -288,6 +315,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"shoulder_left") or event.is_action_pressed(&"shoulder_right"):
 		get_viewport().set_input_as_handled()
 		_show_bill(event.is_action_pressed(&"shoulder_right"))
+		return
+	if event.is_action_pressed(&"ui_up", true) or event.is_action_pressed(&"ui_down", true):
+		get_viewport().set_input_as_handled()
+		_scroll.scroll_vertical += roundi(SCROLL_STEP * (1.0 if event.is_action_pressed(&"ui_down", true) else -1.0))
 		return
 	var key: InputEventKey = event as InputEventKey
 	var pad: InputEventJoypadButton = event as InputEventJoypadButton

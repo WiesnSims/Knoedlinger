@@ -105,7 +105,11 @@ TOAST_MAHLZEIT,Mahlzeit!
 TOAST_SPERRSTUND,Sperrstund'! Gezählt is – jetzt kommen d' Stammgast-Geister. Nachspielzeit!
 NOTICE_0,Des is ja nur a Bröserl! (Knödl z'klein)
 NOTICE_1,Do hamma heut scho gessn.
-HUD_WIRT_MARKER,Wirtshaus · %d m
+HUD_WIRT_MARKER_TIER,Wirtshaus · %s → %s · %d m
+WIRT_REWARD_0,Gold
+WIRT_REWARD_1,a Kistl
+WIRT_REWARD_2,Kistl + Nochmal
+WIRT_REWARD_3,Evolutions-Kistl
 SIGN_BACK_SOON,Bin glei wieder da
 END_AGAIN,Nochmal!
 ENEMY_PERCHTE,Perchte
@@ -127,6 +131,7 @@ BOSS_HOFRAT_DIENSTWEG,Den Dienstweg einhalten!
 TOAST_HOFRAT_FORCED,Da Hofrat wartet ned länger – er kummt raus!
 TOAST_FORMULAR,"A Formular! Drei Stempel finden, dann geht's Tor beim Gemeindeamt auf."
 TOAST_GATE_OPEN,Formular komplett! Ab zum Gemeindeamt!
+TOAST_LATE_CHESTS,"Neue Kistln am Platz! Schau, wo's leuchtet."
 TOAST_STEMPEL_1,Stempel 1 von 3!
 TOAST_STEMPEL_2,Stempel 2 von 3!
 TOAST_STEMPEL_3,Stempel 3 von 3 – erledigt!
@@ -772,6 +777,9 @@ COOP_LEAVE,Gehen
 COOP_ERR_FULL,Da Tisch is scho voll.
 COOP_ERR_STARTED,De san scho beim Essen. Wart auf die nächste Runde.
 COOP_ERR_NO_ROOM,Den Tisch gibt's ned.
+COOP_WAITING,Warten auf %s …
+COOP_WAITING_ANY,Warten auf die andern …
+COOP_WAITING_SOMEONE,an Knödlinger
 COOP_ERR_HOST_LEFT,Da Wirt is hoamgangen.
 COOP_ERR_KICKED,Du bist aussegschmissn wordn.
 COOP_ERR_GAME,Des is a anders Spü.
@@ -1314,3 +1322,10 @@ PATCH_1_4_0_18,"26 neue Gegenstände, die was Eigenes können: einfrieren, anzü
 PATCH_1_4_0_19,"Gegenstände sagen jetzt genau, was sie können: in der Truhe, auf der Speisekarte und im Almanach. Eingfrorene Gegner sind blau, brennende orange."
 PATCH_1_4_0_20,"Pause und Tab zeigen dein Inventar: zeig auf a Feld und du siehst Schaden, Angriffe pro Sekunde und was die Waffe in diesem Lauf wirklich gmacht hat."
 PATCH_1_4_0_21,Neue Einstellung „Knödl folgt brav“: dein Knödl rollt von selber zu den Bröseln. Rüstung schützt mehr. 30 neue Aufträge.
+PATCH_1_4_1_01,"Speisekarte: Springen (Leertaste), Enter und Gehen nehmen keine Karte mehr. Nur 1–4, Klick, Tippen oder A, und erst a halbe Sekunde nach dem Aufgehn."
+PATCH_1_4_1_02,"Familienausflug: Die Runde fangt erst an, wenn olle gladen ham („Warten auf …“). Wer nach 45 Sekunden ned da is, bleibt draußen."
+PATCH_1_4_1_03,"Der Endbildschirm scrollt, wenn die Liste lang wird: die Knöpfe unten bleiben immer erreichbar."
+PATCH_1_4_1_04,"Was im Kistl war, zeigt sich jetzt kleiner, weiter oben und nur kurz (2,5 Sekunden, länger bei mehr Sachen)."
+PATCH_1_4_1_05,"A großes Knödl, das du behältst, haut jetzt richtig zu: dein Schaden zählt fürs Knödl, ab Größe L wird's viel stärker, Elite-Gegner kriegen doppelt, Bosse dreifach. Der Wirtshaus-Pfeil zeigt, was dein Knödl grad wert wär."
+PATCH_1_4_1_06,"Ab 10:00 kommen neue Kistln dazu (im Familienausflug mehr). Zu zweit kann jeder jedes Kistl aufmachen, zu seinem eigenen Preis. Wer eh scho gnua Gold hat, findet weniger Münzen."
+PATCH_1_4_1_07,"Neu: kleine Lebkuchenherzerl (+5 HP). Je weniger HP du hast, desto öfter fallen's, und sie fliegen dir von weit her zu."

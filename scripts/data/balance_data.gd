@@ -118,6 +118,14 @@ extends Resource
 @export var knodl_min_hit_speed: float = 1.5
 ## Seconds before the Knödl can hurt the same enemy again.
 @export var knodl_hit_cooldown: float = 0.3
+## 1.4.1 (A4): a big kept Knödl hits hard. Above the tier-L radius the radius counts to this power
+## (radius_L * (radius / radius_L) ^ p), so an XL Knödl hits about twice as hard as an L one.
+@export var knodl_big_exponent: float = 2.5
+## Knödl contacts on elites and bosses count this many times; one hit takes at most this share of a
+## boss's max HP, so a merged co-op Riesenknödl does not erase a boss in two passes.
+@export var knodl_elite_mult: float = 2.0
+@export var knodl_boss_mult: float = 3.0
+@export var knodl_boss_hit_cap: float = 0.04
 ## Knockback speed per metre of radius per (m/s) of Knödl speed, capped.
 @export var knodl_knockback: float = 0.9
 @export var knodl_max_knockback: float = 14.0
@@ -395,12 +403,20 @@ extends Resource
 ## Every map chest a player buys makes their next one this much dearer (times; free chests do not count).
 @export var map_chest_price_growth: float = 1.22
 @export var map_chest_items: int = 1
+## 1.4.1 (A2): a second batch of map chests at this time, more per extra player, at free chest spots.
+@export var map_chest_late_time: float = 600.0
+@export var map_chest_late_count: int = 5
+@export var map_chest_late_per_player: int = 2
 @export var chest_pickup_radius: float = 2.0
 ## Gold per coin, plus this much for every minute on the clock (rounded); any kill drops a coin with this
 ## chance (elites and bosses drop theirs for sure).
 @export var coin_value: int = 1
 @export var coin_value_per_minute: float = 0.33
 @export var coin_drop_chance: float = 0.01
+## 1.4.1 (A2): a player whose gold already pays for their next map chest this many times over gets kill
+## coins at this share of the chance (elite, boss and Fassl coins unchanged; the closest player counts).
+@export var coin_rich_factor: float = 2.0
+@export var coin_rich_mult: float = 0.3
 ## No new kill coins while this many loot items lie around (boss chests and Stempel always find room).
 @export var coin_loot_cap: int = 400
 ## Fassl: barrels the player or the Knödl smashes for coins. This many stand around the players
@@ -419,6 +435,13 @@ extends Resource
 ## A Gulasch drops with this chance per kill and heals this much.
 @export var heal_drop_chance: float = 0.0015
 @export var heal_amount: float = 35.0
+## 1.4.1 (A3): Lebkuchenherzerl, small hearts. Per kill one drops with heart_drop_chance times how much
+## HP the closest player is missing (nothing at full HP, the full chance from heart_full_below of their
+## max HP down); it heals heart_amount and flies to a hurt player from heart_magnet_range metres.
+@export var heart_drop_chance: float = 0.02
+@export var heart_full_below: float = 0.4
+@export var heart_amount: float = 5.0
+@export var heart_magnet_range: float = 8.0
 
 @export_group("Item effects (1.4)")
 ## Most item procs one frame handles (all players) and most proc effects it shows.
@@ -547,6 +570,9 @@ extends Resource
 ## Degrees the camera rolls at full sway (Jagatee), and how fast it sways.
 @export var camera_wobble_degrees: float = 2.5
 @export var camera_wobble_speed: float = 0.9
+## The jolt of a heavy Knödl hit (1.4.1, A4): degrees at full strength, and how fast it fades (1/s).
+@export var camera_nudge_degrees: float = 1.6
+@export var camera_nudge_fade: float = 5.0
 
 @export_group("Quality")
 ## QualityScaler (GAME-DESIGN.md, performance item 6), per level Hoch / Mittel / Niedrig.

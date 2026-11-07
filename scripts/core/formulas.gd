@@ -11,11 +11,28 @@ static func knodl_radius(mass: float, balance: BalanceData) -> float:
 	return minf(grown, balance.knodl_max_radius)
 
 
-## Damage of one Knödl contact: base * speed * radius, nothing below the minimum speed.
+## Damage of one Knödl contact: base * speed * hit radius, nothing below the minimum speed.
 static func knodl_contact_damage(speed: float, radius: float, balance: BalanceData, sort_mult: float = 1.0) -> float:
 	if speed < balance.knodl_min_hit_speed:
 		return 0.0
-	return balance.knodl_contact_damage * speed * radius * sort_mult
+	return balance.knodl_contact_damage * speed * knodl_hit_radius(radius, balance) * sort_mult
+
+
+## The radius a Knödl hits with: its own up to the tier-L size, then growing faster (1.4.1, A4).
+static func knodl_hit_radius(radius: float, balance: BalanceData) -> float:
+	if balance.wirtshaus_tier_mass.size() < 3:
+		return radius
+	var big: float = knodl_radius(balance.wirtshaus_tier_mass[2], balance)
+	if radius <= big or big <= 0.0:
+		return radius
+	return big * pow(radius / big, balance.knodl_big_exponent)
+
+
+## One Knödl contact on an elite or a boss: more, and on a boss at most a share of its max HP.
+static func knodl_heavy_damage(damage: float, boss: bool, max_hp: float, balance: BalanceData) -> float:
+	if boss:
+		return minf(damage * balance.knodl_boss_mult, max_hp * balance.knodl_boss_hit_cap)
+	return damage * balance.knodl_elite_mult
 
 
 ## How much of their speed a player keeps while dragging a Knödl of this radius.
@@ -141,6 +158,15 @@ static func weapon_dps(owned: PlayerBuild.OwnedWeapon, build: PlayerBuild, balan
 ## What a map chest costs after `bought` paid ones: base × growth^bought (free chests do not count).
 static func chest_price(base: int, bought: int, balance: BalanceData) -> int:
 	return roundi(base * pow(maxf(balance.map_chest_price_growth, 1.0), maxi(bought, 0)))
+
+
+## A kill's chance to drop a Lebkuchenherzerl for a player at this HP (1.4.1, A3): nothing at full HP,
+## rising with the HP they miss, the full heart_drop_chance from heart_full_below of max HP down.
+static func heart_chance(hp: float, max_hp: float, balance: BalanceData) -> float:
+	if max_hp <= 0.0 or hp >= max_hp:
+		return 0.0
+	var missing: float = (1.0 - hp / max_hp) / maxf(1.0 - balance.heart_full_below, 0.001)
+	return balance.heart_drop_chance * clampf(missing, 0.0, 1.0)
 
 
 ## Gold in one coin at a run time: balance.coin_value plus coin_value_per_minute for every minute.

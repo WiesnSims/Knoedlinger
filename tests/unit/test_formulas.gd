@@ -52,8 +52,8 @@ func test_knodl_radius_is_capped() -> void:
 
 func test_contact_damage_is_base_times_speed_times_radius() -> void:
 	assert_eq(Formulas.knodl_contact_damage(balance.knodl_min_hit_speed * 0.5, 1.0, balance), 0.0)
-	assert_almost_eq(Formulas.knodl_contact_damage(10.0, 2.0, balance), balance.knodl_contact_damage * 20.0, 0.0001)
-	assert_almost_eq(Formulas.knodl_contact_damage(10.0, 2.0, balance, 1.4), balance.knodl_contact_damage * 28.0, 0.0001)
+	assert_almost_eq(Formulas.knodl_contact_damage(10.0, 0.8, balance), balance.knodl_contact_damage * 8.0, 0.0001)
+	assert_almost_eq(Formulas.knodl_contact_damage(10.0, 0.8, balance, 1.4), balance.knodl_contact_damage * 11.2, 0.0001)
 
 
 func test_a_big_knodl_slows_the_player_but_not_below_the_floor() -> void:

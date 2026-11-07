@@ -244,7 +244,9 @@ func show_wirt_marker(camera: Camera3D, target: Vector3, distance: float) -> voi
 	if camera == null or not is_finite(distance) or _knodl_tier_index < 0:
 		_wirt_marker.visible = false
 		return
-	_place(_wirt_marker, camera, target + Vector3(0.0, 6.5, 0.0), tr("HUD_WIRT_MARKER") % roundi(distance), "accent")
+	# The reward the Knödl would fetch here, so keeping or cashing in is a visible choice (1.4.1, A4).
+	_place(_wirt_marker, camera, target + Vector3(0.0, 6.5, 0.0), tr("HUD_WIRT_MARKER_TIER") % [tr("TIER_%d" % _knodl_tier_index),
+			tr("WIRT_REWARD_%d" % _knodl_tier_index), roundi(distance)], "accent")
 
 
 func hide_wirt_marker() -> void:

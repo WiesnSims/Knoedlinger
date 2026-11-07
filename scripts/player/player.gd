@@ -41,6 +41,8 @@ var stat_sure_footing: float = 0.0
 var downed: bool = false
 ## Choosing from the Speisekarte in co-op: stands still under a sign (host state).
 var choosing: bool = false
+## Co-op start: the run waits until every player has loaded it (1.4.1, B5); nobody moves yet.
+var waiting: bool = false
 ## From the build (PlayerBuild stats): move speed factor, jump height bonus, extra jumps.
 var stat_speed: float = 1.0
 var stat_jump_height: float = 0.0
@@ -187,7 +189,7 @@ func _physics_process(delta: float) -> void:
 		rotation.y = lerp_angle(rotation.y, _remote_yaw, blend)
 		_update_motion(delta)
 		return
-	var stuck: bool = downed or choosing
+	var stuck: bool = downed or choosing or waiting
 	var move: Vector2 = Vector2.ZERO if stuck else _sample_move(delta)
 	_move = move
 	var on_floor: bool = is_on_floor()
