@@ -16,6 +16,7 @@ const EDGE: float = 16.0
 ## Pixels around a HUD panel in which an enemy line still counts as behind it (covered_rects).
 const COVER_MARGIN: float = 48.0
 const HP_BAR := Vector2(176.0, 16.0)
+const HP_CHIP_DELAY: float = 0.4
 
 var _hp_bar: ProgressBar
 var _hp_label: Label
@@ -45,6 +46,9 @@ var _toast_timer: float = 0.0
 var _toast_tween: Tween
 var _intro_timer: float = INTRO_SECONDS
 var _hp_target: float = 0.0
+var _hp_chip: ProgressBar
+## Seconds until the white chunk starts to drain (a new hit restarts it).
+var _chip_wait: float = 0.0
 var _boss_target: float = 0.0
 var _knodl_tier_index: int = -1
 ## Panels an enemy line must not show through (covered_rects).
@@ -81,10 +85,18 @@ func _ready() -> void:
 	left.add_child(hp_row)
 	_heart = HudGlyph.new(HudGlyph.Kind.HEART, 24.0)
 	hp_row.add_child(_heart)
-	_hp_bar = UiStyle.bar(&"BarHp")
-	_hp_bar.custom_minimum_size = HP_BAR
-	_hp_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	hp_row.add_child(_hp_bar)
+	# The bar over its white "lost" chunk (1.4.1, C6): the chunk drains HP_CHIP_DELAY after a hit.
+	var hp_stack := Control.new()
+	hp_stack.custom_minimum_size = HP_BAR
+	hp_stack.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hp_stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hp_row.add_child(hp_stack)
+	_hp_chip = UiStyle.bar(&"BarHpChip")
+	_hp_chip.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hp_stack.add_child(_hp_chip)
+	_hp_bar = UiStyle.bar(&"BarHpOver")
+	_hp_bar.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hp_stack.add_child(_hp_bar)
 	_hp_label = UiStyle.label(&"HudSmall")
 	_hp_label.custom_minimum_size = Vector2(64.0, 0.0)
 	hp_row.add_child(_hp_label)
@@ -200,10 +212,13 @@ func _ready() -> void:
 
 func show_state(state: PlayerState, knodl: Knodl, run_time: float, balance: BalanceData) -> void:
 	_hp_bar.max_value = state.max_hp
+	_hp_chip.max_value = state.max_hp
+	if state.hp < _hp_target - 0.01:
+		_chip_wait = HP_CHIP_DELAY
 	_hp_target = state.hp
 	_hp_label.text = "%d/%d" % [ceili(state.hp), roundi(state.max_hp)]
 	_heart.warn = state.hp < state.max_hp * 0.3
-	_hp_bar.theme_type_variation = &"BarBoss" if _heart.warn else &"BarHp"
+	_hp_bar.theme_type_variation = &"BarDangerOver" if _heart.warn else &"BarHpOver"
 	_kruegerl.fill = Formulas.level_progress(state.xp, balance)
 	_level_label.text = tr("HUD_LEVEL") % state.level
 	_gold_label.text = str(state.build.gold) if state.build != null else "0"
@@ -365,6 +380,10 @@ func _process(delta: float) -> void:
 		_intro.visible = _intro_timer > 0.0 and not InputDevice.is_touch()
 	var ease: float = clampf(delta / UiStyle.T_BAR * 4.0, 0.0, 1.0)
 	_hp_bar.value = lerpf(_hp_bar.value, _hp_target, ease)
+	_chip_wait -= delta
+	if _hp_chip.value < _hp_bar.value or _chip_wait <= 0.0:
+		_hp_chip.value = maxf(lerpf(_hp_chip.value, _hp_target, ease * 0.5), _hp_bar.value) \
+				if _hp_chip.value > _hp_bar.value else _hp_bar.value
 	if _boss_box.visible:
 		_boss_bar.value = lerpf(_boss_bar.value, _boss_target, ease)
 

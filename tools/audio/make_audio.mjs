@@ -517,6 +517,9 @@ const SFX = {
 	jump: () => { const o = new Sfx(0.15); sweep(o, 0, 260, 520, 0.12, 0.3, 'square'); return o; },
 	swing: () => { const o = new Sfx(0.16); whoosh(o, 0, 0.15, 0.4, 600, 2400); return o; },
 	hurt: () => { const o = new Sfx(0.22); sweep(o, 0, 330, 140, 0.2, 0.45, 'square'); noiseBurst(o, 0, 0.1, 0.3, 900, 1, 30); return o; },
+	// 1.4.1 (C6): a big hit (a mark, a boss): a low thud with a short "oof"; and the low-HP heartbeat.
+	hurt_big: () => { const o = new Sfx(0.45); sweep(o, 0, 130, 40, 0.38, 0.85); noiseBurst(o, 0, 0.18, 0.45, 320, 0.7, 16); sing(o, 0.03, 170, 0.15, 'o', 0.35); return o; },
+	heartbeat: () => { const o = new Sfx(0.42); sweep(o, 0, 72, 44, 0.1, 0.8); sweep(o, 0.19, 66, 42, 0.1, 0.6); return o; },
 	downed: () => {
 		const o = new Sfx(1.0);
 		['G4', 'E4', 'C4', 'G3'].forEach((n, k) => sweep(o, k * 0.18, freq(n), freq(n) * 0.97, 0.22, 0.4, 'square'));

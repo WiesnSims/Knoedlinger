@@ -11,6 +11,7 @@ extends RefCounted
 ##   LOOT    u16 id | u8 kind | f32 x | f32 z | u16 value
 ##   TAKEN   u16 id | s32 peer
 ##   OPENED  u16 id | s32 peer   (1.4.1: a map chest that player opened; it stays for the others)
+##   KNOCK   s32 peer | f32 x | f32 z   (1.4.1: a big hit pushes that player, m/s; they move themselves)
 ##   TOAST   u8 length | key (ASCII)
 ##   BOSS    u8 boss | u8 state | u16 slot
 ##   BUS     f32 x | f32 z | f32 yaw
@@ -23,10 +24,10 @@ extends RefCounted
 ##   DAMAGE  s32 peer | u8 source kind | u8 index | f32 total | u16 procs   (1.4: a player's damage so far
 ##           by weapon, item, Knödl or extras, about once a second when it changed; DamageLedger)
 
-const VERSION: int = 6
+const VERSION: int = 7
 const MAX_EVENTS: int = 255
 
-enum Kind { HAZARD, LOOT, TAKEN, TOAST, BOSS, BUS, CUE, SAY, LOCK, SITE, DAMAGE, OPENED }
+enum Kind { HAZARD, LOOT, TAKEN, TOAST, BOSS, BUS, CUE, SAY, LOCK, SITE, DAMAGE, OPENED, KNOCK }
 enum BossState { ARRIVED, BEATEN }
 ## SPARK (1.4): a small pop where an item proc hit (chain, burst, execute, wisp).
 enum Cue { STEMPEL, CHEST, COIN, HEAL, GATE_OPEN, NO_GOLD, CASH_IN, HAZARD_HIT, BOSS_HIT, BUS_HORN, SHOCKWAVE, SPARK }
@@ -95,6 +96,14 @@ class Queue:
 		e.kind = Kind.OPENED
 		e.id = id
 		e.b = peer
+		events.append(e)
+
+	func knock(peer: int, x: float, z: float) -> void:
+		var e := Event.new()
+		e.kind = Kind.KNOCK
+		e.b = peer
+		e.x = x
+		e.z = z
 		events.append(e)
 
 	func toast(key: String) -> void:
@@ -250,6 +259,11 @@ static func encode(events: Array[Event]) -> PackedByteArray:
 				data.encode_u8(o + 4, e.b & 0xFF)
 				data.encode_float(o + 5, e.x)
 				data.encode_float(o + 9, e.z)
+			Kind.KNOCK:
+				data.resize(o + 13)
+				data.encode_s32(o + 1, e.b)
+				data.encode_float(o + 5, e.x)
+				data.encode_float(o + 9, e.z)
 			Kind.DAMAGE:
 				data.resize(o + 13)
 				data.encode_s32(o + 1, e.b)
@@ -329,6 +343,10 @@ static func decode(data: PackedByteArray) -> Array[Event]:
 				e.b = data.decode_u8(o + 4)
 				e.x = data.decode_float(o + 5)
 				e.z = data.decode_float(o + 9)
+			Kind.KNOCK:
+				e.b = data.decode_s32(o + 1)
+				e.x = data.decode_float(o + 5)
+				e.z = data.decode_float(o + 9)
 			Kind.DAMAGE:
 				e.b = data.decode_s32(o + 1)
 				e.a = data.decode_u8(o + 5)
@@ -367,5 +385,7 @@ static func _size_of(kind: Kind, data: PackedByteArray, o: int) -> int:
 		Kind.LOCK:
 			return 6
 		Kind.SITE:
+			return 13
+		Kind.KNOCK:
 			return 13
 	return -1

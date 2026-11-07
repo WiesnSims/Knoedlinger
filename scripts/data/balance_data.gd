@@ -94,6 +94,10 @@ extends Resource
 ## 1.4.1 (A5): after a boss's hit (its body or a mark) the player takes no damage for this long instead
 ## of player_hurt_cooldown: time to get out of its reach before the boss or its crowd hits again.
 @export var boss_hit_grace: float = 1.1
+## 1.4.1 (C6): a big hit – a mark, a boss, or at least this share of max HP – pushes the player away from
+## where it came from at this speed (m/s, fading fast: about 2.5 m) and gets the heavy cues.
+@export var hit_big_share: float = 0.15
+@export var hit_knock_speed: float = 20.0
 ## M1 has no death screen yet: a player who drops to 0 HP is back at the spawn after this.
 @export var player_respawn_seconds: float = 3.0
 ## Brösel this close to the player fly to their Knödl (GAME-DESIGN.md: 1 m).

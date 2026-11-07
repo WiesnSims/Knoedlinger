@@ -186,6 +186,19 @@ func test_the_krapfen_lands_in_the_crowd_not_on_the_nearest() -> void:
 	assert_gt(aim.x, 0.9, "toward the bunch, away from the lone one")
 
 
+# --- C6: a big hit pushes the player who was hit ------------------------------------------------------
+
+func test_a_knockback_travels_to_the_player_it_hit() -> void:
+	var queue := RunEventCodec.Queue.new()
+	queue.knock(987654, 12.5, -15.0)
+	var back: Array = RunEventCodec.decode(RunEventCodec.encode(queue.take()))
+	assert_eq(back.size(), 1)
+	assert_eq(back[0].kind, RunEventCodec.Kind.KNOCK)
+	assert_eq(back[0].b, 987654)
+	assert_almost_eq(back[0].x, 12.5, 0.001)
+	assert_almost_eq(back[0].z, -15.0, 0.001)
+
+
 # --- C4 / C5: notes in the main menu --------------------------------------------------------------------
 
 func test_the_patch_list_is_new_after_an_update_until_opened() -> void:

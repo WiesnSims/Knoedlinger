@@ -41,6 +41,9 @@ $scenes = @(
     # on screen; the Run-Abrechnung too.
     @{ Id = 'endlong'; Query = "$common&start_time=891&items=amboss,amtsschimmel,bierdeckel,blitzableiter,distelstrauss,doppler,dreschflegel,edelweiss,federbett,feldstecher,gfrorns,gleitschirm,gluecksschwein,goldhaube,haferlschuhe,holundersaft,hosentraeger,irrlichter,jagdtrophaee,kachelofen,kirchenglocke,kirtagsbrezn,kracherl,kuckucksuhr,leberkaessemmel,lebkuchenherz,maibaumspitz,pfefferoni,rosenkranz,rucksack,sauerkraut,schiessbudenrose,sonntagsgwand,sparbuch,stallaterne,zuckerwatte"; At = '100,102'; Press = ',ArrowRight' },
     # 1.4.1 (C2): the bot with plenty of gold buys map chests; the smaller reveal under the top edge.
+    # 1.4.1 (C6): the bot at 9:58 without god mode gets hit: the edge glow, the blink, the white HP chunk.
+    @{ Id = 'hit'; Query = "$common&start_time=598"; At = '20,21,22,23' },
+    @{ Id = 'hitdrill'; Query = "$common&knodl_mass=160&god=1&hit_drill=1"; At = '24,24.15,24.3,24.6,25,25.3' },
     @{ Id = 'chest'; Query = "$common&gold=3000&god=1"; At = '30,32,34,36,38,40,42,44' },
     # 1.4: Der Standler right where the bot stands (it has gold and waits on his shop), then a Marterl
     # by the spawn (the bot prays at it: a Mutprobe with its rings).

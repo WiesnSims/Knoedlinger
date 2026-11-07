@@ -2214,3 +2214,25 @@ the second tab.
 - **Checks:** unit tests (254), web export, browser check (Edge, 500 enemies, 123 draw calls max), `mp_test
   -Clients 2 -SlowClient 6`, `-Clients 3 -Sites`, `-Clients 3 -Coop`, `-Clients 1 -StartTime 595`,
   `ui_shots` (endlong, chest, end, settings, menu, patches, hud, voices).
+- **C6 hit feedback (owner: "go with C6", built as proposed):**
+  - Every hit (seen from the HP each machine already gets): the character squashes for 0.15 s, then blinks
+    until the 0.5 s hurt cooldown ends, on every screen (teammates too; `Player.show_hit`; "Weniger
+    Blitzen": the squash only). No white material flash: a new material would compile its shader on the
+    first hit in the browser. The local player gets a red edge glow as strong as the hit (`HitFeedback`,
+    `shaders/hit_vignette.gdshader`, layer 9 under the HUD, hidden with it; drawn for its first 30 frames
+    so the shader compiles behind the loading screen), the HP bar's lost chunk turns white and drains
+    after 0.4 s (`BarHpChip` under `BarHpOver` / `BarDangerOver`, new theme variations), and the hurt
+    sound is louder (−6 → −3 dB, more pitch jitter).
+  - Big hit (a mark, a boss's body, or ≥ `hit_big_share` 15 % of max HP): the host pushes the player away
+    from the attacker at `hit_knock_speed` 20 m/s fading at 8/s (about 2.5 m; `Player.knock_back`, rides on
+    top of the steering). The host's own player is pushed directly; a client gets the new run event
+    `KNOCK` (peer, push; RunEventCodec VERSION 7) and moves itself, and the host skips its pose check for
+    that client for 0.7 s. The hit player also gets `hurt_big` (new synthesized thud with a short "oof",
+    `tools/audio/make_audio.mjs`), the camera jolt (`nudge`, off with "Bildschirm wackeln"), a bright arc
+    on the screen edge toward the attacker, and a short gamepad rumble. A knockback and its HP drop are
+    paired within 400 ms on every machine, whichever arrives first.
+  - Low HP (< 30 %): the edge pulses and a heartbeat (`heartbeat`, new) plays every 0.9 s.
+  - Test hook `hit_drill=1` (a pretend big hit every 2 s, no HP change), `ui_shots hit` / `hitdrill`; the host
+    logs `[RUN] knock peer <id>`. Checks: unit test (KNOCK round trip), `mp_test -Clients 2 -StartTime 595`
+    (3 knockbacks on clients, 0 rejected poses), `-Coop`, browser check, screenshots (the glow was first too
+    wide – it tinted a third of the picture – and now starts nearer the edge).

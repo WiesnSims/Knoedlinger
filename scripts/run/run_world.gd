@@ -207,6 +207,9 @@ var _panel_had_mouse: bool = false
 ## Shown until ShaderWarmup is through (not in headless runs).
 var _loading: LoadingScreen
 var _log_slow: bool = false
+## Test hook `hit_drill=1` (screenshots of C6): a pretend big hit on the local player every 2 s, from a
+## random side; no HP changes.
+var _hit_drill: float = -1.0
 ## The key the local player is stored under; a client only learns its real peer id once joined.
 var _local_key: int = 1
 var _respawn: bool = false
@@ -241,6 +244,22 @@ var _hazards_seen: int = 0
 var _voice_lines_received: int = 0
 var _gate_shown: int = -1
 var _last_hp: float = 0.0
+## Hit feedback (1.4.1, C6): the edge glow; when the last knockback / hurt / heavy cue reached the local
+## player (msec) and which way the knockback pushed; every player's HP as last seen (their blink);
+## host: until when a knocked-back client's pose may jump; the heartbeat's timer.
+var hit_fx: HitFeedback
+var _knock_ms: int = -10000
+var _knock_push := Vector2.ZERO
+var _hurt_ms: int = -10000
+var _heavy_ms: int = -10000
+var _seen_hp: Dictionary[int, float] = {}
+var _knock_grace: Dictionary[int, int] = {}
+var _heartbeat: float = 0.0
+## A knockback and the hurt it belongs to count together within this many msec.
+const HIT_PAIR_MS: int = 400
+## Low HP (share of max HP): pulse and heartbeat; seconds between two beats.
+const LOW_HP_SHARE: float = 0.3
+const HEARTBEAT_SECONDS: float = 0.9
 var _was_downed: bool = false
 var _sound_level: int = 0
 var _last_xp: float = 0.0
@@ -297,6 +316,7 @@ func _ready() -> void:
 	_bot = LaunchArgs.get_flag("bot", false) or _autoplay
 	_god = LaunchArgs.get_flag("god", false)
 	_log_slow = LaunchArgs.get_flag("log_slow", false)
+	_hit_drill = 2.0 if LaunchArgs.get_flag("hit_drill", false) else -1.0
 	_start_mass = LaunchArgs.get_float("knodl_mass", -1.0)
 	_respawn = LaunchArgs.get_flag("respawn", false) or _autoplay
 	balance = load("res://data/balance.tres")
@@ -416,6 +436,9 @@ func _ready() -> void:
 	pause.quit_pressed.connect(_quit_to_menu)
 	hud.covered = func() -> bool:
 		return speisekarte.is_shown() or inventory.is_open() or end_screen.visible or pause.is_open() or _loading != null
+	hit_fx = HitFeedback.new()
+	hit_fx.covered = hud.covered
+	add_child(hit_fx)
 	touch = TouchControls.new()
 	touch.name = "TouchControls"
 	touch.camera = camera
@@ -716,6 +739,10 @@ func _host_frame(delta: float) -> void:
 		if not _god and phase != Phase.ENDED and state.hurt(hit, balance):
 			on_downed(peers[t])
 		if state.hp < hp_before:
+			var at: Vector3 = players[peers[t]].global_position
+			if enemies.touch_type[t] >= 0 and (types[enemies.touch_type[t]].boss \
+					or hp_before - state.hp >= state.max_hp * balance.hit_big_share):
+				_knock(peers[t], _nearest_of_type(enemies.touch_type[t], at.x, at.z))
 			if enemies.touch_type[t] >= 0 and types[enemies.touch_type[t]].boss:
 				state.hurt_timer = maxf(state.hurt_timer, balance.boss_hit_grace)
 			_on_hurt(peers[t])
@@ -1465,6 +1492,10 @@ func _local_frame(delta: float) -> void:
 		player.choosing = peer_state.choosing
 		player.downed = peer_state.downed
 		player.waiting = _coop_wait
+		# Everyone's hit shows on their character, here too (C6).
+		if peer_state.hp < _seen_hp.get(peer, peer_state.hp) - 0.01 and not peer_state.downed:
+			player.show_hit()
+		_seen_hp[peer] = peer_state.hp
 		player.stat_speed = 1.0 + build.stat(&"move_speed")
 		player.stat_jump_height = build.stat(&"jump_height")
 		player.stat_extra_jumps = roundi(build.stat(&"extra_jumps"))
@@ -2085,7 +2116,8 @@ func _on_player_input(peer_id: int, data: PackedByteArray) -> void:
 	if player == null:
 		player = _spawn_player(peer_id, false)
 		player.teleport(message.position)
-	elif NetworkManager.is_host() and not _respawn_grace.has(peer_id) and not _pose_is_plausible(peer_id, player, message):
+	elif NetworkManager.is_host() and not _respawn_grace.has(peer_id) and Time.get_ticks_msec() > _knock_grace.get(peer_id, 0) \
+			and not _pose_is_plausible(peer_id, player, message):
 		_rejected_poses += 1
 		return
 	_last_pose_ms[peer_id] = Time.get_ticks_msec()
@@ -2703,6 +2735,81 @@ func _coin_chance(state: PlayerState) -> float:
 	return balance.coin_drop_chance
 
 
+## Host: a big hit pushes `peer` away from `from` (1.4.1, C6). The host's own player is pushed here; a
+## client gets a KNOCK event and moves itself, and its poses may jump for a moment.
+func _knock(peer: int, from: Vector2) -> void:
+	var player: Player = players.get(peer)
+	if player == null or states[peer].downed:
+		return
+	var away := Vector2(player.global_position.x - from.x, player.global_position.z - from.y)
+	if away.length_squared() < 0.01:
+		var facing: Vector3 = player.facing_direction()
+		away = -Vector2(facing.x, facing.z)
+	var push: Vector2 = away.normalized() * balance.hit_knock_speed
+	if peer == NetworkManager.local_id():
+		_on_local_knock(push)
+	else:
+		events.knock(peer, push.x, push.y)
+		_knock_grace[peer] = Time.get_ticks_msec() + 700
+		print("[RUN] knock peer %d t=%.1f" % [peer, run_time])
+
+
+## Every role: the local player was knocked back: move, and the heavy cues if the hurt came first.
+func _on_local_knock(push: Vector2) -> void:
+	var local: Player = players.get(NetworkManager.local_id())
+	if local != null:
+		local.knock_back(push)
+	_knock_ms = Time.get_ticks_msec()
+	_knock_push = push
+	if _knock_ms - _hurt_ms < HIT_PAIR_MS:
+		_heavy_cues()
+
+
+## Host: where the enemy of this type closest to (x, z) stands (the one that hit), or (x, z).
+func _nearest_of_type(type_index: int, x: float, z: float) -> Vector2:
+	var found: int = enemies.grid.query(x, z, 4.0)
+	var best := Vector2(x, z)
+	var best_sq: float = INF
+	for k: int in found:
+		var j: int = enemies.grid.results[k]
+		if enemies.alive[j] == 0 or enemies.type[j] != type_index:
+			continue
+		var d_sq: float = (enemies.pos_x[j] - x) * (enemies.pos_x[j] - x) + (enemies.pos_z[j] - z) * (enemies.pos_z[j] - z)
+		if d_sq < best_sq:
+			best_sq = d_sq
+			best = Vector2(enemies.pos_x[j], enemies.pos_z[j])
+	return best
+
+
+## The local player's hit on screen: the glow (as strong as the hit), and for a big one the heavy cues.
+func _hit_cues(share: float) -> void:
+	_hurt_ms = Time.get_ticks_msec()
+	hit_fx.hit(share)
+	if share >= balance.hit_big_share or _hurt_ms - _knock_ms < HIT_PAIR_MS:
+		_heavy_cues()
+	else:
+		GameAudio.play(&"hurt", Vector3.INF, 0.15)
+
+
+## A big hit: the thud, a jolt, a bright arc on the side it came from, a short rumble (once per hit).
+func _heavy_cues() -> void:
+	var now: int = Time.get_ticks_msec()
+	if now - _heavy_ms < HIT_PAIR_MS:
+		return
+	_heavy_ms = now
+	GameAudio.play(&"hurt_big", Vector3.INF, 0.1)
+	camera.nudge(1.0)
+	if now - _knock_ms < HIT_PAIR_MS and _knock_push.length_squared() > 0.01:
+		# The push points away from the attacker; the arc shows where the attacker is, on screen.
+		var toward: Vector3 = -Vector3(_knock_push.x, 0.0, _knock_push.y).normalized()
+		var right: Vector3 = camera.global_basis.x
+		var ahead: Vector3 = -camera.global_basis.z
+		ahead.y = 0.0
+		hit_fx.hit(0.0, Vector2(toward.dot(right), -toward.dot(ahead.normalized())))
+	if InputDevice.is_pad() and not Input.get_connected_joypads().is_empty():
+		Input.start_joy_vibration(Input.get_connected_joypads()[0], 0.35, 0.65, 0.18)
+
+
 ## Host: what a body hit counts as on the knock-down list (1.4.1, A5): a boss's own body is
 ## "<boss>:contact", the crowd around a fighting boss "<enemy>@<boss>", anything else the enemy type.
 func _touch_cause(type_index: int, at: Vector3) -> StringName:
@@ -2757,6 +2864,7 @@ func _resolve_hazards() -> void:
 					if state.hurt(Formulas.hit_damage(attack.damage * grant.enemy_damage, state.build.stat(&"armor"), balance), balance):
 						on_downed(peer)
 					if state.hp < hp_before:
+						_knock(peer, Vector2(h.x, h.z))
 						if h.source >= 0 and types[enemies.type[h.source]].boss:
 							state.hurt_timer = maxf(state.hurt_timer, balance.boss_hit_grace)
 						procs.on_hurt(peer, hp_before - state.hp)
@@ -3158,6 +3266,9 @@ func _on_run_events(data: PackedByteArray) -> void:
 			RunEventCodec.Kind.OPENED:
 				if e.b == NetworkManager.local_id():
 					loot.hide_opened(e.id)
+			RunEventCodec.Kind.KNOCK:
+				if e.b == NetworkManager.local_id():
+					_on_local_knock(Vector2(e.x, e.z))
 			RunEventCodec.Kind.LOCK:
 				if e.a < stairs.feet.size():
 					hazards.add_slope(stairs.mark_foot(e.a), stairs.mark_top(e.a), stairs.widths[e.a] * 0.5, e.seconds)
@@ -3315,9 +3426,23 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 	# Sounds of the local player, from the state the host keeps.
 	if state != null:
 		if state.hp < _last_hp - 0.01 and not state.downed:
-			GameAudio.play(&"hurt")
-			if state.hp < state.max_hp * 0.3:
+			_hit_cues((_last_hp - state.hp) / maxf(state.max_hp, 1.0))
+			if state.hp < state.max_hp * LOW_HP_SHARE:
 				GameAudio.bark(&"heast")
+		if _hit_drill >= 0.0:
+			_hit_drill -= delta
+			if _hit_drill <= 0.0 and local != null:
+				_hit_drill = 2.0
+				local.show_hit()
+				_hit_cues(0.25)
+				_on_local_knock(Vector2.RIGHT.rotated(randf() * TAU) * balance.hit_knock_speed)
+		# Low HP: the edge pulses and the heart beats (1.4.1, C6).
+		var low: bool = state.hp < state.max_hp * LOW_HP_SHARE and not state.downed and phase == Phase.RUNNING
+		hit_fx.low_hp = low
+		_heartbeat -= delta
+		if low and _heartbeat <= 0.0:
+			_heartbeat = HEARTBEAT_SECONDS
+			GameAudio.play(&"heartbeat", Vector3.INF, 0.0)
 		if state.downed and not _was_downed:
 			GameAudio.play(&"downed")
 		if state.level > _sound_level and _sound_level > 0:
