@@ -2236,3 +2236,13 @@ the second tab.
     logs `[RUN] knock peer <id>`. Checks: unit test (KNOCK round trip), `mp_test -Clients 2 -StartTime 595`
     (3 knockbacks on clients, 0 rejected poses), `-Coop`, browser check, screenshots (the glow was first too
     wide – it tinted a third of the picture – and now starts nearer the edge).
+
+## 2026-11-07 – 1.4.1 released
+
+- **Owner: "approved! push to production".** `v1-4-1` merged into `main` (792a0ae, same tree as the checked
+  401171f; `main` had not moved since 1.4.0's release log). Version 1.4.1, patch note dated 07.11.2026.
+- **Production deploy of 1.4.1:** https://knoedlinger.pages.dev serves build 792a0ae (with the board
+  Functions). Live browser check (headless Edge, 500 enemies, bot, 60 s): 160 fps, p95 7.8 ms, at most 116
+  draw calls, no console errors; `/api/board` answers. Relay and D1 unchanged (the run-event changes travel
+  inside the game's own messages; 1.4.0 clients are refused by the version check).
+- Branch `v1-4-1` deleted (local and GitHub).
