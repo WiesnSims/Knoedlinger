@@ -3,7 +3,9 @@ extends Node3D
 ## behind the menu, the logo and the entries on the left, the chosen screen on the right. Entries:
 ## Spielen, Tageskarte (the daily run, 1.4), Stammtisch, Aufträge, Ehrentafel, Almanach, Einstellungen, "Was is neu?" (the patch list)
 ## and "Stammtisch aufmachen" (co-op: the CoopScreen room). On the very first start it asks for the player's name.
-## While no screen is open, the top of die Ehrentafel sits bottom right (BoardTop, 1.3.2).
+## While no screen is open, the top of die Ehrentafel sits bottom right (BoardTop, 1.3.2), and now and
+## then a note top right reminds the player to copy their save code (1.4.1, C4). After an update the
+## patch list's entry says "Neu!" until it is opened (C5).
 
 const BACKDROP_MAP: String = "res://data/maps/kirtag.tres"
 const RUN_SCENE: String = "res://scenes/run/run_world.tscn"
@@ -16,6 +18,7 @@ const MARGIN: float = 64.0
 ## Below this UI height the left column keeps only half the margin above and below and half the gaps,
 ## so its nine entries and the footer still fit (1280x720).
 const SHORT_HEIGHT: float = 820.0
+const SAVE_HINT_WIDTH: float = 360.0
 ## [label key, screen id, enabled].
 const ENTRIES: Array = [
 	["MENU_PLAY", &"play", true],
@@ -44,6 +47,10 @@ var _left: Control
 var _area: CenterContainer
 var _starting: bool = false
 var _board_top: BoardTop
+## "Neu!" on the patch list's entry, and the save-code note (1.4.1).
+var _patches_new: Label
+var _save_hint: PanelContainer
+var _save_hint_status: Label
 
 
 func _ready() -> void:
@@ -132,6 +139,15 @@ func _build_ui() -> void:
 		entry.focus_entered.connect(func() -> void: GameAudio.play(&"ui_hover"))
 		list.add_child(entry)
 		_entries.append(entry)
+		if id == &"patches":
+			_patches_new = UiStyle.label(&"LabelChange", tr("CARD_NEW"))
+			_patches_new.set_anchors_and_offsets_preset(Control.PRESET_CENTER_RIGHT, Control.PRESET_MODE_MINSIZE)
+			_patches_new.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+			_patches_new.offset_right = -16.0
+			_patches_new.offset_left = _patches_new.offset_right - _patches_new.get_combined_minimum_size().x
+			_patches_new.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_patches_new.visible = Profile.patches_new()
+			entry.add_child(_patches_new)
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -198,7 +214,53 @@ func _build_ui() -> void:
 	_board_top.open_pressed.connect(func() -> void: _open(&"records"))
 	root.add_child(_board_top)
 	_board_top.fetch()
+	_build_save_hint(root)
 	_build_name_prompt(root)
+
+
+## "Spielstand sichern?": progress lives in this browser only; one click copies the code.
+func _build_save_hint(root: Control) -> void:
+	_save_hint = UiStyle.panel()
+	_save_hint.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE)
+	_save_hint.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_save_hint.offset_right = -MARGIN
+	_save_hint.offset_top = MARGIN
+	root.add_child(_save_hint)
+	var column := UiStyle.vbox()
+	_save_hint.add_child(column)
+	column.add_child(UiStyle.label(&"LabelAccent", tr("SAVE_HINT_TITLE")))
+	var line: Label = UiStyle.label(&"LabelMuted", tr("SAVE_HINT_LINE"))
+	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	line.custom_minimum_size = Vector2(SAVE_HINT_WIDTH, 0.0)
+	column.add_child(line)
+	var buttons := UiStyle.hbox(&"Row16")
+	column.add_child(buttons)
+	var copy := ActionPill.new()
+	copy.set_label(tr("SAVE_COPY"))
+	copy.pressed.connect(func() -> void:
+		DisplayServer.clipboard_set(Profile.export_code())
+		GameAudio.play(&"card")
+		_save_hint_status.text = tr("SAVE_COPIED")
+		Profile.answer_save_hint(false)
+		get_tree().create_timer(1.5).timeout.connect(_update_save_hint))
+	buttons.add_child(copy)
+	var never := ActionPill.new()
+	never.set_label(tr("SAVE_HINT_NEVER"))
+	never.pressed.connect(func() -> void:
+		Profile.answer_save_hint(true)
+		_update_save_hint())
+	buttons.add_child(never)
+	_save_hint_status = UiStyle.label(&"LabelChange", "")
+	_save_hint_status.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	buttons.add_child(_save_hint_status)
+	_update_save_hint()
+
+
+func _update_save_hint() -> void:
+	if _save_hint == null:
+		return
+	_save_hint.visible = _current == &"" and Profile.save_hint_due() and not _starting
+	_save_hint_status.text = ""
 
 
 func _fit_column(height: float) -> void:
@@ -221,6 +283,10 @@ func _open(id: StringName) -> void:
 		_screens[key].visible = key == id
 	_current = id
 	_board_top.hold(true)
+	_update_save_hint()
+	if id == &"patches":
+		Profile.mark_patches_seen()
+		_patches_new.visible = false
 	var screen: Control = _screens[id]
 	if screen.has_method(&"refresh"):
 		screen.call(&"refresh")
@@ -243,6 +309,7 @@ func _close_screen() -> void:
 	_screens[_current].visible = false
 	_current = &""
 	_board_top.hold(false)
+	_update_save_hint()
 	if index >= 0:
 		_entries[index].grab_focus()
 

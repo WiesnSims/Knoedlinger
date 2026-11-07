@@ -50,7 +50,11 @@ static func update(build: PlayerBuild, player: Player, enemies: EnemyManager, pr
 		var origin: Vector3 = player.global_position
 		var facing: Vector3 = player.facing_direction()
 		var amount: int = Formulas.weapon_amount(weapon, owned.mods, owned.extra_amount)
-		if weapon.pattern == WeaponData.Pattern.ARC or weapon.pattern == WeaponData.Pattern.PROJECTILE:
+		if weapon.pattern == WeaponData.Pattern.PROJECTILE and weapon.hops > 0:
+			# Lobbed shots hop into the thickest part of the crowd (1.4.1, C1).
+			facing = aim_into_crowd(weapon, origin, facing, enemies, area, build.stat(&"duration"))
+			owned.aim = aim_byte(facing)
+		elif weapon.pattern == WeaponData.Pattern.ARC or weapon.pattern == WeaponData.Pattern.PROJECTILE:
 			facing = aim_at_nearest(origin, facing, enemies, aim_reach(weapon, area, build.stat(&"duration")),
 					weapon.height_reach)
 			owned.aim = aim_byte(facing)
@@ -118,6 +122,55 @@ static func aim_at_nearest(origin: Vector3, facing: Vector3, enemies: EnemyManag
 	if best < 0:
 		return facing
 	return Vector3(enemies.pos_x[best] - origin.x, 0.0, enemies.pos_z[best] - origin.z).normalized()
+
+
+## Lobbed shots (hops, 1.4.1 C1): toward the enemy whose line of landings would catch the most
+## enemies, trying up to CROWD_TRIES enemies in reach (nearest wins a tie); `facing` with nobody there.
+static func aim_into_crowd(weapon: WeaponData, origin: Vector3, facing: Vector3, enemies: EnemyManager,
+		area: float, duration: float) -> Vector3:
+	var reach: float = aim_reach(weapon, area, duration)
+	var step: float = weapon.projectile_speed * weapon.projectile_lifetime * (1.0 + duration) / maxi(weapon.hops, 1)
+	var splash: float = weapon.impact_radius * area
+	var grid: SpatialHash = enemies.grid
+	var found: int = grid.query(origin.x, origin.z, reach + 0.8)
+	var candidates := PackedInt32Array()
+	for k: int in found:
+		var j: int = grid.results[k]
+		if enemies.alive[j] == 0:
+			continue
+		var dx: float = enemies.pos_x[j] - origin.x
+		var dz: float = enemies.pos_z[j] - origin.z
+		var d_sq: float = dx * dx + dz * dz
+		if d_sq < 0.0001 or d_sq > reach * reach \
+				or absf(enemies.ground_at(enemies.pos_x[j], enemies.pos_z[j]) - origin.y) > weapon.height_reach:
+			continue
+		candidates.append(j)
+		if candidates.size() >= CROWD_TRIES:
+			break
+	var best := Vector3.ZERO
+	var best_score: int = -1
+	var best_sq: float = INF
+	for j: int in candidates:
+		var to := Vector2(enemies.pos_x[j] - origin.x, enemies.pos_z[j] - origin.z)
+		var d_sq: float = to.length_squared()
+		var dir: Vector2 = to / sqrt(d_sq)
+		var score: int = 0
+		for hop: int in range(1, weapon.hops + 1):
+			var at: Vector2 = Vector2(origin.x, origin.z) + dir * step * hop
+			var near: int = grid.query(at.x, at.y, splash + 0.6)
+			for n: int in near:
+				var e: int = grid.results[n]
+				if enemies.alive[e] != 0 and Vector2(enemies.pos_x[e] - at.x, enemies.pos_z[e] - at.y).length_squared() < splash * splash:
+					score += 1
+		if score > best_score or (score == best_score and d_sq < best_sq):
+			best_score = score
+			best_sq = d_sq
+			best = Vector3(dir.x, 0.0, dir.y)
+	return best if best_score >= 0 else facing
+
+
+## Enemies a lobbed shot tries as aims (aim_into_crowd); a cheap search every cooldown.
+const CROWD_TRIES: int = 24
 
 
 ## A flat direction as one byte (256 steps around, the same yaw as Player.rotation.y), and back.
@@ -263,35 +316,70 @@ static func _tick_pulls(owned: PlayerBuild.OwnedWeapon, enemies: EnemyManager, d
 
 
 ## CHAIN: the nearest enemy within reach, then the nearest one not hit yet within chain_range of the
-## last, `amount` times; each jump hits a little softer.
+## last, `amount` times; each jump hits a little softer. A forking chain (1.4.1, A1) splits every bolt
+## in two from the second jump on, up to 2 * amount - 1 hits; a splashing one (Würstel "Mit Senf")
+## also hurts the enemies around each one it hits. The impacts are (from, to) pairs, one per bolt.
 static func chain_hit(owned: PlayerBuild.OwnedWeapon, origin: Vector3, enemies: EnemyManager, damage: float, area: float,
 		amount: int, duration: float) -> void:
 	var weapon: WeaponData = owned.data
 	var hit: Dictionary[int, bool] = {}
-	var x: float = origin.x
-	var z: float = origin.z
 	var reach: float = weapon.reach * area
-	owned.impacts.append(Vector2(x, z))
-	for k: int in amount:
-		var best: int = -1
-		var best_sq: float = INF
-		for j: int in enemies_near(enemies, x, z, reach):
-			if hit.has(j):
-				continue
-			var d_sq: float = (enemies.pos_x[j] - x) * (enemies.pos_x[j] - x) + (enemies.pos_z[j] - z) * (enemies.pos_z[j] - z)
-			if d_sq < best_sq:
-				best_sq = d_sq
-				best = j
-		if best < 0:
-			return
-		hit[best] = true
-		var dir := Vector2(enemies.pos_x[best] - x, enemies.pos_z[best] - z).normalized()
-		x = enemies.pos_x[best]
-		z = enemies.pos_z[best]
-		owned.impacts.append(Vector2(x, z))
-		apply_hit(weapon, enemies, best, damage * pow(0.85, k), dir.x * weapon.knockback * knock,
-				dir.y * weapon.knockback * knock, duration)
+	var tips: Array[Vector2] = [Vector2(origin.x, origin.z)]
+	var budget: int = amount * 2 - 1 if weapon.chain_fork else amount
+	var jump: int = 0
+	while budget > 0 and not tips.is_empty():
+		var next_tips: Array[Vector2] = []
+		var branches: int = 2 if weapon.chain_fork and jump > 0 else 1
+		for tip: Vector2 in tips:
+			for b: int in branches:
+				if budget <= 0:
+					break
+				var best: int = _nearest_unhit(enemies, tip.x, tip.y, reach, hit)
+				if best < 0:
+					break
+				hit[best] = true
+				budget -= 1
+				var to := Vector2(enemies.pos_x[best], enemies.pos_z[best])
+				var dir: Vector2 = (to - tip).normalized()
+				owned.impacts.append(tip)
+				owned.impacts.append(to)
+				var power: float = damage * pow(0.85, jump)
+				apply_hit(weapon, enemies, best, power, dir.x * weapon.knockback * knock,
+						dir.y * weapon.knockback * knock, duration)
+				if weapon.chain_splash > 0.0:
+					_chain_splash(weapon, enemies, best, to, power * weapon.chain_splash_share, weapon.chain_splash * area)
+				next_tips.append(to)
+		tips = next_tips
 		reach = weapon.chain_range * area
+		jump += 1
+
+
+## The nearest living enemy within `reach` of (x, z) not in `hit`, or -1.
+static func _nearest_unhit(enemies: EnemyManager, x: float, z: float, reach: float, hit: Dictionary[int, bool]) -> int:
+	var best: int = -1
+	var best_sq: float = INF
+	for j: int in enemies_near(enemies, x, z, reach):
+		if hit.has(j):
+			continue
+		var d_sq: float = (enemies.pos_x[j] - x) * (enemies.pos_x[j] - x) + (enemies.pos_z[j] - z) * (enemies.pos_z[j] - z)
+		if d_sq < best_sq:
+			best_sq = d_sq
+			best = j
+	return best
+
+
+## A chain jump's splash: every other enemy within `radius` of the one it hit.
+static func _chain_splash(weapon: WeaponData, enemies: EnemyManager, centre: int, at: Vector2, damage: float,
+		radius: float) -> void:
+	var grid: SpatialHash = enemies.grid
+	var found: int = grid.query(at.x, at.y, radius + 0.8)
+	for k: int in found:
+		var j: int = grid.results[k]
+		if j == centre or enemies.alive[j] == 0:
+			continue
+		var reach: float = radius + enemies.radius[j]
+		if Vector2(enemies.pos_x[j] - at.x, enemies.pos_z[j] - at.y).length_squared() < reach * reach:
+			enemies.damage(j, damage)
 
 
 ## Damages every enemy within `radius` of `origin`, pushing them outward. Returns how many.

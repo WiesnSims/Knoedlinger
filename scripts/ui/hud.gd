@@ -13,6 +13,8 @@ const INTRO_SECONDS: float = 10.0
 ## Stempel, the gate, the boss and up to three teammates.
 const MARKERS: int = 9
 const EDGE: float = 16.0
+## Pixels around a HUD panel in which an enemy line still counts as behind it (covered_rects).
+const COVER_MARGIN: float = 48.0
 const HP_BAR := Vector2(176.0, 16.0)
 
 var _hp_bar: ProgressBar
@@ -45,6 +47,8 @@ var _intro_timer: float = INTRO_SECONDS
 var _hp_target: float = 0.0
 var _boss_target: float = 0.0
 var _knodl_tier_index: int = -1
+## Panels an enemy line must not show through (covered_rects).
+var _covers: Array[Control] = []
 ## What the toast says while the local player is down (solo: the run is over).
 var downed_key: String = "TOAST_DOWNED"
 ## Co-op: the knocked-down line with the seconds left (overrides downed_key when set).
@@ -147,7 +151,9 @@ func _ready() -> void:
 	_boss_bar = UiStyle.bar(&"BarBoss")
 	_boss_bar.custom_minimum_size = Vector2(400.0, 12.0)
 	_boss_box.add_child(_boss_bar)
+	_covers.append(_boss_box)
 	_formular_panel = UiStyle.panel(&"HudPanel")
+	_covers.append(_formular_panel)
 	_formular_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_formular_panel.visible = false
 	top.add_child(_formular_panel)
@@ -155,6 +161,7 @@ func _ready() -> void:
 	_formular_panel.add_child(_formular)
 	# The toast, in the upper middle.
 	_toast = UiStyle.label(&"HudNumber")
+	_covers.append(_toast)
 	_toast.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_toast.position = Vector2(-320.0, -168.0)
@@ -171,6 +178,7 @@ func _ready() -> void:
 	bottom.alignment = BoxContainer.ALIGNMENT_END
 	root.add_child(bottom)
 	_hint_panel = UiStyle.panel(&"HudPanel")
+	_covers.append(_hint_panel)
 	_hint_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_hint_panel.visible = false
 	bottom.add_child(_hint_panel)
@@ -327,6 +335,18 @@ func toast(text: String, seconds: float = TOAST_SECONDS) -> void:
 		_toast_tween.tween_property(_toast, "modulate:a", 1.0, 0.15)
 
 
+## Screen areas the HUD draws on (corner panels, the boss bar, the banner, the hint line): an enemy
+## line behind one fades instead of showing through the see-through panel (1.4.1, B1 / B2).
+func covered_rects() -> Array[Rect2]:
+	var out: Array[Rect2] = []
+	if not _root.visible:
+		return out
+	for node: Control in _covers:
+		if node.is_visible_in_tree() and node.modulate.a > 0.05:
+			out.append(node.get_global_rect().grow(COVER_MARGIN))
+	return out
+
+
 ## Steps back (or comes back) at once, when a panel opened outside the usual frame order.
 func refresh_cover() -> void:
 	_root.visible = not covered.call()
@@ -366,6 +386,7 @@ func _place(pill: WorldMarker, camera: Camera3D, point: Vector3, text: String, t
 func _corner(root: Control, preset: Control.LayoutPreset, variation: StringName) -> PanelContainer:
 	var box: PanelContainer = UiStyle.panel(variation)
 	root.add_child(box)
+	_covers.append(box)
 	box.set_anchors_and_offsets_preset(preset, Control.PRESET_MODE_MINSIZE, int(EDGE))
 	match preset:
 		Control.PRESET_TOP_RIGHT:

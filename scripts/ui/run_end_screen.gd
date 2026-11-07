@@ -18,6 +18,7 @@ const PAD_ARM_MS: int = 1000
 ## Space kept free above and below the panel; the pad / arrow keys scroll the list this far per press.
 const SCREEN_MARGIN: float = 32.0
 const SCROLL_STEP: float = 48.0
+const SCROLLBAR_GUTTER: float = 16.0
 ## Summary key, label key, how to show it ("time_past": a time, only shown when there was any).
 const ROWS: Array = [
 	["time", "END_STAT_TIME", "time"], ["overtime", "END_STAT_OVERTIME", "time_past"],
@@ -97,9 +98,17 @@ func _ready() -> void:
 	_scroll = ScrollContainer.new()
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	column.add_child(_scroll)
+	# The body and a strip the scrollbar can sit on without covering the right-hand numbers.
+	var lane := UiStyle.hbox()
+	lane.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_scroll.add_child(lane)
 	_body = UiStyle.vbox(&"Gap24")
 	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_scroll.add_child(_body)
+	lane.add_child(_body)
+	var gutter := Control.new()
+	gutter.custom_minimum_size = Vector2(SCROLLBAR_GUTTER, 0.0)
+	gutter.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lane.add_child(gutter)
 	_body.add_child(_grid)
 	_bill = UiStyle.vbox()
 	_body.add_child(_bill)
@@ -257,6 +266,10 @@ func _fill_bill(summary: Dictionary) -> void:
 		for weapon: WeaponData in catalog.weapons:
 			if String(weapon.id) == str(key):
 				name = tr(weapon.name_key)
+		# Items deal damage under their id too (1.4 procs): their name, not the id.
+		for item: ItemData in catalog.items:
+			if String(item.id) == str(key):
+				name = tr(item.name_key)
 		grid.add_child(_bill_cell(name, BILL_COLUMNS[0][1], &"LabelSmall", false))
 		grid.add_child(_bill_cell(short_number(float(damage[key])), BILL_COLUMNS[1][1], &"LabelSmall", true))
 		grid.add_child(_bill_cell("%d %%" % roundi(100.0 * float(damage[key]) / maxf(total, 0.001)), BILL_COLUMNS[2][1],
@@ -266,7 +279,11 @@ func _fill_bill(summary: Dictionary) -> void:
 	if order.is_empty():
 		_bill.add_child(UiStyle.label(&"LabelMuted", tr("BILL_NONE")))
 	# The most frequent knock-down cause.
-	var downed: Dictionary = summary.get("downed_by", {})
+	# Causes come as "<enemy>", "<enemy>:<attack>" or "<enemy>@<boss>" (1.4.1 log); the player sees the enemy.
+	var downed: Dictionary = {}
+	for cause: Variant in summary.get("downed_by", {}):
+		var enemy_id: String = str(cause).get_slice(":", 0).get_slice("@", 0)
+		downed[enemy_id] = int(downed.get(enemy_id, 0)) + int(summary["downed_by"][cause])
 	var worst: String = ""
 	for cause: Variant in downed:
 		if worst == "" or int(downed[cause]) > int(downed[worst]):

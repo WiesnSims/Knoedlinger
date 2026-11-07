@@ -219,6 +219,8 @@ var _no_gold_timers: Dictionary[int, float] = {}
 var _loot_rng := RandomNumberGenerator.new()
 ## Host: the peers that opened each map chest (by loot id); a chest goes once everyone has (1.4.1, A2).
 var _chest_opened: Dictionary[int, PackedInt32Array] = {}
+## Metres around a fighting boss in which a body hit counts as "the crowd at the boss" (A5 log).
+const BOSS_CROWD_RADIUS: float = 18.0
 var _late_chests_placed: bool = false
 ## Host: seconds until the next Fassl may stand up.
 var _fassl_timer: float = 0.0
@@ -245,6 +247,10 @@ var _last_xp: float = 0.0
 var _knodl_state_heard: int = 0
 var _knodl_hits_heard: int = 0
 var _knodl_heavy_heard: int = 0
+## Weniger Item-Effekte: one spark in this many is shown, at this size (C3).
+const FEWER_SPARKS_EVERY: int = 3
+const FEWER_SPARKS_SIZE: float = 0.7
+var _spark_count: int = 0
 var _heavy_cue_ms: int = 0
 ## Host: enemies beaten per type id (quests, Almanach).
 var _kills_by_type: Dictionary[StringName, int] = {}
@@ -705,11 +711,13 @@ func _host_frame(delta: float) -> void:
 		var state: PlayerState = states[peers[t]]
 		var hit: float = Formulas.hit_damage(enemies.touch_damage[t] * damage_mult, state.build.stat(&"armor"), balance)
 		if enemies.touch_type[t] >= 0:
-			state.last_cause = types[enemies.touch_type[t]].id
+			state.last_cause = _touch_cause(enemies.touch_type[t], players[peers[t]].global_position)
 		var hp_before: float = state.hp
 		if not _god and phase != Phase.ENDED and state.hurt(hit, balance):
 			on_downed(peers[t])
 		if state.hp < hp_before:
+			if enemies.touch_type[t] >= 0 and types[enemies.touch_type[t]].boss:
+				state.hurt_timer = maxf(state.hurt_timer, balance.boss_hit_grace)
 			_on_hurt(peers[t])
 			_reflect_hit(peers[t], hp_before - state.hp)
 			procs.on_hurt(peers[t], hp_before - state.hp)
@@ -2695,6 +2703,31 @@ func _coin_chance(state: PlayerState) -> float:
 	return balance.coin_drop_chance
 
 
+## Host: what a body hit counts as on the knock-down list (1.4.1, A5): a boss's own body is
+## "<boss>:contact", the crowd around a fighting boss "<enemy>@<boss>", anything else the enemy type.
+func _touch_cause(type_index: int, at: Vector3) -> StringName:
+	var data: EnemyTypeData = types[type_index]
+	if data.boss:
+		return StringName("%s:contact" % data.id)
+	for boss: BossDirector.Active in bosses.active:
+		var dx: float = enemies.pos_x[boss.slot] - at.x
+		var dz: float = enemies.pos_z[boss.slot] - at.z
+		if dx * dx + dz * dz < BOSS_CROWD_RADIUS * BOSS_CROWD_RADIUS:
+			return StringName("%s@%s" % [data.id, boss.data.id])
+	return data.id
+
+
+## Host: a mark's knock-down cause, "<who>:<attack>" (A5).
+func _attack_cause(h: HazardField.Hazard) -> StringName:
+	# The slot may belong to someone else by now (the attacker died before its mark struck).
+	var who: String = "attack"
+	if h.source >= 0 and enemies.alive[h.source] != 0:
+		var source: EnemyTypeData = types[enemies.type[h.source]]
+		if source.boss or source.attack == h.attack or source.death_attack == h.attack:
+			who = String(source.id)
+	return StringName("%s:%s" % [who, h.attack.id]) if h.attack != null and h.attack.id != &"" else StringName(who)
+
+
 ## Host: elites that started an attack this frame put their marks down.
 func _start_attacks() -> void:
 	for k: int in enemies.attack_slot.size():
@@ -2719,11 +2752,13 @@ func _resolve_hazards() -> void:
 				if at.y - ground.height_at(at.x, at.z) > balance.hazard_dodge_height:
 					continue
 				if HazardField.contains(h, at.x, at.z, balance.player_radius):
-					state.last_cause = types[enemies.type[h.source]].id if h.source >= 0 else &"attack"
+					state.last_cause = _attack_cause(h)
 					var hp_before: float = state.hp
 					if state.hurt(Formulas.hit_damage(attack.damage * grant.enemy_damage, state.build.stat(&"armor"), balance), balance):
 						on_downed(peer)
 					if state.hp < hp_before:
+						if h.source >= 0 and types[enemies.type[h.source]].boss:
+							state.hurt_timer = maxf(state.hurt_timer, balance.boss_hit_grace)
 						procs.on_hurt(peer, hp_before - state.hp)
 		if attack.dash and h.source >= 0:
 			if bosses.is_boss_slot(h.source):
@@ -3189,7 +3224,13 @@ func _present(e: RunEventCodec.Event) -> void:
 			elif e.a == RunEventCodec.Cue.SHOCKWAVE:
 				_show_shockwave(e.x, e.z)
 			elif e.a == RunEventCodec.Cue.SPARK:
-				_show_shockwave(e.x, e.z, balance.spark_radius)
+				# Weniger Item-Effekte (or the lowest quality): every third spark, smaller (1.4.1, C3).
+				if Settings.get_bool(&"fewer_effects") or quality.level == QualityScaler.Level.LOW:
+					_spark_count += 1
+					if _spark_count % FEWER_SPARKS_EVERY == 0:
+						_show_shockwave(e.x, e.z, balance.spark_radius * FEWER_SPARKS_SIZE)
+				else:
+					_show_shockwave(e.x, e.z, balance.spark_radius)
 		RunEventCodec.Kind.SAY:
 			voices.present(e.a, e.b, e.id, e.x, e.z)
 		RunEventCodec.Kind.SITE:
@@ -3309,6 +3350,8 @@ func _show_run_state(local: Player, state: PlayerState, delta: float) -> void:
 	if local != null:
 		local.ground_slow = 1.0 - (1.0 - slime.speed_factor(local.global_position)) * (1.0 - local.stat_sure_footing)
 		GameAudio.set_listener(local.global_position)
+		voices.camera = camera
+		voices.covered = hud.covered_rects
 		voices.update_view(delta, local.global_position)
 	if phase == Phase.RUNNING:
 		GameAudio.music(&"boss" if boss_alive else (map.music if map != null else &"kirtag"))

@@ -105,7 +105,7 @@ TOAST_MAHLZEIT,Mahlzeit!
 TOAST_SPERRSTUND,Sperrstund'! Gezählt is – jetzt kommen d' Stammgast-Geister. Nachspielzeit!
 NOTICE_0,Des is ja nur a Bröserl! (Knödl z'klein)
 NOTICE_1,Do hamma heut scho gessn.
-HUD_WIRT_MARKER_TIER,Wirtshaus · %s → %s · %d m
+HUD_WIRT_MARKER_TIER,Wirtshaus · %s: %s · %d m
 WIRT_REWARD_0,Gold
 WIRT_REWARD_1,a Kistl
 WIRT_REWARD_2,Kistl + Nochmal
@@ -234,6 +234,7 @@ SET_VOLUME_VOICE,Sprüche
 SET_MUTE,Stumm
 SET_FULLSCREEN,Vollbild
 SET_REDUCE_FLASHING,Weniger Blitzen
+SET_FEWER_EFFECTS,Weniger Item-Effekte
 SET_CAMERA_DISTANCE,Abstand
 SET_CAMERA_FOV,Sichtfeld
 SET_MOUSE_SENSITIVITY,Maus-Tempo
@@ -410,6 +411,9 @@ SAVE_TITLE,Spielstand
 SAVE_LINE,"Dein Spielstand als Code: kopieren, aufheben, woanders wieder laden."
 SAVE_COPY,Code kopieren
 SAVE_COPIED,Kopiert!
+SAVE_HINT_TITLE,Spielstand sichern?
+SAVE_HINT_LINE,"Dein Fortschritt lebt nur in dem Browser: wer den Cache leert, fangt von vorn an. Kopier da den Code und heb'n auf."
+SAVE_HINT_NEVER,Nimma erinnern
 SAVE_LOAD,Code laden
 SAVE_LOADED,Spielstand gladen!
 SAVE_BAD_format,Des is ka Knödlinger-Code.
@@ -1329,3 +1333,10 @@ PATCH_1_4_1_04,"Was im Kistl war, zeigt sich jetzt kleiner, weiter oben und nur 
 PATCH_1_4_1_05,"A großes Knödl, das du behältst, haut jetzt richtig zu: dein Schaden zählt fürs Knödl, ab Größe L wird's viel stärker, Elite-Gegner kriegen doppelt, Bosse dreifach. Der Wirtshaus-Pfeil zeigt, was dein Knödl grad wert wär."
 PATCH_1_4_1_06,"Ab 10:00 kommen neue Kistln dazu (im Familienausflug mehr). Zu zweit kann jeder jedes Kistl aufmachen, zu seinem eigenen Preis. Wer eh scho gnua Gold hat, findet weniger Münzen."
 PATCH_1_4_1_07,"Neu: kleine Lebkuchenherzerl (+5 HP). Je weniger HP du hast, desto öfter fallen's, und sie fliegen dir von weit her zu."
+PATCH_1_4_1_08,"Alte Waffen nachgwürzt: Wiener Würstel mit Senf (jeder Sprung spritzt rundherum), die Krampusrute gabelt sich, Skistöcke fliegen zu zweit und stechen durch mehr, das Tablett is nach 12 Treffern voll, die Sachertorte-Mine kracht a bissl kleiner."
+PATCH_1_4_1_09,"Die Krapfen-Kanone zielt jetzt mitten in die Meute statt auf den Nächsten."
+PATCH_1_4_1_10,"Neue Einstellung „Weniger Item-Effekte“: weniger und kleinere Funken, wenn's am Schirm zu bunt wird."
+PATCH_1_4_1_11,"Im Hauptmenü erinnert di a kleiner Zettel, dass du deinen Spielstand-Code sichern sollst (mit „Nimma erinnern“)."
+PATCH_1_4_1_12,"Nach an Update steht „Neu!“ bei „Was is neu?“, bis du's aufmachst."
+PATCH_1_4_1_13,"Sprüche der Gegner verstecken sich nimma hinter der Anzeige oder der Meldung in der Mitte."
+PATCH_1_4_1_14,"Nach an Treffer vom Zwischengegner (Oberkrampus, Lawine, Sturm …) hast a bisserl länger Ruh, damit du aus seiner Reichweite kummst."

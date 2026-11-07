@@ -28,6 +28,10 @@ var events: RunEventCodec.Queue
 ## Where the enemies are: the host's EnemyManager, or a client's EnemyReplica.
 var enemies: EnemyManager
 var replica: EnemyReplica
+## The view's camera and the HUD's covered screen areas (Hud.covered_rects): a line that would sit
+## behind a HUD panel or the banner fades until it is clear again (1.4.1, B1 / B2).
+var camera: Camera3D
+var covered: Callable
 ## Lines the host picked, and lines this machine showed (tests, mp_test).
 var said: int = 0
 var shown: int = 0
@@ -54,6 +58,8 @@ var _node: Array[Node3D] = []
 var _lift := PackedFloat32Array()
 var _left := PackedFloat32Array()
 var _at: Array[Vector3] = []
+## Per bubble 0..1: 0 while it sits behind the HUD.
+var _clear := PackedFloat32Array()
 
 
 func setup(p_balance: BalanceData, p_types: Array[EnemyTypeData], p_ground: Heightfield, p_events: RunEventCodec.Queue,
@@ -207,6 +213,12 @@ func say_local(lines: VoiceLineSet, moment: VoiceLineData.Moment, figure: Node3D
 ## player is.
 func update_view(delta: float, view: Vector3) -> void:
 	_view = view
+	var rects: Array[Rect2] = []
+	if covered.is_valid():
+		rects = covered.call()
+	if _clear.size() != SHOWN:
+		_clear.resize(SHOWN)
+		_clear.fill(1.0)
 	for k: int in SHOWN:
 		var label: Label3D = _bubbles[k]
 		if not label.visible:
@@ -224,7 +236,15 @@ func update_view(delta: float, view: Vector3) -> void:
 			else:
 				_slot[k] = -1
 		label.global_position = _at[k]
-		label.modulate.a = clampf(_left[k] / balance.voice_fade_seconds, 0.0, 1.0)
+		var hidden: bool = false
+		if camera != null and not rects.is_empty() and not camera.is_position_behind(_at[k]):
+			var point: Vector2 = camera.unproject_position(_at[k])
+			for rect: Rect2 in rects:
+				if rect.has_point(point):
+					hidden = true
+					break
+		_clear[k] = move_toward(_clear[k], 0.0 if hidden else 1.0, delta * 6.0)
+		label.modulate.a = clampf(_left[k] / balance.voice_fade_seconds, 0.0, 1.0) * _clear[k]
 		label.outline_modulate.a = label.modulate.a * UiStyle.color("shadow").a
 
 

@@ -91,6 +91,9 @@ extends Resource
 @export var player_max_hp: float = 100.0
 ## Invulnerability after a hit.
 @export var player_hurt_cooldown: float = 0.5
+## 1.4.1 (A5): after a boss's hit (its body or a mark) the player takes no damage for this long instead
+## of player_hurt_cooldown: time to get out of its reach before the boss or its crowd hits again.
+@export var boss_hit_grace: float = 1.1
 ## M1 has no death screen yet: a player who drops to 0 HP is back at the spawn after this.
 @export var player_respawn_seconds: float = 3.0
 ## Brösel this close to the player fly to their Knödl (GAME-DESIGN.md: 1 m).

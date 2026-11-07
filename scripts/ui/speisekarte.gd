@@ -255,10 +255,9 @@ func show_chest(offer: OfferCodec.Offer) -> void:
 		if card.kind == Card.Kind.ITEM and card.index < catalog.items.size():
 			var item: ItemData = catalog.items[card.index]
 			lines = ItemText.describe(item, maxi(card.level, 1), balance).slice(0, CHEST_LINES)
-			# A first find: "Neu!" and its one-liner below the numbers.
+			# A first find says "Neu!" (its one-liner waits in the build view; the reveal stays small, C2).
 			if not Profile.is_found(&"item", item.id):
 				subtitle = tr("CARD_NEW")
-				lines.append(tr(item.desc_key))
 		_chest_items.add_child(_chest_tile(UiStyle.card_icon(card, catalog), card_name(card, catalog),
 				subtitle, UiStyle.rarity_variation("Tile", card), lines))
 	_chest_panel.visible = true
@@ -559,9 +558,7 @@ func _chest_tile(icon: Texture2D, title: String, subtitle: String, variation: St
 		sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		tile.add_child(sub)
 	for k: int in lines.size():
-		# The effect lines; a new item's one-liner (the last line then) is muted.
-		var muted: bool = k == lines.size() - 1 and subtitle == tr("CARD_NEW") and lines.size() > 1
-		var text: Label = UiStyle.label(&"LabelMuted" if muted else &"LabelSmall", lines[k])
+		var text: Label = UiStyle.label(&"LabelSmall", lines[k])
 		text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		text.custom_minimum_size.x = CHEST_TILE_WIDTH

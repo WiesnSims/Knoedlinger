@@ -48,7 +48,7 @@ class OwnedWeapon:
 	## Continuous weapons: per enemy slot, the run time from which it may be hit again.
 	var hit_until: PackedFloat32Array = PackedFloat32Array()
 	## MINE: laid mines (x, z, seconds left). DROP / MINE / CHAIN: where it hit this frame, for the
-	## host's own effects (x, z; a chain's points in order).
+	## host's own effects (x, z; a chain's bolts as (from, to) pairs).
 	var mines: PackedVector3Array = PackedVector3Array()
 	var impacts: PackedVector2Array = PackedVector2Array()
 

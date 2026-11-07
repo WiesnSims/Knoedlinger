@@ -1944,7 +1944,7 @@ the second tab.
 - Branch `v1-4` deleted (local and GitHub) with the finished worktrees `v1-4`, `v1-4-part3`,
   `v1-4-gold-plan`, `v1-4-item-plan`.
 
-## 2026-11-06 – Plan for 1.4.1 (branch `v1-4-1`, not started)
+## 2026-11-06 – Plan for 1.4.1 (branch `v1-4-1`; built 2026-11-07, see below)
 
 - **Owner asked** for a plan for the next update 1.4.1: bug fixes, balance and other small changes. The
   concrete items are added here over time; the lists start (nearly) empty.
@@ -2098,3 +2098,82 @@ the second tab.
     a small "Neu!" tag. First start on a fresh save shows no tag. Makes balance changes like A1 visible.
 - Taskboard for the owner: https://claude.ai/artifact/NUU2WXcPqcVtBSzAeXB3ww (mirrors these lists; updated
   in the same session as any change here).
+
+## 2026-11-07 – 1.4.1 built (owner: "go with 1.4.1")
+
+- **Owner said "go with 1.4.1"**: all 15 plan items in one go on `v1-4-1`; `application/config/version` 1.4.1,
+  patch note `PATCH_1_4_1_01..14` on top of the patch list. Preview only; production on the owner's word.
+- **B1 / B2 enemy lines behind the HUD:** `Hud.covered_rects()` lists the corner panels, the boss bar, the
+  Formular line, the centre banner and the hint line (48 px margin); `EnemyVoices` fades a line whose screen
+  point falls inside one and brings it back when clear.
+- **B3 Speisekarte:** confirmed cause: hovering a row focuses it (`mouse_entered → grab_focus`) and the arrow
+  keys (movement) focused rows, so the next Space (`ui_accept`) pressed it. Now keyboard `ui_accept` is always
+  swallowed while the menu is open, every press is swallowed for `PICK_GUARD` 0.5 s after each offer (also
+  queued level-ups), the arrow keys no longer walk the rows (the pad's D-pad still does, A picks after
+  0.5 s). Picks: 1–4, click, tap, pad A. Unit tests.
+- **B4 end screen:** the numbers, the Run-Abrechnung and the rewards scroll inside the panel (ScrollContainer,
+  height = screen − 2 × 32 px − heading/tabs/buttons; arrow keys / D-pad scroll 48 px), the buttons stay
+  below; the build panel's items scroll past 5 rows (`InventoryPanel.new(false, true)`). `ui_shots endlong`
+  (36 items at 1280×720): buttons on screen. Found on the way (1.4 bug): items in the Run-Abrechnung showed
+  their id ("distelstrauss"); now their name.
+- **B5 co-op start:** `NetworkManager` remembers the clients `start_run` sent into the run (`loading_ids`);
+  the host's run holds (no clock, no spawns, players frozen: `Player.waiting`) and every player sees
+  "Warten auf <Namen> …" until all have reported the run loaded, then one `_rx_hold([])` starts everyone.
+  After 45 s (`COOP_LOAD_TIMEOUT`) the missing client is kicked (normal disconnect). A client waits for the
+  host's first hold message (sent as soon as it reports in; 60 s fallback), so direct `--join` runs still
+  start at once. Test hook `--load_delay=<s>`, `mp_test -SlowClient 6`; every `-Lobby` run now checks that
+  the run started with all clients loaded.
+- **C2 chest reveal:** title in body size, 40 px icons, 168 px tiles, at most 2 effect lines (a first
+  find says "Neu!", its one-liner dropped: the reveal reached the player's head at 720p), 2.5 s + 1.5 s per extra item, max 6 s; still top centre under the boss bar.
+- **A1 old weapons** (owner's picks; measured like 1.4's 6.5: held crowd of 250 at 10:00, 90 s, Ferdl + the
+  weapon; band 4,500–7,500; the numbers are noisy: the bot levels whatever it likes, and a loaded machine
+  shifts them – the Würstel gave 5,221 / 7,290 / 3,571 on three runs):
+  - Würstel "Mit Senf": `chain_splash` 1.2 m at 50 % → about 5,400 (was 918).
+  - Krampusrute forks (`chain_fork`): from the 2nd jump every bolt splits in two, capped at 2 × amount − 1
+    hits per cast (pure doubling would reach 512 hits at max amount). The fork alone measured 1,990, so also
+    damage 9 → 13, amount 4 → 5, cooldown 1.8 → 1.5 → about 4,450.
+  - Skistöcke: amount 1 → 2, pierce 2 → 4 measured 2,076 (at weapon level 4), so also damage 2.5 → 5.0,
+    cooldown 1.0 → 0.9 → about 5,500. Slalom-Gewitter (4.5 / 0.55 s / 3 poles / pierce 6) stays above.
+  - Tablett: `leg_hits` 12 per way (out and back), then it flies on without hitting → about 6,700.
+  - Sachertorte: `impact_radius` 3.6 → 2.6 and damage 16 → 14 measured 8,167, then 12.5 → 9,200, so 10.5 →
+    5,768 / 9,485 (about 7,600; was 15,170).
+  - Chain impacts are now (from, to) pairs (the host draws forks; the splash rings where it hit); clients
+    keep their cosmetic bolts from the fire counter. No network change.
+- **C1 Krapfen aims into the crowd:** `WeaponSystem.aim_into_crowd` tries up to 24 enemies in reach and takes
+  the line whose landings catch the most enemies (nearest wins a tie); the aim byte carries it as before, so
+  clients draw the same arcs. It nearly doubled the Krapfen (11,200 against 6,250), so damage 5.9 → 2.8 →
+  6,289 / 7,005. Faschingsdienstag aims the same way (an evolution, not re-tuned).
+- **A2 chests and coins:** a second batch at 10:00 (`map_chest_late_count` 5 + 2 per extra player) at the
+  chest spots without a chest, toast "Neue Kistln am Platz!" (the game has no minimap; chests have their
+  light beam). Co-op: every player can open every map chest once at their own price; the host keeps who
+  opened it, sends a new run event `OPENED` (RunEventCodec VERSION 6; `decode` now accepts every kind
+  instead of stopping at DAMAGE), the chest disappears only for that player (`LootField.hide_opened`) and
+  goes for good once everyone has opened it. Kill coins drop at ×0.3 (`coin_rich_mult`) for the closest
+  player while their gold covers their next chest twice (`coin_rich_factor`). `mp_test -Clients 3 -Sites`:
+  every player bought chests (3–5 each).
+- **A3 Lebkuchenherzerl:** new loot kind `HEART` (a small iced Lebkuchenherz), 5 HP; per kill
+  `heart_drop_chance` 2 % × how much HP the closest player misses (0 at full HP, the full chance from 40 %
+  down), pulled to a hurt player from 8 m (× Wanderkarte); the Gulasch stays.
+- **A4 a kept big Knödl hits hard:** the player's damage (stat, Stammtisch, item conditions; Mitzi's trot on
+  top) now drives their Knödl and the Doppelportion one; above the tier-L radius the radius counts to the
+  power 2.5 (`knodl_big_exponent`; XL hits about 2.05× an L instead of 1.33×); elites take ×2, bosses ×3,
+  one boss hit at most 4 % of its max HP (`knodl_elite_mult`, `knodl_boss_mult`, `knodl_boss_hit_cap`); a
+  heavy hit plays the slam and nudges the camera (`camera_nudge_*`, off with "Bildschirm wackeln"; host /
+  solo like the existing Knödl hit sound). The Wirtshaus marker shows the reward: "Wirtshaus · L: Kistl +
+  Nochmal · 35 m". **No damage numbers exist in the game** (hits flash), so A4's "bigger number" became the
+  sound and the nudge.
+- **A5 mini-boss knock-downs:** the log now names the cause: `<enemy>:<attack>` for marks (only when the
+  slot still belongs to the attacker), `<boss>:contact` for a boss's body, `<enemy>@<boss>` for the crowd
+  within 18 m of a fighting boss; the end screen groups them back by enemy. Finding (10 runs on four maps):
+  **no mini-boss knocked anyone down with its marks** – Oberkrampus 6 body + 5 crowd on the Kirtag, Der
+  Sturm 8 body + 3 crowd + 1 gust on the Heuriger. (The plan's "Sturm pull on players" does not exist: its
+  pull moves enemies, Brösel and Knödl.) Fix: `boss_hit_grace` 1.1 s – after any boss hit (body or mark)
+  the player takes no damage for 1.1 s instead of 0.5 s, time to get out of reach of the boss and its crowd.
+- **C3 "Weniger Item-Effekte"** (Ton & Bild → Anzeige, off by default): every third item spark, at 70 %
+  size; automatic at the lowest quality. Damage numbers do not exist, so the plan's "Schadenszahlen" option
+  was dropped (nothing to switch).
+- **C4 save-code note:** top right in the main menu while no screen is open, once the first Knödlinger is
+  unlocked and then every 10 Aufträge: "Spielstand sichern?" with "Code kopieren" (copies, next note after
+  10 more Aufträge) and "Nimma erinnern". Kept in the save (`notes`).
+- **C5 "Neu!" on "Was is neu?":** the save remembers the last version whose patch list was opened; a fresh
+  profile starts with the current one (no tag), a save from before 1.4.1 sees the tag. Unit tests for C4/C5.

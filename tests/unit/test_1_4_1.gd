@@ -1,5 +1,6 @@
 extends GutTest
-## 1.4.1 (patch): the Speisekarte never picks by itself (B3), a kept big Knödl hits hard (A4), ...
+## 1.4.1 (patch): the Speisekarte never picks by itself (B3), more chests and hearts (A2, A3), a kept big Knödl
+## hits hard (A4), the old weapons (A1) and the Krapfen aiming into the crowd (C1).
 
 var balance: BalanceData
 var catalog: UpgradeCatalog
@@ -108,3 +109,114 @@ func test_a_chest_the_local_player_opened_is_hidden_only_here() -> void:
 	field.hide_opened(id)
 	assert_eq(field.nearest(LootField.Kind.CHEST, 0.0, 0.0), -1, "not offered to the local player")
 	assert_true(field.has(id), "still there for the others")
+
+
+# --- A1 / C1: the old weapons and the Krapfen's aim -----------------------------------------------------
+
+func _crowd(points: Array[Vector2]) -> EnemyManager:
+	var manager := EnemyManager.new(balance, [load("res://data/enemies/tourist.tres")], points.size(), 3, null, 50.0)
+	manager.populate(points.size(), PackedVector3Array([Vector3.ZERO]))
+	for k: int in points.size():
+		manager.pos_x[k] = points[k].x
+		manager.pos_z[k] = points[k].y
+		manager.hp[k] = 10000.0
+		manager.max_hp[k] = 10000.0
+	manager.update(0.0001, PackedVector3Array([Vector3(45.0, 0.0, 45.0)]))
+	return manager
+
+
+func _hurt(manager: EnemyManager) -> int:
+	var count: int = 0
+	for k: int in manager.capacity:
+		if manager.hp[k] < manager.max_hp[k]:
+			count += 1
+	return count
+
+
+func _owned(path: String) -> PlayerBuild.OwnedWeapon:
+	var owned := PlayerBuild.OwnedWeapon.new()
+	owned.data = load(path)
+	owned.level = 1
+	return owned
+
+
+func test_the_krampusrute_forks_but_hits_at_most_twice_its_jumps() -> void:
+	var points: Array[Vector2] = []
+	for k: int in 20:
+		points.append(Vector2(2.0 + (k % 5) * 1.5, (k / 5) * 1.5 - 2.0))
+	var manager: EnemyManager = _crowd(points)
+	var rute: PlayerBuild.OwnedWeapon = _owned("res://data/weapons/krampusrute.tres")
+	WeaponSystem.chain_hit(rute, Vector3.ZERO, manager, 10.0, 1.0, 4, 0.0)
+	assert_eq(_hurt(manager), 7, "4 jumps forked: 1 + 2 + 4 enemies, each once")
+	assert_eq(rute.impacts.size(), 14, "one (from, to) pair per bolt")
+
+
+func test_the_wuerstel_splashes_mustard_around_each_hit() -> void:
+	var manager: EnemyManager = _crowd([Vector2(3.0, 0.0), Vector2(3.6, 0.4), Vector2(30.0, 0.0)])
+	var wurst: PlayerBuild.OwnedWeapon = _owned("res://data/weapons/wuerstel.tres")
+	WeaponSystem.chain_hit(wurst, Vector3.ZERO, manager, 10.0, 1.0, 1, 0.0)
+	assert_almost_eq(manager.max_hp[0] - manager.hp[0], 10.0, 0.01, "the sausage")
+	assert_almost_eq(manager.max_hp[1] - manager.hp[1], 10.0 * wurst.data.chain_splash_share, 0.01, "the Senf next to it")
+	assert_eq(manager.hp[2], manager.max_hp[2], "nobody far away")
+
+
+func test_a_full_tray_stops_hitting_until_it_turns() -> void:
+	var points: Array[Vector2] = []
+	for k: int in 30:
+		points.append(Vector2(0.0, 1.0 + k * 0.3))
+	var manager: EnemyManager = _crowd(points)
+	var tray: WeaponData = load("res://data/weapons/tablett.tres")
+	var pool := ProjectilePool.new()
+	add_child_autofree(pool)
+	pool.setup(balance, 64)
+	pool.fire_shot(0.0, 0.0, 0.0, tray.projectile_speed, tray.projectile_lifetime, 5.0, tray.projectile_radius, tray.pierce,
+			0.0, true, tray)
+	for step: int in 30:
+		pool.update(1.0 / 60.0, manager)
+	assert_eq(pool.hits, tray.leg_hits, "the way out stops at a full tray")
+
+
+func test_the_krapfen_lands_in_the_crowd_not_on_the_nearest() -> void:
+	var points: Array[Vector2] = [Vector2(-3.0, 0.0)]
+	for k: int in 8:
+		points.append(Vector2(6.0 + (k % 3) * 0.5, (k / 3) * 0.5))
+	var manager: EnemyManager = _crowd(points)
+	var krapfen: WeaponData = load("res://data/weapons/krapfen_kanone.tres")
+	var aim: Vector3 = WeaponSystem.aim_into_crowd(krapfen, Vector3.ZERO, Vector3.FORWARD, manager, 1.0, 0.0)
+	assert_gt(aim.x, 0.9, "toward the bunch, away from the lone one")
+
+
+# --- C4 / C5: notes in the main menu --------------------------------------------------------------------
+
+func test_the_patch_list_is_new_after_an_update_until_opened() -> void:
+	Profile.reset_memory()
+	assert_false(Profile.patches_new(), "a fresh profile has nothing new to read")
+	(Profile.data["notes"] as Dictionary)["patches_seen"] = "1.4.0"
+	assert_true(Profile.patches_new(), "an older save sees Neu!")
+	Profile.mark_patches_seen()
+	assert_false(Profile.patches_new())
+	var old_save: Dictionary = Profile._merged({"v": 1, "schilling": 5})
+	assert_eq(str((old_save["notes"] as Dictionary)["patches_seen"]), "", "a save from before 1.4.1 has not seen this list")
+
+
+func test_the_save_note_waits_for_a_knodlinger_then_every_ten_auftraege() -> void:
+	Profile.reset_memory()
+	assert_false(Profile.save_hint_due(), "nothing unlocked yet")
+	var unlock: QuestData = null
+	for quest: QuestData in Profile.content.quests:
+		if quest.unlock_kind == &"character":
+			unlock = quest
+			break
+	assert_not_null(unlock)
+	(Profile.data["quests"] as Dictionary)[String(unlock.id)] = true
+	assert_true(Profile.save_hint_due(), "the first Knödlinger unlocked")
+	Profile.answer_save_hint(false)
+	assert_false(Profile.save_hint_due(), "copied: quiet for a while")
+	for k: int in Profile.SAVE_HINT_EVERY:
+		(Profile.data["quests"] as Dictionary)["test_%d" % k] = true
+	assert_true(Profile.save_hint_due(), "ten Aufträge later")
+	Profile.answer_save_hint(true)
+	for k: int in 30:
+		(Profile.data["quests"] as Dictionary)["more_%d" % k] = true
+	assert_false(Profile.save_hint_due(), "Nimma erinnern is for good")
+	Profile.reset_memory()

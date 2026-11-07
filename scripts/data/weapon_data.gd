@@ -87,10 +87,20 @@ enum Look { BALL, PIN, SPEAR, FLAME }
 ## DROP / MINE: radius of one impact. CHAIN: how far the hit jumps to the next enemy.
 @export var impact_radius: float = 1.5
 @export var chain_range: float = 6.0
+## CHAIN (1.4.1, A1): every jump also splashes this far (metres, times area) around the enemy it hit,
+## at chain_splash_share of its damage (Wiener Würstel "Mit Senf"); 0 = no splash.
+@export var chain_splash: float = 0.0
+@export var chain_splash_share: float = 0.5
+## CHAIN: from the second jump on every bolt forks in two (Krampusrute); one cast still hits at most
+## 2 * amount - 1 enemies, none twice.
+@export var chain_fork: bool = false
 ## MINE: seconds until a laid mine goes off.
 @export var mine_delay: float = 1.0
 ## PROJECTILE: the shot flies back to where it came from after half its lifetime (Tablett-Wurf).
 @export var boomerang: bool = false
+## A boomerang hits at most this many enemies on the way out and as many on the way back, then flies
+## on without hitting (1.4.1, A1: Tablett-Wurf "full tray"); 0 = only pierce limits it.
+@export var leg_hits: int = 0
 
 @export_group("Levels")
 ## What a level card can roll, mod -> gain per level on a Gewöhnlich card (rarity multiplies it):
