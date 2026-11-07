@@ -2177,3 +2177,21 @@ the second tab.
   10 more Aufträge) and "Nimma erinnern". Kept in the save (`notes`).
 - **C5 "Neu!" on "Was is neu?":** the save remembers the last version whose patch list was opened; a fresh
   profile starts with the current one (no tag), a save from before 1.4.1 sees the tag. Unit tests for C4/C5.
+- **Autoplay 1.4 → 1.4.1** (Grant 1; 1.4 numbers from Part 7's runs, 1.4.1 after everything; Gemeindebau
+  measured before A5's grace):
+
+  | Map (character) | knock-downs / run | wins | Knödl share | chests | gold left |
+  |---|---|---|---|---|---|
+  | Kirtag (Ferdl) | 21.6 → 6.7 | 1/5 → 2/3 | 14 → 25 % | 11.2 → 14.7 | 1,561 → 1,619 |
+  | Heuriger (Steffi) | 45 → 5.3 | 0/1 → 3/3 | 14 → 21 % | 6 → 15 | 2,364 → 7,132 |
+  | Gamskogl (Toni) | 22 → 6.5 | 0/1 → 0/2 | 22 → 14 % | 6 → 10 | 1,862 → 1,940 |
+  | Gemeindebau (Hias) | 18 → 14.5 | 0/1 → 2/2 | 23 → 28 % | 11 → 5.5 | 3,651 → 5,159 |
+
+  Der Sturm: 12 knock-downs in 3 Heuriger runs before the grace, 0 after; Oberkrampus 11 → 6 on the Kirtag.
+  The bot now wins 7 of 10, above the old 4–6 / 10 target: hearts, the Knödl and the grace together may
+  overshoot – **for the owner's playtest** (the knobs: `heart_drop_chance`, `boss_hit_grace`,
+  `knodl_big_exponent`). Gold left stays high where the bot does not walk to far or high chests (Heuriger,
+  Gemeindebau): a bot limit, the coin cut only works while a player can reach chests.
+- **Checks:** unit tests (254), web export, browser check (Edge, 500 enemies, 123 draw calls max), `mp_test
+  -Clients 2 -SlowClient 6`, `-Clients 3 -Sites`, `-Clients 3 -Coop`, `-Clients 1 -StartTime 595`,
+  `ui_shots` (endlong, chest, end, settings, menu, patches, hud, voices).
